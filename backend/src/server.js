@@ -200,4 +200,3 @@ app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
     startSyncer().catch(console.error);
 });
-}
