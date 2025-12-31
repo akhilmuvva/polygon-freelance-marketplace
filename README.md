@@ -111,13 +111,6 @@ sequenceDiagram
 
 PolyLance is built with a custom indexing strategy documented in `contracts/SUBGRAPH.md` to ensure low-latency data fetching as the marketplace grows.
 
-## 👥 Contributors
-
-PolyLance is maintained and developed by:
-
-- **Frontend Development**: [BalaramTaddi](https://github.com/BalaramTaddi)
-- **Backend Architecture**: [jhansikupireddy-lang](https://share.google/X2qPUjX6Oyr3rVVj9)
-
 ## 📄 License
 
 Distributed under the MIT License. See `LICENSE` for more information.
