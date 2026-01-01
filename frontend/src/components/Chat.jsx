@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { useClient, useConversations, useMessages, useSendMessage, useStreamMessages } from '@xmtp/react-sdk';
+import React, { useState, useEffect, useRef } from 'react';
+import { Client } from '@xmtp/browser-sdk';
 import { motion } from 'framer-motion';
 import { useEthersSigner } from '../hooks/useEthersSigner';
 import { useAccount } from 'wagmi';
@@ -8,31 +8,71 @@ import { MessageSquare, Send, User, Loader2 } from 'lucide-react';
 export default function Chat() {
     const { address } = useAccount();
     const signer = useEthersSigner();
-    const { client, initialize, error, isLoading: isInitializing } = useClient();
-    const { conversations } = useConversations();
+
+    const [client, setClient] = useState(null);
+    const [isInitializing, setIsInitializing] = useState(false);
+    const [error, setError] = useState(null);
+    const [conversations, setConversations] = useState([]);
     const [selectedConversation, setSelectedConversation] = useState(null);
     const [peerAddress, setPeerAddress] = useState('');
 
     const handleInitialize = async () => {
-        if (signer) {
-            await initialize({ signer });
+        if (!signer) return;
+        setIsInitializing(true);
+        setError(null);
+        try {
+            console.log('[XMTP] Initializing client...');
+            // In V3, we use Client.create. By default it uses MLS.
+            const xmtp = await Client.create(signer, { env: 'production' });
+            console.log('[XMTP] Client initialized:', xmtp.address);
+            setClient(xmtp);
+
+            // Initial fetch of conversations
+            const convs = await xmtp.conversations.list();
+            setConversations(convs);
+        } catch (err) {
+            console.error('[XMTP] Initialization error:', err);
+            setError(err);
+        } finally {
+            setIsInitializing(false);
         }
     };
+
+    // Stream new conversations
+    useEffect(() => {
+        if (!client) return;
+
+        let isCancelled = false;
+        const streamConvs = async () => {
+            const stream = await client.conversations.stream();
+            for await (const conv of stream) {
+                if (isCancelled) break;
+                setConversations(prev => {
+                    const exists = prev.some(p => p.id === conv.id);
+                    if (exists) return prev;
+                    return [conv, ...prev];
+                });
+            }
+        };
+
+        streamConvs();
+        return () => { isCancelled = true; };
+    }, [client]);
 
     if (!client) {
         return (
             <div className="glass-card" style={{ textAlign: 'center', padding: '50px' }}>
                 <MessageSquare size={48} style={{ marginBottom: '20px', color: 'var(--primary)' }} />
-                <h3>Enable Decentralized Messaging</h3>
+                <h3>Enable Decentralized Messaging (XMTP V3)</h3>
                 <p style={{ color: 'var(--text-muted)', marginBottom: '20px' }}>
-                    Messages are encrypted and stored off-chain using the XMTP protocol.
+                    PolyLance uses XMTP V3 for secure, end-to-end encrypted messaging.
                 </p>
                 <button
                     onClick={handleInitialize}
                     className="btn-primary"
                     disabled={isInitializing || !signer}
                 >
-                    {isInitializing ? <Loader2 className="animate-spin" /> : signer ? 'Connect to XMTP' : 'Connect Wallet First'}
+                    {isInitializing ? <Loader2 className="animate-spin" /> : signer ? 'Connect to XMTP V3' : 'Connect Wallet First'}
                 </button>
                 {!signer && (
                     <p style={{ color: '#f59e0b', marginTop: '10px', fontSize: '0.9rem' }}>
@@ -48,7 +88,23 @@ export default function Chat() {
         <div className="grid" style={{ gridTemplateColumns: '300px 1fr', height: '70vh', gap: '20px' }}>
             <div className="glass-card" style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                 <h3>Conversations</h3>
-                <div style={{ display: 'flex', gap: '5px' }}>
+                <form
+                    style={{ display: 'flex', gap: '5px' }}
+                    onSubmit={async (e) => {
+                        e.preventDefault();
+                        if (peerAddress && client) {
+                            try {
+                                // In V3, creating a peer-to-peer conversation
+                                const conversation = await client.conversations.newConversation(peerAddress);
+                                setSelectedConversation(conversation);
+                                setPeerAddress('');
+                            } catch (err) {
+                                console.error('[XMTP] Error starting conversation:', err);
+                                alert('Error starting conversation: ' + err.message);
+                            }
+                        }
+                    }}
+                >
                     <input
                         type="text"
                         placeholder="Wallet Address"
@@ -57,22 +113,17 @@ export default function Chat() {
                         style={{ flex: 1, padding: '8px' }}
                     />
                     <button
+                        type="submit"
                         className="btn-primary"
                         style={{ padding: '8px 12px' }}
-                        onClick={() => {
-                            if (peerAddress) {
-                                setSelectedConversation({ peerAddress });
-                                setPeerAddress('');
-                            }
-                        }}
                     >
                         +
                     </button>
-                </div>
+                </form>
                 <div style={{ overflowY: 'auto', flex: 1, paddingRight: '5px' }}>
                     {conversations.map((conv, i) => (
                         <motion.div
-                            key={conv.peerAddress}
+                            key={conv.id}
                             initial={{ opacity: 0, x: -10 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: i * 0.05 }}
@@ -82,15 +133,15 @@ export default function Chat() {
                                 marginBottom: '8px',
                                 borderRadius: '12px',
                                 cursor: 'pointer',
-                                background: selectedConversation?.peerAddress === conv.peerAddress ? 'rgba(138, 43, 226, 0.15)' : 'rgba(255,255,255,0.03)',
+                                background: selectedConversation?.id === conv.id ? 'rgba(138, 43, 226, 0.15)' : 'rgba(255,255,255,0.03)',
                                 border: '1px solid',
-                                borderColor: selectedConversation?.peerAddress === conv.peerAddress ? 'var(--primary)' : 'transparent',
-                                color: selectedConversation?.peerAddress === conv.peerAddress ? 'var(--primary)' : 'inherit',
+                                borderColor: selectedConversation?.id === conv.id ? 'var(--primary)' : 'transparent',
+                                color: selectedConversation?.id === conv.id ? 'var(--primary)' : 'inherit',
                                 transition: 'all 0.2s ease'
                             }}
                         >
                             <div style={{ fontSize: '0.85rem', fontWeight: '600' }}>
-                                {conv.peerAddress.slice(0, 8)}...{conv.peerAddress.slice(-6)}
+                                {conv.peerAddress?.slice(0, 8) || 'Group'}...{conv.peerAddress?.slice(-6) || ''}
                             </div>
                         </motion.div>
                     ))}
@@ -99,7 +150,7 @@ export default function Chat() {
 
             <div className="glass-card" style={{ display: 'flex', flexDirection: 'column', padding: 0, overflow: 'hidden' }}>
                 {selectedConversation ? (
-                    <MessageContainer conversation={selectedConversation} />
+                    <MessageContainer conversation={selectedConversation} address={address} />
                 ) : (
                     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)' }}>
                         <MessageSquare size={48} style={{ opacity: 0.1, marginBottom: '20px' }} />
@@ -111,19 +162,64 @@ export default function Chat() {
     );
 }
 
-function MessageContainer({ conversation }) {
-    const { messages } = useMessages(conversation);
-    const { sendMessage } = useSendMessage();
+function MessageContainer({ conversation, address }) {
+    const [messages, setMessages] = useState([]);
     const [inputValue, setInputValue] = useState('');
-    const { address } = useAccount();
+    const [isLoading, setIsLoading] = useState(false);
+    const messagesEndRef = useRef(null);
 
-    useStreamMessages(conversation);
+    const scrollToBottom = () => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    };
+
+    // Fetch initial messages
+    useEffect(() => {
+        const fetchMessages = async () => {
+            setIsLoading(true);
+            try {
+                const msgs = await conversation.messages();
+                setMessages(msgs);
+            } catch (err) {
+                console.error('[XMTP] Error fetching messages:', err);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchMessages();
+    }, [conversation]);
+
+    // Stream new messages
+    useEffect(() => {
+        let isCancelled = false;
+        const streamMessages = async () => {
+            const stream = await conversation.streamMessages();
+            for await (const msg of stream) {
+                if (isCancelled) break;
+                setMessages(prev => {
+                    const exists = prev.some(p => p.id === msg.id);
+                    if (exists) return prev;
+                    return [...prev, msg];
+                });
+            }
+        };
+        streamMessages();
+        return () => { isCancelled = true; };
+    }, [conversation]);
+
+    useEffect(() => {
+        scrollToBottom();
+    }, [messages]);
 
     const handleSend = async (e) => {
         e.preventDefault();
         if (inputValue.trim()) {
-            await sendMessage(conversation, inputValue);
-            setInputValue('');
+            try {
+                await conversation.send(inputValue);
+                setInputValue('');
+            } catch (err) {
+                console.error('[XMTP] Send error:', err);
+                alert('Failed to send message: ' + err.message);
+            }
         }
     };
 
@@ -134,10 +230,11 @@ function MessageContainer({ conversation }) {
                     <div className="activity-icon" style={{ width: '32px', height: '32px' }}>
                         <User size={16} />
                     </div>
-                    <strong>{conversation.peerAddress.slice(0, 8)}...{conversation.peerAddress.slice(-6)}</strong>
+                    <strong>{conversation.peerAddress?.slice(0, 8) || 'Group Chat'}...{conversation.peerAddress?.slice(-6) || ''}</strong>
                 </div>
             </div>
             <div style={{ flex: 1, overflowY: 'auto', padding: '24px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                {isLoading && <div style={{ textAlign: 'center' }}><Loader2 className="animate-spin" /></div>}
                 {messages.map((msg, i) => {
                     const isMe = msg.senderAddress.toLowerCase() === address.toLowerCase();
                     return (
@@ -161,6 +258,7 @@ function MessageContainer({ conversation }) {
                         </motion.div>
                     );
                 })}
+                <div ref={messagesEndRef} />
             </div>
             <form onSubmit={handleSend} style={{ padding: '15px', display: 'flex', gap: '10px' }}>
                 <input

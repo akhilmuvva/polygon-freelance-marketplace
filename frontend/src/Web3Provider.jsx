@@ -26,7 +26,7 @@ function ConnectionLogger({ children }) {
     return children;
 }
 
-const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api';
+const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://20.30.75.78:3001/api';
 const queryClient = new QueryClient({
     defaultOptions: {
         queries: {
@@ -93,7 +93,7 @@ export function Web3Provider({ children }) {
 
         createMessage: ({ nonce, address, chainId }) => {
             console.log('[AUTH] createMessage called:', { nonce, address, chainId });
-            return new SiweMessage({
+            const message = new SiweMessage({
                 domain: window.location.hostname,
                 address,
                 statement: 'Sign in to PolyLance',
@@ -102,22 +102,25 @@ export function Web3Provider({ children }) {
                 chainId: Number(chainId),
                 nonce,
             });
+            const messageString = message.prepareMessage();
+            console.log('[AUTH] Prepared message string:', messageString);
+            return messageString;
         },
 
         getMessageBody: ({ message }) => {
-            console.log('[AUTH] getMessageBody preparing string...');
-            return message.prepareMessage();
+            console.log('[AUTH] getMessageBody called. message is:', typeof message);
+            return message; // Since createMessage now returns the string directly
         },
 
         verify: async ({ message, signature }) => {
-            console.log('[AUTH] verify called with signature:', signature ? signature.slice(0, 10) + '...' : 'null');
+            console.log('[AUTH] verify called. message type:', typeof message);
             try {
                 setAuthStatus('loading');
                 const verifyRes = await fetch(`${API_URL}/auth/verify`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        message: message.prepareMessage(),
+                        message, // This is now a string from createMessage
                         signature,
                     }),
                 });
