@@ -1,11 +1,24 @@
-// require("@nomicfoundation/hardhat-toolbox");
-require("@nomicfoundation/hardhat-ethers");
+require("@nomicfoundation/hardhat-toolbox");
 require("@openzeppelin/hardhat-upgrades");
 require("dotenv").config();
 
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
-    solidity: "0.8.20",
+    solidity: {
+        compilers: [
+            { version: "0.8.20" },
+            {
+                version: "0.8.24",
+                settings: {
+                    evmVersion: "cancun",
+                    optimizer: {
+                        enabled: true,
+                        runs: 200
+                    }
+                }
+            }
+        ]
+    },
     networks: {
         hardhat: {
             chainId: 1337,
