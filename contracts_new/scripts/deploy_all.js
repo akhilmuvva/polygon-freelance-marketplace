@@ -85,21 +85,39 @@ async function main() {
         console.log("FreelanceEscrow Proxy deployed to:", addresses.FreelanceEscrow);
         saveProgress();
 
-        // 4. Link PolyToken in Escrow
-        console.log("\n4. Configuring Escrow...");
-        // Re-fetch escrow instance if it was just deployed to ensure we have the correct proxy address
+        // 4. Deploy FreelanceSBT
+        console.log("\n4. Deploying FreelanceSBT...");
+        const FreelanceSBT = await ethers.getContractFactory("FreelanceSBT");
+        const sbt = await FreelanceSBT.deploy(deployer.address, addresses.FreelanceEscrow);
+        await sbt.waitForDeployment();
+        addresses.FreelanceSBT = await sbt.getAddress();
+        console.log("FreelanceSBT deployed to:", addresses.FreelanceSBT);
+        saveProgress();
+
+        // 5. Configure Escrow
+        console.log("\n5. Configuring Escrow...");
         const deployedEscrow = await ethers.getContractAt("FreelanceEscrow", addresses.FreelanceEscrow);
-        const owner = await deployedEscrow.owner();
-        console.log("Escrow Owner:", owner);
-        console.log("Deployer:", deployer.address);
-        console.log("PolyToken Address:", addresses.PolyToken);
 
-        if (owner !== deployer.address) {
-            console.log("Warning: Owner mismatch! Attempting to fix...");
-        }
-
+        // Link PolyToken
         await deployedEscrow.setPolyToken(addresses.PolyToken);
         console.log("Linked PolyToken to Escrow.");
+
+        // Link SBT
+        await deployedEscrow.setSBTContract(addresses.FreelanceSBT);
+        console.log("Linked FreelanceSBT to Escrow.");
+
+        // Whitelist PolyToken for payments
+        await deployedEscrow.setTokenWhitelist(addresses.PolyToken, true);
+        console.log("Whitelisted PolyToken for payments.");
+
+        // 6. Deploy Governance
+        console.log("\n6. Deploying FreelanceGovernance...");
+        const FreelanceGovernance = await ethers.getContractFactory("FreelanceGovernance");
+        const governance = await FreelanceGovernance.deploy(addresses.FreelanceSBT);
+        await governance.waitForDeployment();
+        addresses.FreelanceGovernance = await governance.getAddress();
+        console.log("FreelanceGovernance deployed to:", addresses.FreelanceGovernance);
+        saveProgress();
     }
 
     console.log("\n--- Deployment Summary ---");
@@ -107,20 +125,23 @@ async function main() {
     console.log("Network: ", network.name);
     console.log("PolyToken:           ", addresses.PolyToken);
     console.log("InsurancePool:       ", addresses.InsurancePool);
+    console.log("FreelanceSBT:       ", addresses.FreelanceSBT);
     console.log("FreelanceEscrow Proxy:", addresses.FreelanceEscrow);
+    console.log("FreelanceGovernance:  ", addresses.FreelanceGovernance);
     console.log("---------------------------\n");
 
     addresses.network = network.name;
-    addresses.chainId = network.chainId.toString();
+    const chainId = network.chainId.toString();
+    addresses.chainId = chainId;
     saveProgress();
 
-    // 5. Update frontend constants
+    // 7. Update frontend constants
     try {
         const frontendConfigPath = path.resolve(__dirname, "..", "..", "frontend", "src", "constants.js");
         if (fs.existsSync(frontendConfigPath)) {
             let content = fs.readFileSync(frontendConfigPath, 'utf8');
-            content = content.replace(/export const CONTRACT_ADDRESS = '.*';/, `export const CONTRACT_ADDRESS = '${escrowAddress}';`);
-            content = content.replace(/export const POLY_TOKEN_ADDRESS = '.*';/, `export const POLY_TOKEN_ADDRESS = '${polyTokenAddress}';`);
+            content = content.replace(/export const CONTRACT_ADDRESS = '.*';/, `export const CONTRACT_ADDRESS = '${addresses.FreelanceEscrow}';`);
+            content = content.replace(/export const POLY_TOKEN_ADDRESS = '.*';/, `export const POLY_TOKEN_ADDRESS = '${addresses.PolyToken}';`);
             fs.writeFileSync(frontendConfigPath, content);
             console.log("Updated frontend constants.js with new addresses.");
         }
