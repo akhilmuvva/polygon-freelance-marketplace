@@ -1,0 +1,7 @@
+{
+  "PolyToken": "0xC21Ec7c80a5aE80F15323E9eAD0D4A365A87F042",
+  "InsurancePool": "0xD4D852a4C3b7bfaeb46F96BcdB85570966a1F486",
+  "FreelanceEscrow": "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9",
+  "network": "hardhat",
+  "chainId": "1337"
+}

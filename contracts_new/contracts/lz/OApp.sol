@@ -6,6 +6,7 @@ abstract contract OApp {
     address public lzEndpoint;
     mapping(uint32 => bytes32) public peers;
 
+    /// @custom:oz-upgrades-unsafe-allow constructor
     constructor(address _endpoint) {
         lzEndpoint = _endpoint;
     }

@@ -1,0 +1,23 @@
+WARNING: You are currently using Node.js v22.19.0, which is not supported by Hardhat. This can lead to unexpected behavior. See https://hardhat.org/nodejs-versions
+
+
+Deploying contracts with the account: 0x25F6C8ed995C811E6c0ADb1D66A60830E8115e9A
+
+1. Deploying PolyToken...
+PolyToken deployed to: 0x4E9E5CF239932b820a16424F7f0cf8a55E8Aa0cB
+
+2. Deploying InsurancePool...
+InsurancePool deployed to: 0x360B6b194DF3c15B4AF5F0Ae6a5D04D06bedfD06
+
+3. Deploying FreelanceEscrow (UUPS Proxy)...
+ProviderError: insufficient funds for gas * price + value: balance 27056619846818902, tx cost 125609401483225120, overshot 98552781636406218
+    at HttpProvider.request (C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\contracts_new\node_modules\hardhat\src\internal\core\providers\http.ts:90:21)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at HardhatEthersSigner.sendTransaction (C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\contracts_new\node_modules\@nomicfoundation\hardhat-ethers\src\signers.ts:185:18)
+    at ContractFactory.deploy (C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\contracts_new\node_modules\ethers\src.ts\contract\factory.ts:111:24)
+    at ethersDeploy (C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\contracts_new\node_modules\@openzeppelin\hardhat-upgrades\src\utils\deploy.ts:36:28)
+    at deploy (C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\contracts_new\node_modules\@openzeppelin\hardhat-upgrades\src\utils\deploy.ts:28:12)
+    at C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\contracts_new\node_modules\@openzeppelin\hardhat-upgrades\src\utils\deploy-impl.ts:127:49
+    at resumeOrDeploy (C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\contracts_new\node_modules\@openzeppelin\upgrades-core\src\deployment.ts:76:24)
+    at C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\contracts_new\node_modules\@openzeppelin\upgrades-core\src\impl-store.ts:63:23
+    at Manifest.lockedRun (C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\contracts_new\node_modules\@openzeppelin\upgrades-core\src\manifest.ts:282:14)

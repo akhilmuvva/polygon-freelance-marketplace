@@ -1,0 +1,23 @@
+WARNING: You are currently using Node.js v22.19.0, which is not supported by Hardhat. This can lead to unexpected behavior. See https://hardhat.org/nodejs-versions
+
+
+Deploying contracts with the account: 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
+
+1. Deploying PolyToken...
+PolyToken deployed to: 0x5FbDB2315678afecb367f032d93F642f64180aa3
+
+2. Deploying InsurancePool...
+InsurancePool deployed to: 0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512
+
+3. Deploying FreelanceEscrow (UUPS Proxy)...
+TypeError: bad address checksum (argument="address", value="0x6EDDE65947B348035F7dB70163693e6F60416173", code=INVALID_ARGUMENT, version=6.16.0)
+    at makeError (C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\contracts_new\node_modules\ethers\src.ts\utils\errors.ts:691:21)
+    at assert (C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\contracts_new\node_modules\ethers\src.ts\utils\errors.ts:719:25)
+    at assertArgument (C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\contracts_new\node_modules\ethers\src.ts\utils\errors.ts:731:5)
+    at Proxy.getAddress (C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\contracts_new\node_modules\ethers\src.ts\address\address.ts:131:23)
+    at main (C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\contracts_new\scripts\deploy_all.js:29:31) {
+  code: 'INVALID_ARGUMENT',
+  argument: 'address',
+  value: '0x6EDDE65947B348035F7dB70163693e6F60416173',
+  shortMessage: 'bad address checksum'
+}

@@ -39,6 +39,8 @@ contract FreelanceEscrow is
     address private _trustedForwarder; 
     address public ccipRouter; 
     address public insurancePool;
+    address public polyToken;
+    uint256 public constant REWARD_AMOUNT = 100 * 10**18;
     
     uint256 public constant FREELANCER_STAKE_PERCENT = 10; 
     uint256 public constant INSURANCE_FEE_BPS = 100; // 1%
@@ -149,16 +151,15 @@ contract FreelanceEscrow is
     }
 
     function _msgSender() internal view virtual override(ContextUpgradeable) returns (address sender) {
-        if (forwarder == _trustedForwarder) {
+        if (msg.sender == _trustedForwarder && _trustedForwarder != address(0)) {
              assembly { sender := shr(96, calldataload(sub(calldatasize(), 20))) }
         } else {
             return super._msgSender();
         }
     }
     
-    address private forwarder; // helper for msgSender logic
     function isTrustedForwarder(address _forwarder) public view returns (bool) {
-        return _forwarder == _trustedForwarder;
+        return _forwarder == _trustedForwarder && _trustedForwarder != address(0);
     }
 
     function _authorizeUpgrade(address newImplementation) internal override onlyOwner {}
@@ -170,6 +171,10 @@ contract FreelanceEscrow is
     // --- Admin ---
     function setInsurancePool(address _pool) external onlyOwner {
         insurancePool = _pool;
+    }
+
+    function setPolyToken(address _token) external onlyOwner {
+        polyToken = _token;
     }
 
     function allowlistSourceChain(uint64 _sourceChainSelector, bool allowed) external onlyOwner {
@@ -251,18 +256,16 @@ contract FreelanceEscrow is
         address sender = _msgSender();
         Job storage job = jobs[jobId];
         require(sender == job.client, "Not client");
-        require(job.status == JobStatus.Ongoing, "Not ongoing");
+        require(job.status == JobStatus.Ongoing || job.status == JobStatus.Accepted, "Invalid status");
         require(!job.paid, "Paid");
 
         job.paid = true;
         job.status = JobStatus.Completed;
 
-        // Calculate Fees
         uint256 insuranceFee = (job.amount * INSURANCE_FEE_BPS) / 10000;
         uint256 remainingAmount = job.amount - job.totalPaidOut - insuranceFee;
         uint256 totalPayout = remainingAmount + job.freelancerStake;
 
-        // Handle Insurance Pool
         if (insuranceFee > 0 && insurancePool != address(0)) {
             if (job.token == address(0)) {
                 IInsurancePool(insurancePool).depositNative{value: insuranceFee}();
@@ -274,21 +277,108 @@ contract FreelanceEscrow is
         }
 
         if (totalPayout > 0) {
-            if (job.token == address(0)) {
-                payable(job.freelancer).transfer(totalPayout);
-            } else {
-                IERC20(job.token).transfer(job.freelancer, totalPayout);
-            }
+            _sendFunds(job.freelancer, job.token, totalPayout);
         }
 
-        // NFT Minting
         uint256 tokenId = _nextTokenId++;
         _safeMint(job.freelancer, tokenId);
         _setTokenURI(tokenId, job.resultUri);
         _setTokenRoyalty(tokenId, job.freelancer, 500);
 
+        _rewardParties(jobId);
+
         emit FundsReleased(jobId, job.freelancer, totalPayout, tokenId);
     }
 
-    // [Remainder of contract: acceptJob, submitWork, submitReview, dispute, etc. remain structurally similar but would be included in full implementation]
+    function acceptJob(uint256 jobId) external payable nonReentrant {
+        Job storage job = jobs[jobId];
+        require(job.status == JobStatus.Created, "Not created");
+        require(_msgSender() == job.freelancer, "Not freelancer");
+
+        uint256 stake = (job.amount * FREELANCER_STAKE_PERCENT) / 100;
+        if (job.token == address(0)) {
+            require(msg.value == stake, "Stake mismatch");
+        } else {
+            IERC20(job.token).transferFrom(_msgSender(), address(this), stake);
+        }
+
+        job.freelancerStake = stake;
+        job.status = JobStatus.Accepted;
+        emit JobAccepted(jobId, _msgSender(), stake);
+    }
+
+    function submitWork(uint256 jobId, string calldata resultUri) external nonReentrant {
+        Job storage job = jobs[jobId];
+        require(job.status == JobStatus.Accepted, "Not accepted");
+        require(_msgSender() == job.freelancer, "Not freelancer");
+
+        job.resultUri = resultUri;
+        job.status = JobStatus.Ongoing;
+        emit WorkSubmitted(jobId, resultUri);
+    }
+
+    // Kleros Arbitration
+    function dispute(uint256 jobId) external payable nonReentrant {
+        Job storage job = jobs[jobId];
+        require(job.status == JobStatus.Ongoing || job.status == JobStatus.Accepted, "Invalid status");
+        require(_msgSender() == job.client || _msgSender() == job.freelancer, "Not party");
+
+        uint256 cost = IArbitrator(arbitrator).arbitrationCost("");
+        require(msg.value >= cost, "Cost not met");
+
+        uint256 disputeId = IArbitrator(arbitrator).createDispute{value: msg.value}(2, "");
+        job.status = JobStatus.Disputed;
+        disputeIdToJobId[disputeId] = jobId;
+
+        emit JobDisputed(jobId);
+    }
+
+    function rule(uint256 _disputeID, uint256 _ruling) external {
+        require(msg.sender == arbitrator, "Only arbitrator");
+        uint256 jobId = disputeIdToJobId[_disputeID];
+        Job storage job = jobs[jobId];
+        require(job.status == JobStatus.Disputed, "Not disputed");
+
+        job.paid = true;
+        if (_ruling == 1) { // Refund Client
+            job.status = JobStatus.Cancelled;
+            _sendFunds(job.client, job.token, job.amount + job.freelancerStake);
+        } else { // Pay Freelancer
+            job.status = JobStatus.Completed;
+            _sendFunds(job.freelancer, job.token, job.amount + job.freelancerStake);
+            _rewardParties(jobId);
+        }
+        emit Ruling(IArbitrator(arbitrator), _disputeID, _ruling);
+    }
+
+    function _sendFunds(address to, address token, uint256 amount) internal {
+        if (token == address(0)) {
+            payable(to).transfer(amount);
+        } else {
+            IERC20(token).transfer(to, amount);
+        }
+    }
+
+    function _rewardParties(uint256 jobId) internal {
+        if (polyToken == address(0)) return;
+        Job storage job = jobs[jobId];
+        IPolyToken(polyToken).mint(job.freelancer, REWARD_AMOUNT);
+        IPolyToken(polyToken).mint(job.client, REWARD_AMOUNT / 2);
+    }
+
+    function arbitrationCost() public view returns (uint256) {
+        return IArbitrator(arbitrator).arbitrationCost("");
+    }
+
+    mapping(uint256 => uint256) public disputeIdToJobId;
+    event Ruling(IArbitrator indexed _arbitrator, uint256 indexed _disputeID, uint256 _ruling);
+}
+
+interface IArbitrator {
+    function createDispute(uint256 _choices, bytes calldata _extraData) external payable returns (uint256 disputeID);
+    function arbitrationCost(bytes calldata _extraData) external view returns (uint256 cost);
+}
+
+interface IArbitrable {
+    function rule(uint256 _disputeID, uint256 _ruling) external;
 }
