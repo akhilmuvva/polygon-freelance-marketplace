@@ -14,7 +14,7 @@ import PrivacyPolicy from './components/PrivacyPolicy';
 import { NotificationManager } from './components/NotificationManager';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { useAccount } from 'wagmi';
+import { useAccount, useBalance } from 'wagmi';
 
 function App() {
   const { address } = useAccount();
@@ -96,7 +96,89 @@ function App() {
             <MessageSquare size={18} /> Messenger
           </button>
           <div style={{ marginLeft: '10px', borderLeft: '1px solid var(--glass-border)', paddingLeft: '24px' }}>
-            <ConnectButton showBalance={false} chainStatus="icon" accountStatus="avatar" />
+            <ConnectButton.Custom>
+              {({
+                account,
+                chain,
+                openAccountModal,
+                openChainModal,
+                openConnectModal,
+                authenticationStatus,
+                mounted,
+              }) => {
+                const ready = mounted && authenticationStatus !== 'loading';
+                const connected =
+                  ready &&
+                  account &&
+                  chain &&
+                  (!authenticationStatus ||
+                    authenticationStatus === 'authenticated');
+
+                return (
+                  <div
+                    {...(!ready && {
+                      'aria-hidden': true,
+                      'style': {
+                        opacity: 0,
+                        pointerEvents: 'none',
+                        userSelect: 'none',
+                      },
+                    })}
+                  >
+                    {(() => {
+                      if (!connected) {
+                        return (
+                          <button onClick={openConnectModal} className="btn-primary" style={{ padding: '8px 20px', fontSize: '0.9rem' }}>
+                            Connect Wallet
+                          </button>
+                        );
+                      }
+
+                      if (chain.unsupported) {
+                        return (
+                          <button onClick={openChainModal} className="btn-secondary" style={{ borderColor: '#ef4444', color: '#ef4444' }}>
+                            Wrong Network
+                          </button>
+                        );
+                      }
+
+                      return (
+                        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                            <span style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--primary)' }}>
+                              {account.displayBalance ? account.displayBalance : ''}
+                            </span>
+                            <span style={{ fontSize: '0.75rem', opacity: 0.6 }}>
+                              {account.displayName}
+                            </span>
+                          </div>
+                          <button
+                            onClick={openAccountModal}
+                            type="button"
+                            style={{
+                              background: 'var(--glass-bg)',
+                              border: '1px solid var(--glass-border)',
+                              borderRadius: '12px',
+                              padding: '4px',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center'
+                            }}
+                          >
+                            <img
+                              src={`https://api.dicebear.com/7.x/identicon/svg?seed=${account.address}`}
+                              alt="avatar"
+                              style={{ width: '32px', height: '32px', borderRadius: '8px' }}
+                            />
+                          </button>
+                        </div>
+                      );
+                    })()}
+                  </div>
+                );
+              }}
+            </ConnectButton.Custom>
           </div>
         </div>
       </nav>

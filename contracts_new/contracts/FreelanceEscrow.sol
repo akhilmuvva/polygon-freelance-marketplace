@@ -71,6 +71,25 @@ contract FreelanceEscrow is
     mapping(uint64 => bool) public allowlistedSourceChains;
     mapping(address => bool) public allowlistedSenders;
 
+    error NotAuthorized();
+    error SelfHiring();
+    error TokenNotWhitelisted();
+    error InsufficientPayment();
+    error InvalidAmount();
+    error JobAlreadyAssigned();
+    error InvalidStatus();
+    error AlreadyApplied();
+    error InsufficientStake();
+    error NoRefundAvailable();
+    error AlreadyPaid();
+    error MilestoneAlreadyReleased();
+    error InvalidMilestone();
+    error InvalidRating();
+    error DeadlineNotPassed();
+    error TransferFailed();
+    error InvalidAddress();
+    error FeeTooHigh();
+
     enum JobStatus { Created, Accepted, Ongoing, Disputed, Arbitration, Completed, Cancelled }
 
     struct Milestone {
@@ -119,7 +138,7 @@ contract FreelanceEscrow is
     event JobApplied(uint256 indexed jobId, address indexed freelancer, uint256 stake);
     event FreelancerSelected(uint256 indexed jobId, address indexed freelancer);
     event JobAccepted(uint256 indexed jobId, address indexed freelancer, uint256 stake);
-    event WorkSubmitted(uint256 indexed jobId, string ipfsHash);
+    event WorkSubmitted(uint256 indexed jobId, address indexed freelancer, string ipfsHash);
     event FundsReleased(uint256 indexed jobId, address indexed freelancer, uint256 amount, uint256 nftId);
     event MilestoneReleased(uint256 indexed jobId, uint256 indexed milestoneId, uint256 amount);
     event MilestonesDefined(uint256 indexed jobId, uint256[] amounts, string[] ipfsHashes);
@@ -127,10 +146,10 @@ contract FreelanceEscrow is
     event JobDisputed(uint256 indexed jobId);
     event DisputeRaised(uint256 indexed jobId, address indexed raiser);
     event Ruling(address indexed _arbitrator, uint256 indexed _disputeID, uint256 _ruling);
-    event ReviewSubmitted(uint256 indexed jobId, address indexed reviewer, uint8 rating, string comment);
+    event ReviewSubmitted(uint256 indexed jobId, address indexed reviewer, uint8 rating, string ipfsHash);
     event CCIPMessageReceived(bytes32 indexed messageId, uint64 indexed sourceChainSelector, address sender);
     event InsurancePaid(uint256 indexed jobId, uint256 amount);
-    event RefundClaimed(address indexed user, address indexed token, uint256 amount);
+    event RefundClaimed(address indexed user, address indexed token, uint256 indexed amount);
     event VaultUpdated(address indexed oldVault, address indexed newVault);
 
     /// @custom:oz-upgrades-unsafe-allow constructor
@@ -184,13 +203,13 @@ contract FreelanceEscrow is
     }
 
     function setVault(address _vault) external onlyOwner {
-        require(_vault != address(0), "Invalid address");
+        if (_vault == address(0)) revert InvalidAddress();
         emit VaultUpdated(vault, _vault);
         vault = _vault;
     }
 
     function setPlatformFee(uint256 _bps) external onlyOwner {
-        require(_bps <= 1000, "Fee too high");
+        if (_bps > 1000) revert FeeTooHigh();
         platformFeeBps = _bps;
     }
 
@@ -221,10 +240,10 @@ contract FreelanceEscrow is
     }
 
     function ccipReceive(Client.Any2EVMMessage calldata message) external override {
-        require(msg.sender == ccipRouter, "Not router");
-        require(allowlistedSourceChains[message.sourceChainSelector], "Chain not allowed");
+        if (msg.sender != ccipRouter) revert NotAuthorized();
+        if (!allowlistedSourceChains[message.sourceChainSelector]) revert NotAuthorized();
         address sender = abi.decode(message.sender, (address));
-        require(allowlistedSenders[sender], "Sender not allowed");
+        if (!allowlistedSenders[sender]) revert NotAuthorized();
 
         (address freelancer, string memory ipfsHash, uint256 deadline) = abi.decode(message.data, (address, string, uint256));
         address token = message.destTokenAmounts[0].token;
@@ -242,7 +261,7 @@ contract FreelanceEscrow is
         string memory _ipfsHash,
         uint256 deadline
     ) internal {
-        require(freelancer == address(0) || freelancer != client, "Self-hiring");
+        if (freelancer != address(0) && freelancer == client) revert SelfHiring();
 
         jobCount++;
         jobs[jobCount] = Job({
@@ -265,7 +284,8 @@ contract FreelanceEscrow is
 
     function saveIPFSHash(uint256 jobId, string calldata ipfsHash) external {
         Job storage job = jobs[jobId];
-        require(_msgSender() == job.client || _msgSender() == job.freelancer, "Not authorized");
+        address sender = _msgSender();
+        if (sender != job.client && sender != job.freelancer) revert NotAuthorized();
         job.ipfsHash = ipfsHash;
     }
 
@@ -277,10 +297,10 @@ contract FreelanceEscrow is
         uint256 durationDays
     ) external payable whenNotPaused nonReentrant {
         if (token != address(0)) {
-            require(whitelistedTokens[token], "Token not whitelisted");
+            if (!whitelistedTokens[token]) revert TokenNotWhitelisted();
             IERC20(token).safeTransferFrom(_msgSender(), address(this), amount);
         } else {
-            require(msg.value >= amount, "Insufficient MATIC");
+            if (msg.value < amount) revert InsufficientPayment();
         }
         
         uint256 deadline = durationDays > 0 ? block.timestamp + (durationDays * 1 days) : 0;
@@ -296,29 +316,32 @@ contract FreelanceEscrow is
         string[] memory milestoneIpfsHashes
     ) external payable whenNotPaused nonReentrant {
         uint256 totalMilestoneAmount = 0;
-        for (uint256 i = 0; i < milestoneAmounts.length; i++) {
+        uint256 len = milestoneAmounts.length;
+        for (uint256 i = 0; i < len; ) {
             totalMilestoneAmount += milestoneAmounts[i];
+            unchecked { ++i; }
         }
-        require(totalMilestoneAmount == amount, "Amounts mismatch");
+        if (totalMilestoneAmount != amount) revert InvalidAmount();
 
         if (token != address(0)) {
-            require(whitelistedTokens[token], "Token not whitelisted");
+            if (!whitelistedTokens[token]) revert TokenNotWhitelisted();
             IERC20(token).safeTransferFrom(_msgSender(), address(this), amount);
         } else {
-            require(msg.value >= amount, "Insufficient MATIC");
+            if (msg.value < amount) revert InsufficientPayment();
         }
 
-        uint256 deadline = 0; // Default to 0 for milestones unless specified
+        uint256 deadline = 0; 
         _createJobInternal(_msgSender(), freelancer, token, amount, _ipfsHash, deadline);
         
         uint256 jobId = jobCount;
-        jobs[jobId].milestoneCount = milestoneAmounts.length;
-        for (uint256 i = 0; i < milestoneAmounts.length; i++) {
+        jobs[jobId].milestoneCount = len;
+        for (uint256 i = 0; i < len; ) {
             jobMilestones[jobId][i] = Milestone({
                 amount: milestoneAmounts[i],
                 ipfsHash: milestoneIpfsHashes[i],
                 isReleased: false
             });
+            unchecked { ++i; }
         }
         emit MilestonesDefined(jobId, milestoneAmounts, milestoneIpfsHashes);
     }
@@ -329,25 +352,26 @@ contract FreelanceEscrow is
      */
     function applyForJob(uint256 jobId) external payable nonReentrant {
         Job storage job = jobs[jobId];
-        require(job.status == JobStatus.Created, "Not in application phase");
-        require(job.freelancer == address(0), "Job already assigned");
-        require(_msgSender() != job.client, "Client cannot apply");
-        require(!hasApplied[jobId][_msgSender()], "Already applied");
+        if (job.status != JobStatus.Created) revert InvalidStatus();
+        if (job.freelancer != address(0)) revert JobAlreadyAssigned();
+        address sender = _msgSender();
+        if (sender == job.client) revert NotAuthorized();
+        if (hasApplied[jobId][sender]) revert AlreadyApplied();
 
         uint256 stake = (job.amount * APPLICATION_STAKE_PERCENT) / 100;
         if (job.token != address(0)) {
-            IERC20(job.token).safeTransferFrom(_msgSender(), address(this), stake);
+            IERC20(job.token).safeTransferFrom(sender, address(this), stake);
         } else {
-            require(msg.value >= stake, "Insufficient MATIC stake");
+            if (msg.value < stake) revert InsufficientStake();
         }
 
         jobApplications[jobId].push(Application({
-            freelancer: _msgSender(),
+            freelancer: sender,
             stake: stake
         }));
-        hasApplied[jobId][_msgSender()] = true;
+        hasApplied[jobId][sender] = true;
 
-        emit JobApplied(jobId, _msgSender(), stake);
+        emit JobApplied(jobId, sender, stake);
     }
 
     /**
@@ -356,22 +380,23 @@ contract FreelanceEscrow is
      */
     function pickFreelancer(uint256 jobId, address freelancer) external whenNotPaused nonReentrant {
         Job storage job = jobs[jobId];
-        require(_msgSender() == job.client, "Only client can pick");
-        require(job.status == JobStatus.Created, "Invalid status");
-        require(job.freelancer == address(0), "Already assigned");
-        require(hasApplied[jobId][freelancer], "Freelancer didn't apply");
+        if (_msgSender() != job.client) revert NotAuthorized();
+        if (job.status != JobStatus.Created) revert InvalidStatus();
+        if (job.freelancer != address(0)) revert JobAlreadyAssigned();
+        if (!hasApplied[jobId][freelancer]) revert NotAuthorized();
 
         job.freelancer = freelancer;
         job.status = JobStatus.Accepted;
 
         Application[] storage apps = jobApplications[jobId];
-        for (uint256 i = 0; i < apps.length; i++) {
+        uint256 len = apps.length;
+        for (uint256 i = 0; i < len; ) {
             if (apps[i].freelancer == freelancer) {
                 job.freelancerStake = apps[i].stake;
             } else {
-                // Pull-over-Push: accrue refund instead of sending
                 pendingRefunds[apps[i].freelancer][job.token] += apps[i].stake;
             }
+            unchecked { ++i; }
         }
 
         emit FreelancerSelected(jobId, freelancer);
@@ -380,7 +405,7 @@ contract FreelanceEscrow is
 
     function claimRefund(address token) external nonReentrant {
         uint256 amount = pendingRefunds[_msgSender()][token];
-        require(amount > 0, "No refund available");
+        if (amount == 0) revert NoRefundAvailable();
 
         pendingRefunds[_msgSender()][token] = 0;
         _sendFunds(_msgSender(), token, amount);
@@ -390,9 +415,9 @@ contract FreelanceEscrow is
 
     function releaseFunds(uint256 jobId) external whenNotPaused nonReentrant {
         Job storage job = jobs[jobId];
-        require(_msgSender() == job.client, "Not client");
-        require(job.status == JobStatus.Ongoing || job.status == JobStatus.Accepted, "Invalid status");
-        require(!job.paid, "Paid");
+        if (_msgSender() != job.client) revert NotAuthorized();
+        if (job.status != JobStatus.Ongoing && job.status != JobStatus.Accepted) revert InvalidStatus();
+        if (job.paid) revert AlreadyPaid();
 
         job.paid = true;
         job.status = JobStatus.Completed;
@@ -431,11 +456,11 @@ contract FreelanceEscrow is
 
     function releaseMilestone(uint256 jobId, uint256 milestoneId) external whenNotPaused nonReentrant {
         Job storage job = jobs[jobId];
-        require(_msgSender() == job.client, "Not client");
-        require(milestoneId < job.milestoneCount, "Invalid milestone");
+        if (_msgSender() != job.client) revert NotAuthorized();
+        if (milestoneId >= job.milestoneCount) revert InvalidMilestone();
         
         Milestone storage m = jobMilestones[jobId][milestoneId];
-        require(!m.isReleased, "Already released");
+        if (m.isReleased) revert MilestoneAlreadyReleased();
 
         m.isReleased = true;
         job.totalPaidOut += m.amount;
@@ -446,15 +471,16 @@ contract FreelanceEscrow is
 
     function acceptJob(uint256 jobId) external payable nonReentrant {
         Job storage job = jobs[jobId];
-        require(job.status == JobStatus.Created, "Not created");
-        require(job.freelancer != address(0), "No freelancer assigned");
-        require(_msgSender() == job.freelancer, "Not freelancer");
+        if (job.status != JobStatus.Created) revert InvalidStatus();
+        if (job.freelancer == address(0)) revert InvalidStatus();
+        address sender = _msgSender();
+        if (sender != job.freelancer) revert NotAuthorized();
 
         uint256 stake = (job.amount * FREELANCER_STAKE_PERCENT) / 100;
         if (job.token != address(0)) {
-            IERC20(job.token).safeTransferFrom(_msgSender(), address(this), stake);
+            IERC20(job.token).safeTransferFrom(sender, address(this), stake);
         } else {
-            require(msg.value >= stake, "Insufficient MATIC stake");
+            if (msg.value < stake) revert InsufficientStake();
         }
 
         job.freelancerStake = stake;
@@ -464,18 +490,20 @@ contract FreelanceEscrow is
 
     function submitWork(uint256 jobId, string calldata ipfsHash) external nonReentrant {
         Job storage job = jobs[jobId];
-        require(job.status == JobStatus.Accepted, "Not accepted");
-        require(_msgSender() == job.freelancer, "Not freelancer");
+        if (job.status != JobStatus.Accepted) revert InvalidStatus();
+        address sender = _msgSender();
+        if (sender != job.freelancer) revert NotAuthorized();
 
         job.ipfsHash = ipfsHash;
         job.status = JobStatus.Ongoing;
-        emit WorkSubmitted(jobId, ipfsHash);
+        emit WorkSubmitted(jobId, sender, ipfsHash);
     }
 
     function dispute(uint256 jobId) external payable nonReentrant {
         Job storage job = jobs[jobId];
-        require(job.status == JobStatus.Ongoing || job.status == JobStatus.Accepted, "Invalid status");
-        require(_msgSender() == job.client || _msgSender() == job.freelancer, "Not authorized");
+        if (job.status != JobStatus.Ongoing && job.status != JobStatus.Accepted) revert InvalidStatus();
+        address sender = _msgSender();
+        if (sender != job.client && sender != job.freelancer) revert NotAuthorized();
 
         job.status = JobStatus.Arbitration;
         emit DisputeRaised(jobId, _msgSender());
@@ -483,7 +511,7 @@ contract FreelanceEscrow is
 
     function resolveDispute(uint256 jobId, address winner, uint256 freelancerPayout) external onlyOwner nonReentrant {
         Job storage job = jobs[jobId];
-        require(job.status == JobStatus.Arbitration, "Not in arbitration");
+        if (job.status != JobStatus.Arbitration) revert InvalidStatus();
 
         job.paid = true;
         job.status = JobStatus.Completed;
@@ -501,9 +529,9 @@ contract FreelanceEscrow is
 
     function submitReview(uint256 jobId, uint8 rating, string calldata ipfsHash) external nonReentrant {
         Job storage job = jobs[jobId];
-        require(job.status == JobStatus.Completed, "Job not completed");
-        require(_msgSender() == job.client, "Only client can review");
-        require(rating >= 1 && rating <= 5, "Invalid rating");
+        if (job.status != JobStatus.Completed) revert InvalidStatus();
+        if (_msgSender() != job.client) revert NotAuthorized();
+        if (rating < 1 || rating > 5) revert InvalidRating();
 
         reviews[jobId] = Review({
             rating: rating,
@@ -518,10 +546,10 @@ contract FreelanceEscrow is
     }
 
     function rule(uint256 _disputeID, uint256 _ruling) external nonReentrant {
-        require(msg.sender == arbitrator, "Only arbitrator");
+        if (msg.sender != arbitrator) revert NotAuthorized();
         uint256 jobId = disputeIdToJobId[_disputeID];
         Job storage job = jobs[jobId];
-        require(job.status == JobStatus.Disputed, "Not disputed");
+        if (job.status != JobStatus.Disputed) revert InvalidStatus();
 
         job.paid = true;
         if (_ruling == 1) { // Refund Client
@@ -538,7 +566,7 @@ contract FreelanceEscrow is
     function _sendFunds(address to, address token, uint256 amount) internal {
         if (token == address(0)) {
             (bool success, ) = payable(to).call{value: amount}("");
-            require(success, "Transfer failed");
+            if (!success) revert TransferFailed();
         } else {
             IERC20(token).safeTransfer(to, amount);
         }
@@ -557,10 +585,10 @@ contract FreelanceEscrow is
      */
     function refundExpiredJob(uint256 jobId) external nonReentrant {
         Job storage job = jobs[jobId];
-        require(job.client == _msgSender(), "Only client");
-        require(job.deadline > 0 && block.timestamp > job.deadline, "Deadline not passed");
-        require(job.status == JobStatus.Created || job.status == JobStatus.Accepted, "Invalid status for refund");
-        require(!job.paid, "Already paid");
+        if (job.client != _msgSender()) revert NotAuthorized();
+        if (job.deadline == 0 || block.timestamp <= job.deadline) revert DeadlineNotPassed();
+        if (job.status != JobStatus.Created && job.status != JobStatus.Accepted) revert InvalidStatus();
+        if (job.paid) revert AlreadyPaid();
 
         job.paid = true;
         job.status = JobStatus.Cancelled;

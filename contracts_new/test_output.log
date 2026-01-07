@@ -1,0 +1,35 @@
+WARNING: You are currently using Node.js v22.19.0, which is not supported by Hardhat. This can lead to unexpected behavior. See https://hardhat.org/nodejs-versions
+
+
+Warning: Function state mutability can be restricted to pure
+  --> contracts/test/Invariants.sol:11:5:
+   |
+11 |     function echidna_escrow_balance_safety() public view returns (bool) {
+   |     ^ (Relevant source part starts here and spans across multiple lines).
+
+
+Compiled 2 Solidity files successfully (evm target: cancun).
+
+
+  FreelanceEscrow Verification
+    Γ£ö Should initialize correctly and grant roles
+    Γ£ö Should create a job with milestones and release them
+    Γ£ö Should deduct platform fees upon full fund release
+    Γ£ö Should allow client to reclaim funds after deadline
+
+  FreelanceEscrow Production Features
+    Γ£ö Should handle pull-based refunds for unselected freelancers (66ms)
+    Γ£ö Should verify setVault and role-based access (105ms)
+
+  PolyToken
+    Deployment
+      Γ£ö Should set the right owner
+      Γ£ö Should assign the total supply of tokens to the owner
+      Γ£ö Should have a total supply of 1 billion
+    Transactions
+      Γ£ö Should transfer tokens between accounts
+      Γ£ö Should fail if sender doesn't have enough tokens
+
+
+  11 passing (2s)
+

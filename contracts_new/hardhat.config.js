@@ -1,5 +1,6 @@
 require("@nomicfoundation/hardhat-toolbox");
 require("@openzeppelin/hardhat-upgrades");
+require("solidity-docgen");
 require("dotenv").config();
 
 /** @type import('hardhat/config').HardhatUserConfig */
@@ -59,5 +60,9 @@ module.exports = {
                 }
             }
         ]
+    },
+    docgen: {
+        outputDir: 'docs',
+        pages: 'files',
     }
 };

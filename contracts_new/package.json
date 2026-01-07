@@ -4,7 +4,8 @@
   "description": "",
   "main": "hardhat.config.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "docs": "npx hardhat docgen"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-chai-matchers": "^2.1.0",
@@ -26,6 +27,7 @@
     "hardhat": "^2.21.0",
     "hardhat-gas-reporter": "^1.0.10",
     "solidity-coverage": "^0.8.17",
+    "solidity-docgen": "^0.6.0-beta.36",
     "ts-node": "^10.9.2",
     "typechain": "^8.3.2",
     "typescript": "^5.9.3"
