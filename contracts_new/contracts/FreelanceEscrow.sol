@@ -4,11 +4,13 @@ pragma solidity ^0.8.20;
 import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721URIStorageUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/common/ERC2981Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 import "./ccip/Client.sol";
 import "./ccip/IAny2EVMMessageReceiver.sol";
@@ -36,11 +38,16 @@ contract FreelanceEscrow is
     ERC721URIStorageUpgradeable, 
     ERC2981Upgradeable, 
     OwnableUpgradeable, 
+    AccessControlUpgradeable,
     ReentrancyGuardUpgradeable, 
     UUPSUpgradeable,
     IAny2EVMMessageReceiver,
     OApp
 {
+    using SafeERC20 for IERC20;
+
+    bytes32 public constant ARBITRATOR_ROLE = keccak256("ARBITRATOR_ROLE");
+    bytes32 public constant MANAGER_ROLE = keccak256("MANAGER_ROLE");
     uint256 private _nextTokenId;
 
     address public arbitrator;
@@ -115,7 +122,7 @@ contract FreelanceEscrow is
     event InsurancePaid(uint256 indexed jobId, uint256 amount);
 
     /// @custom:oz-upgrades-unsafe-allow constructor
-    constructor(address _lzEndpoint) OApp(_lzEndpoint) {
+    constructor() {
         _disableInitializers();
     }
 
@@ -123,14 +130,21 @@ contract FreelanceEscrow is
         address initialOwner, 
         address trustedForwarder, 
         address _ccipRouter,
-        address _insurancePool
+        address _insurancePool,
+        address _lzEndpoint
     ) public initializer {
         __ERC721_init("FreelanceWork", "FWORK");
         __ERC721URIStorage_init();
         __ERC2981_init();
         __Ownable_init(initialOwner);
+        __AccessControl_init();
         __ReentrancyGuard_init();
         __UUPSUpgradeable_init();
+        __OApp_init(_lzEndpoint);
+
+        _grantRole(DEFAULT_ADMIN_ROLE, initialOwner);
+        _grantRole(ARBITRATOR_ROLE, initialOwner);
+        _grantRole(MANAGER_ROLE, initialOwner);
 
         arbitrator = initialOwner;
         _trustedForwarder = trustedForwarder;
@@ -168,7 +182,7 @@ contract FreelanceEscrow is
     
     function _authorizeUpgrade(address newImplementation) internal override onlyOwner {}
 
-    function supportsInterface(bytes4 interfaceId) public view override(ERC721URIStorageUpgradeable, ERC2981Upgradeable) returns (bool) {
+    function supportsInterface(bytes4 interfaceId) public view override(ERC721URIStorageUpgradeable, ERC2981Upgradeable, AccessControlUpgradeable) returns (bool) {
         return interfaceId == type(IAny2EVMMessageReceiver).interfaceId || super.supportsInterface(interfaceId);
     }
 
@@ -312,6 +326,8 @@ contract FreelanceEscrow is
         uint256 tokenId = _nextTokenId++;
         _safeMint(job.freelancer, tokenId);
         _setTokenURI(tokenId, job.ipfsHash);
+        
+        _rewardParties(jobId);
 
         emit FundsReleased(jobId, job.freelancer, totalPayout, tokenId);
     }
@@ -370,12 +386,20 @@ contract FreelanceEscrow is
         } else { // Pay Freelancer
             job.status = JobStatus.Completed;
             _sendFunds(job.freelancer, job.token, job.amount + job.freelancerStake);
+            _rewardParties(jobId);
         }
         emit Ruling(msg.sender, _disputeID, _ruling);
     }
 
     function _sendFunds(address to, address token, uint256 amount) internal {
         IERC20(token).transfer(to, amount);
+    }
+
+    function _rewardParties(uint256 jobId) internal {
+        if (polyToken == address(0)) return;
+        Job storage job = jobs[jobId];
+        try IPolyToken(polyToken).mint(job.freelancer, REWARD_AMOUNT) {} catch {}
+        try IPolyToken(polyToken).mint(job.client, REWARD_AMOUNT / 2) {} catch {}
     }
 
     mapping(uint256 => uint256) public disputeIdToJobId;

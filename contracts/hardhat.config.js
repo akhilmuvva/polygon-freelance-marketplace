@@ -1,8 +1,8 @@
 // require("@nomicfoundation/hardhat-toolbox");
 require("@nomicfoundation/hardhat-ethers");
 require("@openzeppelin/hardhat-upgrades");
-require("solidity-coverage");
-require("hardhat-gas-reporter");
+// require("solidity-coverage");
+// require("hardhat-gas-reporter");
 require("dotenv").config();
 
 /** @type import('hardhat/config').HardhatUserConfig */

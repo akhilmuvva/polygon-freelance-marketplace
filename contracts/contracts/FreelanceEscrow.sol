@@ -99,7 +99,7 @@ contract FreelanceEscrow is
     event InsurancePaid(uint256 indexed jobId, uint256 amount);
 
     /// @custom:oz-upgrades-unsafe-allow constructor
-    constructor(address _lzEndpoint) OApp(_lzEndpoint) {
+    constructor() {
         _disableInitializers();
     }
 
@@ -107,7 +107,8 @@ contract FreelanceEscrow is
         address initialOwner, 
         address trustedForwarder, 
         address _ccipRouter,
-        address _insurancePool
+        address _insurancePool,
+        address _lzEndpoint
     ) public initializer {
         __ERC721_init("FreelanceWork", "FWORK");
         __ERC721URIStorage_init();
@@ -116,6 +117,7 @@ contract FreelanceEscrow is
         __AccessControl_init();
         __ReentrancyGuard_init();
         __UUPSUpgradeable_init();
+        __OApp_init(_lzEndpoint);
 
         _grantRole(DEFAULT_ADMIN_ROLE, initialOwner);
         _grantRole(ARBITRATOR_ROLE, initialOwner);
@@ -163,14 +165,13 @@ contract FreelanceEscrow is
     }
 
     function _msgSender() internal view virtual override(ContextUpgradeable) returns (address sender) {
-        if (forwarder == _trustedForwarder) {
+        if (msg.sender == _trustedForwarder) {
              assembly { sender := shr(96, calldataload(sub(calldatasize(), 20))) }
         } else {
             return super._msgSender();
         }
     }
     
-    address private forwarder; // helper for msgSender logic
     function isTrustedForwarder(address _forwarder) public view returns (bool) {
         return _forwarder == _trustedForwarder;
     }
@@ -375,8 +376,8 @@ contract FreelanceEscrow is
     function _rewardParties(uint256 jobId) internal {
         if (polyToken == address(0)) return;
         Job storage job = jobs[jobId];
-        IPolyToken(polyToken).mint(job.freelancer, REWARD_AMOUNT);
-        IPolyToken(polyToken).mint(job.client, REWARD_AMOUNT / 2);
+        try IPolyToken(polyToken).mint(job.freelancer, REWARD_AMOUNT) {} catch {}
+        try IPolyToken(polyToken).mint(job.client, REWARD_AMOUNT / 2) {} catch {}
     }
 
     function arbitrationCost() public view returns (uint256) {

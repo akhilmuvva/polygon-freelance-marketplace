@@ -17,7 +17,13 @@ describe("FreelanceEscrow", function () {
 
         // Deploy UUPS Proxy
         FreelanceEscrow = await ethers.getContractFactory("FreelanceEscrow");
-        escrow = await upgrades.deployProxy(FreelanceEscrow, [owner.address], {
+        escrow = await upgrades.deployProxy(FreelanceEscrow, [
+            owner.address,
+            ethers.ZeroAddress, // trustedForwarder
+            ethers.ZeroAddress, // ccipRouter
+            ethers.ZeroAddress, // insurancePool
+            ethers.ZeroAddress  // lzEndpoint
+        ], {
             initializer: "initialize",
             kind: "uups",
         });

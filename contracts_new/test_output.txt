@@ -1,0 +1,13 @@
+WARNING: You are currently using Node.js v22.19.0, which is not supported by Hardhat. This can lead to unexpected behavior. See https://hardhat.org/nodejs-versions
+
+
+Compiled 6 Solidity files successfully (evm target: cancun).
+
+
+  FreelanceEscrow Verification
+    Γ£ö Should initialize correctly and grant roles
+    Γ£ö Should return correct message sender on direct call
+
+
+  2 passing (2s)
+

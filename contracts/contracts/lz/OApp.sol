@@ -6,7 +6,7 @@ abstract contract OApp {
     address public lzEndpoint;
     mapping(uint32 => bytes32) public peers;
 
-    constructor(address _endpoint) {
+    function __OApp_init(address _endpoint) internal {
         lzEndpoint = _endpoint;
     }
 
