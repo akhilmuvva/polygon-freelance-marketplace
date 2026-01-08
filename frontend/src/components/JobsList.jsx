@@ -11,6 +11,8 @@ import { checkRiskLevel } from '../utils/riskMitigation';
 import { AlertCircle } from 'lucide-react';
 import { useTransactionToast } from '../hooks/useTransactionToast';
 import { uploadJSONToIPFS } from '../utils/ipfs';
+import { useEthersSigner } from '../hooks/useEthersSigner';
+import { createBiconomySmartAccount, submitWorkGasless } from '../utils/biconomy';
 
 
 const statusLabels = ['Created', 'Accepted', 'Ongoing', 'Disputed', 'Completed', 'Cancelled'];
@@ -248,6 +250,15 @@ function JobCard({ jobId, categoryFilter, searchQuery, minBudget, statusFilter, 
         });
     };
 
+    const signer = useEthersSigner();
+    const [smartAccount, setSmartAccount] = React.useState(null);
+
+    React.useEffect(() => {
+        if (gasless && signer && !smartAccount) {
+            createBiconomySmartAccount(signer).then(setSmartAccount).catch(console.error);
+        }
+    }, [gasless, signer, smartAccount]);
+
     const handleSubmit = async () => {
         const text = prompt('Enter your work summary or description:');
         if (!text) return;
@@ -266,12 +277,35 @@ function JobCard({ jobId, categoryFilter, searchQuery, minBudget, statusFilter, 
             console.error('IPFS upload failed, using raw text:', err);
         }
 
-        writeContract({
-            address: CONTRACT_ADDRESS,
-            abi: FreelanceEscrowABI.abi,
-            functionName: 'submitWork',
-            args: [BigInt(jobId), ipfsHash],
-        });
+        if (gasless && smartAccount) {
+            try {
+                alert('Gasless Submission: Biconomy will sponsor this transaction!');
+                const txHash = await submitWorkGasless(
+                    smartAccount,
+                    CONTRACT_ADDRESS,
+                    FreelanceEscrowABI.abi,
+                    BigInt(jobId),
+                    ipfsHash
+                );
+                console.log('Gasless submission successful:', txHash);
+                refetch();
+            } catch (err) {
+                console.error('Gasless submission failed, falling back to standard:', err);
+                writeContract({
+                    address: CONTRACT_ADDRESS,
+                    abi: FreelanceEscrowABI.abi,
+                    functionName: 'submitWork',
+                    args: [BigInt(jobId), ipfsHash],
+                });
+            }
+        } else {
+            writeContract({
+                address: CONTRACT_ADDRESS,
+                abi: FreelanceEscrowABI.abi,
+                functionName: 'submitWork',
+                args: [BigInt(jobId), ipfsHash],
+            });
+        }
     };
 
     const handleResolve = (winnerAddr) => {

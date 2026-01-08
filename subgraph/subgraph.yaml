@@ -1,4 +1,4 @@
-specVersion: 1.0.0
+specVersion: 0.0.5
 schema:
   file: ./schema.graphql
 dataSources:
@@ -6,29 +6,41 @@ dataSources:
     name: FreelanceEscrow
     network: amoy
     source:
-      address: "0x0000000000000000000000000000000000000000" # TODO: Replace with deployed address
+      address: "0x25F6C8ed995C811E6c0ADb1D66A60830E8115e9A"
       abi: FreelanceEscrow
-      startBlock: 0 # TODO: Replace with deployment block
+      startBlock: 8560000 # Estimated deployment block for Amoy PoS integrations
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
       language: wasm/assemblyscript
       entities:
         - Job
-        - User
         - Milestone
+        - Application
+        - Review
+        - Transaction
       abis:
         - name: FreelanceEscrow
-          file: ./abis/FreelanceEscrow.json
+          file: ../contracts_new/artifacts/contracts/FreelanceEscrow.sol/FreelanceEscrow.json
       eventHandlers:
-        - event: JobCreated(indexed uint256,indexed address,indexed address,uint256)
+        - event: JobCreated(indexed uint256,indexed address,indexed address,uint256,uint256)
           handler: handleJobCreated
-        - event: WorkSubmitted(indexed uint256,string)
+        - event: JobAccepted(indexed uint256,indexed address,uint256)
+          handler: handleJobAccepted
+        - event: JobApplied(indexed uint256,indexed address,uint256)
+          handler: handleJobApplied
+        - event: WorkSubmitted(indexed uint256,indexed address,string)
           handler: handleWorkSubmitted
         - event: FundsReleased(indexed uint256,indexed address,uint256,uint256)
           handler: handleFundsReleased
+        - event: MilestoneReleased(indexed uint256,indexed uint256,uint256)
+          handler: handleMilestoneReleased
+        - event: MilestonesDefined(indexed uint256,uint256[],string[])
+          handler: handleMilestonesDefined
+        - event: JobCancelled(indexed uint256)
+          handler: handleJobCancelled
         - event: JobDisputed(indexed uint256)
           handler: handleJobDisputed
-        - event: MilestoneReleased(indexed uint256,uint256,uint256)
-          handler: handleMilestoneReleased
+        - event: ReviewSubmitted(indexed uint256,indexed address,uint8,string)
+          handler: handleReviewSubmitted
       file: ./src/mapping.ts

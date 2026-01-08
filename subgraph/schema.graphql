@@ -3,38 +3,75 @@ type Job @entity {
   jobId: BigInt!
   client: Bytes! # address
   freelancer: Bytes! # address
+  token: Bytes! # address
   amount: BigInt!
-  status: Int!
-  resultUri: String
-  nftId: BigInt
+  freelancerStake: BigInt!
+  totalPaidOut: BigInt!
+  status: JobStatus!
+  ipfsHash: String!
   paid: Boolean!
-  platformFee: BigInt
+  deadline: BigInt!
+  milestoneCount: Int!
+  categoryId: Int!
+  rating: Int
   createdAt: BigInt!
   updatedAt: BigInt!
+  transactions: [Transaction!]! @derivedFrom(field: "job")
   milestones: [Milestone!]! @derivedFrom(field: "job")
+  applications: [Application!]! @derivedFrom(field: "job")
+  review: Review @derivedFrom(field: "job")
+}
+
+enum JobStatus {
+  Created
+  Accepted
+  Ongoing
+  Disputed
+  Arbitration
+  Completed
+  Cancelled
 }
 
 type Milestone @entity {
-  id: ID! # jobId + "-" + index
+  id: ID! # jobId-milestoneId
   job: Job!
-  index: BigInt!
+  milestoneId: BigInt!
   amount: BigInt!
-  description: String!
+  ipfsHash: String!
   isReleased: Boolean!
 }
 
-type User @entity {
-  id: ID! # address
-  jobsAsClient: [Job!]! @derivedFrom(field: "client")
-  jobsAsFreelancer: [Job!]! @derivedFrom(field: "freelancer")
-  profile: FreelancerProfile @derivedFrom(field: "user")
+type Application @entity {
+  id: ID! # jobId-freelancer
+  job: Job!
+  freelancer: Bytes!
+  stake: BigInt!
+  createdAt: BigInt!
 }
 
-type FreelancerProfile @entity {
-  id: ID! # address
-  user: User!
-  totalEarned: BigInt!
-  averageRating: BigDecimal!
-  jobsCompleted: BigInt!
-  totalRatingPoints: BigInt!
+type Review @entity {
+  id: ID! # jobId
+  job: Job!
+  reviewer: Bytes!
+  rating: Int!
+  ipfsHash: String!
+  createdAt: BigInt!
+}
+
+type Transaction @entity {
+  id: ID! # txHash
+  job: Job!
+  from: Bytes!
+  to: Bytes
+  amount: BigInt
+  event: String!
+  timestamp: BigInt!
+  blockNumber: BigInt!
+}
+
+type GlobalStat @entity {
+  id: ID! # "1"
+  totalJobs: BigInt!
+  totalVolume: BigInt!
+  activeUsers: [Bytes!]!
 }

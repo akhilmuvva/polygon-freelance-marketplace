@@ -1,90 +1,142 @@
+import { BigInt, Bytes } from "@graphprotocol/graph-ts"
 import {
-    JobCreated as JobCreatedEvent,
-    WorkSubmitted as WorkSubmittedEvent,
-    FundsReleased as FundsReleasedEvent,
-    JobDisputed as JobDisputedEvent,
-    MilestoneReleased as MilestoneReleasedEvent,
-    MilestonesDefined as MilestonesDefinedEvent
+    JobCreated,
+    JobAccepted,
+    JobApplied,
+    WorkSubmitted,
+    FundsReleased,
+    MilestoneReleased,
+    MilestonesDefined,
+    JobCancelled,
+    JobDisputed,
+    ReviewSubmitted
 } from "../generated/FreelanceEscrow/FreelanceEscrow"
-import { Job, User, Milestone } from "../generated/schema"
-import { BigInt } from "@graphprotocol/graph-ts"
+import { Job, Review, Application, Milestone, GlobalStat } from "../generated/schema"
 
-export function handleJobCreated(event: JobCreatedEvent): void {
+export function handleJobCreated(event: JobCreated): void {
     let job = new Job(event.params.jobId.toString())
     job.jobId = event.params.jobId
     job.client = event.params.client
     job.freelancer = event.params.freelancer
     job.amount = event.params.amount
-    job.status = 0 // Created
+    job.deadline = event.params.deadline
+    job.status = "Created"
     job.paid = false
+    job.totalPaidOut = BigInt.fromI32(0)
     job.createdAt = event.block.timestamp
     job.updatedAt = event.block.timestamp
     job.save()
 
-    let client = User.load(event.params.client.toHexString())
-    if (client == null) {
-        client = new User(event.params.client.toHexString())
-        client.save()
+    let stats = GlobalStat.load("1")
+    if (!stats) {
+        stats = new GlobalStat("1")
+        stats.totalJobs = BigInt.fromI32(0)
+        stats.totalVolume = BigInt.fromI32(0)
+        stats.activeUsers = []
     }
-
-    let freelancer = User.load(event.params.freelancer.toHexString())
-    if (freelancer == null) {
-        freelancer = new User(event.params.freelancer.toHexString())
-        freelancer.save()
-    }
+    stats.totalJobs = stats.totalJobs.plus(BigInt.fromI32(1))
+    stats.save()
 }
 
-export function handleWorkSubmitted(event: WorkSubmittedEvent): void {
+export function handleJobAccepted(event: JobAccepted): void {
     let job = Job.load(event.params.jobId.toString())
     if (job) {
-        job.resultUri = event.params.resultUri
-        job.status = 1 // Ongoing
+        job.status = "Accepted"
         job.updatedAt = event.block.timestamp
         job.save()
     }
 }
 
-export function handleFundsReleased(event: FundsReleasedEvent): void {
+export function handleJobApplied(event: JobApplied): void {
+    let application = new Application(event.params.jobId.toString() + "-" + event.params.freelancer.toHex())
+    application.job = event.params.jobId.toString()
+    application.freelancer = event.params.freelancer
+    application.stake = event.params.stake
+    application.createdAt = event.block.timestamp
+    application.save()
+}
+
+export function handleWorkSubmitted(event: WorkSubmitted): void {
     let job = Job.load(event.params.jobId.toString())
     if (job) {
-        job.status = 2 // Completed
+        job.status = "Ongoing"
+        job.ipfsHash = event.params.ipfsHash
+        job.updatedAt = event.block.timestamp
+        job.save()
+    }
+}
+
+export function handleFundsReleased(event: FundsReleased): void {
+    let job = Job.load(event.params.jobId.toString())
+    if (job) {
+        job.status = "Completed"
         job.paid = true
-        job.nftId = event.params.nftId
+        job.totalPaidOut = job.totalPaidOut.plus(event.params.amount)
         job.updatedAt = event.block.timestamp
         job.save()
+
+        let stats = GlobalStat.load("1")
+        if (stats) {
+            stats.totalVolume = stats.totalVolume.plus(event.params.amount)
+            stats.save()
+        }
     }
 }
 
-export function handleJobDisputed(event: JobDisputedEvent): void {
+export function handleReviewSubmitted(event: ReviewSubmitted): void {
+    let review = new Review(event.params.jobId.toString())
+    review.job = event.params.jobId.toString()
+    review.reviewer = event.params.reviewer
+    review.rating = event.params.rating
+    review.ipfsHash = event.params.ipfsHash
+    review.createdAt = event.block.timestamp
+    review.save()
+
     let job = Job.load(event.params.jobId.toString())
     if (job) {
-        job.status = 3 // Disputed
-        job.updatedAt = event.block.timestamp
+        job.rating = event.params.rating
         job.save()
     }
 }
 
-export function handleMilestonesDefined(event: MilestonesDefinedEvent): void {
+export function handleMilestonesDefined(event: MilestonesDefined): void {
+    let jobId = event.params.jobId.toString()
     let amounts = event.params.amounts
-    let descriptions = event.params.descriptions
+    let hashes = event.params.ipfsHashes
 
     for (let i = 0; i < amounts.length; i++) {
-        let milestoneId = event.params.jobId.toString() + "-" + i.toString()
-        let milestone = new Milestone(milestoneId)
-        milestone.job = event.params.jobId.toString()
-        milestone.index = BigInt.fromI32(i)
+        let milestone = new Milestone(jobId + "-" + i.toString())
+        milestone.job = jobId
+        milestone.milestoneId = BigInt.fromI32(i)
         milestone.amount = amounts[i]
-        milestone.description = descriptions[i]
+        milestone.ipfsHash = hashes[i]
         milestone.isReleased = false
         milestone.save()
     }
 }
 
-export function handleMilestoneReleased(event: MilestoneReleasedEvent): void {
-    let milestoneId = event.params.jobId.toString() + "-" + event.params.milestoneId.toString()
-    let milestone = Milestone.load(milestoneId)
+export function handleMilestoneReleased(event: MilestoneReleased): void {
+    let milestone = Milestone.load(event.params.jobId.toString() + "-" + event.params.milestoneId.toString())
     if (milestone) {
         milestone.isReleased = true
         milestone.save()
+    }
+}
+
+export function handleJobCancelled(event: JobCancelled): void {
+    let job = Job.load(event.params.jobId.toString())
+    if (job) {
+        job.status = "Cancelled"
+        job.updatedAt = event.block.timestamp
+        job.save()
+    }
+}
+
+export function handleJobDisputed(event: JobDisputed): void {
+    let job = Job.load(event.params.jobId.toString())
+    if (job) {
+        job.status = "Disputed"
+        job.updatedAt = event.block.timestamp
+        job.save()
     }
 }

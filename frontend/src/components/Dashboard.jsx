@@ -4,6 +4,7 @@ import { Wallet, Briefcase, CheckCircle, Clock, Save, User, Award, PlusCircle } 
 import FreelanceEscrowABI from '../contracts/FreelanceEscrow.json';
 import { CONTRACT_ADDRESS } from '../constants';
 import { api } from '../services/api';
+import LiveJobFeed from './LiveJobFeed';
 
 function Dashboard() {
     const { address, isConnected } = useAccount();
@@ -212,28 +213,8 @@ function Dashboard() {
                     </form>
                 </div>
 
-                <div className="glass-card">
-                    <h3 style={{ marginBottom: '20px' }}>Recent Activity</h3>
-                    <div style={{ display: 'flex', flexDirection: 'column' }}>
-                        <div className="activity-item">
-                            <div className="activity-icon">
-                                <Wallet size={18} color="var(--primary)" />
-                            </div>
-                            <div>
-                                <p style={{ fontSize: '0.9rem', marginBottom: '4px' }}>Wallet Connected Successfully</p>
-                                <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Just now • Polygon Network</p>
-                            </div>
-                        </div>
-                        <div className="activity-item" style={{ opacity: 0.5 }}>
-                            <div className="activity-icon">
-                                <PlusCircle size={18} />
-                            </div>
-                            <div>
-                                <p style={{ fontSize: '0.9rem', marginBottom: '4px' }}>Welcome to PolyLance</p>
-                                <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Get started by exploring jobs</p>
-                            </div>
-                        </div>
-                    </div>
+                <div style={{ alignSelf: 'start' }}>
+                    <LiveJobFeed />
                 </div>
             </div>
         </div>

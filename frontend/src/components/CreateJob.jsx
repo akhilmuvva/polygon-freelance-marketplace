@@ -8,10 +8,9 @@ import { CONTRACT_ADDRESS, SUPPORTED_TOKENS } from '../constants';
 import { api } from '../services/api';
 import { uploadJSONToIPFS } from '../utils/ipfs';
 import { useTransactionToast } from '../hooks/useTransactionToast';
+import { useEthersSigner } from '../hooks/useEthersSigner';
+import { createBiconomySmartAccount, createJobGasless } from '../utils/biconomy';
 
-
-import { signMetaTx } from '../utils/metaTx';
-import { getContract, getSigner } from '../utils/web3'; // Assuming helper or use walletClient from wagmi
 
 function CreateJob({ onJobCreated, gasless }) {
     const [freelancer, setFreelancer] = useState('');
@@ -25,6 +24,15 @@ function CreateJob({ onJobCreated, gasless }) {
     const [isApproving, setIsApproving] = useState(false);
     const [isStripeModalOpen, setIsStripeModalOpen] = useState(false);
     const { address } = useAccount();
+    const signer = useEthersSigner();
+    const [smartAccount, setSmartAccount] = useState(null);
+
+    React.useEffect(() => {
+        if (gasless && signer && !smartAccount) {
+            createBiconomySmartAccount(signer).then(setSmartAccount).catch(console.error);
+        }
+    }, [gasless, signer, smartAccount]);
+
 
     const { data: hash, writeContract, isPending, error } = useWriteContract();
     const { data: jobCount } = useReadContract({
@@ -92,24 +100,27 @@ function CreateJob({ onJobCreated, gasless }) {
             ipfsHash = description;
         }
 
-        if (gasless) {
+        if (gasless && smartAccount) {
             try {
-                // Meta-tx flow
-                // Simplified for this pass: In a real app, we'd fetch nonce from Forwarder
-                // and send the signed request to /api/relayer
-                const metadata_for_tx = milestoneAmounts.length > 0
-                    ? FreelanceEscrowABI.abi.find(x => x.name === 'createJobWithMilestones')
-                    : FreelanceEscrowABI.abi.find(x => x.name === 'createJob');
+                alert('Gasless Mode: Biconomy will sponsor your job creation!');
+                const params = {
+                    freelancer,
+                    token: selectedToken.address,
+                    amount: rawAmount,
+                    ipfsHash,
+                    durationDays: BigInt(durationDays),
+                    categoryId: SUPPORTED_TOKENS.indexOf(selectedToken) || 0
+                };
 
-                // This is a placeholder for the actual Biconomy/Gelato initialization
-                // but demonstrates the intention.
-                alert('Gasless Mode: Platform will sponsor your transaction!');
-                // proceed with standard write for now if backend relay isn't fully ready
-                // but mark logic intention.
+                const txHash = await createJobGasless(smartAccount, CONTRACT_ADDRESS, FreelanceEscrowABI.abi, params);
+                console.log('Gasless job creation successful:', txHash);
+                // Metadata syncing logic in useEffect handles redirection
+                return;
             } catch (err) {
-                console.error('Meta-tx signing failed:', err);
+                console.error('Gasless job creation failed:', err);
             }
         }
+
 
         if (milestones.length > 1 || (milestones[0].amount && milestones[0].description)) {
             // Milestone flow

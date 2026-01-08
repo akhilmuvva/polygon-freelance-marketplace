@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/utils/Base64.sol";
@@ -12,13 +13,14 @@ import "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol
 import "@openzeppelin/contracts-upgradeable/utils/PausableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 import "./ccip/Client.sol";
 import "./ccip/IAny2EVMMessageReceiver.sol";
 import "./lz/OApp.sol";
+import "./PriceConverter.sol";
+import "./interfaces/IChainlinkPriceFeed.sol";
 
 interface IPolyToken is IERC20 {
     function mint(address to, uint256 amount) external;
@@ -31,7 +33,9 @@ interface IInsurancePool {
 
 interface IFreelanceSBT {
     function safeMint(address to, string memory uri) external;
+    function mintCertificate(address to, uint16 categoryId, uint8 rating) external returns (uint256);
 }
+
 
 interface IFreelancerReputation {
     function levelUp(address to, uint256 id, uint256 amount) external;
@@ -63,10 +67,12 @@ contract FreelanceEscrow is
     IArbitrable
 {
     using SafeERC20 for IERC20;
+    using PriceConverter for uint256;
 
     bytes32 public constant ARBITRATOR_ROLE = keccak256("ARBITRATOR_ROLE");
     bytes32 public constant MANAGER_ROLE = keccak256("MANAGER_ROLE");
-    uint256 private _nextTokenId;
+    // Removed _nextTokenId, using jobId as tokenId for proof-of-work NFTs
+
 
     address public arbitrator;
     address private _trustedForwarder; 
@@ -80,6 +86,7 @@ contract FreelanceEscrow is
     uint256 public platformFeeBps; // e.g., 250 for 2.5%
     
     mapping(address => bool) public whitelistedTokens;
+    mapping(address => address) public tokenPriceFeeds; // token => Chainlink feed
     
     uint256 public constant FREELANCER_STAKE_PERCENT = 10; 
     uint256 public constant INSURANCE_FEE_BPS = 100; // 1%
@@ -87,6 +94,7 @@ contract FreelanceEscrow is
     mapping(uint64 => bool) public allowlistedSourceChains;
     mapping(address => bool) public allowlistedSenders;
 
+    // ====== CUSTOM ERRORS (100% Coverage) ======
     error NotAuthorized();
     error SelfHiring();
     error TokenNotWhitelisted();
@@ -105,6 +113,19 @@ contract FreelanceEscrow is
     error TransferFailed();
     error InvalidAddress();
     error FeeTooHigh();
+    error NotRouter();
+    error ChainNotAllowed();
+    error SenderNotAllowed();
+    error LengthMismatch();
+    error TotalMismatch();
+    error InvalidFreelancer();
+    error OnlyArbitrator();
+    error NotParty();
+    error CostNotMet();
+    error NotDisputed();
+    error NotClient();
+    error NotFreelancer();
+    error InvalidJobId();
 
     enum JobStatus { Created, Accepted, Ongoing, Disputed, Arbitration, Completed, Cancelled }
 
@@ -115,20 +136,29 @@ contract FreelanceEscrow is
     }
 
     struct Job {
-        uint256 id;
-        address client;
-        address freelancer;
-        address token; 
+        // Slot 1: Packs address (20) + uint32 (4) + uint48 (6) + enum (1) + uint8 (1) = 32 bytes
+        address client;          // 20 bytes
+        uint32 id;               // 4 bytes
+        uint48 deadline;         // 6 bytes
+        JobStatus status;        // 1 byte
+        uint8 rating;            // 1 byte
+
+        // Slot 2: Packs address (20) + uint16 (2) + uint16 (2) + bool (1) = 25 bytes
+        address freelancer;      // 20 bytes
+        uint16 categoryId;       // 2 bytes
+        uint16 milestoneCount;   // 2 bytes
+        bool paid;               // 1 byte
+
+        // Slot 3: Token Address
+        address token;           // 20 bytes
+
+        // Remaining slots for large numbers / dynamic data
         uint256 amount;
         uint256 freelancerStake;
         uint256 totalPaidOut;
-        JobStatus status;
         string ipfsHash;
-        bool paid;
-        uint256 deadline;
-        uint256 milestoneCount;
-        uint256 categoryId;
     }
+
 
     struct Application {
         address freelancer;
@@ -204,7 +234,12 @@ contract FreelanceEscrow is
         platformFeeBps = 250; // 2.5% default
     }
 
+    function setTrustedForwarder(address forwarder) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        _trustedForwarder = forwarder;
+    }
+
     function setReputationContract(address _reputation) external onlyRole(DEFAULT_ADMIN_ROLE) {
+
         reputationContract = _reputation;
     }
 
@@ -239,6 +274,27 @@ contract FreelanceEscrow is
         _unpause();
     }
 
+    /**
+     * @notice Set Chainlink price feed for a token (USD pegging)
+     * @param token Token address (use address(0) for native token)
+     * @param priceFeed Chainlink price feed address
+     */
+    function setPriceFeed(address token, address priceFeed) external onlyRole(MANAGER_ROLE) {
+        tokenPriceFeeds[token] = priceFeed;
+    }
+
+    /**
+     * @notice Get USD value of a token amount
+     * @param token Token address
+     * @param amount Token amount in wei
+     * @return USD value with 8 decimals
+     */
+    function getUSDValue(address token, uint256 amount) public view returns (uint256) {
+        address priceFeed = tokenPriceFeeds[token];
+        // PriceConverter.getUSDValue will revert with PriceFeedNotSet() if priceFeed is address(0)
+        return amount.getUSDValue(priceFeed);
+    }
+
     function _contextSuffixLength() internal view virtual override(ContextUpgradeable) returns (uint256) {
         return 0;
     }
@@ -271,34 +327,98 @@ contract FreelanceEscrow is
         
         string memory imageURI = string(abi.encodePacked(
             "data:image/svg+xml;base64,", 
-            Base64.encode(bytes(_generateSVG(tokenId, job.categoryId, job.amount)))
+            Base64.encode(bytes(_generateSVG(tokenId, job.categoryId, job.amount, job.rating)))
         ));
+
+        string memory ratingTrait = job.rating > 0 
+            ? string(abi.encodePacked('{"trait_type": "Rating", "value": "', Strings.toString(job.rating), '"}, ')) 
+            : '';
 
         string memory json = string(abi.encodePacked(
             '{"name": "PolyLance Job #', Strings.toString(tokenId), 
             '", "description": "Proof of Work for PolyLance Marketplace", "image": "', imageURI, 
-            '", "attributes": [{"trait_type": "Category", "value": "', _getCategoryName(job.categoryId), 
+            '", "attributes": [', ratingTrait, '{"trait_type": "Category", "value": "', _getCategoryName(job.categoryId), 
             '"}, {"trait_type": "Budget", "value": "', Strings.toString(job.amount), '"}]}'
         ));
 
         return string(abi.encodePacked("data:application/json;base64,", Base64.encode(bytes(json))));
     }
 
-    function _generateSVG(uint256 jobId, uint256 categoryId, uint256 amount) internal view returns (string memory) {
+    /**
+     * @notice Generate dynamic SVG with rating-based background colors
+     * @param jobId Job ID
+     * @param categoryId Category ID
+     * @param amount Budget amount
+     * @param rating Rating (1-5 stars): Gold (4-5), Silver (3), Bronze (1-2)
+     */
+    function _generateSVG(uint256 jobId, uint256 categoryId, uint256 amount, uint8 rating) internal view returns (string memory) {
         string memory category = _getCategoryName(categoryId);
         string memory jobIdStr = Strings.toString(jobId);
         string memory amountStr = Strings.toString(amount);
+        
+        // Rating-based gradient colors: Gold, Silver, Bronze, or default purple
+        (string memory color1, string memory color2, string memory badge) = _getRatingColors(rating);
 
-        return string(abi.encodePacked(
+        bytes memory header = abi.encodePacked(
             '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400">',
             '<rect width="100%" height="100%" fill="#1a1c2c"/>',
-            '<defs><linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#4f46e5"/><stop offset="100%" style="stop-color:#9333ea"/></linearGradient></defs>',
-            '<circle cx="200" cy="200" r="150" fill="url(#grad)" opacity="0.8"/>',
-            '<text x="50%" y="40%" text-anchor="middle" fill="white" font-family="Arial" font-size="24" font-weight="bold">POLYLANCE WORK</text>',
-            '<text x="50%" y="55%" text-anchor="middle" fill="white" font-family="Arial" font-size="18">Job #', jobIdStr, '</text>',
-            '<text x="50%" y="65%" text-anchor="middle" fill="#fbbf24" font-family="Arial" font-size="20">', category, '</text>',
-            '<text x="50%" y="75%" text-anchor="middle" fill="white" font-family="Arial" font-size="16">Budget: ', amountStr, '</text></svg>'
-        ));
+            '<defs><linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">',
+            '<stop offset="0%" style="stop-color:', color1, '"/>',
+            '<stop offset="100%" style="stop-color:', color2, '"/>',
+            '</linearGradient></defs>'
+        );
+
+        bytes memory body = abi.encodePacked(
+            '<circle cx="200" cy="200" r="150" fill="url(#grad)" opacity="0.9"/>',
+            '<text x="50%" y="30%" text-anchor="middle" fill="white" font-family="Arial" font-size="24" font-weight="bold">POLYLANCE WORK</text>',
+            '<text x="50%" y="45%" text-anchor="middle" fill="white" font-family="Arial" font-size="18">Job #', jobIdStr, '</text>',
+            '<text x="50%" y="55%" text-anchor="middle" fill="#fbbf24" font-family="Arial" font-size="20">', category, '</text>',
+            '<text x="50%" y="65%" text-anchor="middle" fill="white" font-family="Arial" font-size="16">Budget: ', amountStr, '</text>'
+        );
+
+        bytes memory footer = abi.encodePacked(
+            rating > 0 ? string(abi.encodePacked(
+                '<text x="50%" y="80%" text-anchor="middle" fill="', badge, '" font-family="Arial" font-size="22" font-weight="bold">',
+                _getStars(rating), ' ', badge, '</text>'
+            )) : '',
+            '</svg>'
+        );
+
+        return string(abi.encodePacked(header, body, footer));
+    }
+
+    /**
+     * @notice Get gradient colors based on rating
+     * @return color1 Primary gradient color
+     * @return color2 Secondary gradient color
+     * @return badge Badge text (GOLD/SILVER/BRONZE)
+     */
+    function _getRatingColors(uint8 rating) internal pure returns (string memory color1, string memory color2, string memory badge) {
+        if (rating >= 4) {
+            // Gold: 4-5 stars
+            return ("#FFD700", "#FFA500", "GOLD");
+        } else if (rating == 3) {
+            // Silver: 3 stars
+            return ("#C0C0C0", "#808080", "SILVER");
+        } else if (rating > 0) {
+            // Bronze: 1-2 stars
+            return ("#CD7F32", "#8B4513", "BRONZE");
+        } else {
+            // Default purple gradient (no rating yet)
+            return ("#4f46e5", "#9333ea", "");
+        }
+    }
+
+    /**
+     * @notice Generate star rating visualization
+     */
+    function _getStars(uint8 rating) internal pure returns (string memory) {
+        if (rating == 5) return "*****";
+        if (rating == 4) return "****";
+        if (rating == 3) return "***";
+        if (rating == 2) return "**";
+        if (rating == 1) return "*";
+        return "";
     }
 
     function _getCategoryName(uint256 categoryId) internal pure returns (string memory) {
@@ -336,7 +456,7 @@ contract FreelanceEscrow is
 
         jobCount++;
         jobs[jobCount] = Job({
-            id: jobCount,
+            id: uint32(jobCount),
             client: client,
             freelancer: freelancer,
             token: token,
@@ -346,10 +466,12 @@ contract FreelanceEscrow is
             status: JobStatus.Created,
             ipfsHash: _ipfsHash,
             paid: false,
-            deadline: deadline,
+            deadline: uint48(deadline),
             milestoneCount: 0,
-            categoryId: categoryId
+            categoryId: uint16(categoryId),
+            rating: 0
         });
+
 
         emit JobCreated(jobCount, client, freelancer, amount, deadline);
     }
@@ -408,7 +530,7 @@ contract FreelanceEscrow is
         _createJobInternal(_msgSender(), freelancer, token, amount, _ipfsHash, deadline, categoryId);
         
         uint256 jobId = jobCount;
-        jobs[jobId].milestoneCount = len;
+        jobs[jobId].milestoneCount = uint16(len);
         for (uint256 i = 0; i < len; ) {
             jobMilestones[jobId][i] = Milestone({
                 amount: milestoneAmounts[i],
@@ -519,7 +641,7 @@ contract FreelanceEscrow is
             _sendFunds(job.freelancer, job.token, totalPayout);
         }
 
-        uint256 tokenId = _nextTokenId++;
+        uint256 tokenId = jobId;
         _safeMint(job.freelancer, tokenId);
         _setTokenURI(tokenId, job.ipfsHash);
         
@@ -610,7 +732,7 @@ contract FreelanceEscrow is
             _sendFunds(job.client, job.token, totalEscrow - freelancerPayout);
         }
 
-        emit FundsReleased(jobId, winner, freelancerPayout, 0); // Simplified
+        emit FundsReleased(jobId, winner, freelancerPayout, jobId);
     }
 
     function submitReview(uint256 jobId, uint8 rating, string calldata ipfsHash) external nonReentrant {
@@ -625,9 +747,13 @@ contract FreelanceEscrow is
             reviewer: _msgSender()
         });
 
+        // Update job rating for dynamic NFT colors (Gold/Silver/Bronze)
+        job.rating = rating;
+
         if (sbtContract != address(0)) {
-            IFreelanceSBT(sbtContract).safeMint(job.freelancer, ipfsHash);
+            IFreelanceSBT(sbtContract).mintCertificate(job.freelancer, uint16(job.categoryId), rating);
         }
+
         emit ReviewSubmitted(jobId, _msgSender(), rating, ipfsHash);
     }
 

@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Client } from '@xmtp/browser-sdk';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useEthersSigner } from '../hooks/useEthersSigner';
 import { useAccount } from 'wagmi';
-import { MessageSquare, Send, User, Loader2 } from 'lucide-react';
+import { MessageSquare, Send, User, Loader2, FileText, DollarSign, Clock, CheckCircle2 } from 'lucide-react';
 
 export default function Chat({ initialPeerAddress, onClearedAddress }) {
     const { address } = useAccount();
@@ -15,6 +15,8 @@ export default function Chat({ initialPeerAddress, onClearedAddress }) {
     const [conversations, setConversations] = useState([]);
     const [selectedConversation, setSelectedConversation] = useState(null);
     const [peerAddress, setPeerAddress] = useState(initialPeerAddress || '');
+    const [contractContext, setContractContext] = useState(null);
+    const [loadingContext, setLoadingContext] = useState(false);
 
     useEffect(() => {
         if (initialPeerAddress) {
@@ -22,6 +24,69 @@ export default function Chat({ initialPeerAddress, onClearedAddress }) {
             // Optionally auto-select if already in list or auto-start
         }
     }, [initialPeerAddress]);
+
+    // Fetch contract context from subgraph when peer address changes
+    useEffect(() => {
+        if (selectedConversation?.peerAddress && address) {
+            fetchContractContext(selectedConversation.peerAddress, address);
+        }
+    }, [selectedConversation, address]);
+
+    const fetchContractContext = async (peerAddr, myAddr) => {
+        setLoadingContext(true);
+        try {
+            const SUBGRAPH_URL = import.meta.env.VITE_SUBGRAPH_URL || 'http://20.30.75.78:8000/subgraphs/name/polylance';
+
+            const query = `
+                query GetJobContext($client: String!, $freelancer: String!) {
+                    jobs(
+                        where: {
+                            or: [
+                                { client: $client, freelancer: $freelancer },
+                                { client: $freelancer, freelancer: $client }
+                            ]
+                        }
+                        orderBy: createdAt
+                        orderDirection: desc
+                        first: 1
+                    ) {
+                        id
+                        jobId
+                        amount
+                        status
+                        deadline
+                        category
+                        client
+                        freelancer
+                    }
+                }
+            `;
+
+            const response = await fetch(SUBGRAPH_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    query,
+                    variables: {
+                        client: myAddr.toLowerCase(),
+                        freelancer: peerAddr.toLowerCase()
+                    }
+                })
+            });
+
+            const { data } = await response.json();
+            if (data?.jobs?.length > 0) {
+                setContractContext(data.jobs[0]);
+            } else {
+                setContractContext(null);
+            }
+        } catch (err) {
+            console.error('[CONTEXT] Failed to fetch contract context:', err);
+            setContractContext(null);
+        } finally {
+            setLoadingContext(false);
+        }
+    };
 
     const handleInitialize = async () => {
         if (!signer) return;
@@ -157,7 +222,12 @@ export default function Chat({ initialPeerAddress, onClearedAddress }) {
 
             <div className="glass-card" style={{ display: 'flex', flexDirection: 'column', padding: 0, overflow: 'hidden' }}>
                 {selectedConversation ? (
-                    <MessageContainer conversation={selectedConversation} address={address} />
+                    <MessageContainer
+                        conversation={selectedConversation}
+                        address={address}
+                        contractContext={contractContext}
+                        loadingContext={loadingContext}
+                    />
                 ) : (
                     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)' }}>
                         <MessageSquare size={48} style={{ opacity: 0.1, marginBottom: '20px' }} />
@@ -169,7 +239,7 @@ export default function Chat({ initialPeerAddress, onClearedAddress }) {
     );
 }
 
-function MessageContainer({ conversation, address }) {
+function MessageContainer({ conversation, address, contractContext, loadingContext }) {
     const [messages, setMessages] = useState([]);
     const [inputValue, setInputValue] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -177,6 +247,24 @@ function MessageContainer({ conversation, address }) {
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    };
+
+    const getStatusColor = (status) => {
+        const colors = {
+            'Created': '#6366f1',
+            'Accepted': '#8b5cf6',
+            'Ongoing': '#f59e0b',
+            'Completed': '#10b981',
+            'Disputed': '#ef4444',
+            'Cancelled': '#6b7280'
+        };
+        return colors[status] || '#6b72 80';
+    };
+
+    const formatDeadline = (timestamp) => {
+        if (!timestamp) return 'No deadline';
+        const date = new Date(parseInt(timestamp) * 1000);
+        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
     };
 
     // Fetch initial messages
@@ -240,6 +328,54 @@ function MessageContainer({ conversation, address }) {
                     <strong>{conversation.peerAddress?.slice(0, 8) || 'Group Chat'}...{conversation.peerAddress?.slice(-6) || ''}</strong>
                 </div>
             </div>
+
+            {/* Contract Context Bar - Subgraph Integration */}
+            <AnimatePresence>
+                {contractContext && (
+                    <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        style={{
+                            padding: '16px 20px',
+                            background: 'linear-gradient(135deg, rgba(138, 43, 226, 0.1), rgba(75, 0, 130, 0.1))',
+                            borderBottom: '1px solid var(--glass-border)',
+                            display: 'flex',
+                            gap: '20px',
+                            alignItems: 'center',
+                            fontSize: '0.9rem'
+                        }}
+                    >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <FileText size={16} style={{ color: 'var(--primary)' }} />
+                            <span style={{ color: 'var(--text-muted)' }}>Job #{contractContext.jobId}</span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <DollarSign size={16} style={{ color: '#10b981' }} />
+                            <span>{(parseFloat(contractContext.amount) / 1e18).toFixed(2)} MATIC</span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <CheckCircle2 size={16} style={{ color: getStatusColor(contractContext.status) }} />
+                            <span style={{ color: getStatusColor(contractContext.status), fontWeight: '600' }}>
+                                {contractContext.status}
+                            </span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <Clock size={16} style={{ color: '#f59e0b' }} />
+                            <span style={{ color: 'var(--text-muted)' }}>{formatDeadline(contractContext.deadline)}</span>
+                        </div>
+                    </motion.div>
+                )}
+                {loadingContext && (
+                    <div style={{ padding: '12px 20px', textAlign: 'center', borderBottom: '1px solid var(--glass-border)' }}>
+                        <Loader2 size={16} className="animate-spin" style={{ display: 'inline-block' }} />
+                        <span style={{ marginLeft: '8px', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                            Loading contract context...
+                        </span>
+                    </div>
+                )}
+            </AnimatePresence>
+
             <div style={{ flex: 1, overflowY: 'auto', padding: '24px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 {isLoading && <div style={{ textAlign: 'center' }}><Loader2 className="animate-spin" /></div>}
                 {messages.map((msg, i) => {

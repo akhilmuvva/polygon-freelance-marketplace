@@ -59,6 +59,20 @@ async function main() {
         saveProgress();
     }
 
+    // 2.5 Deploy PolyLanceForwarder
+    if (await isDeployed(addresses.PolyLanceForwarder)) {
+        console.log("\n2.5 PolyLanceForwarder already deployed at:", addresses.PolyLanceForwarder);
+    } else {
+        console.log("\n2.5 Deploying PolyLanceForwarder...");
+        const PolyLanceForwarder = await ethers.getContractFactory("PolyLanceForwarder");
+        const forwarder = await PolyLanceForwarder.deploy();
+        await forwarder.waitForDeployment();
+        addresses.PolyLanceForwarder = await forwarder.getAddress();
+        console.log("PolyLanceForwarder deployed to:", addresses.PolyLanceForwarder);
+        saveProgress();
+    }
+
+
     // 3. Deploy FreelanceEscrow (Proxy)
     if (await isDeployed(addresses.FreelanceEscrow)) {
         console.log("\n3. FreelanceEscrow already deployed at:", addresses.FreelanceEscrow);
@@ -68,7 +82,8 @@ async function main() {
         // Addresses for Amoy (Testnet) or Mocks (Local)
         const lzEndpoint = ethers.getAddress("0x6EDDE65947B348035F7dB70163693e6F60416173".toLowerCase()); // Amoy LZ V2
         const ccipRouter = ethers.getAddress("0x9C32fCB86BF0f4a1A8921a9Fe46de3198bb88464".toLowerCase()); // Amoy CCIP Router
-        const trustedForwarder = ethers.getAddress("0x0000000000000000000000000000000000000000".toLowerCase()); // Dummy Forwarder
+        const trustedForwarder = addresses.PolyLanceForwarder;
+
 
         const FreelanceEscrow = await ethers.getContractFactory("FreelanceEscrow");
         const escrow = await upgrades.deployProxy(
