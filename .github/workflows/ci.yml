@@ -15,15 +15,8 @@ jobs:
         uses: actions/setup-node@v4.2.0
         with:
           node-version: '20'
-      - name: Cache node modules
-        id: cache-npm
-        uses: actions/cache@v4
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('contracts/package-lock.json') }}
-        continue-on-error: true
       - name: Install Dependencies
-        run: cd contracts && npm ci --legacy-peer-deps
+        run: cd contracts && npm install --legacy-peer-deps
       - name: Run Contract Tests
         env:
           CI: true
@@ -37,15 +30,8 @@ jobs:
         uses: actions/setup-node@v4.2.0
         with:
           node-version: '20'
-      - name: Cache node modules
-        id: cache-npm-frontend
-        uses: actions/cache@v4
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('frontend/package-lock.json') }}
-        continue-on-error: true
       - name: Install Dependencies
-        run: cd frontend && npm ci --legacy-peer-deps
+        run: cd frontend && npm install --legacy-peer-deps
       - name: Run Frontend Tests
         env:
           CI: true
