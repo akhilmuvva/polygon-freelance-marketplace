@@ -10,7 +10,17 @@ import { sendNotification } from './notifications.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const CONTRACT_ADDRESS = '0x25F6C8ed995C811E6c0ADb1D66A60830E8115e9A';
+// Try to load deployment address dynamically
+let CONTRACT_ADDRESS = '0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9';
+try {
+    const deployPath = path.join(__dirname, '../../contracts/scripts/deployment_addresses.json');
+    if (fs.existsSync(deployPath)) {
+        const deployData = JSON.parse(fs.readFileSync(deployPath, 'utf8'));
+        CONTRACT_ADDRESS = deployData.FreelanceEscrow;
+    }
+} catch (err) {
+    console.warn('Could not load dynamic contract address, using default:', CONTRACT_ADDRESS);
+}
 
 // Load ABI
 const abiPath = path.join(__dirname, 'contracts', 'FreelanceEscrow.json');

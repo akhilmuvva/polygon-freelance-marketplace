@@ -1,15 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Client } from '@xmtp/browser-sdk';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useEthersSigner } from '../hooks/useEthersSigner';
-import { useAccount } from 'wagmi';
+import { useAccount, useWalletClient } from 'wagmi';
 import { MessageSquare, Send, User, Loader2, FileText, DollarSign, Clock, CheckCircle2, PlusCircle, Video } from 'lucide-react';
 import UserLink from './UserLink';
 import { hexToBytes } from 'viem';
 
 export default function Chat({ initialPeerAddress, onClearedAddress }) {
     const { address } = useAccount();
-    const signer = useEthersSigner();
+    const { data: walletClient } = useWalletClient();
 
     const [client, setClient] = useState(null);
     const [isInitializing, setIsInitializing] = useState(false);
@@ -91,38 +90,54 @@ export default function Chat({ initialPeerAddress, onClearedAddress }) {
     };
 
     const handleInitialize = async () => {
-        if (!signer) return;
+        if (!walletClient || !address) {
+            console.error('[XMTP] Initialization aborted: walletClient or address missing', { walletClient: !!walletClient, address });
+            return;
+        }
+
         setIsInitializing(true);
         setError(null);
-        try {
-            console.log('[XMTP] Initializing client for address:', address);
+        console.log('[XMTP] Starting initialization flow for:', address);
 
-            // In V3 browser-sdk, the client.create takes (signer, options) or (address, signer, options)
-            // Depending on the version. For 5.3.0, it's (signer, options)
-            // But sometimes wrapping the signer is safer to ensure all methods exist.
-            const xmtp = await Client.create(address, signer, {
-                env: 'production', // Use 'production' even for testnets as per XMTP's modern approach
-                dbPath: `xmtp-${address.toLowerCase()}`
+        try {
+            // Wrap walletClient to ensure it matches XMTP's expected Signer interface
+            const xmtpSigner = {
+                getIdentifier: () => address,
+                getAddress: async () => address,
+                signMessage: async (message) => {
+                    console.log('[XMTP] Wallet signing request received:', typeof message === 'string' ? 'text' : 'binary');
+                    try {
+                        const signature = await walletClient.signMessage({
+                            account: address,
+                            message: typeof message === 'string' ? message : { raw: message },
+                        });
+                        console.log('[XMTP] Wallet signature successful');
+                        return hexToBytes(signature);
+                    } catch (signErr) {
+                        console.error('[XMTP] Wallet signing failed:', signErr);
+                        throw signErr;
+                    }
+                },
+            };
+
+            console.log('[XMTP] Creating Client... (This may trigger a MetaMask popup)');
+            const xmtp = await Client.create(xmtpSigner, {
+                env: 'production',
+                dbPath: `xmtp-v3-${address.toLowerCase()}` // Use a fresh DB path for V3
             });
 
-            console.log('[XMTP] Client initialized successfully:', xmtp.address);
+            console.log('[XMTP] Client created successfully! Address:', xmtp.address);
             setClient(xmtp);
 
-            // Initial fetch of conversations
+            console.log('[XMTP] Fetching initial conversations...');
             const convs = await xmtp.conversations.list();
-            console.log('[XMTP] Found conversations:', convs.length);
+            console.log('[XMTP] Conversations loaded:', convs.length);
             setConversations(convs);
         } catch (err) {
-            console.error('[XMTP] Initialization error:', err);
-            // Check for specific common errors
-            if (err.message?.includes('secure context')) {
-                setError(new Error('XMTP requires a secure context (HTTPS) or localhost.'));
-            } else if (err.message?.includes('user rejected')) {
-                setError(new Error('Signature request was rejected. Please try again.'));
-            } else {
-                setError(err);
-            }
+            console.error('[XMTP] CRITICAL Initialization error:', err);
+            setError(err);
         } finally {
+            console.log('[XMTP] Initialization flow complete');
             setIsInitializing(false);
         }
     };
@@ -137,7 +152,7 @@ export default function Chat({ initialPeerAddress, onClearedAddress }) {
             for await (const conv of stream) {
                 if (isCancelled) break;
                 setConversations(prev => {
-                    const exists = prev.some(p => p.id === conv.id);
+                    const exists = prev.some(p => p.topic === conv.topic);
                     if (exists) return prev;
                     return [conv, ...prev];
                 });
@@ -161,11 +176,11 @@ export default function Chat({ initialPeerAddress, onClearedAddress }) {
                 <button
                     onClick={handleInitialize}
                     className="btn-primary !px-10 !py-4 text-lg"
-                    disabled={isInitializing || !signer}
+                    disabled={isInitializing || !walletClient}
                 >
-                    {isInitializing ? <Loader2 className="animate-spin" /> : signer ? 'Initialize Secure Channel' : 'Connect Wallet First'}
+                    {isInitializing ? <Loader2 className="animate-spin" /> : walletClient ? 'Initialize Secure Channel' : 'Connect Wallet First'}
                 </button>
-                {!signer && (
+                {!walletClient && (
                     <p className="text-warning mt-6 font-bold text-sm">
                         Please connect your wallet in the dashboard to enable messaging.
                     </p>
@@ -215,12 +230,12 @@ export default function Chat({ initialPeerAddress, onClearedAddress }) {
                     ) : (
                         conversations.map((conv, i) => (
                             <motion.div
-                                key={conv.id}
+                                key={conv.topic}
                                 initial={{ opacity: 0, x: -10 }}
                                 animate={{ opacity: 1, x: 0 }}
                                 transition={{ delay: i * 0.05 }}
                                 onClick={() => setSelectedConversation(conv)}
-                                className={`p-4 rounded-2xl cursor-pointer border transition-all duration-300 ${selectedConversation?.id === conv.id ? 'bg-primary/10 border-primary text-primary shadow-lg shadow-primary/5' : 'bg-white/5 border-transparent hover:bg-white/10'}`}
+                                className={`p-4 rounded-2xl cursor-pointer border transition-all duration-300 ${selectedConversation?.topic === conv.topic ? 'bg-primary/10 border-primary text-primary shadow-lg shadow-primary/5' : 'bg-white/5 border-transparent hover:bg-white/10'}`}
                             >
                                 <div className="text-sm font-black truncate">
                                     {conv.peerAddress?.slice(0, 8)}...{conv.peerAddress?.slice(-6)}
@@ -342,7 +357,7 @@ function MessageContainer({ conversation, address, contractContext, loadingConte
                 </div>
 
                 <button
-                    onClick={() => window.open(`https://app.huddle01.com/${conversation.id?.slice(0, 8)}`, '_blank')}
+                    onClick={() => window.open(`https://app.huddle01.com/${conversation.topic?.slice(0, 8)}`, '_blank')}
                     className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary/10 text-primary hover:bg-primary/20 transition-all font-bold text-xs border border-primary/20 shadow-lg shadow-primary/5"
                 >
                     <Video size={16} />

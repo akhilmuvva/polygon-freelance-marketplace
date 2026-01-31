@@ -1,5 +1,5 @@
 import React from 'react';
-import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
+import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt, useWalletClient } from 'wagmi';
 import { motion } from 'framer-motion';
 import { Briefcase, CheckCircle, ExternalLink, RefreshCcw, AlertCircle, MessageSquare, Search, Filter, ArrowUpDown, Sparkles } from 'lucide-react';
 import axios from 'axios';
@@ -12,7 +12,6 @@ import AiMatchRating from './AiMatchRating';
 import { checkRiskLevel } from '../utils/riskMitigation';
 import { useTransactionToast } from '../hooks/useTransactionToast';
 import { uploadJSONToIPFS } from '../utils/ipfs';
-import { useEthersSigner } from '../hooks/useEthersSigner';
 import { createBiconomySmartAccount, submitWorkGasless } from '../utils/biconomy';
 import { useTokenPrice } from '../hooks/useTokenPrice';
 
@@ -20,6 +19,7 @@ const statusLabels = ['Created', 'Accepted', 'Ongoing', 'Disputed', 'Completed',
 
 function JobsList({ onUserClick, onSelectChat, gasless }) {
     const { address } = useAccount();
+    const { data: walletClient } = useWalletClient();
     const [filter, setFilter] = React.useState('All');
     const [searchQuery, setSearchQuery] = React.useState('');
     const [minBudget, setMinBudget] = React.useState('');
@@ -214,21 +214,11 @@ function JobsList({ onUserClick, onSelectChat, gasless }) {
 
 const JobCard = React.memo(({ jobId, categoryFilter, searchQuery, minBudget, statusFilter, onUserClick, onSelectChat, gasless }) => {
     const { address } = useAccount();
-    const [inView, setInView] = React.useState(false);
-    const cardRef = React.useRef();
-
-    React.useEffect(() => {
-        const observer = new IntersectionObserver(([entry]) => {
-            if (entry.isIntersecting) setInView(true);
-        }, { threshold: 0.1 });
-        if (cardRef.current) observer.observe(cardRef.current);
-        return () => observer.disconnect();
-    }, []);
-
-    const signer = useEthersSigner();
+    const { data: walletClient } = useWalletClient();
     const [metadata, setMetadata] = React.useState(null);
     const [matchScore, setMatchScore] = React.useState(null);
     const [isApproving, setIsApproving] = React.useState(false);
+    const [smartAccount, setSmartAccount] = useState(null);
     const { convertToUsd } = useTokenPrice('MATIC');
 
     const { data: job, refetch } = useReadContract({
@@ -254,7 +244,24 @@ const JobCard = React.memo(({ jobId, categoryFilter, searchQuery, minBudget, sta
     }, [isSuccess]);
 
     React.useEffect(() => {
-        if (!inView) return; // Only fetch when in view
+        if (gasless && walletClient && !smartAccount) {
+            createBiconomySmartAccount(walletClient).then(setSmartAccount).catch(console.error);
+        }
+    }, [gasless, walletClient, smartAccount]);
+
+    const [inView, setInView] = React.useState(false);
+    const cardRef = React.useRef();
+
+    React.useEffect(() => {
+        const observer = new IntersectionObserver(([entry]) => {
+            if (entry.isIntersecting) setInView(true);
+        }, { threshold: 0.1 });
+        if (cardRef.current) observer.observe(cardRef.current);
+        return () => observer.disconnect();
+    }, []);
+
+    React.useEffect(() => {
+        if (!inView) return;
         const fetchMetadata = async () => {
             try {
                 const data = await api.getJobMetadata(jobId);
@@ -274,7 +281,7 @@ const JobCard = React.memo(({ jobId, categoryFilter, searchQuery, minBudget, sta
 
     if (!job) return null;
 
-    const [id, client, freelancer, token, amount, freelancerStake, totalPaidOut, status, resultUri, paid, deadline, milestoneCount] = job;
+    const [client, id, deadline, status, rating, freelancer, categoryId, milestoneCount, paid, token, amount, freelancerStake, totalPaidOut, ipfsHash] = job;
     const tokenInfo = SUPPORTED_TOKENS.find(t => t.address.toLowerCase() === token.toLowerCase()) || SUPPORTED_TOKENS[0];
     const currency = tokenInfo.symbol;
     const decimals = tokenInfo.decimals;
@@ -328,14 +335,11 @@ const JobCard = React.memo(({ jobId, categoryFilter, searchQuery, minBudget, sta
             });
         } catch (err) { console.error(err); }
 
-        if (gasless && signer) {
+        if (gasless && walletClient && smartAccount) {
             try {
-                const smartAccount = await createBiconomySmartAccount(signer);
-                if (smartAccount) {
-                    await submitWorkGasless(smartAccount, CONTRACT_ADDRESS, FreelanceEscrowABI.abi, Number(jobId), ipfsHash);
-                    refetch();
-                    return;
-                }
+                await submitWorkGasless(smartAccount, CONTRACT_ADDRESS, FreelanceEscrowABI.abi, Number(jobId), ipfsHash);
+                refetch();
+                return;
             } catch (err) {
                 console.error('[BICONOMY] Gasless submission failed:', err);
             }

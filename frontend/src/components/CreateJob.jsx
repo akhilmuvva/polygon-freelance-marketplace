@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useWriteContract, useWaitForTransactionReceipt, useReadContract, useAccount } from 'wagmi';
+import { useAccount, useWalletClient, useWriteContract, useWaitForTransactionReceipt, useReadContract } from 'wagmi';
 import { parseEther, parseUnits, erc20Abi } from 'viem';
 import { Send, Loader2, Info, CreditCard, Plus, Trash2, Calendar, Target, DollarSign, Cpu } from 'lucide-react';
 import StripeOnrampModal from './StripeOnrampModal';
@@ -8,7 +8,6 @@ import { CONTRACT_ADDRESS, SUPPORTED_TOKENS } from '../constants';
 import { api } from '../services/api';
 import { uploadJSONToIPFS } from '../utils/ipfs';
 import { useTransactionToast } from '../hooks/useTransactionToast';
-import { useEthersSigner } from '../hooks/useEthersSigner';
 import { createBiconomySmartAccount, createJobGasless } from '../utils/biconomy';
 
 function CreateJob({ onJobCreated, gasless }) {
@@ -23,14 +22,14 @@ function CreateJob({ onJobCreated, gasless }) {
     const [isApproving, setIsApproving] = useState(false);
     const [isStripeModalOpen, setIsStripeModalOpen] = useState(false);
     const { address } = useAccount();
-    const signer = useEthersSigner();
+    const { data: walletClient } = useWalletClient();
     const [smartAccount, setSmartAccount] = useState(null);
 
     React.useEffect(() => {
-        if (gasless && signer && !smartAccount) {
-            createBiconomySmartAccount(signer).then(setSmartAccount).catch(console.error);
+        if (gasless && walletClient && !smartAccount) {
+            createBiconomySmartAccount(walletClient).then(setSmartAccount).catch(console.error);
         }
-    }, [gasless, signer, smartAccount]);
+    }, [gasless, walletClient, smartAccount]);
 
     const { data: hash, writeContract, isPending, error } = useWriteContract();
     const { data: jobCount } = useReadContract({
@@ -77,16 +76,22 @@ function CreateJob({ onJobCreated, gasless }) {
             });
         } catch (err) { console.error('IPFS failed:', err); }
 
+        const currentTimestamp = Math.floor(Date.now() / 1000);
+        const deadline = durationDays > 0 ? currentTimestamp + (Number(durationDays) * 86400) : 0;
+
+        const params = {
+            categoryId: 1, // Defaulting to Development for now
+            freelancer: freelancer || '0x0000000000000000000000000000000000000000',
+            token: selectedToken.address,
+            amount: rawAmount,
+            ipfsHash,
+            deadline: BigInt(deadline),
+            mAmounts: milestones.filter(m => m.amount).map(m => parseUnits(m.amount, selectedToken.decimals)),
+            mHashes: milestones.filter(m => m.amount).map(m => m.description || "")
+        };
+
         if (gasless && smartAccount) {
             try {
-                const params = {
-                    freelancer,
-                    token: selectedToken.address,
-                    amount: rawAmount,
-                    ipfsHash,
-                    durationDays: Number(durationDays),
-                    categoryId: 1 // Default category ID for now
-                };
                 const txHash = await createJobGasless(smartAccount, CONTRACT_ADDRESS, FreelanceEscrowABI.abi, params);
                 // Trigger the same success logic as Wagmi
                 api.saveJobMetadata({ jobId: Number(jobCount) + 1, title, description, category })
@@ -97,25 +102,13 @@ function CreateJob({ onJobCreated, gasless }) {
             }
         }
 
-        if (milestones.length > 1 || (milestones[0].amount && milestones[0].description)) {
-            const milestoneAmounts = milestones.map(m => parseUnits(m.amount, selectedToken.decimals));
-            const milestoneDescs = milestones.map(m => m.description);
-            writeContract({
-                address: CONTRACT_ADDRESS,
-                abi: FreelanceEscrowABI.abi,
-                functionName: 'createJobWithMilestones',
-                args: [freelancer, selectedToken.address, rawAmount, ipfsHash, milestoneAmounts, milestoneDescs],
-                value: selectedToken.address === '0x0000000000000000000000000000000000000000' ? rawAmount : 0n,
-            });
-        } else {
-            writeContract({
-                address: CONTRACT_ADDRESS,
-                abi: FreelanceEscrowABI.abi,
-                functionName: 'createJob',
-                args: [freelancer, selectedToken.address, rawAmount, ipfsHash, BigInt(durationDays)],
-                value: selectedToken.address === '0x0000000000000000000000000000000000000000' ? rawAmount : 0n,
-            });
-        }
+        writeContract({
+            address: CONTRACT_ADDRESS,
+            abi: FreelanceEscrowABI.abi,
+            functionName: 'createJob',
+            args: [params],
+            value: selectedToken.address === '0x0000000000000000000000000000000000000000' ? rawAmount : 0n,
+        });
     };
 
     React.useEffect(() => {

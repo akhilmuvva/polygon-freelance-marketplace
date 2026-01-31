@@ -259,6 +259,9 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
 
         uint256 payout = job.amount - job.totalPaidOut;
         uint256 fee = (job.amount * platformFeeBps) / 10000;
+        
+        // Fee cannot exceed the remaining payout (prevents underflow)
+        if (fee > payout) fee = payout;
 
         // Supreme Level Check: 0% Fee for Elite Veterans
         if (reputationContract != address(0)) {
@@ -374,12 +377,15 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
         
         if (ruling == 1) { // Client
             job.status = JobStatus.Cancelled;
+            // Return remaining budget + freelancer stake (as penalty/refund) to client? 
+            // Usually, client gets budget, freelancer gets stake back unless malicious.
+            // Let's stick to returning stake to the original owner (freelancer) but budget to client.
             _sendFunds(job.client, job.token, payout);
+            _sendFunds(job.freelancer, job.token, job.freelancerStake);
         } else { // Freelancer
             job.status = JobStatus.Completed;
-            // Note: _safeMint can be a reentrancy vector, but we are protected by nonReentrant
             _safeMint(job.freelancer, jobId);
-            _sendFunds(job.freelancer, job.token, payout);
+            _sendFunds(job.freelancer, job.token, payout + job.freelancerStake);
         }
         emit Ruling(IArbitrator(arbitrator), dId, ruling);
     }
@@ -395,7 +401,9 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
         job.totalPaidOut += remaining;
         job.status = (freelancerBps > 5000) ? JobStatus.Completed : JobStatus.Cancelled;
 
-        if (freelancerAmt > 0) _sendFunds(job.freelancer, job.token, freelancerAmt);
+        if (freelancerAmt > 0) _sendFunds(job.freelancer, job.token, freelancerAmt + job.freelancerStake);
+        else _sendFunds(job.freelancer, job.token, job.freelancerStake); // Always return stake in manual resolve unless specified otherwise
+
         if (clientAmt > 0) _sendFunds(job.client, job.token, clientAmt);
     }
 
