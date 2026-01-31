@@ -12,9 +12,9 @@
   },
   "dependencies": {
     "@biconomy/account": "^4.5.7",
-    "@biconomy/bundler": "^3.1.4",
-    "@biconomy/common": "^3.1.4",
-    "@biconomy/paymaster": "^3.1.4",
+    "@biconomy/bundler": "^4.1.1",
+    "@biconomy/common": "^4.1.1",
+    "@biconomy/paymaster": "^4.1.1",
     "@huddle01/react": "^2.6.4",
     "@rainbow-me/rainbowkit": "^2.2.10",
     "@react-three/drei": "^9.102.6",
@@ -39,7 +39,7 @@
     "siwe": "^2.3.2",
     "three": "^0.160.0",
     "viem": "^2.43.3",
-    "vite-plugin-node-polyfills": "^0.22.0",
+    "vite-plugin-node-polyfills": "^0.25.0",
     "wagmi": "^2.19.5"
   },
   "devDependencies": {
@@ -57,7 +57,7 @@
     "eslint-plugin-security": "^3.0.1",
     "globals": "^15.9.0",
     "jsdom": "^25.0.0",
-    "vite": "^5.4.21",
-    "vitest": "^2.0.5"
+    "vite": "^7.3.1",
+    "vitest": "^4.0.18"
   }
 }
