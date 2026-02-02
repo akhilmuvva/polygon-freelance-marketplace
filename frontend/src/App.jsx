@@ -82,7 +82,7 @@ function App() {
     switch (activeTab) {
       case 'dashboard': return <Dashboard address={effectiveAddress} />;
       case 'jobs': return <JobsList onUserClick={setPortfolioAddress} onSelectChat={onSelectChat} gasless={isGasless} smartAccount={smartAccount} />;
-      case 'create': return <CreateJob smartAccount={smartAccount} effectiveAddress={effectiveAddress} />;
+      case 'create': return <CreateJob smartAccount={smartAccount} gasless={isGasless} address={effectiveAddress} onJobCreated={() => setActiveTab('jobs')} />;
       case 'nfts': return <NFTGallery address={effectiveAddress} />;
       case 'chat': return <Chat peerAddress={chatPeerAddress} address={effectiveAddress} />;
       case 'leaderboard': return <Leaderboard onUserClick={setPortfolioAddress} />;

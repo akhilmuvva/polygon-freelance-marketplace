@@ -21,6 +21,7 @@ function CreateJob({ onJobCreated, gasless, smartAccount }) {
     const [durationDays, setDurationDays] = useState('7');
     const [isApproving, setIsApproving] = useState(false);
     const [isStripeModalOpen, setIsStripeModalOpen] = useState(false);
+    const [isProcessingGasless, setIsProcessingGasless] = useState(false);
     const { address } = useAccount();
     const { data: walletClient } = useWalletClient();
     // Use smartAccount from props
@@ -85,6 +86,7 @@ function CreateJob({ onJobCreated, gasless, smartAccount }) {
         };
 
         if (gasless && smartAccount) {
+            setIsProcessingGasless(true);
             try {
                 const txHash = await createJobGasless(smartAccount, CONTRACT_ADDRESS, FreelanceEscrowABI.abi, params);
                 // Trigger the same success logic as Wagmi
@@ -101,9 +103,11 @@ function CreateJob({ onJobCreated, gasless, smartAccount }) {
                     }))
                 })
                     .then(() => onJobCreated()).catch(err => { console.error(err); onJobCreated(); });
+                setIsProcessingGasless(false);
                 return;
             } catch (err) {
                 console.error('[BICONOMY] Gasless failed, falling back:', err);
+                setIsProcessingGasless(false);
             }
         }
 
@@ -146,9 +150,19 @@ function CreateJob({ onJobCreated, gasless, smartAccount }) {
                 <h1 className="text-6xl font-black mb-6 tracking-tighter shimmer-text">
                     Post a Mandate
                 </h1>
-                <p className="text-text-muted text-xl max-w-2xl mx-auto leading-relaxed font-medium">
+                <p className="text-text-muted text-xl max-w-2xl mx-auto leading-relaxed font-medium mb-10">
                     Secure the best talent with automated on-chain escrow protection.
                 </p>
+                {gasless && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="mt-4 inline-flex items-center gap-3 px-6 py-3 bg-primary/10 border border-primary/20 rounded-2xl"
+                    >
+                        <Sparkles size={18} className="text-primary animate-pulse" />
+                        <span className="text-xs font-black uppercase tracking-widest text-primary">Platform Sponsored: 100% Gas Free</span>
+                    </motion.div>
+                )}
             </header>
 
             <form onSubmit={handleSubmit} className="glass-card max-w-4xl mx-auto p-12">
@@ -237,6 +251,23 @@ function CreateJob({ onJobCreated, gasless, smartAccount }) {
                     </div>
                 </div>
 
+                {gasless && (
+                    <div className="glass-panel !bg-primary/[0.03] !border-primary/10 p-6 mb-8 flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
+                                <Cpu size={24} />
+                            </div>
+                            <div>
+                                <h4 className="text-sm font-black uppercase tracking-tight">Quantum Gas Relay</h4>
+                                <p className="text-[10px] text-text-muted font-medium">Biconomy Paymaster active. No MATIC required for deployment.</p>
+                            </div>
+                        </div>
+                        <div className="px-4 py-2 bg-emerald-500/10 text-emerald-500 rounded-xl border border-emerald-500/20 text-[10px] font-black uppercase tracking-widest">
+                            Ready
+                        </div>
+                    </div>
+                )}
+
                 <div style={{ marginBottom: '32px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
                         <label className="input-label" style={{ marginBottom: 0 }}>Project Milestones</label>
@@ -293,23 +324,23 @@ function CreateJob({ onJobCreated, gasless, smartAccount }) {
                         type="submit"
                         className="btn-primary"
                         style={{ flex: 2, justifyContent: 'center' }}
-                        disabled={isPending || isConfirming}
+                        disabled={isPending || isConfirming || isProcessingGasless}
                     >
-                        {isPending || isConfirming ? (
+                        {isPending || isConfirming || isProcessingGasless ? (
                             <><Loader2 className="animate-spin" size={20} /> Processing On-Chain...</>
                         ) : (
                             <><Cpu size={20} /> Deploy Escrow Contract</>
                         )}
                     </button>
                 </div>
-            </form>
+            </form >
 
             <StripeOnrampModal
                 address={address}
                 isOpen={isStripeModalOpen}
                 onClose={() => setIsStripeModalOpen(false)}
             />
-        </div>
+        </div >
     );
 }
 
