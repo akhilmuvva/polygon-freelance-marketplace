@@ -46,6 +46,7 @@ graph TD
     Escrow <-->|Dispute| Kleros[Kleros Court]
 ```
 
+
 ## 🚀 Deployed Contracts (Polygon Amoy)
 
 | Contract | Address |
@@ -54,6 +55,10 @@ graph TD
 | **FreelancerReputation** | `0x89791A9A3210667c828492DB98DCa3e2076cc373` |
 | **PolyToken** | `0xd3b893cd083f07Fe371c1a87393576e7B01C52C6` |
 | **FreelanceSBT** | `0xb4e9A5BC64DC07f890367F72941403EEd7faDCbB` |
+| **Zenith Governance** | `0x4653251486a57f90Ee89F9f34E098b9218659b83` |
+
+### 🌐 Live Application
+**[Launch PolyLance Zenith (Vercel)](https://polylance-zenith.vercel.app)**
 
 ## 🛡️ Security & Testing
 
