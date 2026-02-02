@@ -1,0 +1,38 @@
+[dotenv@17.2.3] injecting env (3) from .env -- tip: ≡ƒùé∩╕Å backup and recover secrets: https://dotenvx.com/ops
+
+
+  Zenith Edge Cases & Fee Optimization
+    Supreme Level Fees
+      1) "before each" hook for "Qualified users should pay 0% platform fee"
+
+
+  0 passing (580ms)
+  1 failing
+
+  1) Zenith Edge Cases & Fee Optimization
+       "before each" hook for "Qualified users should pay 0% platform fee":
+     TypeError: l1HardforkFromString is not a function
+      at _genesisStateAndOwnedAccounts (node_modules\hardhat\src\internal\hardhat-network\provider\provider.ts:691:22)
+      at Function.create (node_modules\hardhat\src\internal\hardhat-network\provider\provider.ts:232:43)
+      at createHardhatNetworkProvider (node_modules\hardhat\src\internal\hardhat-network\provider\provider.ts:631:45)
+      at createProvider (node_modules\hardhat\src\internal\core\providers\construction.ts:85:23)
+      at LazyInitializationProviderAdapter.init (node_modules\hardhat\src\internal\core\providers\lazy-initialization.ts:42:23)
+      at LazyInitializationProviderAdapter._getOrInitProvider (node_modules\hardhat\src\internal\core\providers\lazy-initialization.ts:173:23)
+      at LazyInitializationProviderAdapter.send (node_modules\hardhat\src\internal\core\providers\lazy-initialization.ts:68:22)
+      at getSigners (node_modules\@nomicfoundation\hardhat-ethers\src\internal\helpers.ts:46:16)
+      at Context.<anonymous> (test\Zenith_EdgeCases.test.js:11:53)
+
+
+
+An unexpected error occurred:
+
+TypeError: l1HardforkFromString is not a function
+    at _genesisStateAndOwnedAccounts (node_modules\hardhat\src\internal\hardhat-network\provider\provider.ts:691:22)
+    at Function.create (node_modules\hardhat\src\internal\hardhat-network\provider\provider.ts:232:43)
+    at createHardhatNetworkProvider (node_modules\hardhat\src\internal\hardhat-network\provider\provider.ts:631:45)
+    at createProvider (node_modules\hardhat\src\internal\core\providers\construction.ts:85:23)
+    at LazyInitializationProviderAdapter.init (node_modules\hardhat\src\internal\core\providers\lazy-initialization.ts:42:23)
+    at LazyInitializationProviderAdapter._getOrInitProvider (node_modules\hardhat\src\internal\core\providers\lazy-initialization.ts:173:23)
+    at LazyInitializationProviderAdapter.send (node_modules\hardhat\src\internal\core\providers\lazy-initialization.ts:68:22)
+    at getSigners (node_modules\@nomicfoundation\hardhat-ethers\src\internal\helpers.ts:46:16)
+    at Context.<anonymous> (test\Zenith_EdgeCases.test.js:11:53)

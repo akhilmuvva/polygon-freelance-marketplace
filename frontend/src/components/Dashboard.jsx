@@ -7,6 +7,7 @@ import { CONTRACT_ADDRESS } from '../constants';
 import { api } from '../services/api';
 import LiveJobFeed from './LiveJobFeed';
 import AiRecommendations from './AiRecommendations';
+import WithdrawButton from './WithdrawButton';
 
 function Dashboard({ address: propAddress }) {
     const { address: wagmiAddress, isConnected: isWagmiConnected } = useAccount();
@@ -213,6 +214,10 @@ function Dashboard({ address: propAddress }) {
                     </button>
                 )}
             </header>
+
+            <div className="mb-12 max-w-md">
+                <WithdrawButton address={address} />
+            </div>
 
             {/* Stats Cards Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-20">

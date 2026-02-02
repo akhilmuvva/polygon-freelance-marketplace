@@ -50,17 +50,18 @@ describe("Zenith Edge Cases & Fee Optimization", function () {
                 ipfsHash: "ipfs://test",
                 deadline: 0,
                 mAmounts: [],
-                mHashes: []
+                mHashes: [],
+                mIsUpfront: []
             };
             await escrow.connect(client).createJob(params, { value: JOB_AMOUNT });
             await escrow.connect(freelancer).acceptJob(1, { value: JOB_AMOUNT / 10n });
 
             const initialVault = await ethers.provider.getBalance(vault.address);
             await escrow.connect(client).releaseFunds(1);
-            const finalVault = await ethers.provider.getBalance(vault.address);
 
             // Fee should be 0 for supreme freelancer
-            expect(finalVault).to.equal(initialVault);
+            const vaultBalance = await escrow.balances(vault.address, ethers.ZeroAddress);
+            expect(vaultBalance).to.equal(0);
         });
 
         it("Standard users should pay configured platform fee", async function () {
@@ -74,17 +75,18 @@ describe("Zenith Edge Cases & Fee Optimization", function () {
                 ipfsHash: "ipfs://test",
                 deadline: 0,
                 mAmounts: [],
-                mHashes: []
+                mHashes: [],
+                mIsUpfront: []
             };
             await escrow.connect(client).createJob(params, { value: JOB_AMOUNT });
             await escrow.connect(freelancer).acceptJob(1, { value: JOB_AMOUNT / 10n });
 
-            const initialVault = await ethers.provider.getBalance(vault.address);
+            const initialVaultBalance = await escrow.balances(vault.address, ethers.ZeroAddress);
             await escrow.connect(client).releaseFunds(1);
-            const finalVault = await ethers.provider.getBalance(vault.address);
+            const finalVaultBalance = await escrow.balances(vault.address, ethers.ZeroAddress);
 
             const expectedFee = (JOB_AMOUNT * 500n) / 10000n;
-            expect(finalVault - initialVault).to.equal(expectedFee);
+            expect(finalVaultBalance - initialVaultBalance).to.equal(expectedFee);
         });
     });
 
@@ -102,7 +104,8 @@ describe("Zenith Edge Cases & Fee Optimization", function () {
                 ipfsHash: "ipfs://test",
                 deadline: 0,
                 mAmounts: [],
-                mHashes: []
+                mHashes: [],
+                mIsUpfront: []
             };
             await escrow.connect(client).createJob(params, { value: JOB_AMOUNT });
 
@@ -168,7 +171,8 @@ describe("Zenith Edge Cases & Fee Optimization", function () {
                 ipfsHash: "ipfs://test",
                 deadline: 0,
                 mAmounts: [JOB_AMOUNT, 1n], // sum > JOB_AMOUNT
-                mHashes: ["M1", "M2"]
+                mHashes: ["M1", "M2"],
+                mIsUpfront: [false, false]
             };
             await expect(escrow.connect(client).createJob(params, { value: JOB_AMOUNT }))
                 .to.be.reverted;

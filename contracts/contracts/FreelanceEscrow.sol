@@ -154,7 +154,7 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
         Application[] storage apps = jobApplications[jobId];
         for (uint256 i = 0; i < apps.length; i++) {
             if (apps[i].freelancer != freelancer) {
-                pendingRefunds[apps[i].freelancer][job.token] += apps[i].stake;
+                balances[apps[i].freelancer][job.token] += apps[i].stake;
             } else {
                 job.freelancerStake = apps[i].stake;
             }
@@ -186,11 +186,11 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
         // but traditionally we just wait for client to release funds.
     }
 
-    function claimRefund(address token) external whenNotPaused nonReentrant {
-        uint256 amt = pendingRefunds[_msgSender()][token];
+    function withdraw(address token) external whenNotPaused nonReentrant {
+        uint256 amt = balances[_msgSender()][token];
         if (amt == 0) revert InvalidStatus();
-        pendingRefunds[_msgSender()][token] = 0;
-        _sendFunds(_msgSender(), token, amt);
+        balances[_msgSender()][token] = 0;
+        _transferFunds(_msgSender(), token, amt);
     }
     function setArbitrator(address _arb) external onlyRole(DEFAULT_ADMIN_ROLE) {
         if (_arb == address(0)) revert InvalidAddress();
@@ -227,6 +227,8 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
      * @notice Milestone Factory: Locks funds and defines stages upfront.
      */
     function createJob(CreateParams memory p) public payable whenNotPaused nonReentrant returns (uint256) {
+        if (p.amount == 0) revert LowValue();
+        if (bytes(p.ipfsHash).length == 0) revert InvalidStatus();
         if (p.token != address(0) && !tokenWhitelist[p.token]) revert TokenNotWhitelisted();
 
         if (p.token != address(0)) {
@@ -288,7 +290,7 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
         uint256 amt = jobMilestones[jobId][mId].amount;
         job.totalPaidOut += amt;
         
-        _sendFunds(job.freelancer, job.token, amt);
+        balances[job.freelancer][job.token] += amt;
         emit MilestoneReleased(jobId, job.freelancer, mId, amt);
     }
 
@@ -373,11 +375,11 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
         }
 
         // Payout freelancer (net) + stake return
-        _sendFunds(job.freelancer, job.token, freelancerNet + job.freelancerStake);
+        balances[job.freelancer][job.token] += (freelancerNet + job.freelancerStake);
         
         // Payout vault (fee)
         if (fee > 0 && vault != address(0)) {
-            _sendFunds(vault, job.token, fee);
+            balances[vault][job.token] += fee;
         }
 
         emit FundsReleased(jobId, job.freelancer, payout, jobId);
@@ -402,7 +404,7 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
         job.status = JobStatus.Cancelled;
         job.paid = true;
         
-        _sendFunds(job.client, job.token, job.amount);
+        balances[job.client][job.token] += job.amount;
     }
 
     /**
@@ -454,15 +456,15 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
         
         if (ruling == 1) { // Refuse to Rule / Split 50-50
             job.status = JobStatus.Cancelled;
-            _sendFunds(job.client, job.token, payout / 2);
-            _sendFunds(job.freelancer, job.token, (payout / 2) + stake);
+            balances[job.client][job.token] += (payout / 2);
+            balances[job.freelancer][job.token] += ((payout / 2) + stake);
         } else if (ruling == 2) { // Client Wins
             job.status = JobStatus.Cancelled;
-            _sendFunds(job.client, job.token, payout + stake); // Client gets stake as penalty
+            balances[job.client][job.token] += (payout + stake); // Client gets stake as penalty
         } else if (ruling == 3) { // Freelancer Wins
             job.status = JobStatus.Completed;
             job.totalPaidOut += payout;
-            _sendFunds(job.freelancer, job.token, payout + stake);
+            balances[job.freelancer][job.token] += (payout + stake);
             _mintSBT(job.freelancer, jobId);
         }
         
@@ -490,13 +492,13 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
         job.totalPaidOut += remaining;
         job.status = (freelancerBps > 5000) ? JobStatus.Completed : JobStatus.Cancelled;
 
-        if (freelancerAmt > 0) _sendFunds(job.freelancer, job.token, freelancerAmt + job.freelancerStake);
-        else _sendFunds(job.freelancer, job.token, job.freelancerStake); // Always return stake in manual resolve unless specified otherwise
+        if (freelancerAmt > 0) balances[job.freelancer][job.token] += (freelancerAmt + job.freelancerStake);
+        else balances[job.freelancer][job.token] += job.freelancerStake;
 
-        if (clientAmt > 0) _sendFunds(job.client, job.token, clientAmt);
+        if (clientAmt > 0) balances[job.client][job.token] += clientAmt;
     }
 
-    function _sendFunds(address to, address token, uint256 amt) internal {
+    function _transferFunds(address to, address token, uint256 amt) internal {
         if (token == address(0)) {
             (bool s, ) = payable(to).call{value: amt}("");
             if (!s) revert TransferFailed();

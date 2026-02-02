@@ -54,7 +54,7 @@ abstract contract FreelanceEscrowBase is
     mapping(uint256 => mapping(uint256 => Milestone)) public jobMilestones;
     mapping(uint256 => Application[]) public jobApplications;
     mapping(uint256 => mapping(address => bool)) public hasApplied;
-    mapping(address => mapping(address => uint256)) public pendingRefunds; 
+    mapping(address => mapping(address => uint256)) public balances; 
     mapping(uint256 => uint256) public milestoneBitmask;
     mapping(uint256 => uint256) public disputeIdToJobId;
     

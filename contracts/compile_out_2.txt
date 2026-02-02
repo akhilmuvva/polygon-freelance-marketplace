@@ -1,0 +1,11 @@
+[dotenv@17.2.3] injecting env (3) from .env -- tip: ≡ƒöæ add access controls to secrets: https://dotenvx.com/ops
+DeclarationError: Function "mcopy" not found.
+  --> @openzeppelin/contracts/utils/Bytes.sol:95:13:
+   |
+95 |             mcopy(add(result, 0x20), add(add(buffer, 0x20), start), sub(end, start))
+   |             ^^^^^
+
+
+
+Error HH600: Compilation failed
+For more info go to https://v2.hardhat.org/HH600 or run Hardhat with --show-stack-traces

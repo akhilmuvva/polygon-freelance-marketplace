@@ -1,14 +1,17 @@
+```javascript
 import React, { useState } from 'react';
 import { useAccount, useWalletClient, useWriteContract, useWaitForTransactionReceipt, useReadContract } from 'wagmi';
 import { parseEther, parseUnits, erc20Abi } from 'viem';
 import { Send, Loader2, Info, CreditCard, Plus, Trash2, Calendar, Target, DollarSign, Cpu, Sparkles } from 'lucide-react';
+import { initSocialLogin, createJobGasless } from '../utils/biconomy';
+import { showPendingToast, updateToastToSuccess, updateToastToError, handleError } from '../utils/feedback';
 import StripeOnrampModal from './StripeOnrampModal';
 import FreelanceEscrowABI from '../contracts/FreelanceEscrow.json';
 import { CONTRACT_ADDRESS, SUPPORTED_TOKENS } from '../constants';
 import { api } from '../services/api';
 import { uploadJSONToIPFS } from '../utils/ipfs';
 import { useTransactionToast } from '../hooks/useTransactionToast';
-import { createBiconomySmartAccount, createJobGasless } from '../utils/biconomy';
+import { createBiconomySmartAccount } from '../utils/biconomy';
 
 function CreateJob({ onJobCreated, gasless, smartAccount }) {
     const [freelancer, setFreelancer] = useState('');
@@ -26,7 +29,7 @@ function CreateJob({ onJobCreated, gasless, smartAccount }) {
     const { data: walletClient } = useWalletClient();
     // Use smartAccount from props
 
-    const { data: hash, writeContract, isPending, error } = useWriteContract();
+    const { data: hash, writeContract, writeContractAsync, isPending, error } = useWriteContract();
     const { data: jobCount } = useReadContract({
         address: CONTRACT_ADDRESS,
         abi: FreelanceEscrowABI.abi,
@@ -87,8 +90,10 @@ function CreateJob({ onJobCreated, gasless, smartAccount }) {
 
         if (gasless && smartAccount) {
             setIsProcessingGasless(true);
+            const toastId = showPendingToast();
             try {
                 const txHash = await createJobGasless(smartAccount, CONTRACT_ADDRESS, FreelanceEscrowABI.abi, params);
+                updateToastToSuccess(toastId, "Gasless Job Created!");
                 // Trigger the same success logic as Wagmi
                 api.saveJobMetadata({
                     jobId: Number(jobCount) + 1,
@@ -107,17 +112,22 @@ function CreateJob({ onJobCreated, gasless, smartAccount }) {
                 return;
             } catch (err) {
                 console.error('[BICONOMY] Gasless failed, falling back:', err);
+                updateToastToError(toastId, err);
                 setIsProcessingGasless(false);
             }
         }
 
-        writeContract({
-            address: CONTRACT_ADDRESS,
-            abi: FreelanceEscrowABI.abi,
-            functionName: 'createJob',
-            args: [params],
-            value: selectedToken.address === '0x0000000000000000000000000000000000000000' ? rawAmount : 0n,
-        });
+        try {
+            await writeContractAsync({
+                address: CONTRACT_ADDRESS,
+                abi: FreelanceEscrowABI.abi,
+                functionName: 'createJob',
+                args: [params],
+                value: selectedToken.symbol === 'MATIC' ? parseEther(amount) : 0n
+            });
+        } catch (error) {
+            handleError(error);
+        }
     };
 
     React.useEffect(() => {
@@ -182,48 +192,51 @@ function CreateJob({ onJobCreated, gasless, smartAccount }) {
                     </div>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px', marginBottom: '32px' }}>
-                    <div className="input-group" style={{ marginBottom: 0 }}>
-                        <label className="input-label">Industry Category</label>
-                        <select className="input-field" value={category} onChange={(e) => setCategory(e.target.value)}>
-                            <option>Development</option>
-                            <option>Design</option>
-                            <option>Marketing</option>
-                            <option>Writing</option>
-                        </select>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                        <div className="input-group mb-0">
+                            <label className="input-label">Project Category</label>
+                            <select
+                                className="input-field"
+                                value={category}
+                                onChange={(e) => setCategory(e.target.value)}
+                            >
+                                <option>Development</option>
+                                <option>Design</option>
+                                <option>Marketing</option>
+                                <option>Writing</option>
+                            </select>
+                        </div>
+                        <div className="input-group mb-0">
+                            <label className="input-label">Talent Address (Pro)</label>
+                            <input
+                                type="text"
+                                placeholder="0x..."
+                                className="input-field"
+                                value={freelancer}
+                                onChange={(e) => setFreelancer(e.target.value)}
+                                required
+                            />
+                        </div>
                     </div>
-                    <div className="input-group" style={{ marginBottom: 0 }}>
-                        <label className="input-label">Talent Address (Pro)</label>
-                        <input
-                            type="text"
-                            placeholder="0x..."
-                            className="input-field"
-                            value={freelancer}
-                            onChange={(e) => setFreelancer(e.target.value)}
-                            required
-                        />
-                    </div>
-                </div>
 
-                <div className="glass-panel" style={{ marginBottom: '32px' }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr 1fr', gap: '20px' }}>
-                        <div className="input-group" style={{ marginBottom: 0 }}>
+                <div className="glass-panel mb-8">
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                        <div className="input-group mb-0 md:col-span-2">
                             <label className="input-label">Budget</label>
-                            <div style={{ position: 'relative' }}>
-                                <DollarSign size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-dim)' }} />
+                            <div className="relative">
+                                <DollarSign size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-text-dim" />
                                 <input
                                     type="number"
                                     step="0.01"
                                     placeholder="Amount"
-                                    className="input-field"
-                                    style={{ paddingLeft: '48px' }}
+                                    className="input-field pl-12"
                                     value={amount}
                                     onChange={(e) => setAmount(e.target.value)}
                                     required
                                 />
                             </div>
                         </div>
-                        <div className="input-group" style={{ marginBottom: 0 }}>
+                        <div className="input-group mb-0">
                             <label className="input-label">Asset</label>
                             <select
                                 className="input-field"
@@ -233,15 +246,14 @@ function CreateJob({ onJobCreated, gasless, smartAccount }) {
                                 {SUPPORTED_TOKENS.map(t => <option key={t.symbol}>{t.symbol}</option>)}
                             </select>
                         </div>
-                        <div className="input-group" style={{ marginBottom: 0 }}>
+                        <div className="input-group mb-0">
                             <label className="input-label">Due Days</label>
-                            <div style={{ position: 'relative' }}>
-                                <Calendar size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-dim)' }} />
+                            <div className="relative">
+                                <Calendar size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-text-dim" />
                                 <input
                                     type="number"
                                     placeholder="7"
-                                    className="input-field"
-                                    style={{ paddingLeft: '48px' }}
+                                    className="input-field pl-12"
                                     value={durationDays}
                                     onChange={(e) => setDurationDays(e.target.value)}
                                     required
@@ -311,7 +323,7 @@ function CreateJob({ onJobCreated, gasless, smartAccount }) {
                     />
                 </div>
 
-                <div style={{ display: 'flex', gap: '16px', marginTop: '40px' }}>
+                <div className="flex flex-col md:flex-row gap-4 mt-10">
                     <button
                         type="button"
                         className="btn-ghost"
