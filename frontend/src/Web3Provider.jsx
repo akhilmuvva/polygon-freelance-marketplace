@@ -12,6 +12,7 @@ import { polygon, polygonAmoy, hardhat, base, baseSepolia } from 'wagmi/chains';
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 import { SiweMessage } from 'siwe';
 import { HuddleProvider, HuddleClient } from '@huddle01/react';
+// import { ApolloClient, InMemoryCache, ApolloProvider } from '@apollo/client';
 
 const huddleClient = new HuddleClient({
     projectId: import.meta.env.VITE_HUDDLE_PROJECT_ID || 'yS_cM7SrkNqXv3193R2W1nI_7P3j3P-z',
@@ -43,6 +44,11 @@ const queryClient = new QueryClient({
         },
     },
 });
+
+// const apolloClient = new ApolloClient({
+//     uri: import.meta.env.VITE_SUBGRAPH_URL || 'https://api.studio.thegraph.com/query/STUDIO_ID/poly-lance/v0.0.1',
+//     cache: new InMemoryCache(),
+// });
 
 export function Web3Provider({ children }) {
     const [authStatus, setAuthStatus] = useState('unauthenticated');
@@ -100,19 +106,24 @@ export function Web3Provider({ children }) {
         },
 
         createMessage: ({ nonce, address, chainId }) => {
-            console.log('[AUTH] createMessage called:', { nonce, address, chainId });
-            const message = new SiweMessage({
-                domain: window.location.hostname,
-                address,
-                statement: 'Sign in to PolyLance',
-                uri: window.location.origin,
-                version: '1',
-                chainId: Number(chainId),
-                nonce,
-            });
-            const messageString = message.prepareMessage();
-            console.log('[AUTH] Prepared message string:', messageString);
-            return messageString;
+            try {
+                console.log('[AUTH] createMessage called:', { nonce, address, chainId });
+                const message = new SiweMessage({
+                    domain: window.location.host,
+                    address,
+                    statement: 'Sign in to PolyLance',
+                    uri: window.location.origin,
+                    version: '1',
+                    chainId: Number(chainId),
+                    nonce,
+                });
+                const messageString = message.prepareMessage();
+                console.log('[AUTH] Prepared message string:', messageString);
+                return messageString;
+            } catch (error) {
+                console.error('[AUTH] createMessage error:', error);
+                throw new Error('Failed to prepare authentication message');
+            }
         },
 
         getMessageBody: ({ message }) => {
@@ -157,6 +168,7 @@ export function Web3Provider({ children }) {
     return (
         <WagmiProvider config={config}>
             <QueryClientProvider client={queryClient}>
+                {/* <ApolloProvider client={apolloClient}> */}
                 <RainbowKitAuthenticationProvider
                     adapter={authAdapter}
                     status={authStatus}
@@ -174,6 +186,7 @@ export function Web3Provider({ children }) {
                         </HuddleProvider>
                     </RainbowKitProvider>
                 </RainbowKitAuthenticationProvider>
+                {/* </ApolloProvider> */}
             </QueryClientProvider>
         </WagmiProvider>
     );

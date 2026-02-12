@@ -1,4 +1,3 @@
-```javascript
 import React, { useState } from 'react';
 import { useAccount, useWalletClient, useWriteContract, useWaitForTransactionReceipt, useReadContract } from 'wagmi';
 import { parseEther, parseUnits, erc20Abi } from 'viem';
@@ -192,32 +191,32 @@ function CreateJob({ onJobCreated, gasless, smartAccount }) {
                     </div>
                 </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                        <div className="input-group mb-0">
-                            <label className="input-label">Project Category</label>
-                            <select
-                                className="input-field"
-                                value={category}
-                                onChange={(e) => setCategory(e.target.value)}
-                            >
-                                <option>Development</option>
-                                <option>Design</option>
-                                <option>Marketing</option>
-                                <option>Writing</option>
-                            </select>
-                        </div>
-                        <div className="input-group mb-0">
-                            <label className="input-label">Talent Address (Pro)</label>
-                            <input
-                                type="text"
-                                placeholder="0x..."
-                                className="input-field"
-                                value={freelancer}
-                                onChange={(e) => setFreelancer(e.target.value)}
-                                required
-                            />
-                        </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                    <div className="input-group mb-0">
+                        <label className="input-label">Project Category</label>
+                        <select
+                            className="input-field"
+                            value={category}
+                            onChange={(e) => setCategory(e.target.value)}
+                        >
+                            <option>Development</option>
+                            <option>Design</option>
+                            <option>Marketing</option>
+                            <option>Writing</option>
+                        </select>
                     </div>
+                    <div className="input-group mb-0">
+                        <label className="input-label">Talent Address (Pro)</label>
+                        <input
+                            type="text"
+                            placeholder="0x..."
+                            className="input-field"
+                            value={freelancer}
+                            onChange={(e) => setFreelancer(e.target.value)}
+                            required
+                        />
+                    </div>
+                </div>
 
                 <div className="glass-panel mb-8">
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-6">

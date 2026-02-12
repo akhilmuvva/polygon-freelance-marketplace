@@ -24,12 +24,17 @@ contract InsurancePool is Ownable, ReentrancyGuard, Pausable {
     event FundsAdded(address indexed token, uint256 amount);
     event PayoutExecuted(address indexed token, address indexed recipient, uint256 amount);
 
+    error InvalidAddress();
+    error InsufficientFunds();
+    error TransferFailed();
+    error UseDepositNative();
+
     /**
      * @notice Deploys the insurance pool
      * @param initialOwner Address of the pool administrator
      */
     constructor(address initialOwner) Ownable(initialOwner) {
-        require(initialOwner != address(0), "Zero address");
+        if (initialOwner == address(0)) revert InvalidAddress();
     }
 
     function pause() external onlyOwner {
@@ -47,7 +52,7 @@ contract InsurancePool is Ownable, ReentrancyGuard, Pausable {
      */
     function deposit(address token, uint256 amount) external whenNotPaused {
         if (token == address(0)) {
-            revert("Use depositNative");
+            revert UseDepositNative();
         }
         IERC20(token).safeTransferFrom(msg.sender, address(this), amount);
         balances[token] += amount;
@@ -71,13 +76,13 @@ contract InsurancePool is Ownable, ReentrancyGuard, Pausable {
      * @param amount Payout amount
      */
     function payout(address token, address to, uint256 amount) external onlyOwner whenNotPaused nonReentrant {
-        require(to != address(0), "Zero address");
-        require(balances[token] >= amount, "Insufficient pool funds");
+        if (to == address(0)) revert InvalidAddress();
+        if (balances[token] < amount) revert InsufficientFunds();
         balances[token] -= amount;
         
         if (token == address(0)) {
             (bool success, ) = payable(to).call{value: amount}("");
-            require(success, "Native payout failed");
+            if (!success) revert TransferFailed();
         } else {
             IERC20(token).safeTransfer(to, amount);
         }

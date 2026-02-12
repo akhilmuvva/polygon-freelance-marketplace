@@ -1,19 +1,32 @@
 require("@nomicfoundation/hardhat-toolbox");
 require("@openzeppelin/hardhat-upgrades");
 require("dotenv").config();
+require("solidity-coverage");
+require("hardhat-gas-reporter");
 
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
     solidity: {
         version: "0.8.24",
         settings: {
-            evmVersion: "cancun",
+            evmVersion: "paris",
             optimizer: {
                 enabled: true,
                 runs: 200
             },
             viaIR: true
         }
+    },
+    gasReporter: {
+        enabled: process.env.REPORT_GAS === "true",
+        currency: "USD",
+        coinmarketcap: process.env.COINMARKETCAP_API_KEY,
+        outputFile: "gas-report.txt",
+        noColors: true,
+        token: "MATIC"
+    },
+    mocha: {
+        timeout: 100000
     },
     networks: {
         hardhat: {

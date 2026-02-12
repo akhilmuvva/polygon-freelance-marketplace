@@ -1,0 +1,12 @@
+2026-02-02T19:41:20.584Z hardhat:core:vars:varsManager Creating a new instance of VarsManager
+2026-02-02T19:41:20.586Z hardhat:core:vars:varsManager Loading ENV variables if any
+2026-02-02T19:41:20.595Z hardhat:core:config Loading Hardhat config from C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\contracts\hardhat.config.js
+[dotenv@17.2.3] injecting env (3) from .env -- tip: ΓÜÖ∩╕Å  override existing env vars with { override: true }
+2026-02-02T19:41:21.300Z hardhat:core:hre Creating HardhatRuntimeEnvironment
+2026-02-02T19:41:21.303Z hardhat:core:global-dir Looking up Client Id at C:\Users\akhil\AppData\Local\hardhat-nodejs\Data\analytics.json
+2026-02-02T19:41:21.304Z hardhat:core:global-dir Client Id found: 41745228-4097-4881-bba1-71200d9facb8
+2026-02-02T19:41:21.376Z hardhat:core:analytics Sending hit for task
+2026-02-02T19:41:21.376Z hardhat:core:analytics Hit payload: {"client_id":"41745228-4097-4881-bba1-71200d9facb8","user_id":"41745228-4097-4881-bba1-71200d9facb8","user_properties":{"projectId":{"value":"hardhat-project"},"userType":{"value":"Developer"},"hardhatVersion":{"value":"Hardhat 2.28.4"},"operatingSystem":{"value":"win32"},"nodeVersion":{"value":"v22.19.0"}},"events":[{"name":"task","params":{"engagement_time_msec":"10000","session_id":"0.1930159636513591"}}]}
+Error HH305: Unrecognized param --show-stack-trace
+
+For more info go to https://v2.hardhat.org/HH305 or run Hardhat with --show-stack-traces

@@ -27,9 +27,13 @@ contract FreelancerReputation is Initializable, ERC1155Upgradeable, AccessContro
     /// @notice ID for the general Karma category (used for fee discounts)
     uint256 public constant KARMA_ID = 0;
 
+    /// @notice Tracks total stars received by a freelancer
     mapping(address => uint256) public totalStars;
+    /// @notice Tracks total number of jobs reviewed for a freelancer
     mapping(address => uint256) public totalJobsReviewed;
+    /// @notice Current average rating of a freelancer (0-5)
     mapping(address => uint8) public averageRating;
+    /// @notice IPFS CID for a freelancer's dynamic portfolio
     mapping(address => string) public portfolioCID;
 
     /// @custom:oz-upgrades-unsafe-allow constructor

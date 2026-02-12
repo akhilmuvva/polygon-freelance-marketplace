@@ -113,8 +113,22 @@ contract FreelanceGovernance is Ownable {
         emit DelegationUpdated(msg.sender, delegatee);
     }
 
+    /// @notice Returns true if a proposal with given ID exists
+    function proposalExists(uint256 id) public view returns (bool) {
+        return id > 0 && id <= proposalCount;
+    }
+
     /**
      * @notice Creates a new governance proposal
+     * @param description Brief description of the proposed change
+     * @param useQuadratic If true, use quadratic voting weight
+     * @param isOptimistic If true, proposal passes unless refuted
+     * @param isSecret If true, use commit-reveal scheme
+     * @param isConviction If true, use conviction voting accrual
+     * @param isZK If true, use anonymous ZK proof voting
+     * @param threshold Conviction threshold or other quorum requirement
+     * @param target Contract to call upon execution
+     * @param data Payload to call on the target contract
      */
     function createProposal(
         string calldata description, 

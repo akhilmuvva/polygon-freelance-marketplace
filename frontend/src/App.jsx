@@ -108,7 +108,6 @@ function App() {
 
       <aside className="sidebar">
         <div className="sidebar-logo">
-          <img src={logo} alt="PolyLance Zenith" className="w-10 h-10 object-contain hover:scale-110 transition-transform cursor-pointer" onClick={() => setActiveTab('dashboard')} />
           <div className="flex flex-col">
             <span className="font-black text-xl tracking-tighter text-white">POLY<span className="text-primary">LANCE</span></span>
             <span className="text-[10px] uppercase tracking-widest font-black text-primary opacity-80 leading-none">Zenith Protocol</span>

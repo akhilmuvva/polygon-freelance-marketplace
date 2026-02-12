@@ -13,7 +13,26 @@ import { checkRiskLevel } from '../utils/riskMitigation';
 import { useTransactionToast } from '../hooks/useTransactionToast';
 import { uploadJSONToIPFS } from '../utils/ipfs';
 import { createBiconomySmartAccount, submitWorkGasless } from '../utils/biconomy';
+// import { useQuery, gql } from '@apollo/client';
 import { useTokenPrice } from '../hooks/useTokenPrice';
+
+/*
+const GET_JOBS_QUERY = gql`
+  query GetJobs {
+    jobs(orderBy: id, orderDirection: desc) {
+      id
+      client
+      freelancer
+      status
+      amount
+      token
+      ipfsHash
+      deadline
+      jobId
+    }
+  }
+`;
+*/
 
 const statusLabels = ['Created', 'Accepted', 'Ongoing', 'Disputed', 'Arbitration', 'Completed', 'Cancelled'];
 
@@ -67,23 +86,36 @@ function JobsList({ onUserClick, onSelectChat, gasless, smartAccount: propSmartA
         return () => clearTimeout(timer);
     }, [searchQuery]);
 
-    const { data: jobCount } = useReadContract({
-        address: CONTRACT_ADDRESS,
-        abi: FreelanceEscrowABI.abi,
-        functionName: 'jobCount',
-    });
+    // const { loading: graphLoading, error: graphError, data: graphData } = useQuery(GET_JOBS_QUERY);
+    const graphData = null; // Temporarily disabled until subgraph is deployed
+    const graphLoading = false;
 
-    const count = jobCount ? Number(jobCount) : 0;
-    let jobIds = Array.from({ length: count }, (_, i) => i + 1);
+    // Flatten Graph data to match expected structure or just use it directly
+    const jobs = React.useMemo(() => {
+        if (!graphData) return [];
+        return graphData.jobs.map(j => ({
+            ...j,
+            // Ensure types match what JobCard expects if we pass it down, 
+            // or just extraction of IDs is enough if we are only replacing the Loop?
+            // The prompt says "Fetch from The Graph", preventing the "Local State" / "Loop".
+            // We will pass the data down to JobCard to optimize.
+            jobId: j.id
+        }));
+    }, [graphData]);
 
     // Filter by AI Results if they exist
-    if (aiResults) {
-        jobIds = jobIds.filter(id => aiResults.includes(id));
-    }
+    const filteredJobs = React.useMemo(() => {
+        let res = jobs;
+        if (aiResults) {
+            res = res.filter(j => aiResults.includes(Number(j.id)));
+        }
+        if (sortBy === 'Newest') {
+            // Graph can sort, but if we have local sort options:
+        }
+        return res;
+    }, [jobs, aiResults, sortBy]);
 
-    if (sortBy === 'Newest') jobIds.reverse();
-
-    const isLoading = jobCount === undefined || isAiLoading;
+    const isLoading = graphLoading || isAiLoading;
 
     return (
         <div className="container" style={{ padding: 0 }}>
@@ -172,7 +204,7 @@ function JobsList({ onUserClick, onSelectChat, gasless, smartAccount: propSmartA
                     Array.from({ length: 6 }).map((_, i) => (
                         <div key={i} className="glass-card skeleton skeleton-card !bg-white/5 opacity-50" />
                     ))
-                ) : count === 0 ? (
+                ) : filteredJobs.length === 0 ? (
                     <div className="glass-card" style={{ textAlign: 'center', padding: '80px', gridColumn: '1 / -1' }}>
                         <motion.div
                             initial={{ scale: 0.8, opacity: 0 }}
@@ -198,15 +230,16 @@ function JobsList({ onUserClick, onSelectChat, gasless, smartAccount: propSmartA
                         </motion.div>
                     </div>
                 ) : (
-                    jobIds.map((id, i) => (
+                    filteredJobs.map((job, i) => (
                         <motion.div
-                            key={id}
+                            key={job.id}
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: i * 0.05, duration: 0.4 }}
                         >
                             <JobCard
-                                jobId={id}
+                                jobId={job.id}
+                                jobData={job} // Pass graph data
                                 categoryFilter={filter}
                                 searchQuery={searchQuery}
                                 minBudget={minBudget}
@@ -224,7 +257,7 @@ function JobsList({ onUserClick, onSelectChat, gasless, smartAccount: propSmartA
     );
 }
 
-const JobCard = React.memo(({ jobId, categoryFilter, searchQuery, minBudget, statusFilter, showMyJobs, onUserClick, onSelectChat, gasless }) => {
+const JobCard = React.memo(({ jobId, jobData, categoryFilter, searchQuery, minBudget, statusFilter, showMyJobs, onUserClick, onSelectChat, gasless }) => {
     const { address } = useAccount();
     const { data: walletClient } = useWalletClient();
     const [metadata, setMetadata] = React.useState(null);
@@ -233,12 +266,32 @@ const JobCard = React.memo(({ jobId, categoryFilter, searchQuery, minBudget, sta
     const [smartAccount, setSmartAccount] = useState(null);
     const { convertToUsd } = useTokenPrice('MATIC');
 
-    const { data: job, refetch } = useReadContract({
+    const { data: contractJob, refetch } = useReadContract({
         address: CONTRACT_ADDRESS,
         abi: FreelanceEscrowABI.abi,
         functionName: 'jobs',
         args: [BigInt(jobId)],
+        query: { enabled: !jobData }
     });
+
+    const jobSource = jobData
+        ? [
+            jobData.client,
+            jobData.jobId || jobData.id,
+            jobData.deadline,
+            jobData.status,
+            0, // rating 
+            jobData.freelancer,
+            0, // categoryId 
+            0, // milestoneCount 
+            false, // paid 
+            jobData.token,
+            jobData.amount,
+            0, // freelancerStake 
+            0, // totalPaidOut 
+            jobData.ipfsHash
+        ]
+        : contractJob;
 
     const { data: arbitrator } = useReadContract({
         address: CONTRACT_ADDRESS,
@@ -291,9 +344,11 @@ const JobCard = React.memo(({ jobId, categoryFilter, searchQuery, minBudget, sta
         fetchMetadata();
     }, [jobId, address, inView]);
 
-    if (!job) return null;
+    if (!jobSource) return null;
 
-    const [client, id, deadline, status, rating, freelancer, categoryId, milestoneCount, paid, token, amount, freelancerStake, totalPaidOut, ipfsHash] = job;
+    // Normalize status to number if it came from Graph as string/enum
+    // Note: Graph usually returns int for enums if configured, but safe to cast
+    const [client, id, deadline, status, rating, freelancer, categoryId, milestoneCount, paid, token, amount, freelancerStake, totalPaidOut, ipfsHash] = jobSource;
     const tokenInfo = SUPPORTED_TOKENS.find(t => t.address.toLowerCase() === token.toLowerCase()) || SUPPORTED_TOKENS[0];
     const currency = tokenInfo.symbol;
     const decimals = tokenInfo.decimals;

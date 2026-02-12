@@ -30,11 +30,17 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
     event FreelancerPicked(uint256 indexed jobId, address indexed freelancer);
     event JobAccepted(uint256 indexed jobId, address indexed freelancer);
 
+    /// @notice Address of the PolyToken (REWARD token)
     address public polyToken;
+    /// @notice Address of the reputation contract
     address public reputationContract;
+    /// @notice Address of the completion certificate contract
     address public completionCertContract;
+    /// @notice Address of the review SBT contract
     address public reviewSBT;
+    /// @notice Address of the privacy shield contract
     address public privacyShield;
+    /// @notice Flag for emergency mode (pauses most functions)
     bool public emergencyMode; 
 
     error EmergencyActive();
@@ -117,6 +123,10 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
 
     uint256 public constant MAX_APPLICATIONS_PER_JOB = 50;
 
+    /**
+     * @notice Allows a freelancer to apply for a job by providing a stake.
+     * @param jobId The unique ID of the job.
+     */
     function applyForJob(uint256 jobId) external payable whenNotPaused nonReentrant {
         Job storage job = jobs[jobId];
         if (job.client == address(0)) revert InvalidAddress();
@@ -138,10 +148,20 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
         emit JobApplied(jobId, _msgSender(), stake);
     }
 
+    /**
+     * @notice Returns all applications for a specific job.
+     * @param jobId The unique ID of the job.
+     * @return An array of Application structs.
+     */
     function getJobApplications(uint256 jobId) external view returns (Application[] memory) {
         return jobApplications[jobId];
     }
 
+    /**
+     * @notice Allows a client to select a freelancer from the applications.
+     * @param jobId The unique ID of the job.
+     * @param freelancer The address of the selected freelancer.
+     */
     function pickFreelancer(uint256 jobId, address freelancer) external whenNotPaused {
         Job storage job = jobs[jobId];
         if (_msgSender() != job.client) revert NotAuthorized();
@@ -163,6 +183,10 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
         emit FreelancerPicked(jobId, freelancer);
     }
 
+    /**
+     * @notice Allows the selected freelancer to accept the job.
+     * @param jobId The unique ID of the job.
+     */
     function acceptJob(uint256 jobId) external payable whenNotPaused nonReentrant {
         Job storage job = jobs[jobId];
         if (_msgSender() != job.freelancer) revert NotAuthorized();
@@ -176,6 +200,11 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
         emit JobAccepted(jobId, _msgSender());
     }
 
+    /**
+     * @notice Allows the freelancer to submit work (IPFS hash).
+     * @param jobId The unique ID of the job.
+     * @param ipfsHash The IPFS hash of the submitted work.
+     */
     function submitWork(uint256 jobId, string memory ipfsHash) external whenNotPaused {
         Job storage job = jobs[jobId];
         if (_msgSender() != job.freelancer) revert NotAuthorized();
@@ -186,6 +215,10 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
         // but traditionally we just wait for client to release funds.
     }
 
+    /**
+     * @notice Allows users to withdraw their owed balances.
+     * @param token The address of the token to withdraw (address(0) for native).
+     */
     function withdraw(address token) external whenNotPaused nonReentrant {
         uint256 amt = balances[_msgSender()][token];
         if (amt == 0) revert InvalidStatus();
@@ -225,6 +258,8 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
 
     /**
      * @notice Milestone Factory: Locks funds and defines stages upfront.
+     * @param p CreateParams struct containing job details and milestones.
+     * @return The newly created jobId.
      */
     function createJob(CreateParams memory p) public payable whenNotPaused nonReentrant returns (uint256) {
         if (p.amount == 0) revert LowValue();
@@ -273,6 +308,8 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
 
     /**
      * @notice Stage-based release of funds.
+     * @param jobId The unique ID of the job.
+     * @param mId The unique ID of the milestone.
      */
     function releaseMilestone(uint256 jobId, uint256 mId) public whenNotPaused nonReentrant {
         Job storage job = jobs[jobId];
@@ -295,7 +332,9 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
     }
 
     /**
-     * @notice Completion and SBT Minting.
+     * @notice Completion and SBT Minting. Handles fee calculation and veteran boosts.
+     * @param jobId The unique ID of the job.
+     * @param rating Rating for the freelancer (1-5).
      */
     function completeJob(uint256 jobId, uint8 rating) public whenNotPaused nonReentrant {
         Job storage job = jobs[jobId];
@@ -386,11 +425,18 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
         emit ReviewSubmitted(jobId, job.client, job.freelancer, rating, "");
     }
 
-    // Traditional releaseFunds call
+    /**
+     * @notice Traditional releaseFunds call, effectively completes the job with a default 5-star rating.
+     * @param jobId The unique ID of the job.
+     */
     function releaseFunds(uint256 jobId) external {
         completeJob(jobId, 5);
     }
 
+    /**
+     * @notice Allows a client to refund a job if it has expired or if in emergency mode.
+     * @param jobId The unique ID of the job.
+     */
     function refundExpiredJob(uint256 jobId) external whenNotPaused nonReentrant {
         Job storage job = jobs[jobId];
         if (_msgSender() != job.client) revert NotAuthorized();
@@ -419,7 +465,8 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
     }
 
     /**
-     * @notice Decentralized Dispute Integration.
+     * @notice Decentralized Dispute Integration. Raises a dispute for a job.
+     * @param jobId The unique ID of the job.
      */
     function raiseDispute(uint256 jobId) public payable whenNotPaused nonReentrant {
         Job storage job = jobs[jobId];
@@ -439,10 +486,19 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
         }
     }
 
+    /**
+     * @notice Alias for raiseDispute.
+     * @param jobId The unique ID of the job.
+     */
     function dispute(uint256 jobId) external payable {
         raiseDispute(jobId);
     }
 
+    /**
+     * @notice Allows the arbitrator to rule on a dispute.
+     * @param dId The unique ID of the dispute.
+     * @param ruling The ruling (1: Split, 2: Client wins, 3: Freelancer wins).
+     */
     function rule(uint256 dId, uint256 ruling) external override whenNotPaused nonReentrant {
         if (_msgSender() != arbitrator) revert NotAuthorized();
         uint256 jobId = disputeIdToJobId[dId];
@@ -481,6 +537,11 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
         }
     }
 
+    /**
+     * @notice Allows the admin to resolve a dispute manually by specifying a bps split.
+     * @param jobId The unique ID of the job.
+     * @param freelancerBps The bps split for the freelancer (10000 = 100%).
+     */
     function resolveDisputeManual(uint256 jobId, uint256 freelancerBps) external onlyRole(DEFAULT_ADMIN_ROLE) whenNotPaused nonReentrant {
         Job storage job = jobs[jobId];
         if (job.status != JobStatus.Disputed) revert InvalidStatus();
