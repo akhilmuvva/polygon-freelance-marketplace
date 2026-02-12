@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PolyLance - Web3 Freelance Marketplace</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 3rem;
+        }
+
+        .header h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .header p {
+            font-size: 1.3rem;
+            opacity: 0.95;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-number {
+            font-size: 3rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: #718096;
+            font-size: 1.1rem;
+        }
+
+        .features {
+            background: white;
+            border-radius: 16px;
+            padding: 3rem;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            margin-bottom: 3rem;
+        }
+
+        .features h2 {
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
+            text-align: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .feature-item {
+            padding: 1.5rem;
+            border-left: 4px solid #667eea;
+            background: #f7fafc;
+            border-radius: 8px;
+        }
+
+        .feature-item h3 {
+            font-size: 1.3rem;
+            margin-bottom: 0.5rem;
+            color: #2d3748;
+        }
+
+        .feature-item p {
+            color: #718096;
+            line-height: 1.6;
+        }
+
+        .cta {
+            text-align: center;
+            padding: 3rem;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        }
+
+        .cta h2 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: #2d3748;
+        }
+
+        .cta p {
+            font-size: 1.1rem;
+            color: #718096;
+            margin-bottom: 2rem;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 1rem 2rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: opacity 0.3s ease;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+        .loading {
+            text-align: center;
+            color: white;
+            font-size: 1.2rem;
+            margin-top: 2rem;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        .pulse {
+            animation: pulse 2s ease-in-out infinite;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 PolyLance</h1>
+            <p>The Most Advanced Web3 Freelance Marketplace</p>
+        </div>
+
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-number">16,245</div>
+                <div class="stat-label">Lines of Code</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">12</div>
+                <div class="stat-label">Smart Contracts</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">10</div>
+                <div class="stat-label">Web3 Niches</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">$9.1B</div>
+                <div class="stat-label">Market Size</div>
+            </div>
+        </div>
+
+        <div class="features">
+            <h2>✨ Platform Features</h2>
+            <div class="feature-grid">
+                <div class="feature-item">
+                    <h3>⚡ Smart Contract Marketplace</h3>
+                    <p>Milestone-based escrow with dispute resolution and automatic payments</p>
+                </div>
+                <div class="feature-item">
+                    <h3>🏆 Reputation System</h3>
+                    <p>Soulbound tokens (SBTs) for credibility and 0% fees for veterans</p>
+                </div>
+                <div class="feature-item">
+                    <h3>🌉 Cross-Chain Support</h3>
+                    <p>CCIP, LayerZero, and Wormhole integration for multi-chain payments</p>
+                </div>
+                <div class="feature-item">
+                    <h3>💎 RWA Tokenization</h3>
+                    <p>Tokenize assets, invoices, and IP rights with AI verification</p>
+                </div>
+                <div class="feature-item">
+                    <h3>🔐 Full Compliance</h3>
+                    <p>KYC/AML, GDPR, MiCA-ready with automated tax reporting</p>
+                </div>
+                <div class="feature-item">
+                    <h3>🎯 Niche Specialization</h3>
+                    <p>10 high-demand Web3 verticals with quadratic governance</p>
+                </div>
+                <div class="feature-item">
+                    <h3>🚀 Viral Referrals</h3>
+                    <p>4-tier referral program with lifetime rewards up to 12.5%</p>
+                </div>
+                <div class="feature-item">
+                    <h3>💰 Creator Royalties</h3>
+                    <p>Earn 2-10% royalties for content, tools, and community building</p>
+                </div>
+                <div class="feature-item">
+                    <h3>🏛️ Quadratic Voting</h3>
+                    <p>Democratic governance with √token voting to reduce whale influence</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="cta">
+            <h2>Ready to Launch! 🎉</h2>
+            <p>The full React application is being prepared...</p>
+            <div class="loading pulse">
+                ⏳ Installing dependencies... Please wait
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Check if dev server is ready
+        setInterval(() => {
+            fetch('http://localhost:5174')
+                .then(() => {
+                    document.querySelector('.loading').innerHTML =
+                        '✅ Dev server is ready! <br><br><a href="http://localhost:5174" class="btn">Open Application →</a>';
+                })
+                .catch(() => {
+                    // Still loading
+                });
+        }, 3000);
+    </script>
+</body>
+
+</html>
