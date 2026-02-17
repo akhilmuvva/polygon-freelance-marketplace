@@ -74,7 +74,7 @@ export function Web3Provider({ children }) {
             chains: [polygonAmoy, polygon, hardhat, base, baseSepolia],
             transports: {
                 [polygonAmoy.id]: fallback([
-                    http('https://rpc-amoy.polygon.technology'),
+                    http('https://rpc.ankr.com/polygon_amoy'),
                     http('https://polygon-amoy-bor-rpc.publicnode.com'),
                 ]),
                 [polygon.id]: fallback([

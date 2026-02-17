@@ -45,7 +45,7 @@ app.use(helmet({
 }));
 app.use(hpp()); // Prevent HTTP Parameter Pollution
 app.use(cors({
-    origin: process.env.FRONTEND_URL ? process.env.FRONTEND_URL.split(',') : ['https://localhost:5173', 'https://localhost:5174', 'http://localhost:5173', 'http://localhost:5174'],
+    origin: process.env.FRONTEND_URL ? process.env.FRONTEND_URL.split(',') : ['https://localhost:5173', 'https://localhost:5174', 'http://localhost:5173', 'http://localhost:5174', 'https://polygon-freelance-marketplace-onf5efcpb.vercel.app'],
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
