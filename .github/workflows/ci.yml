@@ -16,7 +16,10 @@ jobs:
         with:
           node-version: '20'
       - name: Install Dependencies
-        run: cd contracts && npm install --legacy-peer-deps
+        run: |
+          cd contracts
+          rm -f package-lock.json
+          npm install --legacy-peer-deps
       - name: Run Contract Tests
         env:
           CI: true
