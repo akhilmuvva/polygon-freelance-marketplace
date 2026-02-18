@@ -54,7 +54,7 @@ export async function createBiconomySmartAccount(signer) {
             signer: signer,
             bundlerUrl: BUNDLER_URL,
             biconomyPaymasterApiKey: PAYMASTER_URL,
-            rpcUrl: 'https://rpc-amoy.polygon.technology'
+            rpcUrl: 'https://rpc.ankr.com/polygon_amoy'
         });
 
         console.log('[BICONOMY] Smart Account created:', smartAccount.accountAddress);

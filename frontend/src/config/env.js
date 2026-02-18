@@ -5,7 +5,7 @@ export const config = {
 
     // RPC URLs
     polygonRpc: import.meta.env.VITE_POLYGON_RPC || 'https://polygon-rpc.com',
-    polygonAmoyRpc: import.meta.env.VITE_POLYGON_AMOY_RPC || 'https://rpc-amoy.polygon.technology',
+    polygonAmoyRpc: import.meta.env.VITE_POLYGON_AMOY_RPC || 'https://rpc.ankr.com/polygon_amoy',
 
     // Optional services
     biconomyApiKey: import.meta.env.VITE_BICONOMY_API_KEY || '',
