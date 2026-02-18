@@ -150,7 +150,11 @@ function fallbackMatch(jobDescription, freelancerProfile) {
  * Enhances a user's bio based on their skills and category.
  */
 export async function polishProfileBio(name, category, skills, roughBio) {
-    if (!process.env.GEMINI_API_KEY) return roughBio;
+    if (!process.env.GEMINI_API_KEY) {
+        console.warn("[AI] Key missing, using fallback polish.");
+        // Fallback simulation for demo/dev without API key
+        return `[Auto-Enhanced] A highly skilled ${category} specialist with expertise in ${skills}. ${roughBio} Committed to delivering high-quality decentralized solutions on the Polygon network.`;
+    }
 
     try {
         const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
@@ -175,6 +179,7 @@ export async function polishProfileBio(name, category, skills, roughBio) {
         const result = await model.generateContent(prompt);
         return (await result.response).text().trim();
     } catch (e) {
+        console.error("AI Polish Error:", e);
         return roughBio;
     }
 }

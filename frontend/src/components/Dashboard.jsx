@@ -380,10 +380,11 @@ function Dashboard({ address: propAddress }) {
                                         type="button"
                                         onClick={handleAiPolish}
                                         disabled={isPolishing || !profile.skills}
-                                        className="text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5 text-purple-400 hover:text-purple-300 transition-colors disabled:opacity-50"
+                                        title={!profile.skills ? "Please enter skills first" : "Enhance with Gemini AI"}
+                                        className="text-xs font-bold flex items-center gap-1.5 text-primary hover:text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed bg-primary/10 px-2 py-1 rounded-lg border border-primary/20 hover:bg-primary/20"
                                     >
-                                        <Sparkles size={12} className={isPolishing ? 'animate-spin' : ''} />
-                                        {isPolishing ? 'Polishing...' : 'Polish with AI'}
+                                        <Sparkles size={14} className={isPolishing ? 'animate-spin' : ''} />
+                                        {isPolishing ? 'Optimizing...' : 'AI Enhance'}
                                     </button>
                                 </div>
                                 <textarea
