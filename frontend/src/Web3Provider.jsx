@@ -8,7 +8,7 @@ import {
     darkTheme,
 } from '@rainbow-me/rainbowkit';
 import { WagmiProvider, http, fallback, useAccount } from 'wagmi';
-import { polygon, polygonAmoy, hardhat, base, baseSepolia } from 'wagmi/chains';
+import { polygon, polygonAmoy } from 'wagmi/chains';
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 import { SiweMessage } from 'siwe';
 // import { ApolloClient, InMemoryCache, ApolloProvider } from '@apollo/client';
@@ -70,7 +70,7 @@ export function Web3Provider({ children }) {
             appUrl: window.location.origin,
             appIcon: 'https://raw.githubusercontent.com/lucide-react/lucide/main/icons/briefcase.svg',
             projectId,
-            chains: [polygonAmoy, polygon, hardhat, base, baseSepolia],
+            chains: [polygonAmoy, polygon],
             transports: {
                 [polygonAmoy.id]: fallback([
                     http('https://rpc.ankr.com/polygon_amoy'),
@@ -81,9 +81,6 @@ export function Web3Provider({ children }) {
                     alchemyId ? http(`https://polygon-mainnet.g.alchemy.com/v2/${alchemyId}`) : http(),
                     http('https://polygon-rpc.com'),
                 ]),
-                [hardhat.id]: http(),
-                [base.id]: alchemyId ? http(`https://base-mainnet.g.alchemy.com/v2/${alchemyId}`) : http(),
-                [baseSepolia.id]: alchemyId ? http(`https://base-sepolia.g.alchemy.com/v2/${alchemyId}`) : http(),
             },
             pollingInterval: 1_000, // Faster polling (1s) to match Antigravity speed
             ssr: false,
@@ -163,7 +160,7 @@ export function Web3Provider({ children }) {
                         accentColorForeground: 'white',
                         borderRadius: 'medium',
                         overlayBlur: 'small',
-                    })} modalSize="compact">
+                    })}>
                         <HuddleProvider client={huddleClient}>
                             <ConnectionLogger>
                                 {children}

@@ -237,7 +237,7 @@ const JobCard = ({ job, address, onSelectChat }) => {
                     {job.category || 'Development'}
                 </div>
                 <div style={{ fontSize: '1.2rem', fontWeight: 900, color: '#fff' }}>
-                    {formatUnits(job.amount || 0, tokenInfo.decimals)} <span style={{ fontSize: '0.8rem', fontWeight: 500, color: 'var(--text-tertiary)' }}>{tokenInfo.symbol}</span>
+                    {formatUnits(BigInt(job.amount || '0'), tokenInfo.decimals)} <span style={{ fontSize: '0.8rem', fontWeight: 500, color: 'var(--text-tertiary)' }}>{tokenInfo.symbol}</span>
                 </div>
             </div>
 

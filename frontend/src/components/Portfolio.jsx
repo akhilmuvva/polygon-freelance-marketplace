@@ -115,7 +115,7 @@ function Portfolio({ address, onBack }) {
                                 <div style={{ fontSize: '0.65rem', color: 'var(--text-tertiary)', fontWeight: 600 }}>JOBS</div>
                             </div>
                             <div style={{ ...cardBg, padding: 14 }}>
-                                <div style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--accent-light)' }}>{profile.totalEarned.toFixed(1)}</div>
+                                <div style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--accent-light)' }}>{parseFloat(formatEther(BigInt(profile.totalEarned || '0'))).toFixed(1)}</div>
                                 <div style={{ fontSize: '0.65rem', color: 'var(--text-tertiary)', fontWeight: 600 }}>MATIC</div>
                             </div>
                         </div>

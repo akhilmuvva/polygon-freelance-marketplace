@@ -16,14 +16,16 @@ const FiatOnramp = ({ address }) => {
             if (onrampInstance) return;
             try {
                 const publishableKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
-                if (!publishableKey) console.warn("Stripe Publishable Key not found in env.");
-                const onramp = await loadStripeOnramp(publishableKey || 'pk_test_51...');
-                if (!onramp) throw new Error("Failed to load Stripe Onramp SDK");
+                if (!publishableKey) {
+                    throw new Error("Stripe Publishable Key not found in environment variables (VITE_STRIPE_PUBLISHABLE_KEY).");
+                }
+                const onramp = await loadStripeOnramp(publishableKey);
+                if (!onramp) throw new Error("Failed to load Stripe Onramp SDK. Check your internet connection.");
                 setOnrampInstance(onramp);
             } catch (err) {
                 console.error("[ONRAMP] Init failed:", err);
                 setStatus('error');
-                setStripeError("Could not initialize Stripe Onramp.");
+                setStripeError(err.message);
             }
         };
         initStripe();

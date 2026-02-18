@@ -10,6 +10,12 @@ const SUBGRAPH_URL = process.env.SUBGRAPH_URL || 'https://api.thegraph.com/subgr
  * AI Job Matcher Service v2
  * Performs deep semantic matching, risk assessment, and skill gap analysis.
  */
+// Helper to sanitize inputs for AI prompts to prevent injection
+export function sanitizeForPrompt(text) {
+    if (!text) return "";
+    return text.toString().replace(/[{}]/g, '').replace(/[\"\\]/g, '').slice(0, 1000); // Remove JSON-breaking chars & limit length
+}
+
 export async function calculateMatchScore(jobDescription, freelancerProfile) {
     try {
         if (!process.env.GEMINI_API_KEY) throw new Error("GEMINI_API_KEY missing");
@@ -24,15 +30,21 @@ export async function calculateMatchScore(jobDescription, freelancerProfile) {
             }
         });
 
+        // Sanitize inputs
+        const safeJobDesc = sanitizeForPrompt(jobDescription);
+        const safeSkills = sanitizeForPrompt(freelancerProfile.skills);
+        const safeRep = freelancerProfile.reputationScore;
+
         const prompt = `
             # POLY-AGENCY AGENT v2.1
             Analyze synergy between Job and Freelancer. 
             Skepticism level: HIGH.
 
-            JOB: "${jobDescription}"
-            FREELANCER: "${freelancerProfile.skills}"
-            REP: ${freelancerProfile.reputationScore}/1000
-            JOBS/DISP: ${freelancerProfile.completedJobs}/${freelancerProfile.disputedJobs || 0}
+            JOB: "${safeJobDesc}"
+            FREELANCER_SKILLS: "${safeSkills}"
+            REP: ${safeRep}/1000
+            JOBS_COMPLETED: ${freelancerProfile.completedJobs}
+            DISPUTES: ${freelancerProfile.disputedJobs || 0}
 
             OUTPUT ONLY JSON:
             {"score":0.0-1.0,"reason":"Summary","strengths":[],"gaps":[],"riskLevel":"L/M/H","proTip":"Advice","agentNotes":"Log"}

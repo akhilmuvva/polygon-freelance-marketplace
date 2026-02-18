@@ -400,6 +400,13 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
             p.paymentAmount, 
             p.minAmountOut
         );
+
+        // Validation: Sum of milestones must equal total amount
+        uint256 mSum = 0;
+        for(uint256 i=0; i<p.mAmounts.length; i++) {
+            mSum += p.mAmounts[i];
+        }
+        if (mSum != p.amount) revert InvalidStatus(); // Insolvency protection
         
         _initJobRecord(jobId, p.freelancer, p.token, actualAmount, p.ipfsHash, p.categoryId, p.deadline, p.yieldStrategy, p.mAmounts.length);
         _setupMilestones(jobId, p.freelancer, p.mAmounts, p.mHashes, p.mIsUpfront);
@@ -629,11 +636,15 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
         job.paid = true;
         
         // Withdraw from yield manager if active
+        // Withdraw from yield manager if active
         if (yieldManager != address(0) && job.yieldStrategy != IYieldManager.Strategy.NONE) {
-            IYieldManager(yieldManager).withdraw(job.yieldStrategy, job.token, job.amount, address(this));
+            IYieldManager(yieldManager).withdraw(job.yieldStrategy, job.token, job.amount - job.totalPaidOut, address(this));
         }
 
-        balances[job.client][job.token] += job.amount;
+        uint256 remaining = job.amount - job.totalPaidOut;
+        if (remaining > 0) {
+            balances[job.client][job.token] += remaining;
+        }
     }
 
     /**

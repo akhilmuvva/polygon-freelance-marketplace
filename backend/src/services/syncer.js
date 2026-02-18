@@ -98,16 +98,28 @@ export async function startSyncer() {
             for (const log of logs) {
                 try {
                     const { jobId, freelancer, amount } = log.args;
-                    const maticAmount = Number(amount) / 1e18;
-                    console.log(`Job Completed! Updating reputation for ${freelancer}: +${maticAmount} MATIC`);
+                    const amountBigInt = BigInt(amount);
 
-                    await Profile.findOneAndUpdate(
-                        { address: freelancer.toLowerCase() },
-                        {
-                            $inc: { totalEarned: maticAmount, completedJobs: 1 }
-                        },
-                        { upsert: true, new: true }
-                    );
+                    console.log(`Job Completed! Updating reputation for ${freelancer}: +${amountBigInt.toString()} Wei`);
+
+                    // Atomic-like update via findOne -> calculation -> save to handle String arithmetic
+                    // (Note: In a high-concurrency production env, this needs a distributed lock or optimistic concurrency)
+                    const profile = await Profile.findOne({ address: freelancer.toLowerCase() });
+                    if (profile) {
+                        const currentEarned = BigInt(profile.totalEarned || '0');
+                        const newTotal = currentEarned + amountBigInt;
+
+                        profile.totalEarned = newTotal.toString();
+                        profile.completedJobs = (profile.completedJobs || 0) + 1;
+                        await profile.save();
+                    } else {
+                        // Create new profile if missing
+                        await Profile.create({
+                            address: freelancer.toLowerCase(),
+                            totalEarned: amountBigInt.toString(),
+                            completedJobs: 1
+                        });
+                    }
 
                     await JobMetadata.findOneAndUpdate(
                         { jobId: Number(jobId) },
@@ -117,7 +129,7 @@ export async function startSyncer() {
                     await sendNotification(
                         freelancer,
                         "Funds Released! 💰",
-                        `Payment of ${maticAmount} MATIC for Job #${jobId} has been released to your wallet.`
+                        `Payment of ${Number(amountBigInt) / 1e18} MATIC for Job #${jobId} has been released to your wallet.`
                     );
                 } catch (error) {
                     console.error('Error handling FundsReleased:', error);

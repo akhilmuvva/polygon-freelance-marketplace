@@ -2,7 +2,7 @@ import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import { verifyMessage, createPublicClient, http } from 'viem';
+import { verifyMessage, createPublicClient, http, formatEther } from 'viem';
 import { polygonAmoy } from 'viem/chains';
 import { startSyncer } from './services/syncer.js';
 import crypto from 'crypto';
@@ -21,6 +21,14 @@ import helmet from 'helmet';
 import hpp from 'hpp';
 import { body, validationResult } from 'express-validator';
 import { GDPRService } from './services/gdpr.js';
+import selfsigned from 'selfsigned';
+
+// Helper for Regex escaping
+function escapeRegex(text) {
+    return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+}
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_placeholder');
 
 
 
@@ -41,7 +49,15 @@ const PORT = process.env.PORT || 3001;
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/polylance';
 
 app.use(helmet({
-    contentSecurityPolicy: false,
+    contentSecurityPolicy: {
+        directives: {
+            defaultSrc: ["'self'"],
+            scriptSrc: ["'self'", "https://js.stripe.com", "'unsafe-inline'", "'unsafe-eval'", "blob:"],
+            frameSrc: ["'self'", "https://js.stripe.com", "https://hooks.stripe.com"],
+            connectSrc: ["'self'", "https://api.stripe.com", "https://localhost:3001", "wss://localhost:3001", "https://rpc-amoy.polygon.technology", "https://rpc.ankr.com", "https://polygon-amoy-bor-rpc.publicnode.com"],
+            imgSrc: ["'self'", "data:", "blob:", "https://gateway.pinata.cloud"],
+        },
+    },
     crossOriginResourcePolicy: { policy: "cross-origin" },
     crossOriginEmbedderPolicy: false
 }));
@@ -361,7 +377,9 @@ app.get('/api/match/:jobId/:address', apiLimiter, async (req, res) => {
         const job = await JobMetadata.findOne({ jobId: parseInt(jobId) });
         if (!job) return res.status(404).json({ error: 'Job not found' });
 
-        const profile = await Profile.findOne({ address: { $regex: new RegExp(`^${address}$`, 'i') } });
+        if (!job) return res.status(404).json({ error: 'Job not found' });
+
+        const profile = await Profile.findOne({ address: address.toLowerCase() });
         if (!profile) return res.status(404).json({ error: 'Profile not found' });
 
         const { calculateMatchScore } = await import('./services/aiMatcher.js');
@@ -388,6 +406,8 @@ app.get('/api/disputes/analyze/:jobId', apiLimiter, async (req, res) => {
 
 app.get('/api/search', async (req, res) => {
     const { q } = req.query;
+    if (!q || typeof q !== 'string') return res.json({ jobs: [], intent: {} });
+
     try {
         const { determineSearchIntent } = await import('./services/aiMatcher.js');
         const intent = await determineSearchIntent(q);
@@ -397,10 +417,11 @@ app.get('/api/search', async (req, res) => {
             filter.category = intent.category;
         }
 
+        const safeQuery = escapeRegex(intent.refinedQuery || q);
         const jobs = await JobMetadata.find({
             $or: [
-                { title: { $regex: intent.refinedQuery || q, $options: 'i' } },
-                { description: { $regex: intent.refinedQuery || q, $options: 'i' } }
+                { title: { $regex: safeQuery, $options: 'i' } },
+                { description: { $regex: safeQuery, $options: 'i' } }
             ],
             ...filter
         }).limit(20);
@@ -477,8 +498,12 @@ app.get('/api/analytics', async (req, res) => {
         const totalJobs = await JobMetadata.countDocuments();
         const profiles = await Profile.find();
 
+
+
         // Volume and Reputation
-        const totalVolume = profiles.reduce((acc, p) => acc + (p.totalEarned || 0), 0);
+        const totalVolumeWei = profiles.reduce((acc, p) => acc + BigInt(p.totalEarned || '0'), 0n);
+        const totalVolume = parseFloat(formatEther(totalVolumeWei));
+
         const avgReputation = profiles.length > 0 ?
             profiles.reduce((acc, p) => acc + (p.reputationScore || 0), 0) / profiles.length : 0;
 
@@ -506,18 +531,20 @@ app.get('/api/analytics', async (req, res) => {
         ]);
 
         // TVL Approximation (Sum of unreleased milestones)
-        let tvl = 0;
+        let tvlWei = 0n;
         jobs.forEach(job => {
             if (job.status === 1) { // 1 = Active/Accepted
                 job.milestones.forEach(m => {
                     if (!m.isReleased) {
-                        tvl += parseFloat(m.amount || 0);
+                        tvlWei += BigInt(m.amount || '0');
                     }
                 });
             }
         });
+        const tvl = parseFloat(formatEther(tvlWei));
 
         res.json({
+
             totalJobs,
             totalVolume,
             avgReputation,
@@ -568,7 +595,10 @@ app.post('/api/frames/callback', (req, res) => {
 });
 
 // IPFS Storage Routes
-const upload = multer({ storage: multer.memoryStorage() });
+const upload = multer({
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 5 * 1024 * 1024 } // 5MB limit
+});
 
 app.post('/api/storage/upload-json', apiLimiter, async (req, res) => {
     try {
@@ -630,7 +660,6 @@ app.post('/api/stripe/create-onramp-session', async (req, res) => {
             return res.status(400).json({ error: 'Stripe Secret Key not configured on server.' });
         }
 
-        const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
         const onrampSession = await stripe.crypto.onrampSessions.create({
             transaction_details: {
                 destination_currency: 'usdc',
@@ -660,10 +689,22 @@ try {
         };
         console.log('Loaded SSL certificates.');
     } else {
-        console.warn('SSL certificates not found in backend/certs. Running in HTTP mode.');
+        console.warn('SSL certificates not found in backend/certs. Generating self-signed certificates...');
+        const attrs = [{ name: 'commonName', value: 'localhost' }];
+        const pems = selfsigned.generate(attrs, { days: 365 });
+        httpsOptions = {
+            key: pems.private,
+            cert: pems.cert
+        };
+        // Optionally save them for next time (not implemented to keep it simple/ephemeral or could save)
+        // mkdir if not exists
+        if (!fs.existsSync(certPath)) fs.mkdirSync(certPath);
+        fs.writeFileSync(path.join(certPath, 'server.key'), pems.private);
+        fs.writeFileSync(path.join(certPath, 'server.cert'), pems.cert);
+        console.log('Generated and saved new SSL certificates.');
     }
 } catch (e) {
-    console.warn('Error loading SSL certs:', e.message);
+    console.warn('Error loading/generating SSL certs:', e.message);
 }
 
 // Only start the server if running directly (not imported by Vercel)

@@ -1,6 +1,6 @@
-import React, { useEffect, useState, useRef } from 'react';
 import { api } from '../services/api';
 import { Trophy, Medal, Award, ExternalLink, User, Star, TrendingUp, Loader2 } from 'lucide-react';
+import { formatEther } from 'viem';
 import { useAnimeAnimations } from '../hooks/useAnimeAnimations';
 
 function Leaderboard() {
@@ -149,8 +149,8 @@ function Leaderboard() {
                                         </td>
                                         <td style={{ padding: 20, textAlign: 'right' }}>
                                             <div style={{ fontSize: '1.05rem', fontWeight: 800 }}>
-                                                {leader.totalEarned.toLocaleString()}
-                                                <span style={{ fontSize: '0.72rem', color: 'var(--text-tertiary)', fontWeight: 500, marginLeft: 4 }}>USDC</span>
+                                                {parseFloat(formatEther(BigInt(leader.totalEarned || '0'))).toLocaleString(undefined, { maximumFractionDigits: 1 })}
+                                                <span style={{ fontSize: '0.72rem', color: 'var(--text-tertiary)', fontWeight: 500, marginLeft: 4 }}>MATIC</span>
                                             </div>
                                         </td>
                                     </tr>

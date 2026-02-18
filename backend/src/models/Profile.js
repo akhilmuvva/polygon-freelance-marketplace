@@ -8,7 +8,7 @@ const profileSchema = new mongoose.Schema({
     avatarIpfsHash: { type: String },
     website: { type: String },
     github: { type: String },
-    totalEarned: { type: Number, default: 0 },
+    totalEarned: { type: String, default: '0' },
     completedJobs: { type: Number, default: 0 },
     disputedJobs: { type: Number, default: 0 },
     ratingSum: { type: Number, default: 0 },
