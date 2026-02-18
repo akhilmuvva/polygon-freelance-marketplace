@@ -1,6 +1,10 @@
 # PolyLance Zenith: The Supreme Decentralized Marketplace
 **Founding Architect:** Akhil Muvva
-
+## 👥 Contributors
+| Name | GitHub |
+| :--- | :--- |
+| **Muvva Akhil Yadav** | [@akhilmuvva](https://github.com/akhilmuvva) |
+| **Jhansi Kupireddy** | [@jhansikupireddy-lang](https://github.com/jhansikupireddy-lang) |
 
 PolyLance Zenith is a state-of-the-art, professional freelance ecosystem achieving the "Supreme Level" of decentralization on Polygon. It integrates advanced governance, AI-agentic autonomy, social-layer connectivity, and **groundbreaking Real-World Asset (RWA) tokenization** to create the world's most robust freelance coordination engine.
 
