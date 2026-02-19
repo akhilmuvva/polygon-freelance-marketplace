@@ -8,6 +8,7 @@ import { JobMetadata } from '../models/JobMetadata.js';
 import { Profile } from '../models/Profile.js';
 import { sendNotification } from './notifications.js';
 import { SyncProgress } from '../models/SyncProgress.js';
+import { logger } from '../utils/logger.js';
 
 dotenv.config();
 
@@ -31,7 +32,7 @@ try {
         }
     }
 } catch (err) {
-    console.warn('Could not load dynamic contract addresses, using defaults');
+    logger.warn('Could not load dynamic contract addresses, using defaults', 'SYNC');
 }
 
 // Load ABIs
@@ -47,7 +48,7 @@ const client = createPublicClient({
 });
 
 export async function startSyncer() {
-    console.log('Starting blockchain event syncer...');
+    logger.sync('Starting blockchain event syncer...');
 
     // Persistence Check: Catch up on missed blocks
     const progress = await SyncProgress.findOneAndUpdate(
@@ -57,7 +58,7 @@ export async function startSyncer() {
     );
 
     const currentBlock = Number(await client.getBlockNumber());
-    console.log(`Current Block: ${currentBlock}, Last Synced: ${progress.lastBlock}`);
+    logger.sync(`Current Block: ${currentBlock}, Last Synced: ${progress.lastBlock}`);
 
     if (currentBlock > progress.lastBlock) {
         console.log(`Catching up from block ${progress.lastBlock + 1} to ${currentBlock}...`);

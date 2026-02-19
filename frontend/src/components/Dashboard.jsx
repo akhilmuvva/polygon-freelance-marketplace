@@ -174,6 +174,21 @@ function Dashboard({ address: propAddress }) {
         totalJobs: 0, totalVolume: 0, avgReputation: 0, totalUsers: 0,
     });
     const [isPolishing, setIsPolishing] = React.useState(false);
+    const [backendStatus, setBackendStatus] = React.useState('checking');
+
+    useEffect(() => {
+        const checkHealth = async () => {
+            try {
+                const health = await api.checkHealth();
+                setBackendStatus(health.status === 'ok' ? 'online' : 'error');
+            } catch (e) {
+                setBackendStatus('offline');
+            }
+        };
+        checkHealth();
+        const interval = setInterval(checkHealth, 30000);
+        return () => clearInterval(interval);
+    }, []);
 
     // Anime.js refs and hooks
     const heroRef = useRef(null);
@@ -308,6 +323,16 @@ function Dashboard({ address: propAddress }) {
                             <p style={s.heroSub}>
                                 Your decentralized command center. Track contracts, grow your reputation, and seize new opportunities.
                             </p>
+
+                            <div style={s.cmdGrid}>
+                                <div style={s.cmdItem}>
+                                    <span style={s.cmdLabel}>System Status</span>
+                                    <span style={s.cmdValue(backendStatus === 'online' ? '#10b981' : (backendStatus === 'checking' ? '#f59e0b' : '#ef4444'))}>
+                                        <Activity size={13} className={backendStatus === 'online' ? 'animate-pulse' : ''} />
+                                        {backendStatus === 'online' ? 'Supreme Node Live' : (backendStatus === 'checking' ? 'Connecting...' : 'Node Offline')}
+                                    </span>
+                                </div>
+                            </div>
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
                             <img src="/logo.png" alt="PolyLance" style={{ width: 80, height: 80, borderRadius: 16, boxShadow: '0 8px 32px rgba(124,92,252,0.25)', border: '1px solid rgba(124,92,252,0.2)' }} />

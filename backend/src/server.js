@@ -22,6 +22,7 @@ import hpp from 'hpp';
 import { body, validationResult } from 'express-validator';
 import { GDPRService } from './services/gdpr.js';
 import selfsigned from 'selfsigned';
+import { logger } from './utils/logger.js';
 
 // Helper for Regex escaping
 function escapeRegex(text) {
@@ -43,6 +44,22 @@ dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+// Environment Validation
+function validateEnv() {
+    const required = ['MONGODB_URI', 'GEMINI_API_KEY', 'STRIPE_SECRET_KEY'];
+    const missing = required.filter(key => !process.env[key]);
+
+    if (missing.length > 0) {
+        logger.warn(`Critical environment variables missing: ${missing.join(', ')}`);
+        if (process.env.NODE_ENV === 'production') {
+            logger.error('Missing required variables in production. Exiting.', 'CONFIG');
+            process.exit(1);
+        }
+    }
+}
+
+validateEnv();
 
 export const app = express();
 const PORT = process.env.PORT || 3001;
@@ -79,32 +96,53 @@ app.use(express.json({ limit: '10kb' })); // Body limiting to prevent DoS
 // Database Connection
 mongoose.connect(MONGODB_URI)
     .then(() => {
-        console.log('Connected to MongoDB Atlas');
+        logger.success('Connected to MongoDB Atlas', 'DB');
         // Start server only after DB is ready
         if (process.argv[1] === fileURLToPath(import.meta.url)) {
             startServer();
         }
     })
-    .catch(err => console.error('MongoDB connection error:', err));
+    .catch(err => logger.error('MongoDB connection error', 'DB', err));
 
 function startServer() {
-    if (process.env.NODE_ENV === 'production') {
+    const server = process.env.NODE_ENV === 'production' ?
         app.listen(PORT, '0.0.0.0', () => {
-            console.log(`HTTP Server running on port ${PORT} (Production Mode)`);
-            startSyncer().catch(console.error);
-        });
-    } else if (httpsOptions) {
-        https.createServer(httpsOptions, app).listen(PORT, '0.0.0.0', () => {
-            console.log(`HTTPS Server running on port ${PORT}`);
-            startSyncer().catch(console.error);
-        });
-    } else {
-        app.listen(PORT, '0.0.0.0', () => {
-            console.log(`HTTP Server running on port ${PORT}`);
-            startSyncer().catch(console.error);
-        });
-    }
+            logger.info(`HTTP Server running on port ${PORT} (Production Mode)`, 'SERVER');
+            startSyncer().catch(e => logger.error('Syncer failed to start', 'SYNC', e));
+        }) :
+        (httpsOptions ?
+            https.createServer(httpsOptions, app).listen(PORT, '0.0.0.0', () => {
+                logger.info(`HTTPS Server running on port ${PORT}`, 'SERVER');
+                startSyncer().catch(e => logger.error('Syncer failed to start', 'SYNC', e));
+            }) :
+            app.listen(PORT, '0.0.0.0', () => {
+                logger.info(`HTTP Server running on port ${PORT}`, 'SERVER');
+                startSyncer().catch(e => logger.error('Syncer failed to start', 'SYNC', e));
+            }));
+
+    // Graceful Shutdown
+    process.on('SIGTERM', () => shutdown(server, 'SIGTERM'));
+    process.on('SIGINT', () => shutdown(server, 'SIGINT'));
 }
+
+async function shutdown(server, signal) {
+    logger.info(`${signal} received. Closing server...`, 'SHUTDOWN');
+    server.close(async () => {
+        logger.info('Server closed. Disconnecting DB...', 'SHUTDOWN');
+        await mongoose.connection.close(false);
+        logger.success('Database disconnected. Bye!', 'SHUTDOWN');
+        process.exit(0);
+    });
+}
+
+// Health Check
+app.get('/api/health', (req, res) => {
+    res.json({
+        status: 'ok',
+        uptime: process.uptime(),
+        network: process.env.NETWORK || 'localhost'
+    });
+});
 
 // Auth Routes
 app.get('/api/auth/nonce/:address', async (req, res) => {
@@ -732,6 +770,19 @@ if (process.env.NODE_ENV !== 'production') {
         console.warn('Error loading/generating SSL certs:', e.message);
     }
 }
+
+// 404 Handler
+app.use((req, res) => {
+    res.status(404).json({ error: 'Endpoint not found' });
+});
+
+// Global Error Handler
+app.use((err, req, res, next) => {
+    logger.error('Unhandled application error', 'APP', err);
+    const status = err.status || 500;
+    const message = process.env.NODE_ENV === 'production' ? 'Internal server error' : err.message;
+    res.status(status).json({ error: message });
+});
 
 // Only start the server if running directly (not imported by Vercel)
 // Handled in mongoose.connect loop now for better sync

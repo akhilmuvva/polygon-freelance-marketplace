@@ -14,9 +14,15 @@ const safeFetch = async (url, options) => {
         return await handleResponse(response);
     } catch (error) {
         console.error(`API Call failed: ${url}`, error.message);
-        // Throw a user-friendly error or a specific network error
+
+        // Context-aware error message
+        const isProd = window.location.hostname.includes('render.com') || window.location.hostname.includes('vercel.app');
+
         if (error.message.includes('Failed to fetch')) {
-            throw new Error('Backend server is unreachable. Please ensure the backend is running on port 3001.');
+            const message = isProd
+                ? 'Network error: The backend service might be asleep or unreachable. Please try again in 30 seconds.'
+                : 'Backend server is unreachable. Please ensure the backend is running locally on port 3001.';
+            throw new Error(message);
         }
         throw error;
     }
@@ -79,4 +85,5 @@ export const api = {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message, signature })
     }),
+    checkHealth: () => safeFetch(`${API_URL}/health`),
 };
