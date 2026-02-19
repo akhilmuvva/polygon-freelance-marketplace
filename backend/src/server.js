@@ -135,7 +135,7 @@ app.post('/api/auth/verify', async (req, res) => {
         // Use a public client to support EIP-1271 (Smart Accounts)
         const publicClient = createPublicClient({
             chain: polygonAmoy,
-            transport: http('https://rpc-amoy.polygon.technology')
+            transport: http(process.env.RPC_URL || 'https://rpc-amoy.polygon.technology')
         });
 
         const isValid = await publicClient.verifyMessage({

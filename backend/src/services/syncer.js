@@ -43,7 +43,7 @@ const crossChainAbi = JSON.parse(fs.readFileSync(crossChainAbiPath, 'utf8')).abi
 
 const client = createPublicClient({
     chain: IS_AMOY ? polygonAmoy : localhost,
-    transport: http(IS_AMOY ? (process.env.RPC_URL || 'https://rpc-amoy.polygon.technology') : 'http://localhost:8545'),
+    transport: http(process.env.RPC_URL || (IS_AMOY ? 'https://rpc-amoy.polygon.technology' : 'http://localhost:8545')),
 });
 
 export async function startSyncer() {
