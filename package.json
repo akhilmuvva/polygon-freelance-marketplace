@@ -3,9 +3,9 @@
     "version": "1.0.0",
     "private": true,
     "scripts": {
-        "install-backend": "npm install --prefix backend",
-        "postinstall": "npm install --prefix backend",
-        "build": "npm install --prefix backend",
-        "start": "node backend/src/server.js"
+        "install-backend": "cd backend && npm install",
+        "postinstall": "cd backend && npm install",
+        "build": "cd backend && npm install",
+        "start": "cd backend && node src/server.js"
     }
 }

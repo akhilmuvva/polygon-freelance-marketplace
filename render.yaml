@@ -3,11 +3,13 @@ services:
     name: polylance-backend
     env: node
     rootDir: backend
-    buildCommand: npm install
-    startCommand: npm start
+    buildCommand: cd backend && npm install
+    startCommand: cd backend && node src/server.js
     plan: free
     branch: master
     envVars:
+      - key: NODE_ENV
+        value: production
       - key: NODE_VERSION
         value: 20.11.0
       - key: PORT
