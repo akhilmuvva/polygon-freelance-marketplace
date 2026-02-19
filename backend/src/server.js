@@ -706,30 +706,31 @@ app.post('/api/stripe/create-onramp-session', async (req, res) => {
 const certPath = path.join(process.cwd(), 'certs');
 let httpsOptions = null;
 
-try {
-    if (fs.existsSync(path.join(certPath, 'server.key')) && fs.existsSync(path.join(certPath, 'server.cert'))) {
-        httpsOptions = {
-            key: fs.readFileSync(path.join(certPath, 'server.key')),
-            cert: fs.readFileSync(path.join(certPath, 'server.cert'))
-        };
-        console.log('Loaded SSL certificates.');
-    } else {
-        console.warn('SSL certificates not found in backend/certs. Generating self-signed certificates...');
-        const attrs = [{ name: 'commonName', value: 'localhost' }];
-        const pems = selfsigned.generate(attrs, { days: 365 });
-        httpsOptions = {
-            key: pems.private,
-            cert: pems.cert
-        };
-        // Optionally save them for next time (not implemented to keep it simple/ephemeral or could save)
-        // mkdir if not exists
-        if (!fs.existsSync(certPath)) fs.mkdirSync(certPath);
-        fs.writeFileSync(path.join(certPath, 'server.key'), pems.private);
-        fs.writeFileSync(path.join(certPath, 'server.cert'), pems.cert);
-        console.log('Generated and saved new SSL certificates.');
+if (process.env.NODE_ENV !== 'production') {
+    try {
+        if (fs.existsSync(path.join(certPath, 'server.key')) && fs.existsSync(path.join(certPath, 'server.cert'))) {
+            httpsOptions = {
+                key: fs.readFileSync(path.join(certPath, 'server.key')),
+                cert: fs.readFileSync(path.join(certPath, 'server.cert'))
+            };
+            console.log('Loaded SSL certificates.');
+        } else {
+            console.warn('SSL certificates not found in backend/certs. Generating self-signed certificates...');
+            const attrs = [{ name: 'commonName', value: 'localhost' }];
+            const pems = selfsigned.generate(attrs, { days: 365 });
+            httpsOptions = {
+                key: pems.private,
+                cert: pems.cert
+            };
+            // mkdir if not exists
+            if (!fs.existsSync(certPath)) fs.mkdirSync(certPath);
+            fs.writeFileSync(path.join(certPath, 'server.key'), pems.private);
+            fs.writeFileSync(path.join(certPath, 'server.cert'), pems.cert);
+            console.log('Generated and saved new SSL certificates.');
+        }
+    } catch (e) {
+        console.warn('Error loading/generating SSL certs:', e.message);
     }
-} catch (e) {
-    console.warn('Error loading/generating SSL certs:', e.message);
 }
 
 // Only start the server if running directly (not imported by Vercel)
