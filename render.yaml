@@ -14,7 +14,7 @@ services:
       - key: NETWORK
         value: amoy
       - key: RPC_URL
-        value: https://rpc-amoy.polygon.technology
+        value: https://polygon-amoy.g.alchemy.com/v2/xd727FUEtN2c-SPI_yo3B
       - key: PORT
         value: 10000
       - key: MONGODB_URI
