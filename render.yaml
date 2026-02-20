@@ -34,7 +34,6 @@ services:
         sync: false
       - key: FRONTEND_URL
         value: https://polylance.codes,https://www.polylance.codes
-
   - type: web
     name: polylance-frontend
     env: static
