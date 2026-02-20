@@ -35,8 +35,8 @@ function escapeRegex(text) {
 
 function validateEnv() {
     logger.info('--- Environment Diagnostic ---', 'CONFIG');
-    const critical = ['MONGODB_URI', 'GEMINI_API_KEY'];
-    const gateway = ['RAZORPAY_KEY_ID', 'RAZORPAY_KEY_SECRET'];
+    const critical = ['MONGODB_URI'];
+    const gateway = ['RAZORPAY_KEY_ID', 'RAZORPAY_KEY_SECRET', 'GEMINI_API_KEY'];
 
     // Log presence
     logger.info(`MONGODB_URI: ${process.env.MONGODB_URI ? 'LOADED' : 'MISSING'}`, 'CONFIG');
