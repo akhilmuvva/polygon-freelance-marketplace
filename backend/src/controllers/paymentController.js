@@ -14,8 +14,13 @@ export const createRazorpayOrder = async (req, res) => {
     try {
         const { amount, address, customer_details } = req.body;
 
-        // Mock Flow for Developers
-        if (process.env.NODE_ENV !== 'production' && (!process.env.RAZORPAY_KEY_ID || process.env.RAZORPAY_KEY_ID.includes('replace_me'))) {
+        // Mock Flow (for environments where keys are not yet configured)
+        const isMockMode = !process.env.RAZORPAY_KEY_ID ||
+            process.env.RAZORPAY_KEY_ID.includes('replace_me') ||
+            process.env.RAZORPAY_KEY_ID === 'MOCK';
+
+        if (isMockMode) {
+            logger.warn('RAZORPAY: Missing keys. Initializing MOCK order flow.', 'PAYMENT');
             const mockOrder = {
                 id: `mock_order_${Date.now()}`,
                 amount: Math.round(amount * 100),
@@ -82,11 +87,15 @@ export const verifyRazorpayPayment = async (req, res) => {
         if (razorpay_order_id?.startsWith('mock_')) {
             await PaymentOrder.findOneAndUpdate(
                 { orderId: razorpay_order_id },
-                { status: 'PAID', paymentId: razorpay_payment_id },
+                { status: 'PAID', paymentId: razorpay_payment_id || 'mock_pay_123' },
                 { new: true }
             );
             logger.success(`MOCK Payment verified: ${razorpay_order_id}`, 'PAYMENT');
             return res.json({ status: 'SUCCESS', message: 'Mock payment verified' });
+        }
+
+        if (!process.env.RAZORPAY_KEY_SECRET) {
+            return res.status(400).json({ error: 'Razorpay secret key not configured' });
         }
 
         const body = razorpay_order_id + "|" + razorpay_payment_id;
