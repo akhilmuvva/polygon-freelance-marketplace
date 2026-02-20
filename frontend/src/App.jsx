@@ -363,7 +363,7 @@ function App() {
     hotToast.success("Logged out");
   };
 
-  const effectiveAddress = smartAccount ? smartAccount.accountAddress : address;
+  const effectiveAddress = smartAccount?.accountAddress || address;
 
   const navigate = (tab) => { setActiveTab(tab); setIsSidebarOpen(false); };
 
@@ -547,7 +547,7 @@ function App() {
                 {isGasless ? 'Gasless' : 'Standard'}
               </button>
 
-              {smartAccount && (
+              {smartAccount && smartAccount.accountAddress && (
                 <div className="desktop-only" style={styles.smartWallet}>
                   <div>
                     <div style={styles.saLabel}>Smart Wallet</div>

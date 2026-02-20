@@ -74,6 +74,11 @@ export async function createBiconomySmartAccount(signer) {
             rpcUrl: 'https://rpc.ankr.com/polygon_amoy'
         });
 
+        // Resolve accountAddress — newer SDK versions require getAccountAddress()
+        if (!smartAccount.accountAddress && typeof smartAccount.getAccountAddress === 'function') {
+            smartAccount.accountAddress = await smartAccount.getAccountAddress();
+        }
+
         console.log('[BICONOMY] Smart Account created:', smartAccount.accountAddress);
         return smartAccount;
     } catch (error) {
