@@ -16,7 +16,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const IS_AMOY = process.env.NETWORK === 'amoy';
-const CHUNK_SIZE = 100; // Increased to reduce total requests
+const CHUNK_SIZE = 10; // Reduced for CCIP Manager compatibility
 const DEPLOY_BLOCK = BigInt(process.env.CONTRACT_DEPLOY_BLOCK || (IS_AMOY ? '34230000' : '0'));
 
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
@@ -251,8 +251,8 @@ async function fetchLogsInChunks(contractAddress, targetAbi, startBlock, endBloc
                 }
             }
 
-            // Artificial delay to respect rate limits
-            await sleep(logs.length > 50 ? 500 : 150);
+            // Fixed delay to respect Alchemy rate limits
+            await sleep(250);
         } catch (err) {
             if (err.status === 429) {
                 logger.warn('Alchemy Rate Limited! Pausing 2s...', 'SYNC');
