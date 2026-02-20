@@ -1,4 +1,4 @@
-import { parseAbiItem } from 'viem';
+import { parseAbiItem, decodeEventLog } from 'viem';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -16,8 +16,10 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const IS_AMOY = process.env.NETWORK === 'amoy';
-const CHUNK_SIZE = 10; // Alchemy Free Tier limit for Amoy/Large ranges
-const DEPLOY_BLOCK = BigInt(process.env.CONTRACT_DEPLOY_BLOCK || (IS_AMOY ? '12000000' : '0'));
+const CHUNK_SIZE = 100; // Increased to reduce total requests
+const DEPLOY_BLOCK = BigInt(process.env.CONTRACT_DEPLOY_BLOCK || (IS_AMOY ? '34230000' : '0'));
+
+const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 // Try to load deployment addresses dynamically
 let CONTRACT_ADDRESS = IS_AMOY ? '0x25F6C8ed995C811E6c0ADb1D66A60830E8115e9A' : '0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9';
@@ -40,6 +42,7 @@ try {
 const abiPath = path.join(__dirname, '../contracts', 'FreelanceEscrow.json');
 const crossChainAbiPath = path.join(__dirname, '../contracts', 'CrossChainEscrowManager.json');
 const abi = JSON.parse(fs.readFileSync(abiPath, 'utf8')).abi;
+const crossChainAbi = JSON.parse(fs.readFileSync(crossChainAbiPath, 'utf8')).abi;
 
 // Event Definitions
 const EVENTS = {
@@ -216,34 +219,47 @@ async function processLog(log, eventName) {
     }
 }
 
-async function fetchLogsInChunks(contractAddress, events, startBlock, endBlock) {
+async function fetchLogsInChunks(contractAddress, targetAbi, startBlock, endBlock) {
     let current = startBlock;
-    // Limit catch-up to prevent millions of requests on first run
-    // If the gap is massive, we only sync the most recent 1000 blocks
-    const MAX_GAP = 1000n;
+    const MAX_GAP = 5000n;
     if (endBlock - current > MAX_GAP) {
-        logger.warn(`Gap too large (${endBlock - current} blocks). Syncing only the last ${MAX_GAP} blocks to stay within limits.`, 'SYNC');
+        logger.warn(`Gap too large (${endBlock - current} blocks). Syncing only last ${MAX_GAP} blocks.`, 'SYNC');
         current = endBlock - MAX_GAP;
     }
 
     while (current <= endBlock) {
         const to = current + BigInt(CHUNK_SIZE - 1) > endBlock ? endBlock : current + BigInt(CHUNK_SIZE - 1);
-        logger.sync(`Fetching logs for ${contractAddress} from ${current} to ${to}...`);
+        logger.sync(`[BC-SYNC]: Scanning ${contractAddress.slice(0, 8)}... (${current} to ${to})`);
 
-        for (const [name, event] of Object.entries(events)) {
-            try {
-                const logs = await client.getLogs({
-                    address: contractAddress,
-                    event: event,
-                    fromBlock: current,
-                    toBlock: to
-                });
-                for (const log of logs) {
-                    await processLog(log, name);
+        try {
+            const logs = await client.getLogs({
+                address: contractAddress,
+                fromBlock: current,
+                toBlock: to
+            });
+
+            for (const log of logs) {
+                try {
+                    const decoded = decodeEventLog({
+                        abi: targetAbi,
+                        data: log.data,
+                        topics: log.topics,
+                    });
+                    await processLog({ ...log, args: decoded.args }, decoded.eventName);
+                } catch (e) {
+                    // Skip logs that don't match target ABI
                 }
-            } catch (err) {
-                logger.error(`Failed to fetch ${name} logs:`, 'SYNC', err);
             }
+
+            // Artificial delay to respect rate limits
+            await sleep(logs.length > 50 ? 500 : 150);
+        } catch (err) {
+            if (err.status === 429) {
+                logger.warn('Alchemy Rate Limited! Pausing 2s...', 'SYNC');
+                await sleep(2000);
+                continue; // Retry this chunk
+            }
+            logger.error(`Failed to fetch logs ${current}-${to}:`, 'SYNC', err);
         }
         current = to + 1n;
     }
@@ -263,10 +279,10 @@ export async function startSyncer() {
 
     // 2. Catch up in Chunks
     if (currentBlock >= escrowStart) {
-        await fetchLogsInChunks(CONTRACT_ADDRESS, EVENTS, escrowStart, currentBlock);
+        await fetchLogsInChunks(CONTRACT_ADDRESS, abi, escrowStart, currentBlock);
     }
     if (currentBlock >= ccStart) {
-        await fetchLogsInChunks(CROSS_CHAIN_MANAGER_ADDRESS, CROSS_CHAIN_EVENTS, ccStart, currentBlock);
+        await fetchLogsInChunks(CROSS_CHAIN_MANAGER_ADDRESS, crossChainAbi, ccStart, currentBlock);
     }
 
     // 3. Start Live Watchers
