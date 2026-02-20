@@ -17,6 +17,7 @@ import paymentRoutes from './routes/paymentRoutes.js';
 import { Profile } from './models/Profile.js';
 import { JobMetadata } from './models/JobMetadata.js';
 import { SiweMessage } from 'siwe';
+import { SyncProgress } from './models/SyncProgress.js';
 import https from 'https';
 import fs from 'fs';
 import path from 'path';
@@ -97,7 +98,7 @@ app.use(helmet({
 }));
 app.use(hpp()); // Prevent HTTP Parameter Pollution
 app.use(cors({
-    origin: process.env.FRONTEND_URL ? process.env.FRONTEND_URL.split(',') : [
+    origin: process.env.FRONTEND_URL ? process.env.FRONTEND_URL.split(',').map(u => u.trim()) : [
         'https://localhost:5173', 'https://localhost:5174', 'https://localhost:5175',
         'https://localhost:5176', 'https://localhost:5177',
         'http://localhost:5173', 'http://localhost:5174', 'http://localhost:5175',
@@ -128,7 +129,7 @@ function startServer() {
 
     const io = new Server(httpServer, {
         cors: {
-            origin: process.env.FRONTEND_URL ? process.env.FRONTEND_URL.split(',') : [
+            origin: process.env.FRONTEND_URL ? process.env.FRONTEND_URL.split(',').map(u => u.trim()) : [
                 'https://localhost:5173', 'https://localhost:5174', 'http://localhost:5173', 'http://localhost:5174'
             ],
             methods: ['GET', 'POST'],
@@ -178,12 +179,20 @@ async function shutdown(server, signal) {
 }
 
 // Health Check
-app.get('/api/health', (req, res) => {
-    res.json({
-        status: 'ok',
-        uptime: process.uptime(),
-        network: process.env.NETWORK || 'localhost'
-    });
+app.get('/api/health', async (req, res) => {
+    try {
+        const latestProgress = await SyncProgress.find().sort({ lastBlock: -1 }).limit(1);
+        const lastSyncedBlock = latestProgress.length > 0 ? latestProgress[0].lastBlock : 0;
+
+        res.json({
+            status: 'ok',
+            uptime: process.uptime(),
+            network: process.env.NETWORK || 'Polygon Amoy',
+            lastSyncedBlock
+        });
+    } catch (error) {
+        res.status(500).json({ status: 'error', message: error.message });
+    }
 });
 
 // Payment Routes

@@ -1,7 +1,16 @@
 import { useEffect, useState, useCallback } from 'react';
 import { io } from 'socket.io-client';
 
-const SOCKET_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+const getSocketUrl = () => {
+    const envUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+    // If it's a relative URL or already has a protocol, handle it
+    if (envUrl.startsWith('http')) {
+        return envUrl.replace('http', 'ws');
+    }
+    return envUrl; // Fallback
+};
+
+const SOCKET_URL = getSocketUrl();
 
 export const useSocket = () => {
     const [socket, setSocket] = useState(null);

@@ -176,12 +176,14 @@ function Dashboard({ address: propAddress }) {
     });
     const [isPolishing, setIsPolishing] = React.useState(false);
     const [backendStatus, setBackendStatus] = React.useState('checking');
+    const [lastSyncedBlock, setLastSyncedBlock] = React.useState(null);
 
     useEffect(() => {
         const checkHealth = async () => {
             try {
                 const health = await api.checkHealth();
                 setBackendStatus(health.status === 'ok' ? 'online' : 'error');
+                if (health.lastSyncedBlock) setLastSyncedBlock(health.lastSyncedBlock);
             } catch {
                 setBackendStatus('offline');
             }
@@ -342,6 +344,13 @@ function Dashboard({ address: propAddress }) {
                                     <span style={s.cmdValue(backendStatus === 'online' ? '#10b981' : (backendStatus === 'checking' ? '#f59e0b' : '#ef4444'))}>
                                         <Activity size={13} className={backendStatus === 'online' ? 'animate-pulse' : ''} />
                                         {backendStatus === 'online' ? 'Supreme Node Live' : (backendStatus === 'checking' ? 'Connecting...' : 'Node Offline')}
+                                    </span>
+                                </div>
+                                <div style={s.cmdItem}>
+                                    <span style={s.cmdLabel}>Sync Status</span>
+                                    <span style={s.cmdValue(lastSyncedBlock !== null ? '#38bdf8' : 'var(--text-tertiary)')}>
+                                        <Layers size={13} className={backendStatus === 'online' ? 'animate-pulse' : ''} />
+                                        {lastSyncedBlock !== null ? `Block #${lastSyncedBlock}` : (backendStatus === 'checking' ? 'Connecting...' : 'Waiting for Node')}
                                     </span>
                                 </div>
                             </div>
@@ -586,7 +595,7 @@ function Dashboard({ address: propAddress }) {
                     </div>
                 </div>
             </div>
-        </div>
+        </div >
     );
 }
 

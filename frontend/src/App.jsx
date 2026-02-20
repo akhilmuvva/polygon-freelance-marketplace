@@ -1,4 +1,4 @@
-import React, { useState, Suspense, lazy } from 'react';
+import React, { useState, Suspense, lazy, useEffect } from 'react';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import {
   Briefcase, PlusCircle, LayoutDashboard, MessageSquare,
@@ -37,7 +37,6 @@ import { useAccount, useWalletClient } from 'wagmi';
 import { initSocialLogin, createBiconomySmartAccount } from './utils/biconomy';
 import { createWalletClient, custom } from 'viem';
 import { SiweMessage } from 'siwe';
-import { useEffect } from 'react';
 
 /* ── Inline styles for the shell — zero Tailwind dependency ── */
 const styles = {
@@ -428,7 +427,6 @@ function App() {
       <style>{responsiveCSS}</style>
       <div style={styles.shell}>
         <NotificationManager />
-        <ToastContainer theme="dark" position="bottom-right" />
 
         {/* ═══ SIDEBAR ═══ */}
         <aside ref={sidebarRef} className="app-sidebar" style={styles.sidebar(isSidebarOpen)}>
