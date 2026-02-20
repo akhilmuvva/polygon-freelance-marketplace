@@ -9,6 +9,9 @@ import { verifyMessage, formatEther } from 'viem';
 import { polygonAmoy } from 'viem/chains';
 import { startSyncer } from './services/syncer.js';
 import { publicClient, testBlockchainConnection } from './config/blockchain.js';
+import { Server } from 'socket.io';
+import { createServer } from 'http';
+import { createServer as createHttpsServer } from 'https';
 import crypto from 'crypto';
 import paymentRoutes from './routes/paymentRoutes.js';
 import { Profile } from './models/Profile.js';
@@ -119,20 +122,34 @@ mongoose.connect(MONGODB_URI)
     .catch(err => logger.error('MongoDB connection error', 'DB', err));
 
 function startServer() {
-    const server = process.env.NODE_ENV === 'production' ?
-        app.listen(PORT, '0.0.0.0', () => {
-            logger.info(`HTTP Server running on port ${PORT} (Production Mode)`, 'SERVER');
-            startSyncer().catch(e => logger.error('Syncer failed to start', 'SYNC', e));
-        }) :
-        (httpsOptions ?
-            https.createServer(httpsOptions, app).listen(PORT, '0.0.0.0', () => {
-                logger.info(`HTTPS Server running on port ${PORT}`, 'SERVER');
-                startSyncer().catch(e => logger.error('Syncer failed to start', 'SYNC', e));
-            }) :
-            app.listen(PORT, '0.0.0.0', () => {
-                logger.info(`HTTP Server running on port ${PORT}`, 'SERVER');
-                startSyncer().catch(e => logger.error('Syncer failed to start', 'SYNC', e));
-            }));
+    const httpServer = process.env.NODE_ENV === 'production' ?
+        createServer(app) :
+        (httpsOptions ? createHttpsServer(httpsOptions, app) : createServer(app));
+
+    const io = new Server(httpServer, {
+        cors: {
+            origin: process.env.FRONTEND_URL ? process.env.FRONTEND_URL.split(',') : [
+                'https://localhost:5173', 'https://localhost:5174', 'http://localhost:5173', 'http://localhost:5174'
+            ],
+            methods: ['GET', 'POST'],
+            credentials: true
+        }
+    });
+
+    io.on('connection', (socket) => {
+        logger.info(`Socket connected: ${socket.id}`, 'SOCKET');
+        socket.on('disconnect', () => {
+            logger.info(`Socket disconnected: ${socket.id}`, 'SOCKET');
+        });
+    });
+
+    httpServer.listen(PORT, '0.0.0.0', () => {
+        const mode = process.env.NODE_ENV === 'production' ? 'Production' : (httpsOptions ? 'HTTPS' : 'HTTP');
+        logger.info(`${mode} Server running on port ${PORT}`, 'SERVER');
+        startSyncer(io).catch(e => logger.error('Syncer failed to start', 'SYNC', e));
+    });
+
+    const server = httpServer;
 
     // Graceful Shutdown
     process.on('SIGTERM', () => shutdown(server, 'SIGTERM'));

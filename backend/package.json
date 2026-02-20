@@ -29,6 +29,7 @@
     "razorpay": "^2.9.6",
     "selfsigned": "^5.5.0",
     "siwe": "^3.0.0",
+    "socket.io": "^4.8.3",
     "viem": "^2.43.3"
   },
   "engines": {

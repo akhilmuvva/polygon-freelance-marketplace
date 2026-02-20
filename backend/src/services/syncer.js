@@ -7,8 +7,11 @@ import { JobMetadata } from '../models/JobMetadata.js';
 import { Profile } from '../models/Profile.js';
 import { sendNotification } from './notifications.js';
 import { SyncProgress } from '../models/SyncProgress.js';
+import { BlockchainEvent } from '../models/BlockchainEvent.js';
 import { logger } from '../utils/logger.js';
 import { publicClient as client } from '../config/blockchain.js';
+
+let ioInstance = null;
 
 dotenv.config();
 
@@ -207,7 +210,46 @@ async function processLog(log, eventName) {
     try {
         const handler = handlers[eventName];
         if (handler) {
+            // Prevent duplicate notifications
+            const eventId = `${log.transactionHash}_${log.logIndex}`;
+            const existingEvent = await BlockchainEvent.findOne({ transactionHash: log.transactionHash, logIndex: log.logIndex });
+
+            if (!existingEvent) {
+                // Save the event as processed but not yet notified
+                await BlockchainEvent.create({
+                    transactionHash: log.transactionHash,
+                    logIndex: log.logIndex,
+                    eventName,
+                    blockNumber: Number(log.blockNumber),
+                    data: log.args,
+                    notified: false
+                });
+            } else if (existingEvent.notified) {
+                // If it was already notified, we only run the handler (internal state update) and return
+                await handler(log.args, log);
+                return;
+            }
+
+            // Run internal state handler (e.g., updating JobMetadata in MongoDB)
             await handler(log.args, log);
+
+            // Emit real-time notification via Socket.io
+            if (ioInstance) {
+                ioInstance.emit('NEW_BLOCKCHAIN_EVENT', {
+                    type: eventName,
+                    data: log.args,
+                    txHash: log.transactionHash,
+                    block: Number(log.blockNumber)
+                });
+                logger.info(`Real-time event emitted: ${eventName}`, 'SOCKET');
+            }
+
+            // Mark as notified in DB
+            await BlockchainEvent.updateOne(
+                { transactionHash: log.transactionHash, logIndex: log.logIndex },
+                { $set: { notified: true } }
+            );
+
             await SyncProgress.updateOne(
                 { contractName: log.address.toLowerCase() === CONTRACT_ADDRESS.toLowerCase() ? 'FreelanceEscrow' : 'CrossChainEscrowManager' },
                 { $max: { lastBlock: Number(log.blockNumber) } },
@@ -265,8 +307,9 @@ async function fetchLogsInChunks(contractAddress, targetAbi, startBlock, endBloc
     }
 }
 
-export async function startSyncer() {
-    logger.sync('Starting blockchain event syncer (Alchemy Optimized)...');
+export async function startSyncer(io) {
+    ioInstance = io;
+    logger.sync('Starting blockchain event syncer (Socket.io Enabled)...');
 
     // 1. Determine Starting Blocks
     const escrowProgress = await SyncProgress.findOne({ contractName: 'FreelanceEscrow' });

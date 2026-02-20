@@ -240,20 +240,27 @@ function Dashboard({ address: propAddress }) {
         functionName: 'jobCount',
     });
 
-    React.useEffect(() => {
+    const fetchData = React.useCallback(() => {
         if (isConnected && address) {
             setIsLoadingProfile(true);
-
             api.getProfile(address)
                 .then(d => { if (d?.address) setProfile(d); })
                 .catch(e => console.warn('Profile:', e.message))
                 .finally(() => setIsLoadingProfile(false));
             api.getAnalytics()
                 .then(d => { if (d?.totalJobs !== undefined) setAnalytics(d); })
-                .catch(e => console.warn('Analytics:', e.message))
-
+                .catch(e => console.warn('Analytics:', e.message));
         }
     }, [isConnected, address]);
+
+    React.useEffect(() => {
+        fetchData();
+    }, [fetchData]);
+
+    React.useEffect(() => {
+        window.addEventListener('REFRESH_DASHBOARD', fetchData);
+        return () => window.removeEventListener('REFRESH_DASHBOARD', fetchData);
+    }, [fetchData]);
 
     const handleSaveProfile = async (e) => {
         e.preventDefault();

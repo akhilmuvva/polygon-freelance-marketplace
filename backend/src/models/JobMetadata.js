@@ -38,7 +38,8 @@ const jobMetadataSchema = new mongoose.Schema({
     },
     isCrossChain: { type: Boolean, default: false },
     sourceChain: String,
-    destinationChain: String
+    destinationChain: String,
+    notified: { type: Boolean, default: false }
 }, { timestamps: true });
 
 jobMetadataSchema.index({ client: 1 });

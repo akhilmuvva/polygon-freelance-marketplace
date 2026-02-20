@@ -31,12 +31,13 @@ const FiatOnramp = lazy(() => import('./components/FiatOnramp'));
 
 import { NotificationManager } from './components/NotificationManager';
 import AuthPortal from './components/AuthPortal';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { Toaster, toast as hotToast } from 'react-hot-toast';
+import { useSocket } from './hooks/useSocket';
 import { useAccount, useWalletClient } from 'wagmi';
 import { initSocialLogin, createBiconomySmartAccount } from './utils/biconomy';
 import { createWalletClient, custom } from 'viem';
 import { SiweMessage } from 'siwe';
+import { useEffect } from 'react';
 
 /* ── Inline styles for the shell — zero Tailwind dependency ── */
 const styles = {
@@ -275,7 +276,8 @@ const NAV_VAULT = [
 ];
 
 function App() {
-  const { address, isConnected } = useAccount();
+  const { address, isConnected: isWalletConnected } = useAccount();
+  const { isConnected: isSocketConnected, subscribeToEvents } = useSocket();
   const { data: walletClient } = useWalletClient();
   const [activeTab, setActiveTab] = useState('dashboard');
   const [portfolioAddress, setPortfolioAddress] = useState(null);
@@ -286,6 +288,24 @@ function App() {
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [isInitializingGasless, setIsInitializingGasless] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  useEffect(() => {
+    if (!subscribeToEvents) return;
+    const unsubscribe = subscribeToEvents((event) => {
+      const { type, data } = event;
+      if (type === 'JobCreated') {
+        hotToast.success(`New Job: ${data.title || 'Job #' + data.jobId}`, { icon: '💼', position: 'bottom-right' });
+      } else if (type === 'MilestoneReleased' || type === 'FundsReleased') {
+        hotToast.success(`Payment Released for Job #${data.jobId || data._metaEvidenceID}!`, { icon: '💰', position: 'bottom-right' });
+      } else if (type === 'DisputeRaised' || type === 'Dispute') {
+        hotToast.error(`Dispute Alert on Job #${data.jobId || data._metaEvidenceID}`, { icon: '⚖️', position: 'bottom-right' });
+      }
+
+      // Global trigger for dashboard refresh
+      window.dispatchEvent(new CustomEvent('REFRESH_DASHBOARD'));
+    });
+    return unsubscribe;
+  }, [subscribeToEvents]);
 
   // Anime.js hooks
   const sidebarRef = React.useRef(null);
@@ -301,17 +321,17 @@ function App() {
 
   React.useEffect(() => {
     const initGasless = async () => {
-      if (isConnected && walletClient && isGasless && !smartAccount && !isLoggingIn && !isInitializingGasless) {
+      if (isWalletConnected && walletClient && isGasless && !smartAccount && !isLoggingIn && !isInitializingGasless) {
         setIsInitializingGasless(true);
         try {
           const sa = await createBiconomySmartAccount(walletClient);
-          if (sa) { setSmartAccount(sa); toast.success("Gas relay active"); }
+          if (sa) { setSmartAccount(sa); hotToast.success("Gas relay active"); }
         } catch (e) { console.error("[Gasless]", e); }
         finally { setIsInitializingGasless(false); }
       }
     };
     initGasless();
-  }, [isConnected, walletClient, isGasless, smartAccount, isLoggingIn]);
+  }, [isWalletConnected, walletClient, isGasless, smartAccount, isLoggingIn]);
 
   const handleSocialLogin = async () => {
     setIsLoggingIn(true);
@@ -330,11 +350,10 @@ function App() {
       const sa = await createBiconomySmartAccount(wc);
       setSmartAccount(sa);
       setSocialProvider(particle);
-      toast.success('🎉 Welcome to the Hyper-Structure!', {
-        description: 'Your Smart Account is active. Gasless mode is enabled by default.',
-        theme: 'dark'
+      hotToast.success('🎉 Welcome back!', {
+        duration: 4000
       });
-    } catch (err) { console.error(err); toast.error("Login failed"); }
+    } catch (err) { console.error(err); hotToast.error("Login failed"); }
     finally { setIsLoggingIn(false); }
   };
 
@@ -342,7 +361,7 @@ function App() {
     if (socialProvider) await socialProvider.auth.logout();
     setSmartAccount(null);
     setSocialProvider(null);
-    toast.info("Logged out");
+    hotToast.success("Logged out");
   };
 
   const effectiveAddress = smartAccount ? smartAccount.accountAddress : address;
@@ -512,13 +531,14 @@ function App() {
               <div>
                 <div style={styles.headerTitle}>{activeTab.replace('-', ' ')}</div>
                 <div style={styles.headerStatus}>
-                  <div style={styles.statusDot} />
-                  Connected
+                  <div style={{ ...styles.statusDot, background: isSocketConnected ? '#10b981' : '#f43f5e' }} />
+                  {isSocketConnected ? 'Live' : 'Syncing'}
                 </div>
               </div>
             </div>
 
             <div style={styles.headerRight}>
+              <Toaster />
               <button
                 className="desktop-only"
                 style={styles.gasBtn(isGasless)}
