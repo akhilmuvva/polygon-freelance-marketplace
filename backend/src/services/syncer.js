@@ -19,13 +19,14 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const IS_AMOY = process.env.NETWORK === 'amoy';
-const CHUNK_SIZE = 10; // Reduced for CCIP Manager compatibility
-const DEPLOY_BLOCK = BigInt(process.env.CONTRACT_DEPLOY_BLOCK || (IS_AMOY ? '34230000' : '0'));
+const CHUNK_SIZE = 10;
+// Update START_BLOCK to actual deployment block (around 34230000)
+const DEPLOY_BLOCK = BigInt(process.env.CONTRACT_DEPLOY_BLOCK || '34230000');
 
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-// Try to load deployment addresses dynamically
-let CONTRACT_ADDRESS = IS_AMOY ? '0x25F6C8ed995C811E6c0ADb1D66A60830E8115e9A' : '0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9';
+// Updated default address for FreelanceEscrow
+let CONTRACT_ADDRESS = IS_AMOY ? '0x38c76A767d45Fc390160449948aF80569E2C4217' : '0x38c76A767d45Fc390160449948aF80569E2C4217';
 let CROSS_CHAIN_MANAGER_ADDRESS = IS_AMOY ? '0x5C4aF960570bFc0861198A699435b54FC9012345' : '0x5C4aF960570bFc0861198A699435b54FC9012345';
 
 try {
@@ -33,7 +34,7 @@ try {
     if (fs.existsSync(deployPath)) {
         const deployData = JSON.parse(fs.readFileSync(deployPath, 'utf8'));
         if (deployData.network === (IS_AMOY ? 'amoy' : 'localhost')) {
-            CONTRACT_ADDRESS = deployData.FreelanceEscrow;
+            CONTRACT_ADDRESS = deployData.FreelanceEscrow || CONTRACT_ADDRESS;
             CROSS_CHAIN_MANAGER_ADDRESS = deployData.CrossChainEscrowManager || CROSS_CHAIN_MANAGER_ADDRESS;
         }
     }
@@ -222,7 +223,12 @@ async function processLog(log, eventName) {
 async function fetchLogsInChunks(address, targetAbi, from, to, contractName) {
     let current = from;
     while (current <= to) {
-        const chunkTo = current + BigInt(CHUNK_SIZE) > to ? to : current + BigInt(CHUNK_SIZE);
+        // Strictly inclusive of only 10 blocks (e.g., from to from + 9)
+        let chunkTo = current + 9n;
+
+        // Ensure toBlock never exceeds fromBlock + 9 and doesn't overshoot the final 'to' block
+        if (chunkTo > to) chunkTo = to;
+
         logger.sync(`[BC-SYNC]: Scanning ${address.slice(0, 8)}... (${current} to ${chunkTo})`);
 
         try {
