@@ -16,7 +16,7 @@ const safeFetch = async (url, options) => {
         console.error(`API Call failed: ${url}`, error.message);
 
         // Context-aware error message
-        const isProd = window.location.hostname.includes('render.com') || window.location.hostname.includes('vercel.app');
+        const isProd = window.location.hostname.includes('render.com') || window.location.hostname.includes('vercel.app') || window.location.hostname.includes('polylance.codes');
 
         if (error.message.includes('Failed to fetch')) {
             const message = isProd
@@ -59,11 +59,19 @@ export const api = {
 
     getJobMatches: (jobId) => safeFetch(`${API_URL}/jobs/match/${jobId}`),
 
-    createStripeOnrampSession: (address) => safeFetch(`${API_URL}/stripe/create-onramp-session`, {
+
+    createRazorpayOrder: (amount, address, customer_details) => safeFetch(`${API_URL}/payments/create-order`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ address })
+        body: JSON.stringify({ amount, address, customer_details })
     }),
+
+    verifyRazorpayPayment: (data) => safeFetch(`${API_URL}/payments/verify`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    }),
+
 
     polishBio: (data) => safeFetch(`${API_URL}/profiles/polish-bio`, {
         method: 'POST',

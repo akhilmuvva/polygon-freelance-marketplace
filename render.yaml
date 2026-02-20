@@ -2,6 +2,7 @@ services:
   - type: web
     name: polylance-backend
     env: node
+    rootDir: backend
     buildCommand: npm install
     startCommand: npm start
     plan: free
@@ -18,18 +19,21 @@ services:
       - key: PORT
         value: 10000
       - key: MONGODB_URI
-        fromGroup: shared-secrets
         sync: false
       - key: GEMINI_API_KEY
+        sync: false
+      - key: RAZORPAY_KEY_ID
+        sync: false
+      - key: RAZORPAY_KEY_SECRET
+        sync: false
+      - key: ENCRYPTION_KEY
         sync: false
       - key: PINATA_API_KEY
         sync: false
       - key: PINATA_SECRET_KEY
         sync: false
-      - key: STRIPE_SECRET_KEY
-        sync: false
       - key: FRONTEND_URL
-        value: https://polygon-freelance-marketplace-onf5efcpb.vercel.app
+        value: https://polylance.codes,https://www.polylance.codes
 
   - type: web
     name: polylance-frontend
@@ -39,6 +43,23 @@ services:
     publishPath: dist
     plan: free
     branch: master
+    envVars:
+      - key: VITE_API_BASE_URL
+        value: https://api.polylance.codes/api
+      - key: VITE_RAZORPAY_KEY_ID
+        sync: false
+      - key: VITE_ALCHEMY_ID
+        value: xd727FUEtN2c-SPI_yo3B
+      - key: VITE_PARTICLE_PROJECT_ID
+        value: 07928a08-6e61-43c2-8ab6-b03e240df39b
+      - key: VITE_PARTICLE_CLIENT_KEY
+        value: copZES78qEpPmjSFKJLXOYfRqXLfaiVHVRr1gJmP
+      - key: VITE_PARTICLE_APP_ID
+        value: df654a5d-4d11-451a-9f48-816041124d44
+      - key: VITE_BICONOMY_PAYMASTER_URL
+        value: mee_5bETq4RwcMcNzcRKVnEDnT
+      - key: VITE_BICONOMY_BUNDLER_URL
+        value: https://bundler.biconomy.io/api/v2/80002/nJPK7B3ru.dd7f7861-190d-41bd-af80-6877f74b8f44
     headers:
       - path: /*
         name: Cache-Control

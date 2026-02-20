@@ -15,9 +15,19 @@ export async function initSocialLogin() {
     const clientKey = import.meta.env.VITE_PARTICLE_CLIENT_KEY;
     const appId = import.meta.env.VITE_PARTICLE_APP_ID;
 
+    // Developer Mock Mode
     if (!projectId || !clientKey || !appId) {
-        console.warn('[BICONOMY] Particle Auth credentials not configured. Social login will fail.');
-        return null;
+        console.warn('[BICONOMY] Particle credentials missing. Enabling Mock Social Login.');
+        return {
+            auth: {
+                login: async () => {
+                    console.log('[MOCK] Social Login success');
+                    return { user: { name: 'Adam Pioneer', email: 'adam@pioneer.com' } };
+                },
+                logout: async () => console.log('[MOCK] Logout'),
+            },
+            isMock: true
+        };
     }
 
     try {
@@ -44,9 +54,16 @@ export async function initSocialLogin() {
  * @returns {Promise<object>} Smart Account client
  */
 export async function createBiconomySmartAccount(signer) {
-    if (!PAYMASTER_URL || !BUNDLER_URL) {
-        console.warn('[BICONOMY] Paymaster or Bundler URL not configured. Falling back to standard transactions.');
-        return null;
+    // Mock Account for Developers
+    if (signer?.isMock || !PAYMASTER_URL || !BUNDLER_URL) {
+        console.warn('[BICONOMY] Using MOCK Smart Account.');
+        return {
+            accountAddress: '0xDE4DbEef88888888888888888888888888888888',
+            isMock: true,
+            sendTransaction: async () => ({
+                waitForTxHash: async () => ({ transactionHash: '0xmock_tx_' + Date.now() })
+            })
+        };
     }
 
     try {

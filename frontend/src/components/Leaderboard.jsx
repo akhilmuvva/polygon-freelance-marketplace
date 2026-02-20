@@ -1,3 +1,4 @@
+import React, { useState, useEffect, useRef } from 'react';
 import { api } from '../services/api';
 import { Trophy, Medal, Award, ExternalLink, User, Star, TrendingUp, Loader2 } from 'lucide-react';
 import { formatEther } from 'viem';

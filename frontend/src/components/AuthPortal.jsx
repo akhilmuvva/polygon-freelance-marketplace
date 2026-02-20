@@ -10,7 +10,7 @@ const st = {
     },
     wrap: { maxWidth: 960, width: '100%' },
     grid: {
-        display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 60,
+        display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 60,
         alignItems: 'center',
     },
     // Left column
@@ -178,8 +178,8 @@ const AuthPortal = ({ onSocialLogin, isLoggingIn }) => {
                         <div style={st.authGlow} />
 
                         <div style={{ position: 'relative', zIndex: 1 }}>
-                            <h3 style={st.authTitle}>Get Started</h3>
-                            <p style={st.authSub}>Choose how you'd like to connect</p>
+                            <h3 style={st.authTitle}>Seamless Access</h3>
+                            <p style={st.authSub}>Experience the hyper-structure with zero friction.</p>
 
                             <div style={st.btnGroup}>
                                 <motion.button
@@ -187,19 +187,26 @@ const AuthPortal = ({ onSocialLogin, isLoggingIn }) => {
                                     whileTap={{ scale: 0.99 }}
                                     onClick={onSocialLogin}
                                     disabled={isLoggingIn}
+                                    aria-label="Login with Google, Email, or X"
+                                    aria-busy={isLoggingIn}
                                     style={st.authBtn('purple')}
-                                    onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(124,92,252,0.35)'; e.currentTarget.style.background = 'rgba(124,92,252,0.06)'; }}
+                                    onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(124,92,252,0.45)'; e.currentTarget.style.background = 'rgba(124,92,252,0.08)'; }}
                                     onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(124,92,252,0.15)'; e.currentTarget.style.background = 'rgba(255,255,255,0.03)'; }}
                                 >
-                                    <div style={st.authBtnIcon('purple')}>
+                                    <div style={st.authBtnIcon('purple')} aria-hidden="true">
                                         {isLoggingIn
-                                            ? <div className="loading-spinner" style={{ width: 20, height: 20 }} />
+                                            ? <div className="loading-spinner" role="status" style={{ width: 22, height: 22, border: '2px solid rgba(255,255,255,0.1)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }}>
+                                                <span style={{ position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', border: 0 }}>Loading...</span>
+                                            </div>
                                             : <Mail size={20} style={{ color: 'var(--accent-light)' }} />
                                         }
                                     </div>
-                                    <div>
-                                        <div style={st.authBtnTitle}>Google & Email</div>
-                                        <div style={st.authBtnSub}>Social login · No wallet needed</div>
+                                    <div style={{ flex: 1 }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                            <div style={st.authBtnTitle}>Google / Email / X</div>
+                                            <span style={{ fontSize: '0.55rem', fontWeight: 900, background: 'var(--success)', color: '#000', padding: '2px 6px', borderRadius: 4 }}>RECOMMENDED</span>
+                                        </div>
+                                        <div style={st.authBtnSub}>Instant Smart Wallet · Zero Gas Fees</div>
                                     </div>
                                 </motion.button>
 
@@ -207,26 +214,33 @@ const AuthPortal = ({ onSocialLogin, isLoggingIn }) => {
                                     whileHover={{ scale: 1.01, y: -2 }}
                                     whileTap={{ scale: 0.99 }}
                                     onClick={openConnectModal}
+                                    aria-label="Connect traditional Web3 wallet"
                                     style={st.authBtn('pink')}
-                                    onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(236,72,153,0.35)'; e.currentTarget.style.background = 'rgba(236,72,153,0.06)'; }}
+                                    onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(236,72,153,0.45)'; e.currentTarget.style.background = 'rgba(236,72,153,0.08)'; }}
                                     onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(236,72,153,0.15)'; e.currentTarget.style.background = 'rgba(255,255,255,0.03)'; }}
                                 >
-                                    <div style={st.authBtnIcon('pink')}>
+                                    <div style={st.authBtnIcon('pink')} aria-hidden="true">
                                         <Wallet size={20} style={{ color: '#ec4899' }} />
                                     </div>
                                     <div>
-                                        <div style={st.authBtnTitle}>Connect Wallet</div>
-                                        <div style={st.authBtnSub}>MetaMask · Ledger · WalletConnect</div>
+                                        <div style={st.authBtnTitle}>Web3 Foundation</div>
+                                        <div style={st.authBtnSub}>MetaMask · WalletConnect · Ledger</div>
                                     </div>
                                 </motion.button>
                             </div>
 
                             <div style={st.authFooter}>
+                                <div style={{ marginBottom: 16, padding: '10px 14px', borderRadius: 10, background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: 10 }}>
+                                    <Zap size={14} style={{ color: 'var(--warning)', fill: 'var(--warning)' }} />
+                                    <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', textAlign: 'left', lineHeight: 1.4 }}>
+                                        <strong>Gasless Mode:</strong> New users get 10 free transactions upon account activation.
+                                    </span>
+                                </div>
                                 <div style={st.statusRow}>
                                     <div style={st.statusDot} />
-                                    <span style={st.statusText}>All systems operational</span>
+                                    <span style={st.statusText}>Network: Polygon Amoy</span>
                                 </div>
-                                <p style={st.securedBy}>Secured by Polygon Network</p>
+                                <p style={st.securedBy}>Secured by Chainlink & Biconomy</p>
                             </div>
                         </div>
                     </div>

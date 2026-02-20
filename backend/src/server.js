@@ -1,12 +1,16 @@
+import dotenv from 'dotenv';
+// Load environment variables immediately at the absolute top
+dotenv.config();
+
 import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
-import dotenv from 'dotenv';
-import { verifyMessage, createPublicClient, http, formatEther } from 'viem';
+import { verifyMessage, formatEther } from 'viem';
 import { polygonAmoy } from 'viem/chains';
 import { startSyncer } from './services/syncer.js';
+import { publicClient, testBlockchainConnection } from './config/blockchain.js';
 import crypto from 'crypto';
-import Stripe from 'stripe';
+import paymentRoutes from './routes/paymentRoutes.js';
 import { Profile } from './models/Profile.js';
 import { JobMetadata } from './models/JobMetadata.js';
 import { SiweMessage } from 'siwe';
@@ -29,9 +33,40 @@ function escapeRegex(text) {
     return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
 }
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_placeholder');
+function validateEnv() {
+    logger.info('--- Environment Diagnostic ---', 'CONFIG');
+    const critical = ['MONGODB_URI', 'GEMINI_API_KEY'];
+    const gateway = ['RAZORPAY_KEY_ID', 'RAZORPAY_KEY_SECRET'];
 
+    // Log presence
+    logger.info(`MONGODB_URI: ${process.env.MONGODB_URI ? 'LOADED' : 'MISSING'}`, 'CONFIG');
+    logger.info(`RAZORPAY: ${process.env.RAZORPAY_KEY_ID ? 'CONFIGURED' : 'NOT CONFIGURED'}`, 'CONFIG');
+    logger.info(`RPC_URL: ${process.env.RPC_URL ? 'LOADED' : 'FALLBACK-READY'}`, 'CONFIG');
 
+    const missingCritical = critical.filter(key => !process.env[key]);
+    if (missingCritical.length > 0) {
+        logger.error(`CRITICAL variables missing: ${missingCritical.join(', ')}`, 'CONFIG');
+        if (process.env.NODE_ENV === 'production') {
+            logger.error('Missing required variables in production. Exiting.', 'CONFIG');
+            process.exit(1);
+        }
+    }
+
+    const missingGateway = gateway.filter(key => !process.env[key]);
+    if (missingGateway.length > 0) {
+        logger.warn(`RAZORPAY keys missing: ${missingGateway.join(', ')}. Server starting in TEST MODE (Mock Payments ENABLED).`, 'CONFIG');
+    }
+}
+
+validateEnv();
+
+// Global Public Client with robust fallback
+testBlockchainConnection(logger).catch(() => {
+    logger.warn('Continuing without verified blockchain connection. Syncer may be delayed.', 'SYNC');
+});
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const apiLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
@@ -39,27 +74,6 @@ const apiLimiter = rateLimit({
     standardHeaders: true,
     legacyHeaders: false,
 });
-
-dotenv.config();
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-// Environment Validation
-function validateEnv() {
-    const required = ['MONGODB_URI', 'GEMINI_API_KEY', 'STRIPE_SECRET_KEY'];
-    const missing = required.filter(key => !process.env[key]);
-
-    if (missing.length > 0) {
-        logger.warn(`Critical environment variables missing: ${missing.join(', ')}`);
-        if (process.env.NODE_ENV === 'production') {
-            logger.error('Missing required variables in production. Exiting.', 'CONFIG');
-            process.exit(1);
-        }
-    }
-}
-
-validateEnv();
 
 export const app = express();
 const PORT = process.env.PORT || 3001;
@@ -69,9 +83,9 @@ app.use(helmet({
     contentSecurityPolicy: {
         directives: {
             defaultSrc: ["'self'"],
-            scriptSrc: ["'self'", "https://js.stripe.com", "'unsafe-inline'", "'unsafe-eval'", "blob:"],
-            frameSrc: ["'self'", "https://js.stripe.com", "https://hooks.stripe.com"],
-            connectSrc: ["'self'", "https://api.stripe.com", "https://*.render.com", "wss://*.render.com", "https://localhost:3001", "wss://localhost:3001", "https://rpc-amoy.polygon.technology", "https://rpc.ankr.com", "https://polygon-amoy-bor-rpc.publicnode.com"],
+            scriptSrc: ["'self'", "https://checkout.razorpay.com", "'unsafe-inline'", "'unsafe-eval'", "blob:"],
+            frameSrc: ["'self'", "https://api.razorpay.com"],
+            connectSrc: ["'self'", "https://api.razorpay.com", "https://*.render.com", "wss://*.render.com", "https://localhost:3001", "wss://localhost:3001", "https://rpc-amoy.polygon.technology", "https://rpc.ankr.com", "https://polygon-amoy-bor-rpc.publicnode.com", "https://polylance.codes", "https://api.polylance.codes"],
             imgSrc: ["'self'", "data:", "blob:", "https://gateway.pinata.cloud"],
         },
     },
@@ -123,6 +137,17 @@ function startServer() {
     // Graceful Shutdown
     process.on('SIGTERM', () => shutdown(server, 'SIGTERM'));
     process.on('SIGINT', () => shutdown(server, 'SIGINT'));
+
+    // Process Level Error Handling
+    process.on('uncaughtException', (err) => {
+        logger.error('CRITICAL: Uncaught Exception', 'PROCESS', err);
+        shutdown(server, 'UNCAUGHT_EXCEPTION');
+    });
+
+    process.on('unhandledRejection', (reason, promise) => {
+        logger.error('CRITICAL: Unhandled Rejection', 'PROCESS', reason);
+        // We don't necessarily exit for rejections, but logging is vital
+    });
 }
 
 async function shutdown(server, signal) {
@@ -143,6 +168,9 @@ app.get('/api/health', (req, res) => {
         network: process.env.NETWORK || 'localhost'
     });
 });
+
+// Payment Routes
+app.use('/api/payments', paymentRoutes);
 
 // Auth Routes
 app.get('/api/auth/nonce/:address', async (req, res) => {
@@ -170,12 +198,7 @@ app.post('/api/auth/verify', async (req, res) => {
     try {
         const siweMessage = new SiweMessage(message);
 
-        // Use a public client to support EIP-1271 (Smart Accounts)
-        const publicClient = createPublicClient({
-            chain: polygonAmoy,
-            transport: http(process.env.RPC_URL || 'https://rpc-amoy.polygon.technology')
-        });
-
+        // Use the centralized public client
         const isValid = await publicClient.verifyMessage({
             address: siweMessage.address,
             message: siweMessage.prepareMessage(),
@@ -713,31 +736,6 @@ app.delete('/api/gdpr/delete/:address', async (req, res) => {
     }
 });
 
-// Stripe Crypto Onramp
-app.post('/api/stripe/create-onramp-session', async (req, res) => {
-    try {
-        const { address } = req.body;
-
-        if (!process.env.STRIPE_SECRET_KEY) {
-            console.warn('[STRIPE] Missing STRIPE_SECRET_KEY environment variable');
-            return res.status(400).json({ error: 'Stripe Secret Key not configured on server.' });
-        }
-
-        const onrampSession = await stripe.crypto.onrampSessions.create({
-            transaction_details: {
-                destination_currency: 'usdc',
-                destination_network: 'polygon',
-                destination_address: address,
-            },
-            customer_ip_address: req.ip,
-        });
-
-        res.json({ client_secret: onrampSession.client_secret });
-    } catch (error) {
-        console.error('[STRIPE] Error:', error);
-        res.status(500).json({ error: error.message });
-    }
-});
 
 // Start HTTPS Server
 // Try to load certs, fallback to HTTP if missing (for prod/CI)

@@ -1,5 +1,4 @@
-import { createPublicClient, http, parseAbiItem } from 'viem';
-import { localhost, polygonAmoy } from 'viem/chains';
+import { parseAbiItem } from 'viem';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -9,6 +8,7 @@ import { Profile } from '../models/Profile.js';
 import { sendNotification } from './notifications.js';
 import { SyncProgress } from '../models/SyncProgress.js';
 import { logger } from '../utils/logger.js';
+import { publicClient as client } from '../config/blockchain.js';
 
 dotenv.config();
 
@@ -16,6 +16,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const IS_AMOY = process.env.NETWORK === 'amoy';
+const CHUNK_SIZE = 10; // Alchemy Free Tier limit for Amoy/Large ranges
+const DEPLOY_BLOCK = BigInt(process.env.CONTRACT_DEPLOY_BLOCK || (IS_AMOY ? '12000000' : '0'));
 
 // Try to load deployment addresses dynamically
 let CONTRACT_ADDRESS = IS_AMOY ? '0x25F6C8ed995C811E6c0ADb1D66A60830E8115e9A' : '0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9';
@@ -25,7 +27,6 @@ try {
     const deployPath = path.join(__dirname, '../../../contracts/scripts/deployment_addresses.json');
     if (fs.existsSync(deployPath)) {
         const deployData = JSON.parse(fs.readFileSync(deployPath, 'utf8'));
-        // Only override if the file network matches our environment network
         if (deployData.network === (IS_AMOY ? 'amoy' : 'localhost')) {
             CONTRACT_ADDRESS = deployData.FreelanceEscrow;
             CROSS_CHAIN_MANAGER_ADDRESS = deployData.CrossChainEscrowManager || CROSS_CHAIN_MANAGER_ADDRESS;
@@ -38,493 +39,252 @@ try {
 // Load ABIs
 const abiPath = path.join(__dirname, '../contracts', 'FreelanceEscrow.json');
 const crossChainAbiPath = path.join(__dirname, '../contracts', 'CrossChainEscrowManager.json');
-
 const abi = JSON.parse(fs.readFileSync(abiPath, 'utf8')).abi;
-const crossChainAbi = JSON.parse(fs.readFileSync(crossChainAbiPath, 'utf8')).abi;
 
-const client = createPublicClient({
-    chain: IS_AMOY ? polygonAmoy : localhost,
-    transport: http(process.env.RPC_URL || (IS_AMOY ? 'https://rpc-amoy.polygon.technology' : 'http://localhost:8545')),
-});
+// Event Definitions
+const EVENTS = {
+    JobCreated: parseAbiItem('event JobCreated(uint256 indexed jobId, address indexed client, address indexed freelancer, uint256 amount, uint256 deadline)'),
+    FundsReleased: parseAbiItem('event FundsReleased(uint256 indexed jobId, address indexed freelancer, uint256 amount, uint256 nftId)'),
+    Dispute: parseAbiItem('event Dispute(address indexed _arbitrator, uint256 indexed _disputeID, uint256 _metaEvidenceID, uint256 _evidenceID)'),
+    DisputeRaised: parseAbiItem('event DisputeRaised(uint256 indexed jobId, uint256 disputeId)'),
+    Ruling: parseAbiItem('event Ruling(address indexed _arbitrator, uint256 indexed _disputeID, uint256 _ruling)'),
+    DisputeResolved: parseAbiItem('event DisputeResolved(uint256 indexed jobId, uint256 freelancerBps)'),
+    Evidence: parseAbiItem('event Evidence(address indexed _arbitrator, uint256 indexed _evidenceID, address indexed _party, string _evidence)'),
+    ReviewSubmitted: parseAbiItem('event ReviewSubmitted(uint256 indexed jobId, address indexed client, address indexed freelancer, uint8 rating, string review)'),
+    MilestoneReleased: parseAbiItem('event MilestoneReleased(uint256 indexed jobId, uint256 indexed milestoneId, uint256 amount)'),
+    JobApplied: parseAbiItem('event JobApplied(uint256 indexed jobId, address indexed freelancer, uint256 stake)'),
+    FreelancerPicked: parseAbiItem('event FreelancerPicked(uint256 indexed jobId, address indexed freelancer)'),
+    JobAccepted: parseAbiItem('event JobAccepted(uint256 indexed jobId, address indexed freelancer)'),
+};
 
-export async function startSyncer() {
-    logger.sync('Starting blockchain event syncer...');
+const CROSS_CHAIN_EVENTS = {
+    CrossChainJobCreated: parseAbiItem('event CrossChainJobCreated(uint256 indexed localJobId, uint64 indexed destinationChain, address indexed client, uint256 amount, bytes32 messageId)'),
+    CrossChainDisputeInitiated: parseAbiItem('event CrossChainDisputeInitiated(uint256 indexed localJobId, bytes32 messageId)'),
+};
 
-    // Persistence Check: Catch up on missed blocks
-    const progress = await SyncProgress.findOneAndUpdate(
-        { contractName: 'FreelanceEscrow' },
-        { $setOnInsert: { lastBlock: IS_AMOY ? 12000000 : 0 } }, // Default starting points
-        { upsert: true, new: true }
-    );
-
-    const currentBlock = Number(await client.getBlockNumber());
-    logger.sync(`Current Block: ${currentBlock}, Last Synced: ${progress.lastBlock}`);
-
-    if (currentBlock > progress.lastBlock) {
-        console.log(`Catching up from block ${progress.lastBlock + 1} to ${currentBlock}...`);
-        // We'll process historical logs in batches if it's too large, but for now simple fetch
-        try {
-            const logs = await client.getLogs({
-                address: CONTRACT_ADDRESS,
-                fromBlock: BigInt(progress.lastBlock + 1),
-                toBlock: BigInt(currentBlock)
+// Event Handlers
+const handlers = {
+    JobCreated: async (args) => {
+        const { jobId, client: clientAddr, freelancer, amount, deadline } = args;
+        const existing = await JobMetadata.findOne({ jobId: Number(jobId) });
+        if (!existing) {
+            await JobMetadata.create({
+                jobId: Number(jobId),
+                title: `Job #${jobId} (On-chain)`,
+                description: 'Metadata sync pending...',
+                category: 'General',
+                client: clientAddr.toLowerCase(),
+                amount: amount.toString(),
+                deadline: Number(deadline),
+                freelancer: freelancer === '0x0000000000000000000000000000000000000000' ? null : freelancer.toLowerCase(),
+                status: freelancer === '0x0000000000000000000000000000000000000000' ? 0 : 1
             });
-            // Historical processing can be done here using the same logic as watchEvent
-            console.log(`Found ${logs.length} historical logs to process.`);
-            // For brevity in this fix, we assume watchEvent handles new logs and we just update head.
-            // In a full implementation, we would map these logs to their handlers.
-            await SyncProgress.updateOne({ contractName: 'FreelanceEscrow' }, { lastBlock: currentBlock });
-        } catch (e) {
-            console.error("Catch-up failed:", e.message);
         }
+        if (freelancer !== '0x0000000000000000000000000000000000000000') {
+            await sendNotification(freelancer, "New Job Assigned 💼", `You have been assigned to Job #${jobId}.`);
+        }
+    },
+    FundsReleased: async (args) => {
+        const { jobId, freelancer, amount } = args;
+        const amountBigInt = BigInt(amount);
+        const profile = await Profile.findOneAndUpdate(
+            { address: freelancer.toLowerCase() },
+            { $inc: { completedJobs: 1 } },
+            { new: true, upsert: true }
+        );
+        if (profile) {
+            profile.totalEarned = (BigInt(profile.totalEarned || '0') + amountBigInt).toString();
+            await profile.save();
+        }
+        await JobMetadata.findOneAndUpdate({ jobId: Number(jobId) }, { $set: { status: 5 } });
+        await sendNotification(freelancer, "Funds Released! 💰", `Payment for Job #${jobId} has been released.`);
+    },
+    Dispute: async (args) => {
+        const { _arbitrator, _disputeID, _metaEvidenceID } = args;
+        await JobMetadata.findOneAndUpdate({ jobId: Number(_metaEvidenceID) }, {
+            status: 3,
+            "disputeData.arbitrator": _arbitrator,
+            "disputeData.disputeId": Number(_disputeID)
+        });
+    },
+    DisputeRaised: async (args) => {
+        const { jobId, disputeId } = args;
+        await JobMetadata.findOneAndUpdate({ jobId: Number(jobId) }, {
+            status: 3,
+            "disputeData.arbitrator": 'Internal',
+            "disputeData.disputeId": Number(disputeId)
+        });
+    },
+    Ruling: async (args) => {
+        const { _disputeID, _ruling } = args;
+        const jobId = await client.readContract({
+            address: CONTRACT_ADDRESS,
+            abi: abi,
+            functionName: 'disputeIdToJobId',
+            args: [_disputeID]
+        });
+        await JobMetadata.findOneAndUpdate({ jobId: Number(jobId) }, {
+            status: Number(_ruling) === 3 ? 5 : 6,
+            "disputeData.ruling": Number(_ruling)
+        });
+    },
+    DisputeResolved: async (args) => {
+        const { jobId, freelancerBps } = args;
+        await JobMetadata.findOneAndUpdate({ jobId: Number(jobId) }, {
+            status: Number(freelancerBps) > 5000 ? 5 : 6,
+            "disputeData.manualBps": Number(freelancerBps)
+        });
+    },
+    Evidence: async (args) => {
+        const { _evidenceID, _party, _evidence } = args;
+        await JobMetadata.findOneAndUpdate({ jobId: Number(_evidenceID) }, {
+            $push: { evidence: { party: _party.toLowerCase(), hash: _evidence, timestamp: new Date() } }
+        });
+    },
+    ReviewSubmitted: async (args) => {
+        const { jobId, rating, review, freelancer } = args;
+        await JobMetadata.findOneAndUpdate({ jobId: Number(jobId) }, { rating: Number(rating), review: review }, { upsert: true });
+        const profile = await Profile.findOne({ address: freelancer.toLowerCase() });
+        if (profile) {
+            profile.ratingSum += Number(rating);
+            profile.ratingCount += 1;
+            const avgRating = profile.ratingSum / profile.ratingCount;
+            const earnedMatic = Number(BigInt(profile.totalEarned || '0')) / 1e18;
+            profile.reputationScore = Math.floor(earnedMatic * (avgRating / 5) * 10);
+            await profile.save();
+        }
+    },
+    MilestoneReleased: async (args) => {
+        const { jobId, milestoneId } = args;
+        const job = await JobMetadata.findOne({ jobId: Number(jobId) });
+        if (job && job.milestones && job.milestones[Number(milestoneId)]) {
+            job.milestones[Number(milestoneId)].isReleased = true;
+            await job.save();
+        }
+    },
+    JobApplied: async (args) => {
+        const { jobId, freelancer, stake } = args;
+        await JobMetadata.findOneAndUpdate({ jobId: Number(jobId) }, {
+            $push: { applicants: { address: freelancer.toLowerCase(), stake: stake.toString() } }
+        });
+        const jobOnChain = await client.readContract({ address: CONTRACT_ADDRESS, abi, functionName: 'jobs', args: [jobId] });
+        await sendNotification(jobOnChain[0], "New Application 🚀", `A freelancer applied for Job #${jobId}.`);
+    },
+    FreelancerPicked: async (args) => {
+        const { jobId, freelancer } = args;
+        await JobMetadata.findOneAndUpdate({ jobId: Number(jobId) }, { $set: { freelancer: freelancer.toLowerCase(), status: 1 } });
+        await sendNotification(freelancer, "You've been picked! 🎉", `Selected for Job #${jobId}.`);
+    },
+    JobAccepted: async (args) => {
+        const { jobId, freelancer } = args;
+        await JobMetadata.findOneAndUpdate({ jobId: Number(jobId) }, { $set: { status: 2 } });
+        const jobOnChain = await client.readContract({ address: CONTRACT_ADDRESS, abi, functionName: 'jobs', args: [jobId] });
+        await sendNotification(jobOnChain[0], "Project Started! 🚀", `Job #${jobId} accepted.`);
+    },
+    CrossChainJobCreated: async (args) => {
+        const { localJobId, destinationChain } = args;
+        await JobMetadata.create({
+            jobId: Number(localJobId),
+            title: `Cross-Chain Job #${localJobId}`,
+            description: 'CCIP synchronization...',
+            category: 'Cross-Chain',
+            status: 0,
+            isCrossChain: true,
+            destinationChain: destinationChain.toString(),
+            sourceChain: '137'
+        });
+    },
+    CrossChainDisputeInitiated: async (args) => {
+        const { localJobId } = args;
+        await JobMetadata.findOneAndUpdate({ jobId: Number(localJobId) }, { status: 3 });
+    }
+};
+
+async function processLog(log, eventName) {
+    try {
+        const handler = handlers[eventName];
+        if (handler) {
+            await handler(log.args, log);
+            await SyncProgress.updateOne(
+                { contractName: log.address.toLowerCase() === CONTRACT_ADDRESS.toLowerCase() ? 'FreelanceEscrow' : 'CrossChainEscrowManager' },
+                { $max: { lastBlock: Number(log.blockNumber) } },
+                { upsert: true }
+            );
+        }
+    } catch (err) {
+        logger.error(`Error processing ${eventName} log:`, 'SYNC', err);
+    }
+}
+
+async function fetchLogsInChunks(contractAddress, events, startBlock, endBlock) {
+    let current = startBlock;
+    // Limit catch-up to prevent millions of requests on first run
+    // If the gap is massive, we only sync the most recent 1000 blocks
+    const MAX_GAP = 1000n;
+    if (endBlock - current > MAX_GAP) {
+        logger.warn(`Gap too large (${endBlock - current} blocks). Syncing only the last ${MAX_GAP} blocks to stay within limits.`, 'SYNC');
+        current = endBlock - MAX_GAP;
     }
 
-    // Watch for JobCreated events
-    client.watchEvent({
-        address: CONTRACT_ADDRESS,
-        event: parseAbiItem('event JobCreated(uint256 indexed jobId, address indexed client, address indexed freelancer, uint256 amount, uint256 deadline)'),
-        onLogs: async (logs) => {
-            for (const log of logs) {
-                const { jobId, client: clientAddr, freelancer, amount, deadline } = log.args;
-                console.log(`New Job Created On-Chain: ID ${jobId}, Client ${clientAddr}, Deadline: ${new Date(Number(deadline) * 1000).toLocaleString()}`);
+    while (current <= endBlock) {
+        const to = current + BigInt(CHUNK_SIZE - 1) > endBlock ? endBlock : current + BigInt(CHUNK_SIZE - 1);
+        logger.sync(`Fetching logs for ${contractAddress} from ${current} to ${to}...`);
 
-                try {
-                    const existing = await JobMetadata.findOne({ jobId: Number(jobId) });
-
-                    if (!existing) {
-                        console.log(`Job ${jobId} not found in DB, creating placeholder...`);
-                        await JobMetadata.create({
-                            jobId: Number(jobId),
-                            title: `Job #${jobId} (On-chain)`,
-                            description: 'Metadata sync pending...',
-                            category: 'General',
-                            client: clientAddr.toLowerCase(),
-                            amount: amount.toString(),
-                            deadline: Number(deadline),
-                            freelancer: freelancer === '0x0000000000000000000000000000000000000000' ? null : freelancer.toLowerCase(),
-                            status: freelancer === '0x0000000000000000000000000000000000000000' ? 0 : 1
-                        });
-                    }
-
-                    // Send notification to freelancer if assigned
-                    if (freelancer !== '0x0000000000000000000000000000000000000000') {
-                        await sendNotification(
-                            freelancer,
-                            "New Job Assigned 💼",
-                            `You have been assigned to Job #${jobId} with a budget of ${Number(amount) / 1e18} MATIC.`
-                        );
-                    }
-                    await SyncProgress.updateOne(
-                        { contractName: 'FreelanceEscrow' },
-                        { $max: { lastBlock: Number(log.blockNumber) } }
-                    );
-                } catch (error) {
-                    console.error(`Error syncing job ${jobId}:`, error);
+        for (const [name, event] of Object.entries(events)) {
+            try {
+                const logs = await client.getLogs({
+                    address: contractAddress,
+                    event: event,
+                    fromBlock: current,
+                    toBlock: to
+                });
+                for (const log of logs) {
+                    await processLog(log, name);
                 }
-            }
-        },
-    });
-
-    // Watch for FundsReleased (Reputation update)
-    client.watchEvent({
-        address: CONTRACT_ADDRESS,
-        event: parseAbiItem('event FundsReleased(uint256 indexed jobId, address indexed freelancer, uint256 amount, uint256 nftId)'),
-        onLogs: async (logs) => {
-            for (const log of logs) {
-                try {
-                    const { jobId, freelancer, amount } = log.args;
-                    const amountBigInt = BigInt(amount);
-
-                    console.log(`Job Completed! Updating reputation for ${freelancer}: +${amountBigInt.toString()} Wei`);
-
-                    // Atomic-like update via findOne -> calculation -> save to handle String arithmetic
-                    // Using findOneAndUpdate for better atomicity on numeric fields
-                    const profile = await Profile.findOneAndUpdate(
-                        { address: freelancer.toLowerCase() },
-                        { $inc: { completedJobs: 1 } },
-                        { new: true, upsert: true }
-                    );
-
-                    if (profile) {
-                        const currentEarned = BigInt(profile.totalEarned || '0');
-                        const newTotal = currentEarned + amountBigInt;
-                        profile.totalEarned = newTotal.toString();
-                        await profile.save();
-                    }
-
-                    await JobMetadata.findOneAndUpdate(
-                        { jobId: Number(jobId) },
-                        { $set: { status: 5 } } // Completed
-                    );
-
-                    await sendNotification(
-                        freelancer,
-                        "Funds Released! 💰",
-                        `Payment of ${Number(amountBigInt) / 1e18} MATIC for Job #${jobId} has been released to your wallet.`
-                    );
-                    await SyncProgress.updateOne(
-                        { contractName: 'FreelanceEscrow' },
-                        { $max: { lastBlock: Number(log.blockNumber) } }
-                    );
-                } catch (error) {
-                    console.error('Error handling FundsReleased:', error);
-                }
+            } catch (err) {
+                logger.error(`Failed to fetch ${name} logs:`, 'SYNC', err);
             }
         }
-    });
+        current = to + 1n;
+    }
+}
 
-    // Watch for Dispute (Standard IArbitrable)
-    client.watchEvent({
-        address: CONTRACT_ADDRESS,
-        event: parseAbiItem('event Dispute(address indexed _arbitrator, uint256 indexed _disputeID, uint256 _metaEvidenceID, uint256 _evidenceID)'),
-        onLogs: async (logs) => {
-            for (const log of logs) {
-                try {
-                    const { _arbitrator, _disputeID, _metaEvidenceID } = log.args;
-                    console.log(`Dispute Created: Arb ${_arbitrator}, ID ${_disputeID}, Meta ${_metaEvidenceID}`);
+export async function startSyncer() {
+    logger.sync('Starting blockchain event syncer (Alchemy Optimized)...');
 
-                    await JobMetadata.findOneAndUpdate(
-                        { jobId: Number(_metaEvidenceID) },
-                        {
-                            status: 3, // Disputed
-                            "disputeData.arbitrator": _arbitrator,
-                            "disputeData.disputeId": Number(_disputeID)
-                        }
-                    );
-                    await SyncProgress.updateOne(
-                        { contractName: 'FreelanceEscrow' },
-                        { $max: { lastBlock: Number(log.blockNumber) } }
-                    );
-                } catch (error) {
-                    console.error('Error handling Dispute:', error);
-                }
-            }
-        }
-    });
+    // 1. Determine Starting Blocks
+    const escrowProgress = await SyncProgress.findOne({ contractName: 'FreelanceEscrow' });
+    const ccProgress = await SyncProgress.findOne({ contractName: 'CrossChainEscrowManager' });
 
-    // Watch for DisputeRaised (Internal/Manual)
-    client.watchEvent({
-        address: CONTRACT_ADDRESS,
-        event: parseAbiItem('event DisputeRaised(uint256 indexed jobId, uint256 disputeId)'),
-        onLogs: async (logs) => {
-            for (const log of logs) {
-                try {
-                    const { jobId, disputeId } = log.args;
-                    console.log(`Internal Dispute Raised: Job ${jobId}, ID ${disputeId}`);
+    const escrowStart = escrowProgress ? BigInt(escrowProgress.lastBlock + 1) : DEPLOY_BLOCK;
+    const ccStart = ccProgress ? BigInt(ccProgress.lastBlock + 1) : DEPLOY_BLOCK;
 
-                    await JobMetadata.findOneAndUpdate(
-                        { jobId: Number(jobId) },
-                        {
-                            status: 3, // Disputed
-                            "disputeData.arbitrator": 'Internal',
-                            "disputeData.disputeId": Number(disputeId)
-                        }
-                    );
-                } catch (error) {
-                    console.error('Error handling DisputeRaised:', error);
-                }
-            }
-        }
-    });
+    const currentBlock = await client.getBlockNumber();
 
-    // Watch for Ruling (Standard IArbitrator)
-    client.watchEvent({
-        address: CONTRACT_ADDRESS,
-        event: parseAbiItem('event Ruling(address indexed _arbitrator, uint256 indexed _disputeID, uint256 _ruling)'),
-        onLogs: async (logs) => {
-            for (const log of logs) {
-                try {
-                    const { _arbitrator, _disputeID, _ruling } = log.args;
-                    console.log(`Ruling Received: Arb ${_arbitrator}, ID ${_disputeID}, Ruling ${_ruling}`);
+    // 2. Catch up in Chunks
+    if (currentBlock >= escrowStart) {
+        await fetchLogsInChunks(CONTRACT_ADDRESS, EVENTS, escrowStart, currentBlock);
+    }
+    if (currentBlock >= ccStart) {
+        await fetchLogsInChunks(CROSS_CHAIN_MANAGER_ADDRESS, CROSS_CHAIN_EVENTS, ccStart, currentBlock);
+    }
 
-                    const jobId = await client.readContract({
-                        address: CONTRACT_ADDRESS,
-                        abi: abi,
-                        functionName: 'disputeIdToJobId',
-                        args: [_disputeID]
-                    });
+    // 3. Start Live Watchers
+    for (const [name, event] of Object.entries(EVENTS)) {
+        client.watchEvent({
+            address: CONTRACT_ADDRESS,
+            event: event,
+            onLogs: (logs) => logs.forEach(log => processLog(log, name))
+        });
+    }
 
-                    await JobMetadata.findOneAndUpdate(
-                        { jobId: Number(jobId) },
-                        {
-                            status: Number(_ruling) === 3 ? 5 : 6, // 3: Freelancer wins -> Completed, else Cancelled
-                            "disputeData.ruling": Number(_ruling)
-                        }
-                    );
-                } catch (error) {
-                    console.error('Error handling Ruling:', error);
-                }
-            }
-        }
-    });
+    for (const [name, event] of Object.entries(CROSS_CHAIN_EVENTS)) {
+        client.watchEvent({
+            address: CROSS_CHAIN_MANAGER_ADDRESS,
+            event: event,
+            onLogs: (logs) => logs.forEach(log => processLog(log, name))
+        });
+    }
 
-    // Watch for DisputeResolved (Manual/Admin)
-    client.watchEvent({
-        address: CONTRACT_ADDRESS,
-        event: parseAbiItem('event DisputeResolved(uint256 indexed jobId, uint256 freelancerBps)'),
-        onLogs: async (logs) => {
-            for (const log of logs) {
-                try {
-                    const { jobId, freelancerBps } = log.args;
-                    console.log(`Dispute Manually Resolved: Job ${jobId}, BPS ${freelancerBps}`);
-
-                    await JobMetadata.findOneAndUpdate(
-                        { jobId: Number(jobId) },
-                        {
-                            status: Number(freelancerBps) > 5000 ? 5 : 6, // 5: Completed, 6: Cancelled
-                            "disputeData.manualBps": Number(freelancerBps)
-                        }
-                    );
-                } catch (error) {
-                    console.error('Error handling DisputeResolved:', error);
-                }
-            }
-        }
-    });
-
-    // Watch for Evidence (Standard IArbitrable)
-    client.watchEvent({
-        address: CONTRACT_ADDRESS,
-        event: parseAbiItem('event Evidence(address indexed _arbitrator, uint256 indexed _evidenceID, address indexed _party, string _evidence)'),
-        onLogs: async (logs) => {
-            for (const log of logs) {
-                try {
-                    const { _evidenceID, _party, _evidence } = log.args;
-                    console.log(`Evidence Submitted: Job ${_evidenceID} by ${_party}`);
-
-                    await JobMetadata.findOneAndUpdate(
-                        { jobId: Number(_evidenceID) },
-                        {
-                            $push: {
-                                evidence: {
-                                    party: _party.toLowerCase(),
-                                    hash: _evidence,
-                                    timestamp: new Date()
-                                }
-                            }
-                        }
-                    );
-                } catch (error) {
-                    console.error('Error handling Evidence:', error);
-                }
-            }
-        }
-    });
-
-    // Watch for ReviewSubmitted (PolyLance specific)
-    client.watchEvent({
-        address: CONTRACT_ADDRESS,
-        event: parseAbiItem('event ReviewSubmitted(uint256 indexed jobId, address indexed client, address indexed freelancer, uint8 rating, string review)'),
-        onLogs: async (logs) => {
-            for (const log of logs) {
-                try {
-                    const { jobId, rating, review, freelancer } = log.args;
-                    console.log(`Review Received: Job ${jobId}, Rating: ${rating}, Freelancer: ${freelancer}`);
-                    await JobMetadata.findOneAndUpdate(
-                        { jobId: Number(jobId) },
-                        { rating: Number(rating), review: review },
-                        { upsert: true }
-                    );
-
-                    // Update freelancer reputation logic
-                    const profile = await Profile.findOne({ address: freelancer.toLowerCase() });
-                    if (profile) {
-                        profile.ratingSum += Number(rating);
-                        profile.ratingCount += 1;
-
-                        // Recalculate score: (EarnedInWei / 1e18) * (AvgRating/5)
-                        const avgRating = profile.ratingCount > 0 ? profile.ratingSum / profile.ratingCount : 0;
-                        const earnedMatic = Number(BigInt(profile.totalEarned || '0')) / 1e18;
-                        const score = earnedMatic * (avgRating / 5);
-
-                        profile.reputationScore = Math.floor(score * 10);
-                        await profile.save();
-                        console.log(`Updated reputation for ${freelancer}: Score ${profile.reputationScore}`);
-                    }
-                } catch (error) {
-                    console.error('Error handling ReviewSubmitted:', error);
-                }
-            }
-        }
-    });
-
-    // Watch for MilestoneReleased
-    client.watchEvent({
-        address: CONTRACT_ADDRESS,
-        event: parseAbiItem('event MilestoneReleased(uint256 indexed jobId, uint256 indexed milestoneId, uint256 amount)'),
-        onLogs: async (logs) => {
-            for (const log of logs) {
-                try {
-                    const { jobId, milestoneId, amount } = log.args;
-                    console.log(`Milestone Released: Job ${jobId}, MS ${milestoneId}, Amount ${amount}`);
-
-                    const jobMeta = await JobMetadata.findOne({ jobId: Number(jobId) });
-                    if (jobMeta && jobMeta.milestones && jobMeta.milestones[Number(milestoneId)]) {
-                        jobMeta.milestones[Number(milestoneId)].isReleased = true;
-                        await jobMeta.save();
-                    }
-                } catch (error) {
-                    console.error('Error handling MilestoneReleased:', error);
-                }
-            }
-        }
-    });
-
-    // Watch for JobApplied
-    client.watchEvent({
-        address: CONTRACT_ADDRESS,
-        event: parseAbiItem('event JobApplied(uint256 indexed jobId, address indexed freelancer, uint256 stake)'),
-        onLogs: async (logs) => {
-            for (const log of logs) {
-                try {
-                    const { jobId, freelancer, stake } = log.args;
-                    console.log(`Job Applied: Job ${jobId}, Freelancer ${freelancer}, Stake ${stake}`);
-
-                    await JobMetadata.findOneAndUpdate(
-                        { jobId: Number(jobId) },
-                        {
-                            $push: {
-                                applicants: {
-                                    address: freelancer.toLowerCase(),
-                                    stake: stake.toString()
-                                }
-                            }
-                        }
-                    );
-
-                    const job = await client.readContract({
-                        address: CONTRACT_ADDRESS,
-                        abi: abi,
-                        functionName: 'jobs',
-                        args: [jobId]
-                    });
-
-                    await sendNotification(
-                        job[0], // client
-                        "New Application 🚀",
-                        `A new freelancer has applied for Job #${jobId}.`
-                    );
-                } catch (error) {
-                    console.error('Error handling JobApplied:', error);
-                }
-            }
-        }
-    });
-
-    // Watch for FreelancerPicked
-    client.watchEvent({
-        address: CONTRACT_ADDRESS,
-        event: parseAbiItem('event FreelancerPicked(uint256 indexed jobId, address indexed freelancer)'),
-        onLogs: async (logs) => {
-            for (const log of logs) {
-                try {
-                    const { jobId, freelancer } = log.args;
-                    console.log(`Freelancer Picked: Job ${jobId}, Chosen ${freelancer}`);
-
-                    await JobMetadata.findOneAndUpdate(
-                        { jobId: Number(jobId) },
-                        { $set: { freelancer: freelancer.toLowerCase(), status: 1 } }
-                    );
-
-                    await sendNotification(
-                        freelancer,
-                        "You've been picked! 🎉",
-                        `The client of Job #${jobId} has selected you. Accept to start!`
-                    );
-                } catch (error) {
-                    console.error('Error handling FreelancerPicked:', error);
-                }
-            }
-        }
-    });
-
-    // Watch for JobAccepted
-    client.watchEvent({
-        address: CONTRACT_ADDRESS,
-        event: parseAbiItem('event JobAccepted(uint256 indexed jobId, address indexed freelancer)'),
-        onLogs: async (logs) => {
-            for (const log of logs) {
-                try {
-                    const { jobId, freelancer } = log.args;
-                    console.log(`Job Accepted: Job ${jobId}, Freelancer ${freelancer}`);
-
-                    await JobMetadata.findOneAndUpdate(
-                        { jobId: Number(jobId) },
-                        { $set: { status: 2 } } // Ongoing
-                    );
-
-                    const job = await client.readContract({
-                        address: CONTRACT_ADDRESS,
-                        abi: abi,
-                        functionName: 'jobs',
-                        args: [jobId]
-                    });
-
-                    await sendNotification(
-                        job[0], // client
-                        "Project Started! 🚀",
-                        `The freelancer has accepted Job #${jobId}. Work is now ongoing.`
-                    );
-                } catch (error) {
-                    console.error('Error handling JobAccepted:', error);
-                }
-            }
-        }
-    });
-
-    // --- Cross-Chain Escrow Manager Listeners ---
-
-    // Watch for CrossChainJobCreated
-    client.watchEvent({
-        address: CROSS_CHAIN_MANAGER_ADDRESS,
-        event: parseAbiItem('event CrossChainJobCreated(uint256 indexed localJobId, uint64 indexed destinationChain, address indexed client, uint256 amount, bytes32 messageId)'),
-        onLogs: async (logs) => {
-            for (const log of logs) {
-                try {
-                    const { localJobId, destinationChain, client: clientAddr, amount } = log.args;
-                    console.log(`[CCIP] New Cross-Chain Job: ID ${localJobId}, Dest Chain ${destinationChain}`);
-
-                    await JobMetadata.create({
-                        jobId: Number(localJobId),
-                        title: `Cross-Chain Job #${localJobId}`,
-                        description: 'CCIP synchronization in progress...',
-                        category: 'Cross-Chain',
-                        status: 0,
-                        isCrossChain: true,
-                        destinationChain: destinationChain.toString(),
-                        sourceChain: '137' // Assuming fixed source for now
-                    });
-                } catch (error) {
-                    console.error('Error syncing cross-chain job:', error);
-                }
-            }
-        }
-    });
-
-    // Watch for CrossChainDisputeInitiated
-    client.watchEvent({
-        address: CROSS_CHAIN_MANAGER_ADDRESS,
-        event: parseAbiItem('event CrossChainDisputeInitiated(uint256 indexed localJobId, bytes32 messageId)'),
-        onLogs: async (logs) => {
-            for (const log of logs) {
-                try {
-                    const { localJobId } = log.args;
-                    console.log(`[CCIP] Cross-Chain Dispute Initiated: ID ${localJobId}`);
-
-                    await JobMetadata.findOneAndUpdate(
-                        { jobId: Number(localJobId) },
-                        { status: 3 } // Disputed
-                    );
-                    await SyncProgress.updateOne(
-                        { contractName: 'CrossChainEscrowManager' },
-                        { $max: { lastBlock: Number(log.blockNumber) } }
-                    );
-                } catch (error) {
-                    console.error('Error handling cross-chain dispute:', error);
-                }
-            }
-        }
-    });
-
-    console.log(`Watching events for contracts at:\n- Escrow: ${CONTRACT_ADDRESS}\n- CCIP Manager: ${CROSS_CHAIN_MANAGER_ADDRESS}`);
+    logger.success('Event syncer caught up and watching for live events.', 'SYNC');
 }

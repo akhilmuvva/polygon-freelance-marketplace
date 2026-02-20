@@ -3,7 +3,6 @@ import { useAccount, useWriteContract, useWaitForTransactionReceipt } from 'wagm
 import { parseUnits } from 'viem';
 import { Send, Loader2, Info, Plus, Trash2, Target, Cpu, Sparkles } from 'lucide-react';
 import { createJobGasless } from '../utils/biconomy';
-import StripeOnrampModal from './StripeOnrampModal';
 import FreelanceEscrowABI from '../contracts/FreelanceEscrow.json';
 import { CONTRACT_ADDRESS, SUPPORTED_TOKENS } from '../constants';
 import { uploadJSONToIPFS } from '../utils/ipfs';
@@ -58,7 +57,6 @@ function CreateJob({ onJobCreated, gasless, smartAccount }) {
     const [yieldStrategy, setYieldStrategy] = useState(0);
     const [milestones, setMilestones] = useState([{ amount: '', description: '' }]);
     const [durationDays, setDurationDays] = useState('7');
-    const [isStripeModalOpen, setIsStripeModalOpen] = useState(false);
     const [isProcessingGasless, setIsProcessingGasless] = useState(false);
     const { address } = useAccount();
 
@@ -229,7 +227,6 @@ function CreateJob({ onJobCreated, gasless, smartAccount }) {
                     </button>
                 </div>
             </form>
-            <StripeOnrampModal isOpen={isStripeModalOpen} onClose={() => setIsStripeModalOpen(false)} address={address} />
         </div>
     );
 }

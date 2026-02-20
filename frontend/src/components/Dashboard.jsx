@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from 'react';
-import { useAccount, useReadContract } from 'wagmi';
+import { useAccount, useReadContract, useSignMessage } from 'wagmi';
 import { useConnectModal } from '@rainbow-me/rainbowkit';
 import {
     Wallet, Briefcase, CheckCircle, Clock, Save, User, Award,
@@ -162,6 +162,7 @@ function Dashboard({ address: propAddress }) {
     const address = propAddress || wagmiAddress;
     const isConnected = !!address;
     const { openConnectModal } = useConnectModal();
+    const { signMessageAsync } = useSignMessage();
 
 
     const [isLoadingProfile, setIsLoadingProfile] = React.useState(true);
@@ -181,7 +182,7 @@ function Dashboard({ address: propAddress }) {
             try {
                 const health = await api.checkHealth();
                 setBackendStatus(health.status === 'ok' ? 'online' : 'error');
-            } catch (e) {
+            } catch {
                 setBackendStatus('offline');
             }
         };
@@ -212,10 +213,14 @@ function Dashboard({ address: propAddress }) {
             // Count up numeric stat values
             setTimeout(() => {
                 statValueRefs.current.forEach(el => {
-                    if (el) {
-                        const raw = el.getAttribute('data-target');
-                        const target = parseFloat(raw);
-                        if (!isNaN(target) && target > 0) countUp(el, target, 1800);
+                    try { // Added try block to wrap the logic
+                        if (el) {
+                            const raw = el.getAttribute('data-target');
+                            const target = parseFloat(raw);
+                            if (!isNaN(target) && target > 0) countUp(el, target, 1800);
+                        }
+                    } catch (error) { // Added catch block for error handling
+                        console.error("Error processing stat value element:", error);
                     }
                 });
             }, 400);

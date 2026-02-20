@@ -26,9 +26,9 @@
     "hpp": "^0.2.3",
     "mongoose": "^9.0.2",
     "multer": "^2.0.2",
+    "razorpay": "^2.9.6",
     "selfsigned": "^5.5.0",
     "siwe": "^3.0.0",
-    "stripe": "^20.1.0",
     "viem": "^2.43.3"
   },
   "engines": {

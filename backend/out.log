@@ -1,0 +1,33 @@
+[dotenv@17.2.3] injecting env (9) from .env -- tip: ΓÜÖ∩╕Å  suppress all logs with { quiet: true }
+[dotenv@17.2.3] injecting env (0) from .env -- tip: ΓÜÖ∩╕Å  write to custom object with { processEnv: myObject }
+[dotenv@17.2.3] injecting env (0) from .env -- tip: Γ£à audit secrets and track compliance: https://dotenvx.com/ops
+ΓÜá∩╕Å  WARNING: ENCRYPTION_KEY env var is not set! Using a random key.
+ΓÜá∩╕Å  Any encrypted data will be LOST on server restart.
+ΓÜá∩╕Å  Generate a key with: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+[dotenv@17.2.3] injecting env (0) from .env -- tip: ≡ƒöæ add access controls to secrets: https://dotenvx.com/ops
+2026-02-20T06:32:36.159Z Γä╣∩╕Å  INFO [CONFIG]: --- Environment Diagnostic ---
+2026-02-20T06:32:36.160Z Γä╣∩╕Å  INFO [CONFIG]: MONGODB_URI: LOADED
+2026-02-20T06:32:36.161Z Γä╣∩╕Å  INFO [CONFIG]: RAZORPAY: CONFIGURED
+2026-02-20T06:32:36.161Z Γä╣∩╕Å  INFO [CONFIG]: RPC_URL: LOADED
+Loaded SSL certificates.
+2026-02-20T06:32:36.260Z Γ£à SUCCESS [DB]: Connected to MongoDB Atlas
+node:events:497
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use 0.0.0.0:3001
+    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+    at listenInCluster (node:net:1997:12)
+    at node:net:2206:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:1976:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '0.0.0.0',
+  port: 3001
+}
+
+Node.js v22.19.0

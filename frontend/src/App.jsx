@@ -321,11 +321,19 @@ function App() {
       await particle.auth.login();
       const { ParticleProvider } = await import("@biconomy/particle-auth");
       const provider = new ParticleProvider(particle.auth);
-      const wc = createWalletClient({ chain: { id: 80002 }, transport: custom(provider) });
+      const wc = createWalletClient({
+        chain: { id: 80002 },
+        transport: custom(provider)
+      });
+      if (particle.isMock) wc.isMock = true;
+
       const sa = await createBiconomySmartAccount(wc);
       setSmartAccount(sa);
       setSocialProvider(particle);
-      toast.success("Welcome!");
+      toast.success('🎉 Welcome to the Hyper-Structure!', {
+        description: 'Your Smart Account is active. Gasless mode is enabled by default.',
+        theme: 'dark'
+      });
     } catch (err) { console.error(err); toast.error("Login failed"); }
     finally { setIsLoggingIn(false); }
   };
@@ -498,7 +506,7 @@ function App() {
         <main className="app-main" style={styles.main}>
           <header className="app-header" style={styles.header}>
             <div style={styles.headerLeft}>
-              <button className="menu-toggle" style={styles.menuBtn} onClick={() => setIsSidebarOpen(true)}>
+              <button className="menu-toggle" aria-label="Open navigation menu" style={styles.menuBtn} onClick={() => setIsSidebarOpen(true)}>
                 <Menu size={18} />
               </button>
               <div>
@@ -515,6 +523,7 @@ function App() {
                 className="desktop-only"
                 style={styles.gasBtn(isGasless)}
                 onClick={() => setIsGasless(!isGasless)}
+                aria-label={`Toggle Gasless mode, currently ${isGasless ? 'on' : 'off'}`}
               >
                 {isGasless ? <ShieldCheck size={14} /> : <Shield size={14} />}
                 {isGasless ? 'Gasless' : 'Standard'}
