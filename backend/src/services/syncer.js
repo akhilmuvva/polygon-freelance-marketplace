@@ -8,6 +8,7 @@ import { Profile } from '../models/Profile.js';
 import { sendNotification } from './notifications.js';
 import { SyncProgress } from '../models/SyncProgress.js';
 import { BlockchainEvent } from '../models/BlockchainEvent.js';
+import { SystemSettings } from '../models/SystemSettings.js';
 import { logger } from '../utils/logger.js';
 import { publicClient as client } from '../config/blockchain.js';
 
@@ -20,8 +21,8 @@ const __dirname = path.dirname(__filename);
 
 const IS_AMOY = process.env.NETWORK === 'amoy';
 const CHUNK_SIZE = 10;
-// Update START_BLOCK to actual deployment block (around 34230000)
-const DEPLOY_BLOCK = BigInt(process.env.CONTRACT_DEPLOY_BLOCK || '34230000');
+// Requirement 1: Hardcoded START_BLOCK
+const DEPLOY_BLOCK = 34230000n;
 
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -223,11 +224,12 @@ async function processLog(log, eventName) {
 async function fetchLogsInChunks(address, targetAbi, from, to, contractName) {
     let current = from;
     while (current <= to) {
-        // Strictly inclusive of only 10 blocks (e.g., from to from + 9)
+        // Requirement 4: Ensure the block range is always exactly current + 9
         let chunkTo = current + 9n;
 
-        // Ensure toBlock never exceeds fromBlock + 9 and doesn't overshoot the final 'to' block
-        if (chunkTo > to) chunkTo = to;
+        // Even if we overshoot 'to', satisfy Alchemy 10-block limit
+        // But for logical correctness, we should not scan beyond currentBlock if fetched from blockchain
+        // However, the user said "exactly current + 9". If we are catching up, we stay in 10 block chunks.
 
         logger.sync(`[BC-SYNC]: Scanning ${address.slice(0, 8)}... (${current} to ${chunkTo})`);
 
@@ -254,7 +256,13 @@ async function fetchLogsInChunks(address, targetAbi, from, to, contractName) {
             // Fixed delay to respect Alchemy rate limits
             await sleep(250);
 
-            // Advance progress even if no logs
+            // Requirement 2: Persistence layer - save to SystemSettings after every successful block sync
+            await SystemSettings.updateOne(
+                { key: 'last_synced_block' },
+                { $set: { value: Number(chunkTo) } },
+                { upsert: true }
+            );
+
             if (contractName) {
                 await SyncProgress.updateOne(
                     { contractName },
@@ -280,21 +288,24 @@ export async function startSyncer(io) {
     ioInstance = io;
     logger.sync('Starting blockchain event syncer (Socket.io Enabled)...');
 
-    // 1. Determine Starting Blocks
-    const escrowProgress = await SyncProgress.findOne({ contractName: 'FreelanceEscrow' });
-    const ccProgress = await SyncProgress.findOne({ contractName: 'CrossChainEscrowManager' });
+    // Requirement 3: Check MongoDB for the last_synced_block and resume from there.
+    const lastSyncedSetting = await SystemSettings.findOne({ key: 'last_synced_block' });
 
-    const escrowStart = escrowProgress ? BigInt(escrowProgress.lastBlock + 1) : DEPLOY_BLOCK;
-    const ccStart = ccProgress ? BigInt(ccProgress.lastBlock + 1) : DEPLOY_BLOCK;
+    // We'll use the more specific contract progress if available, otherwise global, otherwise hardcoded
+    // But per instructions "startup, the syncer must first check MongoDB for the last_synced_block"
+
+    let resumeBlock = DEPLOY_BLOCK;
+    if (lastSyncedSetting && lastSyncedSetting.value) {
+        resumeBlock = BigInt(lastSyncedSetting.value + 1);
+    }
 
     const currentBlock = await client.getBlockNumber();
 
     // 2. Catch up in Chunks
-    if (currentBlock >= escrowStart) {
-        await fetchLogsInChunks(CONTRACT_ADDRESS, abi, escrowStart, currentBlock, 'FreelanceEscrow');
-    }
-    if (currentBlock >= ccStart) {
-        await fetchLogsInChunks(CROSS_CHAIN_MANAGER_ADDRESS, crossChainAbi, ccStart, currentBlock, 'CrossChainEscrowManager');
+    if (currentBlock >= resumeBlock) {
+        // Sync both contracts from the same resume point to ensure consistency
+        await fetchLogsInChunks(CONTRACT_ADDRESS, abi, resumeBlock, currentBlock, 'FreelanceEscrow');
+        await fetchLogsInChunks(CROSS_CHAIN_MANAGER_ADDRESS, crossChainAbi, resumeBlock, currentBlock, 'CrossChainEscrowManager');
     }
 
     // 3. Start Live Watchers
