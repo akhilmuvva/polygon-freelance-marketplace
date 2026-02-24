@@ -58,14 +58,14 @@ const st = {
     },
     // Right column — auth card
     authCard: {
-        background: 'linear-gradient(145deg, #111128, #0d0d22)',
+        background: 'var(--bg-card)',
         border: '1px solid var(--border)',
         borderRadius: 20, padding: 36, position: 'relative', overflow: 'hidden',
     },
     authGlow: {
         position: 'absolute', top: -60, right: -60, width: 180, height: 180,
         borderRadius: '50%',
-        background: 'radial-gradient(circle, rgba(124,92,252,0.12) 0%, transparent 70%)',
+        background: 'radial-gradient(circle, var(--accent-subtle) 0%, transparent 70%)',
         pointerEvents: 'none',
     },
     authTitle: {
@@ -82,16 +82,16 @@ const st = {
         display: 'flex', alignItems: 'center', gap: 14, width: '100%',
         padding: '16px 20px', borderRadius: 14,
         background: 'rgba(255,255,255,0.03)',
-        border: `1px solid ${accent === 'purple' ? 'rgba(124,92,252,0.15)' : 'rgba(236,72,153,0.15)'}`,
+        border: `1px solid ${accent === 'purple' ? 'var(--accent-border)' : 'var(--secondary-subtle)'}`,
         cursor: 'pointer', transition: 'all 0.2s ease', textAlign: 'left',
         color: '#fff', position: 'relative', overflow: 'hidden',
     }),
     authBtnIcon: (accent) => ({
         width: 44, height: 44, borderRadius: 12,
         background: accent === 'purple'
-            ? 'linear-gradient(135deg, rgba(124,92,252,0.2), rgba(124,92,252,0.05))'
-            : 'linear-gradient(135deg, rgba(236,72,153,0.2), rgba(236,72,153,0.05))',
-        border: `1px solid ${accent === 'purple' ? 'rgba(124,92,252,0.2)' : 'rgba(236,72,153,0.2)'}`,
+            ? 'linear-gradient(135deg, var(--accent-subtle), transparent)'
+            : 'linear-gradient(135deg, var(--secondary-subtle), transparent)',
+        border: `1px solid ${accent === 'purple' ? 'var(--accent-border)' : 'var(--secondary-subtle)'}`,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         flexShrink: 0,
     }),
@@ -137,7 +137,7 @@ const AuthPortal = ({ onSocialLogin, isLoggingIn }) => {
                     {/* ── Left: Branding ── */}
                     <div>
                         <div style={st.badge}>
-                            <Sparkles size={13} style={{ color: 'var(--accent-light)' }} />
+                            <Sparkles size={13} style={{ color: 'var(--accent)' }} />
                             <span style={st.badgeText}>PolyLance Protocol</span>
                         </div>
 
@@ -198,7 +198,7 @@ const AuthPortal = ({ onSocialLogin, isLoggingIn }) => {
                                             ? <div className="loading-spinner" role="status" style={{ width: 22, height: 22, border: '2px solid rgba(255,255,255,0.1)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }}>
                                                 <span style={{ position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', border: 0 }}>Loading...</span>
                                             </div>
-                                            : <Mail size={20} style={{ color: 'var(--accent-light)' }} />
+                                            : <Mail size={20} style={{ color: 'var(--accent)' }} />
                                         }
                                     </div>
                                     <div style={{ flex: 1 }}>
@@ -220,7 +220,7 @@ const AuthPortal = ({ onSocialLogin, isLoggingIn }) => {
                                     onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(236,72,153,0.15)'; e.currentTarget.style.background = 'rgba(255,255,255,0.03)'; }}
                                 >
                                     <div style={st.authBtnIcon('pink')} aria-hidden="true">
-                                        <Wallet size={20} style={{ color: '#ec4899' }} />
+                                        <Wallet size={20} style={{ color: 'var(--secondary)' }} />
                                     </div>
                                     <div>
                                         <div style={st.authBtnTitle}>Web3 Foundation</div>

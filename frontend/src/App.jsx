@@ -112,7 +112,7 @@ const styles = {
   },
   versionAvatar: {
     width: 28, height: 28, borderRadius: '50%',
-    background: 'linear-gradient(135deg, var(--accent), #9b6dff)',
+    background: 'linear-gradient(135deg, var(--accent), var(--secondary))',
   },
   versionText: {
     fontSize: '0.65rem', fontWeight: 700, color: 'var(--text-tertiary)',
@@ -145,7 +145,7 @@ const styles = {
   },
   header: {
     height: 64, borderBottom: '1px solid var(--border)',
-    background: 'rgba(6,6,17,0.85)', backdropFilter: 'blur(16px)',
+    background: 'rgba(1,2,4,0.85)', backdropFilter: 'blur(16px)',
     WebkitBackdropFilter: 'blur(16px)',
     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
     padding: '0 28px', position: 'sticky', top: 0, zIndex: 500,
@@ -180,9 +180,9 @@ const styles = {
   }),
   socialBtn: {
     display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px',
-    borderRadius: 10, background: 'linear-gradient(135deg, var(--accent), #9b6dff)',
-    color: '#fff', fontSize: '0.75rem', fontWeight: 700, border: 'none',
-    cursor: 'pointer', boxShadow: '0 4px 16px rgba(124,92,252,0.2)',
+    borderRadius: 10, background: 'linear-gradient(135deg, var(--accent), var(--secondary))',
+    color: 'var(--text-inverse)', fontSize: '0.75rem', fontWeight: 700, border: 'none',
+    cursor: 'pointer', boxShadow: '0 4px 16px var(--accent-glow)',
     transition: 'all 0.2s ease',
   },
   smartWallet: {
@@ -475,9 +475,9 @@ function App() {
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <div style={{
                 width: 32, height: 32, borderRadius: 8,
-                background: 'linear-gradient(135deg, var(--accent), #9b6dff)',
+                background: 'linear-gradient(135deg, var(--accent), var(--secondary))',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                boxShadow: '0 0 16px rgba(124,92,252,0.3)',
+                boxShadow: '0 0 16px var(--accent-glow)',
                 overflow: 'hidden'
               }}>
                 <img src="/logo.png" alt="PolyLance" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />

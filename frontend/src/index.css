@@ -1,51 +1,52 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap');
 
 /* ============================================
    POLYLANCE — Premium Design System
    ============================================ */
 :root {
-  /* Deep Space Palette */
-  --bg-base: #060611;
-  --bg-surface: #0c0c1d;
-  --bg-raised: #111128;
-  --bg-card: linear-gradient(145deg, #111128 0%, #0d0d22 100%);
-  --bg-sidebar: #080818;
-  --bg-hover: rgba(255, 255, 255, 0.04);
-  --bg-input: rgba(255, 255, 255, 0.03);
+  /* Zenith Obsidian Palette */
+  --bg-base: #010204;
+  --bg-surface: #0a0b0e;
+  --bg-raised: #111318;
+  --bg-card: linear-gradient(145deg, #111318 0%, #08090d 100%);
+  --bg-sidebar: #050608;
+  --bg-hover: rgba(255, 255, 255, 0.05);
+  --bg-input: rgba(255, 255, 255, 0.02);
 
   /* Text Hierarchy */
-  --text-primary: #eeeef5;
-  --text-secondary: #8888a8;
-  --text-tertiary: #4e4e6a;
-  --text-inverse: #060611;
+  --text-primary: #ffffff;
+  --text-secondary: #94a3b8;
+  --text-tertiary: #475569;
+  --text-inverse: #010204;
 
-  /* Vivid Accent Palette */
-  --accent: #7c5cfc;
-  --accent-light: #a78bfa;
-  --accent-bright: #c4b5fd;
-  --accent-subtle: rgba(124, 92, 252, 0.06);
-  --accent-border: rgba(124, 92, 252, 0.15);
-  --accent-glow: rgba(124, 92, 252, 0.2);
+  /* Zenith Emerald Palette (The Signature) */
+  --accent: #2dd4bf;
+  --accent-light: #5eead4;
+  --accent-bright: #99f6e4;
+  --accent-subtle: rgba(45, 212, 191, 0.06);
+  --accent-border: rgba(45, 212, 191, 0.2);
+  --accent-glow: rgba(45, 212, 191, 0.25);
 
-  --pink: #ec4899;
-  --pink-subtle: rgba(236, 72, 153, 0.06);
+  --secondary: #6366f1;
+  /* Electric Indigo */
+  --secondary-subtle: rgba(99, 102, 241, 0.06);
 
-  --cyan: #22d3ee;
-  --cyan-subtle: rgba(34, 211, 238, 0.06);
+  --cyan: #06b6d4;
+  --cyan-subtle: rgba(6, 182, 212, 0.06);
 
   /* Semantic */
-  --success: #34d399;
-  --success-subtle: rgba(52, 211, 153, 0.06);
-  --warning: #fbbf24;
-  --warning-subtle: rgba(251, 191, 36, 0.06);
-  --danger: #f87171;
-  --danger-subtle: rgba(248, 113, 113, 0.06);
-  --info: #60a5fa;
-  --info-subtle: rgba(96, 165, 250, 0.06);
+  --success: #10b981;
+  --success-subtle: rgba(16, 185, 129, 0.06);
+  --warning: #f59e0b;
+  --warning-subtle: rgba(245, 158, 11, 0.06);
+  --danger: #ef4444;
+  --danger-subtle: rgba(239, 68, 68, 0.06);
+  --info: #3b82f6;
+  --info-subtle: rgba(59, 130, 246, 0.06);
 
   /* Borders */
-  --border: rgba(255, 255, 255, 0.05);
-  --border-strong: rgba(255, 255, 255, 0.1);
+  --border: rgba(255, 255, 255, 0.06);
+  --border-strong: rgba(255, 255, 255, 0.12);
 
   /* Radius */
   --radius-sm: 8px;
@@ -69,7 +70,7 @@
 }
 
 body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
   background: var(--bg-base);
   color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
@@ -78,15 +79,15 @@ body {
   min-height: 100vh;
 }
 
-/* Ambient background glow */
+/* Ambient background glow — Clean & Sharp */
 body::before {
   content: '';
   position: fixed;
   inset: 0;
   background:
-    radial-gradient(ellipse 80% 60% at 15% -20%, rgba(124, 92, 252, 0.1) 0%, transparent 60%),
-    radial-gradient(ellipse 50% 50% at 85% 10%, rgba(236, 72, 153, 0.06) 0%, transparent 50%),
-    radial-gradient(ellipse 60% 40% at 50% 100%, rgba(34, 211, 238, 0.04) 0%, transparent 50%);
+    radial-gradient(ellipse 60% 50% at 15% -10%, rgba(45, 212, 191, 0.08) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 40% at 85% 20%, rgba(99, 102, 241, 0.05) 0%, transparent 50%),
+    radial-gradient(ellipse 50% 30% at 50% 100%, rgba(16, 185, 129, 0.04) 0%, transparent 50%);
   pointer-events: none;
   z-index: -1;
 }
@@ -140,14 +141,14 @@ h6 {
 }
 
 .gradient-text {
-  background: linear-gradient(135deg, #fff 20%, var(--accent-light) 80%);
+  background: linear-gradient(135deg, #fff 20%, var(--accent) 80%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 .zenith-gradient {
-  background: linear-gradient(135deg, #fff 0%, var(--accent) 100%);
+  background: linear-gradient(135deg, var(--accent) 0%, var(--secondary) 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -259,11 +260,11 @@ h6 {
 }
 
 .stat-card-purple::before {
-  background: linear-gradient(135deg, rgba(124, 92, 252, 0.08) 0%, transparent 60%);
+  background: linear-gradient(135deg, var(--accent-subtle) 0%, transparent 60%);
 }
 
 .stat-card-purple:hover {
-  border-color: rgba(124, 92, 252, 0.3);
+  border-color: var(--accent-border);
 }
 
 .stat-card-green::before {
@@ -302,9 +303,9 @@ h6 {
 }
 
 .stat-icon-purple {
-  background: linear-gradient(135deg, rgba(124, 92, 252, 0.2), rgba(124, 92, 252, 0.05));
-  color: var(--accent-light);
-  box-shadow: 0 0 20px rgba(124, 92, 252, 0.15);
+  background: linear-gradient(135deg, var(--accent-subtle), transparent);
+  color: var(--accent);
+  box-shadow: 0 0 20px var(--accent-subtle);
 }
 
 .stat-icon-green {
@@ -363,13 +364,13 @@ h6 {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--accent), #9b6dff);
-  color: #fff;
-  box-shadow: 0 4px 16px rgba(124, 92, 252, 0.25);
+  background: linear-gradient(135deg, var(--accent), var(--secondary));
+  color: var(--text-inverse);
+  box-shadow: 0 4px 16px var(--accent-glow);
 }
 
 .btn-primary:hover {
-  box-shadow: 0 6px 24px rgba(124, 92, 252, 0.35);
+  box-shadow: 0 6px 24px var(--accent-glow);
   transform: translateY(-1px);
   filter: brightness(1.1);
 }
@@ -1524,7 +1525,7 @@ nav,
 }
 
 .mesh-bg {
-  background: linear-gradient(-45deg, #020617, #0f172a, #1eccad, var(--accent), #ec4899);
+  background: linear-gradient(-45deg, var(--bg-base), var(--bg-surface), var(--accent), var(--secondary));
   background-size: 400% 400%;
   animation: mesh 15s ease infinite;
 }

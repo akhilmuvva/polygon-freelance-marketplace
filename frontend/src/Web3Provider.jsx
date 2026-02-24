@@ -74,10 +74,10 @@ export function Web3Provider({ children }) {
         const alchemyId = import.meta.env.VITE_ALCHEMY_ID;
 
         return getDefaultConfig({
-            appName: 'PolyLance',
+            appName: 'PolyLance | Zenith',
             appDescription: 'Enterprise Decentralized Freelance Marketplace',
             appUrl: window.location.origin,
-            appIcon: 'https://raw.githubusercontent.com/lucide-react/lucide/main/icons/briefcase.svg',
+            appIcon: window.location.origin + '/logo.svg',
             projectId,
             chains: [polygonAmoy, polygon],
             transports: {

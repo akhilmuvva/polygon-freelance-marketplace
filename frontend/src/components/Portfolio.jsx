@@ -90,9 +90,9 @@ function Portfolio({ address, onBack, onFiatPay }) {
                     <div style={{ ...cardBg, textAlign: 'center', padding: '36px 20px' }}>
                         <div style={{
                             width: '100%', height: 180, margin: '0 auto 14px', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            background: 'rgba(124,92,252,0.06)', borderRadius: 16,
+                            background: 'var(--accent-subtle)', borderRadius: 16, border: '1px solid var(--accent-border)',
                         }}>
-                            <User size={70} style={{ color: 'var(--accent-light)', opacity: 0.4 }} />
+                            <User size={70} style={{ color: 'var(--accent)', opacity: 0.6 }} />
                         </div>
                         <h2 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: 8 }}>{profile.name || 'Anonymous Creator'}</h2>
 
@@ -115,7 +115,7 @@ function Portfolio({ address, onBack, onFiatPay }) {
 
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 14 }}>
                             <div style={{ ...cardBg, padding: 14 }}>
-                                <div style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--accent-light)' }}>{profile.completedJobs}</div>
+                                <div style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--accent)' }}>{profile.completedJobs}</div>
                                 <div style={{ fontSize: '0.65rem', color: 'var(--text-tertiary)', fontWeight: 600 }}>JOBS</div>
                             </div>
                             <div style={{ ...cardBg, padding: 14 }}>

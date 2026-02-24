@@ -22,14 +22,14 @@ function ReputationOrb({ level = 1 }) {
         <Float speed={speed} rotationIntensity={1} floatIntensity={2}>
             <Sphere ref={mesh} args={[1, 64, 64]}>
                 <MeshDistortMaterial
-                    color={"#6366f1"}
+                    color={"#2dd4bf"}
                     speed={speed}
                     distort={distortion}
                     radius={1}
                 >
                     <GradientTexture
                         stops={[0, 1]}
-                        colors={['#4f46e5', '#9333ea']}
+                        colors={['#10b981', '#6366f1']}
                     />
                 </MeshDistortMaterial>
             </Sphere>

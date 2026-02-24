@@ -28,29 +28,29 @@ const s = {
     heroWrap: {
         position: 'relative',
         borderRadius: 20, overflow: 'hidden',
-        background: 'linear-gradient(135deg, #111128 0%, #0d0d22 50%, #15102e 100%)',
-        border: '1px solid rgba(124, 92, 252, 0.12)',
+        background: 'var(--bg-card)',
+        border: '1px solid var(--accent-border)',
         padding: '36px 32px',
     },
     heroGlow: {
         position: 'absolute', top: -80, right: -80,
         width: 300, height: 300, borderRadius: '50%',
-        background: 'radial-gradient(circle, rgba(124,92,252,0.18) 0%, transparent 70%)',
+        background: 'radial-gradient(circle, var(--accent-subtle) 0%, transparent 70%)',
         pointerEvents: 'none',
     },
     heroGlow2: {
         position: 'absolute', bottom: -60, left: -40,
         width: 200, height: 200, borderRadius: '50%',
-        background: 'radial-gradient(circle, rgba(236,72,153,0.1) 0%, transparent 70%)',
+        background: 'radial-gradient(circle, var(--secondary-subtle) 0%, transparent 70%)',
         pointerEvents: 'none',
     },
     heroContent: { position: 'relative', zIndex: 1 },
     heroBadge: {
         display: 'inline-flex', alignItems: 'center', gap: 5,
         padding: '5px 12px', borderRadius: 8,
-        background: 'rgba(124, 92, 252, 0.08)',
-        border: '1px solid rgba(124, 92, 252, 0.2)',
-        color: '#a78bfa', fontSize: '0.68rem', fontWeight: 700,
+        background: 'var(--accent-subtle)',
+        border: '1px solid var(--accent-border)',
+        color: 'var(--accent)', fontSize: '0.68rem', fontWeight: 700,
         textTransform: 'uppercase', letterSpacing: '0.06em',
         marginBottom: 16,
     },
@@ -402,7 +402,7 @@ function Dashboard({ address: propAddress }) {
                                 <img src="/logo.png" alt="PolyLance" style={{ width: 80, height: 80, borderRadius: 16, boxShadow: '0 8px 32px rgba(124,92,252,0.25)', border: '1px solid rgba(124,92,252,0.2)' }} />
                             )}
                             <div style={{ display: 'flex', gap: 10 }}>
-                                <button className="btn btn-primary" style={{ borderRadius: 12 }}>
+                                <button className="btn btn-primary" style={{ borderRadius: 12, background: 'linear-gradient(135deg, var(--accent), var(--secondary))', color: 'var(--text-inverse)' }}>
                                     <Rocket size={15} /> New Job
                                 </button>
                             </div>
@@ -459,9 +459,9 @@ function Dashboard({ address: propAddress }) {
                         <div style={{
                             ...s.sectionIcon,
                             width: 46, height: 46, borderRadius: 14,
-                            background: 'linear-gradient(135deg, rgba(124,92,252,0.2), rgba(124,92,252,0.05))',
-                            border: '1px solid rgba(124,92,252,0.2)',
-                            boxShadow: '0 0 20px rgba(124,92,252,0.1)',
+                            background: 'var(--bg-raised)',
+                            border: '1px solid var(--accent-border)',
+                            boxShadow: '0 0 20px var(--accent-subtle)',
                         }}>
                             <Terminal size={22} style={{ color: 'var(--accent-light)' }} />
                         </div>

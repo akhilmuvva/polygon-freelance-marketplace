@@ -1,9 +1,9 @@
 {
     "short_name": "PolyLance",
-    "name": "PolyLance Zenith Protocol",
+    "name": "PolyLance | Zenith",
     "icons": [
         {
-            "src": "vite.svg",
+            "src": "logo.svg",
             "sizes": "any",
             "type": "image/svg+xml"
         }
