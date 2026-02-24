@@ -104,9 +104,14 @@ describe("FreelanceEscrow Bug Fixes", function () {
 
             const tx = await escrow.connect(client).createJob(params, { value: amount });
             const receipt = await tx.wait();
-            const event = receipt.logs.find(l => l.fragment && l.fragment.name === 'JobCreated'); // ethers v6
-            // In upgrades tests, logs format might vary. Assuming we get jobId 1.
-            const jobId = 1;
+            const event = receipt.logs
+                .map(log => {
+                    try { return escrow.interface.parseLog(log); } catch (e) { return null; }
+                })
+                .find(e => e && e.name === 'JobCreated');
+
+            // Extract jobId from event args
+            const jobId = event ? event.args.jobId : 1;
 
             // Check totalPaidOut
             let job = await escrow.jobs(jobId);

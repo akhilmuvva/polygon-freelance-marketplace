@@ -107,8 +107,8 @@ function Portfolio({ address, onBack, onFiatPay }) {
                             {profile.skills?.split(',').map((skill, idx) => (
                                 <span key={idx} className="portfolio-skill-tag" style={{
                                     fontSize: '0.72rem', fontWeight: 600, padding: '3px 10px', borderRadius: 6,
-                                    border: '1px solid rgba(124,92,252,0.2)', color: 'var(--accent-light)',
-                                    background: 'rgba(124,92,252,0.04)', opacity: 0,
+                                    border: '1px solid var(--accent-border)', color: 'var(--accent)',
+                                    background: 'var(--accent-subtle)', opacity: 0,
                                 }}>{skill.trim()}</span>
                             )) || <span style={{ fontSize: '0.72rem', padding: '3px 10px', borderRadius: 6, background: 'rgba(255,255,255,0.04)', color: 'var(--text-tertiary)' }}>General Creator</span>}
                         </div>

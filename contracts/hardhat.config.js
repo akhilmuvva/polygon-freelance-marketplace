@@ -8,12 +8,17 @@ module.exports = {
     solidity: {
         version: "0.8.24",
         settings: {
-            evmVersion: "cancun",
+            evmVersion: "shanghai",
             optimizer: {
                 enabled: true,
-                runs: 1
+                runs: 200
             },
             viaIR: true
         }
+    },
+    networks: {
+        hardhat: {
+            allowUnlimitedContractSize: true,
+        },
     },
 };
