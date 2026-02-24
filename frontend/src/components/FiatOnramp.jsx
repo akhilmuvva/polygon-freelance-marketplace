@@ -63,12 +63,21 @@ const s = {
     }
 };
 
-const FiatOnramp = ({ address }) => {
+const FiatOnramp = ({ address, recipientAddress: propRecipient }) => {
     const [amount, setAmount] = useState('1000');
+    const [recipientAddress, setRecipientAddress] = useState(propRecipient || address || '');
     const [loading, setLoading] = useState(false);
     const [showMockModal, setShowMockModal] = useState(false);
     const [mockOrder, setMockOrder] = useState(null);
     const [verifying, setVerifying] = useState(false);
+
+    React.useEffect(() => {
+        if (propRecipient) {
+            setRecipientAddress(propRecipient);
+        } else if (address && !recipientAddress) {
+            setRecipientAddress(address);
+        }
+    }, [propRecipient, address]);
 
     const loadRazorpay = () => {
         return new Promise((resolve) => {
@@ -91,7 +100,7 @@ const FiatOnramp = ({ address }) => {
         setLoading(true);
         try {
             // Initiate order creation on backend
-            const order = await api.createRazorpayOrder(parseFloat(amount), address, {
+            const order = await api.createRazorpayOrder(parseFloat(amount), recipientAddress, {
                 phone: "9999999999",
                 email: "user@polylance.com"
             });
@@ -186,6 +195,26 @@ const FiatOnramp = ({ address }) => {
                     <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'white' }}>Quick Onramp</h2>
                     <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.85rem' }}>Convert Fiat to Assets instantly via Razorpay</p>
                 </header>
+
+                <div style={{ marginBottom: 20 }}>
+                    <label style={{ fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)', letterSpacing: '0.05em' }}>
+                        Asset Recipient (Polygon Address)
+                    </label>
+                    <div style={{ position: 'relative' }}>
+                        <input
+                            style={{ ...s.input, fontSize: '0.85rem', color: '#a78bfa' }}
+                            type="text"
+                            value={recipientAddress}
+                            onChange={(e) => setRecipientAddress(e.target.value)}
+                            placeholder="0x..."
+                        />
+                        {recipientAddress?.toLowerCase() === address?.toLowerCase() && (
+                            <div style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-20%)', fontSize: '0.6rem', fontWeight: 800, color: 'var(--success)', background: 'rgba(52,211,153,0.1)', padding: '2px 6px', borderRadius: 4 }}>
+                                USER WALLET
+                            </div>
+                        )}
+                    </div>
+                </div>
 
                 <div style={{ marginBottom: 24 }}>
                     <label style={{ fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)', letterSpacing: '0.05em' }}>

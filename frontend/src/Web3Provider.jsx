@@ -11,7 +11,8 @@ import { WagmiProvider, http, fallback, useAccount } from 'wagmi';
 import { polygon, polygonAmoy } from 'wagmi/chains';
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 import { SiweMessage } from 'siwe';
-import { ApolloClient, InMemoryCache, ApolloProvider } from '@apollo/client';
+import { ApolloClient, InMemoryCache, HttpLink } from '@apollo/client/core/index.js';
+import { ApolloProvider } from '@apollo/client/react/index.js';
 import { HuddleClient, HuddleProvider } from '@huddle01/react';
 import { api } from './services/api';
 
@@ -51,7 +52,9 @@ const queryClient = new QueryClient({
 });
 
 const apolloClient = new ApolloClient({
-    uri: import.meta.env.VITE_SUBGRAPH_URL || 'https://api.studio.thegraph.com/query/STUDIO_ID/poly-lance/v0.0.1',
+    link: new HttpLink({
+        uri: import.meta.env.VITE_SUBGRAPH_URL || 'https://api.studio.thegraph.com/query/STUDIO_ID/poly-lance/v0.0.1',
+    }),
     cache: new InMemoryCache(),
 });
 

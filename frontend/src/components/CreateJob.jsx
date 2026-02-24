@@ -134,7 +134,7 @@ function CreateJob({ onJobCreated, gasless, smartAccount }) {
         <div style={st.page}>
             <div ref={headerRef} style={{ ...st.header, opacity: 0 }}>
                 <div style={st.badge}>
-                    <Sparkles size={12} className="text-emerald-400" />
+                    <Sparkles size={12} style={{ color: 'var(--success)' }} />
                     <span style={st.badgeText}>New Opportunity</span>
                 </div>
                 <h1 style={st.title}>Initialize Contract</h1>

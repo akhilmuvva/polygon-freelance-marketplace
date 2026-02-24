@@ -203,6 +203,9 @@ async function shutdown(server, signal) {
     });
 }
 
+// Favicon Handler (Prevent 404s)
+app.get('/favicon.ico', (req, res) => res.status(204).end());
+
 // Health Check
 app.get('/api/health', async (req, res) => {
     try {

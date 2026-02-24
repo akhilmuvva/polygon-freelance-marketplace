@@ -1,4 +1,16 @@
-import { useQuery, gql } from '@apollo/client';
+import { useQuery } from '@apollo/client/react/index.js';
+import { gql } from '@apollo/client/core/index.js';
+import { useAccount, useWalletClient } from 'wagmi';
+import React, { useState, useEffect, useRef } from 'react';
+import axios from 'axios';
+import { useAnimeAnimations } from '../hooks/useAnimeAnimations';
+import { createBiconomySmartAccount } from '../utils/biconomy';
+import { RefreshCcw, Search, Filter, ChevronDown, Briefcase, Calendar, DollarSign, ArrowRight, ArrowUpDown, MessageSquare } from 'lucide-react';
+import { formatUnits } from 'viem';
+import { SUPPORTED_TOKENS } from '../constants';
+import UserLink from './UserLink';
+import AiMatchRating from './AiMatchRating';
+import { motion } from 'framer-motion';
 
 const GET_JOBS = gql`
     query GetJobs {
@@ -36,7 +48,7 @@ const st = {
     }
 };
 
-const JobsList = ({ onSelectChat, gasless, smartAccount: propSmartAccount, address: propAddress }) => {
+const JobsList = ({ onSelectChat, onFiatPay, gasless, smartAccount: propSmartAccount, address: propAddress }) => {
     const { address: wagmiAddress } = useAccount();
     const address = propAddress || wagmiAddress;
     const { data: walletClient } = useWalletClient();
@@ -44,11 +56,34 @@ const JobsList = ({ onSelectChat, gasless, smartAccount: propSmartAccount, addre
     const { staggerFadeIn, slideInLeft } = useAnimeAnimations();
     const headerRef = useRef(null);
 
-    const { loading: isLoadingJobs, data: subgraphData, error: subgraphError, refetch: fetchJobs } = useQuery(GET_JOBS, {
-        pollInterval: 10000, // Sync with Antigravity speed: refresh every 10s
+    const { loading: isLoadingJobs, data: subgraphData, error: subgraphError, refetch: fetchSubgraph } = useQuery(GET_JOBS, {
+        pollInterval: 15000,
+        errorPolicy: 'all',
     });
 
-    const jobs = subgraphData?.jobs || [];
+    const [apiJobs, setApiJobs] = useState([]);
+    const [isApiLoading, setIsApiLoading] = useState(false);
+
+    // Fallback fetching from backend if subgraph is down or empty
+    const fetchApiJobs = React.useCallback(async () => {
+        setIsApiLoading(true);
+        try {
+            const data = await api.getJobsMetadata();
+            setApiJobs(data || []);
+        } catch (err) {
+            console.warn('[JobsList] API Fallback failed:', err);
+        } finally {
+            setIsApiLoading(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        if (subgraphError || (!isLoadingJobs && (!subgraphData || !subgraphData.jobs?.length))) {
+            fetchApiJobs();
+        }
+    }, [subgraphError, isLoadingJobs, subgraphData, fetchApiJobs]);
+
+    const jobs = (subgraphData?.jobs?.length ? subgraphData.jobs : apiJobs) || [];
     const [filter, setFilter] = useState('All Categories');
     const [searchQuery, setSearchQuery] = useState('');
     const [sortBy, setSortBy] = useState('Newest');
@@ -130,7 +165,12 @@ const JobsList = ({ onSelectChat, gasless, smartAccount: propSmartAccount, addre
         if (filteredJobs.length > 0) setTimeout(() => staggerFadeIn('.job-card-wrapper', 60), 100);
     }, [filteredJobs.length]);
 
-    const isLoading = isLoadingJobs || isAiLoading;
+    const isLoading = (isLoadingJobs && !apiJobs.length) || isAiLoading || isApiLoading;
+
+    const handleRefresh = () => {
+        fetchSubgraph();
+        fetchApiJobs();
+    };
 
     return (
         <div style={st.container}>
@@ -144,8 +184,8 @@ const JobsList = ({ onSelectChat, gasless, smartAccount: propSmartAccount, addre
                     </p>
                 </div>
                 <div style={{ display: 'flex', gap: 12 }}>
-                    <button onClick={fetchJobs} style={{ display: 'flex', alignItems: 'center', gap: 8, borderRadius: 12, padding: '10px 16px', background: 'transparent', border: '1px solid var(--border)', color: 'var(--text-primary)', cursor: 'pointer', fontSize: '0.9rem', fontWeight: 600 }}>
-                        <RefreshCcw size={16} style={{ animation: isLoadingJobs ? 'spin 2s linear infinite' : 'none' }} />
+                    <button onClick={handleRefresh} style={{ display: 'flex', alignItems: 'center', gap: 8, borderRadius: 12, padding: '10px 16px', background: 'transparent', border: '1px solid var(--border)', color: 'var(--text-primary)', cursor: 'pointer', fontSize: '0.9rem', fontWeight: 600 }}>
+                        <RefreshCcw size={16} style={{ animation: (isLoadingJobs || isApiLoading) ? 'spin 2s linear infinite' : 'none' }} />
                         Refresh
                     </button>
                     <button className="btn btn-primary" style={{ borderRadius: 12, padding: '10px 18px' }}>Post a Job</button>
@@ -201,7 +241,7 @@ const JobsList = ({ onSelectChat, gasless, smartAccount: propSmartAccount, addre
             ) : (
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(400px, 1fr))', gap: 24 }}>
                     {filteredJobs.map((job) => (
-                        <JobCard key={job.jobId} job={job} address={address} onSelectChat={onSelectChat} />
+                        <JobCard key={job.jobId} job={job} address={address} onSelectChat={onSelectChat} onFiatPay={onFiatPay} />
                     ))}
                 </div>
             )}
@@ -209,7 +249,7 @@ const JobsList = ({ onSelectChat, gasless, smartAccount: propSmartAccount, addre
     );
 };
 
-const JobCard = ({ job, address, onSelectChat }) => {
+const JobCard = ({ job, address, onSelectChat, onFiatPay }) => {
     const tokenInfo = SUPPORTED_TOKENS.find(t => t.address?.toLowerCase() === job.token?.toLowerCase()) || SUPPORTED_TOKENS[0];
     const statusColor = job.status === 0 ? 'var(--success)' : job.status === 3 ? 'var(--danger)' : 'var(--accent-light)';
 
@@ -251,6 +291,11 @@ const JobCard = ({ job, address, onSelectChat }) => {
 
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 'auto' }}>
                 <button className="btn btn-primary" style={{ flex: 1, height: 40, borderRadius: 10, fontSize: '0.8rem', fontWeight: 700 }}>View Gig</button>
+                {onFiatPay && (
+                    <button onClick={() => onFiatPay(job.freelancer || job.client)} className="btn btn-secondary" style={{ height: 40, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '0 12px' }}>
+                        <CreditCard size={14} /> <span style={{ fontSize: '0.72rem', fontWeight: 700 }}>Fiat Pay</span>
+                    </button>
+                )}
                 <button onClick={() => onSelectChat(job.client)} className="btn btn-ghost" style={{ width: 40, height: 40, padding: 0, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <MessageSquare size={16} />
                 </button>

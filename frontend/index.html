@@ -2,6 +2,21 @@
 <html lang="en">
 
 <head>
+  <script>
+    // Absolute pre-emption of SES/library noise
+    (function () {
+      const filter = (args) => {
+        const msg = args.map(a => String(a)).join(' ');
+        return msg.includes('SES Removing unpermitted intrinsics');
+      };
+      ['log', 'info', 'warn', 'debug', 'error'].forEach(method => {
+        const _orig = console[method];
+        console[method] = function (...args) {
+          if (!filter(args)) _orig.apply(console, args);
+        };
+      });
+    })();
+  </script>
   <meta charset="UTF-8" />
   <link rel="icon" type="image/svg+xml" href="/vite.svg" />
   <link rel="manifest" href="/manifest.json" />

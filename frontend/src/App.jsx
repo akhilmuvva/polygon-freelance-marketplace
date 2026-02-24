@@ -103,8 +103,9 @@ const styles = {
     letterSpacing: '0.08em', color: 'var(--text-tertiary)',
   },
   liveDot: {
-    width: 6, height: 6, borderRadius: '50%', background: 'var(--accent)',
-    boxShadow: '0 0 8px rgba(124,92,252,0.4)',
+    width: 6, height: 6, borderRadius: '50%', background: 'var(--success)',
+    boxShadow: '0 0 8px rgba(52,211,153,0.4)',
+    animation: 'pulse 2s infinite ease-in-out',
   },
   versionRow: {
     display: 'flex', alignItems: 'center', gap: 8,
@@ -248,6 +249,11 @@ const responsiveCSS = `
     .app-footer { display: none !important; }
     .app-content { padding: 20px 16px 80px !important; }
 }
+@keyframes pulse {
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.2); opacity: 0.7; }
+    100% { transform: scale(1); opacity: 1; }
+}
 `;
 
 const NAV_CORE = [
@@ -275,7 +281,26 @@ const NAV_VAULT = [
 
 function App() {
   const { address, isConnected: isWalletConnected } = useAccount();
+  const { data: walletClient } = useWalletClient();
+  const { disconnect } = useDisconnect();
   const { data: blockNumber } = useBlockNumber({ watch: true });
+
+  // Core Shell State
+  const [activeTab, setActiveTab] = React.useState('dashboard');
+  const [activeTabParams, setActiveTabParams] = React.useState({});
+
+  const navigateToOnramp = (recipient = null) => {
+    setActiveTabParams({ recipient });
+    setActiveTab('onramp');
+  };
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isGasless, setIsGasless] = useState(false);
+  const [smartAccount, setSmartAccount] = useState(null);
+  const [isInitializingGasless, setIsInitializingGasless] = useState(false);
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [socialProvider, setSocialProvider] = useState(null);
+  const [chatPeerAddress, setChatPeerAddress] = useState('');
+  const [portfolioAddress, setPortfolioAddress] = useState(null);
 
   useEffect(() => {
     if (blockNumber) {
@@ -288,9 +313,11 @@ function App() {
   const sidebarRef = React.useRef(null);
   const { slideInLeft, staggerFadeIn } = useAnimeAnimations();
 
+  const hasAnimatedRef = React.useRef(false);
   React.useEffect(() => {
-    // Only animate on initial mount for desktop
-    if (window.innerWidth > 1024 && sidebarRef.current) {
+    // Only animate once on initial mount for desktop
+    if (!hasAnimatedRef.current && window.innerWidth > 1024 && sidebarRef.current) {
+      hasAnimatedRef.current = true;
       slideInLeft(sidebarRef.current, 100);
       setTimeout(() => staggerFadeIn('.anime-nav-item', 60), 300);
     }
@@ -383,33 +410,34 @@ function App() {
   const onSelectChat = (addr) => { setChatPeerAddress(addr); setActiveTab('chat'); };
 
   const renderContent = () => {
-    if (portfolioAddress) return <Portfolio address={portfolioAddress} onBack={() => setPortfolioAddress(null)} />;
+    if (portfolioAddress) return <Portfolio address={portfolioAddress} onFiatPay={navigateToOnramp} onBack={() => setPortfolioAddress(null)} />;
+
     switch (activeTab) {
       case 'dashboard': return <Dashboard address={effectiveAddress} />;
-      case 'jobs': return <JobsList onUserClick={setPortfolioAddress} onSelectChat={onSelectChat} gasless={isGasless} smartAccount={smartAccount} />;
-      case 'create': return <CreateJob smartAccount={smartAccount} gasless={isGasless} address={effectiveAddress} onJobCreated={() => setActiveTab('jobs')} />;
+      case 'jobs': return <JobsList onUserClick={setPortfolioAddress} onSelectChat={onSelectChat} onFiatPay={navigateToOnramp} gasless={isGasless} smartAccount={smartAccount} />;
+      case 'create':
       case 'create-job': return <CreateJob smartAccount={smartAccount} gasless={isGasless} address={effectiveAddress} onJobCreated={() => setActiveTab('jobs')} />;
-      case 'nfts': return <NFTGallery address={effectiveAddress} />;
+      case 'nfts':
       case 'nft-gallery': return <NFTGallery address={effectiveAddress} />;
-      case 'chat': return <Chat initialPeerAddress={chatPeerAddress} address={effectiveAddress} />;
+      case 'chat':
       case 'messages': return <Chat initialPeerAddress={chatPeerAddress} address={effectiveAddress} />;
       case 'leaderboard': return <Leaderboard onUserClick={setPortfolioAddress} />;
-      case 'governance': return <DaoDashboard address={effectiveAddress} />;
+      case 'governance':
       case 'dao': return <DaoDashboard address={effectiveAddress} />;
-      case 'justice': return <ArbitrationDashboard address={effectiveAddress} />;
+      case 'justice':
       case 'arbitration': return <ArbitrationDashboard address={effectiveAddress} />;
-      case 'manager': return <ManagerDashboard address={effectiveAddress} />;
+      case 'manager':
       case 'yield': return <ManagerDashboard address={effectiveAddress} />;
       case 'cross-chain': return <CrossChainDashboard address={effectiveAddress} />;
       case 'analytics': return <AnalyticsDashboard />;
-      case 'sbt': return <SBTGallery address={effectiveAddress} />;
+      case 'sbt':
       case 'sbt-gallery': return <SBTGallery address={effectiveAddress} />;
       case 'terms': return <TermsOfService />;
       case 'privacy': return <PrivacyCenter address={effectiveAddress} />;
       case 'showcase': return <AnimationShowcase />;
-      case 'onramp': return <FiatOnramp address={effectiveAddress} />;
-      case 'fiat-onramp': return <FiatOnramp address={effectiveAddress} />;
-      case 'portfolio': return <Portfolio address={effectiveAddress} />;
+      case 'onramp':
+      case 'fiat-onramp': return <FiatOnramp address={effectiveAddress} recipientAddress={activeTabParams.recipient} />;
+      case 'portfolio': return <Portfolio address={effectiveAddress} onFiatPay={navigateToOnramp} />;
       default: return <Dashboard address={effectiveAddress} />;
     }
   };

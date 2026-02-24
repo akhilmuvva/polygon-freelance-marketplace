@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { User, Briefcase, MapPin, Link as LinkIcon, Award, ExternalLink, Globe, Github, Twitter, Zap, Coins } from 'lucide-react';
+import { User, Briefcase, MapPin, Link as LinkIcon, Award, ExternalLink, Globe, Github, Twitter, Zap, Coins, CreditCard } from 'lucide-react';
 import { useReadContract } from 'wagmi';
 import { erc20Abi, formatEther } from 'viem';
 import { POLY_TOKEN_ADDRESS, CONTRACT_ADDRESS } from '../constants';
@@ -7,7 +7,7 @@ import { api } from '../services/api';
 import Reputation3D from './Reputation3D';
 import { useAnimeAnimations } from '../hooks/useAnimeAnimations';
 
-function Portfolio({ address, onBack }) {
+function Portfolio({ address, onBack, onFiatPay }) {
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
     const sidebarRef = useRef(null);
@@ -132,6 +132,12 @@ function Portfolio({ address, onBack }) {
                         <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: 24, fontSize: '0.9rem' }}>
                             {profile.bio || "This creator hasn't added a bio yet. Their work on PolyLance speaks for itself."}
                         </p>
+
+                        {onFiatPay && (
+                            <button onClick={() => onFiatPay(profile.address)} className="btn btn-primary" style={{ width: '100%', borderRadius: 12, marginBottom: 18, gap: 8 }}>
+                                <CreditCard size={16} /> Pay via Fiat
+                            </button>
+                        )}
 
                         <div style={{ display: 'flex', justifyContent: 'center', gap: 16 }}>
                             {[Globe, Github, Twitter].map((Icon, i) => (

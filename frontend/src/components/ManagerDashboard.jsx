@@ -3,10 +3,12 @@ import { useAccount } from 'wagmi';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     Activity, Lock, AlertCircle, CheckCircle2, Search,
-    LayoutDashboard, ArrowUpRight, Clock, Shield, Gavel
+    LayoutDashboard, ArrowUpRight, Clock, Shield, Gavel, FileUp
 } from 'lucide-react';
 import { useArbitration } from '../hooks/useArbitration';
 import { api } from '../services/api';
+import DisputeModal from './DisputeModal';
+import EvidenceModal from './EvidenceModal';
 
 const statusColors = {
     0: { color: '#60a5fa', bg: 'rgba(96,165,250,0.08)' },
@@ -30,6 +32,8 @@ const ManagerDashboard = () => {
     const [loading, setLoading] = useState(true);
     const [filterStatus, setFilterStatus] = useState('All');
     const [searchTerm, setSearchTerm] = useState('');
+    const [disputeJob, setDisputeJob] = useState(null);
+    const [evidenceJob, setEvidenceJob] = useState(null);
     const { raiseDispute } = useArbitration();
 
 
@@ -203,7 +207,7 @@ const ManagerDashboard = () => {
                                             <td style={{ padding: 20 }}>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                                                     {job.status >= 1 && job.status <= 2 && (
-                                                        <button onClick={() => raiseDispute(job.id)} title="Raise Dispute"
+                                                        <button onClick={() => setDisputeJob(job)} title="Raise Dispute"
                                                             style={{
                                                                 padding: 8, borderRadius: 10, background: 'rgba(255,255,255,0.04)',
                                                                 border: 'none', color: 'var(--text-tertiary)', cursor: 'pointer',
@@ -212,6 +216,16 @@ const ManagerDashboard = () => {
                                                             onMouseEnter={e => { e.currentTarget.style.background = 'rgba(248,113,113,0.12)'; e.currentTarget.style.color = '#f87171'; }}
                                                             onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.color = 'var(--text-tertiary)'; }}>
                                                             <Gavel size={16} />
+                                                        </button>
+                                                    )}
+                                                    {job.status === 3 && (
+                                                        <button onClick={() => setEvidenceJob(job)} title="Submit Evidence"
+                                                            style={{
+                                                                padding: 8, borderRadius: 10, background: 'rgba(255,255,255,0.04)',
+                                                                border: 'none', color: 'var(--accent-light)', cursor: 'pointer',
+                                                                transition: 'all 0.2s ease',
+                                                            }}>
+                                                            <FileUp size={16} />
                                                         </button>
                                                     )}
                                                     <button style={{
@@ -232,6 +246,19 @@ const ManagerDashboard = () => {
                     </table>
                 </div>
             </div>
+
+            <DisputeModal
+                isOpen={!!disputeJob}
+                onClose={() => setDisputeJob(null)}
+                jobId={disputeJob?.id}
+                jobTitle={disputeJob?.title}
+            />
+
+            <EvidenceModal
+                isOpen={!!evidenceJob}
+                onClose={() => setEvidenceJob(null)}
+                jobId={evidenceJob?.id}
+            />
         </div>
     );
 };

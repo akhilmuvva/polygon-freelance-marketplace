@@ -44,7 +44,19 @@ const ArbitrationDashboard = () => {
     }, [loading, disputes.length]);
 
     const fetchDisputes = async () => {
-        try { const data = await api.getDisputes(); setDisputes(data); }
+        try {
+            const data = await api.getDisputes();
+            // If not admin, filter for disputes the user is involved in
+            if (!isAdmin && address) {
+                const userDisputes = data.filter(d =>
+                    d.client?.toLowerCase() === address.toLowerCase() ||
+                    d.freelancer?.toLowerCase() === address.toLowerCase()
+                );
+                setDisputes(userDisputes);
+            } else {
+                setDisputes(data);
+            }
+        }
         catch (err) { console.error('Failed to fetch disputes:', err); }
         finally { setLoading(false); }
     };
@@ -77,21 +89,6 @@ const ArbitrationDashboard = () => {
         } catch (err) { toast.error("Resolution Failed: " + err.message); }
     };
 
-    if (!isAdmin) {
-        return (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '80px 20px', textAlign: 'center' }}>
-                <ShieldCheck size={80} style={{ color: 'rgba(255,255,255,0.08)', marginBottom: 24 }} />
-                <h2 style={{ fontSize: '1.6rem', fontWeight: 900, marginBottom: 8 }}>
-                    Access <span style={{ color: 'var(--danger)' }}>Denied</span>
-                </h2>
-                <p style={{ color: 'var(--text-secondary)', maxWidth: 400, lineHeight: 1.6 }}>
-                    Only verified Protocol Arbitrators are authorized to access the Justice Module.
-                    Stake $PLN to apply for a community jury position.
-                </p>
-            </div>
-        );
-    }
-
     const cardBg = { padding: 16, borderRadius: 14, background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)' };
     const dimLabel = { fontSize: '0.62rem', fontWeight: 800, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 6 };
 
@@ -107,7 +104,7 @@ const ArbitrationDashboard = () => {
                             Zenith <span style={{ color: 'var(--danger)' }}>Justice</span>
                         </h1>
                         <p style={{ fontSize: '0.62rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.15em', color: 'var(--text-tertiary)' }}>
-                            Decentralized Court & AI Arbitration
+                            {isAdmin ? 'Protocol Court & AI Arbitration' : 'Your Personal Case Records'}
                         </p>
                     </div>
                 </div>
@@ -169,7 +166,13 @@ const ArbitrationDashboard = () => {
                                             {' ↔ '}<span style={{ color: 'var(--text-primary)' }}>{selectedJob.freelancer}</span>
                                         </p>
                                     </div>
-                                    <div style={{ textAlign: 'right' }}>
+                                    <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 10 }}>
+                                        {isAdmin && (
+                                            <button onClick={() => handleAnalyze(selectedJob.jobId)} disabled={isAnalyzing} className="btn btn-secondary btn-sm" style={{ gap: 8, height: 32 }}>
+                                                <Cpu size={14} className={isAnalyzing ? 'animate-spin' : ''} />
+                                                {isAnalyzing ? 'Analyzing...' : 'AI Audit'}
+                                            </button>
+                                        )}
                                         <div style={{ ...dimLabel, justifyContent: 'flex-end' }}>
                                             {selectedJob.disputeData?.arbitrator === 'Internal' ? 'Internal Jury' : 'External Court'}
                                         </div>
@@ -254,45 +257,62 @@ const ArbitrationDashboard = () => {
                                                         <span style={{ color: 'var(--accent-light)' }}>{selectedJob.disputeData.aiSplit}% Freelancer</span>
                                                     </div>
                                                 </div>
-                                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-                                                    <button onClick={() => handleResolution(selectedJob.jobId, selectedJob.disputeData.aiSplit)}
-                                                        className="btn btn-primary btn-sm" style={{ borderRadius: 8 }}>Accept AI Split</button>
-                                                    <button onClick={() => handleAnalyze(selectedJob.jobId)}
-                                                        className="btn btn-ghost btn-sm" style={{ borderRadius: 8 }}>Re-Analyze</button>
-                                                </div>
+                                                {isAdmin && (
+                                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                                                        <button onClick={() => handleResolution(selectedJob.jobId, selectedJob.disputeData.aiSplit)}
+                                                            className="btn btn-primary btn-sm" style={{ borderRadius: 8 }}>Accept AI Split</button>
+                                                        <button onClick={() => handleAnalyze(selectedJob.jobId)}
+                                                            className="btn btn-ghost btn-sm" style={{ borderRadius: 8 }}>Re-Analyze</button>
+                                                    </div>
+                                                )}
                                             </div>
                                         ) : (
                                             <div style={{ textAlign: 'center', padding: '28px 0' }}>
-                                                <p style={{ fontSize: '0.78rem', color: 'var(--text-tertiary)', marginBottom: 20 }}>
-                                                    Neural analysis required to determine fair split.
+                                                <p style={{ fontSize: '0.78rem', color: 'var(--text-tertiary)', marginBottom: isAdmin ? 20 : 0 }}>
+                                                    {isAdmin ? 'Neural analysis required to determine fair split.' : 'Gemini 2.0 is reviewing active evidence for this case.'}
                                                 </p>
-                                                <button onClick={() => handleAnalyze(selectedJob.jobId)} disabled={isAnalyzing}
-                                                    className="btn btn-primary" style={{ borderRadius: 10, gap: 8 }}>
-                                                    {isAnalyzing ? 'Analyzing...' : <><Cpu size={16} /> Run Neural Audit</>}
-                                                </button>
+                                                {isAdmin && (
+                                                    <button onClick={() => handleAnalyze(selectedJob.jobId)} disabled={isAnalyzing}
+                                                        className="btn btn-primary" style={{ borderRadius: 10, gap: 8 }}>
+                                                        {isAnalyzing ? 'Analyzing...' : <><Cpu size={16} /> Run Neural Audit</>}
+                                                    </button>
+                                                )}
                                             </div>
                                         )}
                                     </div>
                                 </div>
 
                                 {/* Manual Override */}
-                                <div style={{ borderTop: '1px solid var(--border)', paddingTop: 24 }}>
-                                    <h4 style={{ ...dimLabel, marginBottom: 18 }}>Manual Overwrite</h4>
-                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
-                                        <button onClick={() => handleResolution(selectedJob.jobId, 0, selectedJob.isCrossChain)}
-                                            className="btn btn-ghost" style={{ borderRadius: 10, background: 'rgba(239,68,68,0.06)', color: 'var(--danger)', borderColor: 'rgba(239,68,68,0.15)' }}>
-                                            Rule for Client
-                                        </button>
-                                        <button onClick={() => handleResolution(selectedJob.jobId, 50, selectedJob.isCrossChain)}
-                                            className="btn btn-ghost" style={{ borderRadius: 10 }}>
-                                            Split 50/50
-                                        </button>
-                                        <button onClick={() => handleResolution(selectedJob.jobId, 100, selectedJob.isCrossChain)}
-                                            className="btn btn-ghost" style={{ borderRadius: 10, background: 'rgba(52,211,153,0.06)', color: 'var(--success)', borderColor: 'rgba(52,211,153,0.15)' }}>
-                                            Rule for Freelancer
-                                        </button>
+                                {isAdmin && (
+                                    <div style={{ borderTop: '1px solid var(--border)', paddingTop: 24 }}>
+                                        <h4 style={{ ...dimLabel, marginBottom: 18 }}>Manual Overwrite</h4>
+                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
+                                            <button onClick={() => handleResolution(selectedJob.jobId, 0, selectedJob.isCrossChain)}
+                                                className="btn btn-ghost" style={{ borderRadius: 10, background: 'rgba(239,68,68,0.06)', color: 'var(--danger)', borderColor: 'rgba(239,68,68,0.15)' }}>
+                                                Rule for Client
+                                            </button>
+                                            <button onClick={() => handleResolution(selectedJob.jobId, 50, selectedJob.isCrossChain)}
+                                                className="btn btn-ghost" style={{ borderRadius: 10 }}>
+                                                Split 50/50
+                                            </button>
+                                            <button onClick={() => handleResolution(selectedJob.jobId, 100, selectedJob.isCrossChain)}
+                                                className="btn btn-ghost" style={{ borderRadius: 10, background: 'rgba(52,211,153,0.06)', color: 'var(--success)', borderColor: 'rgba(52,211,153,0.15)' }}>
+                                                Rule for Freelancer
+                                            </button>
+                                        </div>
                                     </div>
-                                </div>
+                                )}
+                                {!isAdmin && (
+                                    <div style={{ borderTop: '1px solid var(--border)', paddingTop: 24, textAlign: 'center' }}>
+                                        <div style={{ padding: 20, background: 'rgba(255,255,255,0.02)', borderRadius: 16, border: '1px solid var(--border)' }}>
+                                            <ShieldCheck size={24} style={{ color: 'var(--success)', marginBottom: 12, opacity: 0.6 }} />
+                                            <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', margin: 0 }}>
+                                                This case is being mediated by Zenith High Council. <br />
+                                                Evidence and chat logs are being verified.
+                                            </p>
+                                        </div>
+                                    </div>
+                                )}
                             </motion.div>
                         ) : (
                             <div style={{

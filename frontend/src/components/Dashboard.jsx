@@ -183,7 +183,7 @@ function Dashboard({ address: propAddress }) {
     const [isLoadingProfile, setIsLoadingProfile] = React.useState(true);
     const [isSaving, setIsSaving] = React.useState(false);
     const [profile, setProfile] = React.useState({
-        name: '', bio: '', skills: '', category: 'Development',
+        address: '', name: '', bio: '', skills: '', category: 'Development',
         reputationScore: 0, totalEarned: 0, avatarIpfsHash: '',
     });
     const [isUploading, setIsUploading] = React.useState(false);
@@ -234,7 +234,7 @@ function Dashboard({ address: propAddress }) {
                         if (el) {
                             const raw = el.getAttribute('data-target');
                             const target = parseFloat(raw);
-                            if (!isNaN(target) && target > 0) countUp(el, target, 1800);
+                            if (!isNaN(target) && target > 0) countUp(el, target, 1200);
                         }
                     } catch (error) { // Added catch block for error handling
                         console.error("Error processing stat value element:", error);
@@ -257,26 +257,35 @@ function Dashboard({ address: propAddress }) {
         functionName: 'jobCount',
     });
 
-    const fetchData = React.useCallback(() => {
-        if (isConnected && address) {
-            setIsLoadingProfile(true);
-            api.getProfile(address)
-                .then(d => { if (d?.address) setProfile(d); })
-                .catch(e => console.warn('Profile:', e.message))
-                .finally(() => setIsLoadingProfile(false));
-            api.getAnalytics()
-                .then(d => { if (d?.totalJobs !== undefined) setAnalytics(d); })
-                .catch(e => console.warn('Analytics:', e.message));
+    const fetchData = React.useCallback(async (isInitial = false) => {
+        if (!isConnected || !address) return;
+
+        // Only show skeletons if we have absolutely no address in state yet (first mount)
+        if (isInitial && !profile.address) setIsLoadingProfile(true);
+
+        try {
+            const [pData, aData] = await Promise.all([
+                api.getProfile(address).catch(() => null),
+                api.getAnalytics().catch(() => ({})),
+            ]);
+
+            if (pData?.address) setProfile(pData);
+            if (aData?.totalJobs !== undefined) setAnalytics(aData);
+        } catch (err) {
+            console.warn('Dashboard Refresh:', err.message);
+        } finally {
+            if (isInitial) setIsLoadingProfile(false);
         }
-    }, [isConnected, address]);
+    }, [isConnected, address]); // Removed profile.address to stabilize function identity
 
     React.useEffect(() => {
-        fetchData();
-    }, [fetchData]);
+        fetchData(true);
+    }, [address, isConnected]); // Fetch on mount/address change
 
     React.useEffect(() => {
-        window.addEventListener('REFRESH_DASHBOARD', fetchData);
-        return () => window.removeEventListener('REFRESH_DASHBOARD', fetchData);
+        const handleRefresh = () => fetchData(false); // Silent background refresh
+        window.addEventListener('REFRESH_DASHBOARD', handleRefresh);
+        return () => window.removeEventListener('REFRESH_DASHBOARD', handleRefresh);
     }, [fetchData]);
 
     const handleSaveProfile = async (e) => {
