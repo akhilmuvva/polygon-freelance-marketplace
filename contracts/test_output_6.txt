@@ -1,7 +1,0 @@
-WARNING: You are currently using Node.js v22.19.0, which is not supported by Hardhat. This can lead to unexpected behavior. See https://hardhat.org/nodejs-versions
-
-
-Error HH801: Plugin @nomicfoundation/hardhat-ignition-ethers requires the following dependencies to be installed: @nomicfoundation/hardhat-ignition, @nomicfoundation/ignition-core.
-Please run: npm install --save-dev "@nomicfoundation/hardhat-ignition@^0.15.16" "@nomicfoundation/ignition-core@^0.15.15"
-
-For more info go to https://hardhat.org/HH801 or run Hardhat with --show-stack-traces

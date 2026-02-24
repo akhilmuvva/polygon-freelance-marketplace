@@ -1,0 +1,233 @@
+# npm audit report
+
+elliptic  *
+Severity: critical
+Elliptic's private key extraction in ECDSA upon signing a malformed input (e.g. a string) - https://github.com/advisories/GHSA-vjh7-7g9h-fjfh
+Valid ECDSA signatures erroneously rejected in Elliptic - https://github.com/advisories/GHSA-fc9h-whq2-v747
+Elliptic Uses a Cryptographic Primitive with a Risky Implementation - https://github.com/advisories/GHSA-848j-6mx2-7j84
+No fix available
+node_modules/elliptic
+  @ethersproject/signing-key  <=5.7.0
+  Depends on vulnerable versions of elliptic
+  node_modules/@ethersproject/signing-key
+    @ethersproject/hdnode  *
+    Depends on vulnerable versions of @ethersproject/abstract-signer
+    Depends on vulnerable versions of @ethersproject/signing-key
+    Depends on vulnerable versions of @ethersproject/transactions
+    Depends on vulnerable versions of @ethersproject/wordlists
+    node_modules/@ethersproject/hdnode
+      @ethersproject/json-wallets  *
+      Depends on vulnerable versions of @ethersproject/abstract-signer
+      Depends on vulnerable versions of @ethersproject/hdnode
+      Depends on vulnerable versions of @ethersproject/transactions
+      node_modules/@ethersproject/json-wallets
+    @ethersproject/transactions  <=5.8.0
+    Depends on vulnerable versions of @ethersproject/signing-key
+    node_modules/@ethersproject/transactions
+      @ethersproject/abstract-provider  *
+      Depends on vulnerable versions of @ethersproject/transactions
+      node_modules/@ethersproject/abstract-provider
+        @ethersproject/abstract-signer  *
+        Depends on vulnerable versions of @ethersproject/abstract-provider
+        node_modules/@ethersproject/abstract-signer
+          @ethersproject/hash  5.0.6 - 5.8.0
+          Depends on vulnerable versions of @ethersproject/abstract-signer
+          node_modules/@ethersproject/hash
+            @ethersproject/abi  5.0.10 - 5.8.0
+            Depends on vulnerable versions of @ethersproject/hash
+            node_modules/@ethersproject/abi
+              @ethersproject/contracts  *
+              Depends on vulnerable versions of @ethersproject/abi
+              Depends on vulnerable versions of @ethersproject/abstract-provider
+              Depends on vulnerable versions of @ethersproject/abstract-signer
+              Depends on vulnerable versions of @ethersproject/transactions
+              node_modules/@ethersproject/contracts
+                ethers  5.0.0-beta.119 - 5.8.0
+                Depends on vulnerable versions of @ethersproject/abi
+                Depends on vulnerable versions of @ethersproject/abstract-provider
+                Depends on vulnerable versions of @ethersproject/abstract-signer
+                Depends on vulnerable versions of @ethersproject/contracts
+                Depends on vulnerable versions of @ethersproject/hash
+                Depends on vulnerable versions of @ethersproject/hdnode
+                Depends on vulnerable versions of @ethersproject/json-wallets
+                Depends on vulnerable versions of @ethersproject/providers
+                Depends on vulnerable versions of @ethersproject/signing-key
+                Depends on vulnerable versions of @ethersproject/transactions
+                Depends on vulnerable versions of @ethersproject/wallet
+                Depends on vulnerable versions of @ethersproject/wordlists
+                node_modules/eth-gas-reporter/node_modules/ethers
+                  eth-gas-reporter  >=0.2.1
+                  Depends on vulnerable versions of ethers
+                  Depends on vulnerable versions of mocha
+                  node_modules/eth-gas-reporter
+                    hardhat-gas-reporter  *
+                    Depends on vulnerable versions of eth-gas-reporter
+                    Depends on vulnerable versions of hardhat
+                    node_modules/hardhat-gas-reporter
+                      @nomicfoundation/hardhat-toolbox  *
+                      Depends on vulnerable versions of @nomicfoundation/hardhat-chai-matchers
+                      Depends on vulnerable versions of @nomicfoundation/hardhat-ethers
+                      Depends on vulnerable versions of @nomicfoundation/hardhat-ignition-ethers
+                      Depends on vulnerable versions of @nomicfoundation/hardhat-network-helpers
+                      Depends on vulnerable versions of @nomicfoundation/hardhat-verify
+                      Depends on vulnerable versions of @typechain/ethers-v6
+                      Depends on vulnerable versions of @typechain/hardhat
+                      Depends on vulnerable versions of hardhat
+                      Depends on vulnerable versions of hardhat-gas-reporter
+                      Depends on vulnerable versions of solidity-coverage
+                      Depends on vulnerable versions of typechain
+                      node_modules/@nomicfoundation/hardhat-toolbox
+              @nomicfoundation/hardhat-verify  *
+              Depends on vulnerable versions of @ethersproject/abi
+              Depends on vulnerable versions of hardhat
+              node_modules/@nomicfoundation/hardhat-verify
+                @nomicfoundation/hardhat-ignition  <=0.15.16
+                Depends on vulnerable versions of @nomicfoundation/hardhat-verify
+                Depends on vulnerable versions of @nomicfoundation/ignition-core
+                Depends on vulnerable versions of hardhat
+                node_modules/@nomicfoundation/hardhat-ignition
+                @openzeppelin/hardhat-upgrades  *
+                Depends on vulnerable versions of @nomicfoundation/hardhat-ethers
+                Depends on vulnerable versions of @nomicfoundation/hardhat-verify
+                Depends on vulnerable versions of @openzeppelin/upgrades-core
+                Depends on vulnerable versions of hardhat
+                node_modules/@openzeppelin/hardhat-upgrades
+              hardhat  0.1.0-rc.0 - 2.28.6
+              Depends on vulnerable versions of @ethersproject/abi
+              Depends on vulnerable versions of @metamask/eth-sig-util
+              Depends on vulnerable versions of mocha
+              Depends on vulnerable versions of solc
+              node_modules/hardhat
+                @nomicfoundation/hardhat-chai-matchers  *
+                Depends on vulnerable versions of @nomicfoundation/hardhat-ethers
+                Depends on vulnerable versions of hardhat
+                node_modules/@nomicfoundation/hardhat-chai-matchers
+                @nomicfoundation/hardhat-ethers  <=3.1.3
+                Depends on vulnerable versions of hardhat
+                node_modules/@nomicfoundation/hardhat-ethers
+                @nomicfoundation/hardhat-network-helpers  <=1.1.2
+                Depends on vulnerable versions of hardhat
+                node_modules/@nomicfoundation/hardhat-network-helpers
+                @typechain/hardhat  *
+                Depends on vulnerable versions of @typechain/ethers-v6
+                Depends on vulnerable versions of hardhat
+                Depends on vulnerable versions of typechain
+                node_modules/@typechain/hardhat
+            @ethersproject/providers  <=5.8.0
+            Depends on vulnerable versions of @ethersproject/abstract-provider
+            Depends on vulnerable versions of @ethersproject/abstract-signer
+            Depends on vulnerable versions of @ethersproject/hash
+            Depends on vulnerable versions of @ethersproject/transactions
+            node_modules/@ethersproject/providers
+            @ethersproject/wallet  <=5.8.0
+            Depends on vulnerable versions of @ethersproject/abstract-provider
+            Depends on vulnerable versions of @ethersproject/abstract-signer
+            Depends on vulnerable versions of @ethersproject/hash
+            Depends on vulnerable versions of @ethersproject/hdnode
+            Depends on vulnerable versions of @ethersproject/json-wallets
+            Depends on vulnerable versions of @ethersproject/signing-key
+            Depends on vulnerable versions of @ethersproject/transactions
+            Depends on vulnerable versions of @ethersproject/wordlists
+            node_modules/@ethersproject/wallet
+            @ethersproject/wordlists  5.0.8 - 5.8.0
+            Depends on vulnerable versions of @ethersproject/hash
+            node_modules/@ethersproject/wordlists
+  ethereumjs-util  1.0.2 - 2.3.0
+  Depends on vulnerable versions of elliptic
+  node_modules/@metamask/eth-sig-util/node_modules/ethereumjs-util
+  node_modules/ethereumjs-abi/node_modules/ethereumjs-util
+    @metamask/eth-sig-util  <=4.0.1
+    Depends on vulnerable versions of ethereumjs-util
+    node_modules/@metamask/eth-sig-util
+  secp256k1  
+  Depends on vulnerable versions of elliptic
+  node_modules/secp256k1
+
+lodash  4.0.0 - 4.17.21
+Severity: moderate
+Lodash has Prototype Pollution Vulnerability in `_.unset` and `_.omit` functions - https://github.com/advisories/GHSA-xxjr-mmjv-4gpg
+fix available via `npm audit fix --force`
+Will install @nomicfoundation/hardhat-ignition@3.0.7, which is a breaking change
+node_modules/lodash
+  @nomicfoundation/ignition-core  <=0.15.15
+  Depends on vulnerable versions of lodash
+  node_modules/@nomicfoundation/ignition-core
+    @nomicfoundation/hardhat-ignition-ethers  <=0.15.17
+    Depends on vulnerable versions of @nomicfoundation/hardhat-ethers
+    Depends on vulnerable versions of @nomicfoundation/hardhat-ignition
+    Depends on vulnerable versions of @nomicfoundation/ignition-core
+    Depends on vulnerable versions of hardhat
+    node_modules/@nomicfoundation/hardhat-ignition-ethers
+
+minimatch  <10.2.1
+Severity: high
+minimatch has a ReDoS via repeated wildcards with non-matching literal in pattern - https://github.com/advisories/GHSA-3ppc-4f35-3m26
+fix available via `npm audit fix --force`
+Will install @nomicfoundation/hardhat-verify@3.0.10, which is a breaking change
+node_modules/glob/node_modules/minimatch
+node_modules/globby/node_modules/minimatch
+node_modules/minimatch
+node_modules/mocha/node_modules/minimatch
+node_modules/recursive-readdir/node_modules/minimatch
+node_modules/sc-istanbul/node_modules/minimatch
+node_modules/shelljs/node_modules/minimatch
+node_modules/typechain/node_modules/minimatch
+  @openzeppelin/upgrades-core  >=1.37.0
+  Depends on vulnerable versions of minimatch
+  node_modules/@openzeppelin/upgrades-core
+  glob  3.0.0 - 10.5.0
+  Depends on vulnerable versions of minimatch
+  node_modules/glob
+  node_modules/globby/node_modules/glob
+  node_modules/sc-istanbul/node_modules/glob
+  node_modules/shelljs/node_modules/glob
+  node_modules/typechain/node_modules/glob
+    globby  <=10.0.2
+    Depends on vulnerable versions of glob
+    node_modules/globby
+    mocha  >=1.10.0
+    Depends on vulnerable versions of glob
+    Depends on vulnerable versions of minimatch
+    node_modules/mocha
+      solidity-coverage  *
+      Depends on vulnerable versions of globby
+      Depends on vulnerable versions of hardhat
+      Depends on vulnerable versions of mocha
+      Depends on vulnerable versions of recursive-readdir
+      Depends on vulnerable versions of sc-istanbul
+      Depends on vulnerable versions of shelljs
+      node_modules/solidity-coverage
+    sc-istanbul  *
+    Depends on vulnerable versions of glob
+    node_modules/sc-istanbul
+    shelljs  0.7.0 - 0.8.5
+    Depends on vulnerable versions of glob
+    node_modules/shelljs
+    typechain  <=0.2.7 || >=5.0.0
+    Depends on vulnerable versions of glob
+    node_modules/typechain
+      @typechain/ethers-v6  *
+      Depends on vulnerable versions of typechain
+      node_modules/@typechain/ethers-v6
+  recursive-readdir  >=1.2.0
+  Depends on vulnerable versions of minimatch
+  node_modules/recursive-readdir
+
+tmp  <=0.2.3
+tmp allows arbitrary temporary file / directory write via symbolic link `dir` parameter - https://github.com/advisories/GHSA-52f5-9888-hmc6
+fix available via `npm audit fix`
+node_modules/tmp
+  solc  >=0.5.1
+  Depends on vulnerable versions of tmp
+  node_modules/solc
+
+44 vulnerabilities (2 low, 2 moderate, 20 high, 20 critical)
+
+To address issues that do not require attention, run:
+  npm audit fix
+
+To address all issues possible (including breaking changes), run:
+  npm audit fix --force
+
+Some issues need review, and may require choosing
+a different dependency.

@@ -287,7 +287,7 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
      * @param jobId The unique ID of the job.
      * @param ipfsHash The IPFS hash of the submitted work.
      */
-    function submitWork(uint256 jobId, string memory ipfsHash) external whenNotPaused {
+    function submitWork(uint256 jobId, string calldata ipfsHash) external whenNotPaused {
         Job storage job = jobs[jobId];
         if (_msgSender() != job.freelancer) revert NotAuthorized();
         if (job.status != JobStatus.Ongoing) revert InvalidStatus();
@@ -295,6 +295,17 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
         job.ipfsHash = ipfsHash;
         // Optionally update status to 'Submitted' if we had such a state, 
         // but traditionally we just wait for client to release funds.
+    }
+
+    /**
+     * @notice Allows the client or authorized manager to update the job's metadata pointer.
+     * @param jobId The unique ID of the job.
+     * @param ipfsHash The new IPFS hash for the job metadata.
+     */
+    function setJobMetadata(uint256 jobId, string calldata ipfsHash) external whenNotPaused {
+        Job storage job = jobs[jobId];
+        if (_msgSender() != job.client && !hasRole(MANAGER_ROLE, _msgSender())) revert NotAuthorized();
+        job.ipfsHash = ipfsHash;
     }
 
     /**

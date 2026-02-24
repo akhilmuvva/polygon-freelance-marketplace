@@ -1,0 +1,20 @@
+
+> frontend@0.0.0 lint
+> eslint .
+
+
+Oops! Something went wrong! :(
+
+ESLint: 10.0.2
+
+TypeError: Cannot read properties of undefined (reading 'recommended')
+    at file:///C:/Users/akhil/.gemini/antigravity/scratch/polygon-freelance-marketplace/frontend/eslint.config.js?mtime=1771394300225:35:29
+    at ModuleJob.run (node:internal/modules/esm/module_job:345:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:651:26)
+    at async dynamicImportConfig (C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\node_modules\eslint\lib\config\config-loader.js:185:17)
+    at async loadConfigFile (C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\node_modules\eslint\lib\config\config-loader.js:275:9)
+    at async ConfigLoader.calculateConfigArray (C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\node_modules\eslint\lib\config\config-loader.js:588:23)
+    at async #calculateConfigArray (C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\node_modules\eslint\lib\config\config-loader.js:369:19)
+    at async entryFilter (C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\node_modules\eslint\lib\eslint\eslint-helpers.js:322:5)
+    at async NodeHfs.<anonymous> (file:///C:/Users/akhil/.gemini/antigravity/scratch/polygon-freelance-marketplace/frontend/node_modules/@humanfs/core/src/hfs.js:574:24)
+    at async NodeHfs.walk (file:///C:/Users/akhil/.gemini/antigravity/scratch/polygon-freelance-marketplace/frontend/node_modules/@humanfs/core/src/hfs.js:614:3)

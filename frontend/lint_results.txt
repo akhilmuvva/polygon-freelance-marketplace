@@ -3,95 +3,15 @@
 > eslint .
 
 
-C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\AnimationShowcase.jsx
-  14:34  warning  'pulse' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u       no-unused-vars
-  17:12  warning  'activeDemo' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
-
-C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\ArbitrationDashboard.jsx
-  12:10  warning  'animate' is defined but never used. Allowed unused vars must match /^[A-Z_]/u                no-unused-vars
-  12:19  warning  'stagger' is defined but never used. Allowed unused vars must match /^[A-Z_]/u                no-unused-vars
-  21:41  warning  'slideInRight' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
-  21:55  warning  'scaleIn' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u       no-unused-vars
-  21:64  warning  'float' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u         no-unused-vars
-  21:71  warning  'glitch' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u        no-unused-vars
-  21:79  warning  'bounceIn' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u      no-unused-vars
-  23:11  warning  'statsRef' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u      no-unused-vars
-  54:18  warning  'err' is defined but never used                                                               no-unused-vars
-
-C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\AssetDashboard.jsx
-  2:40  warning  'useReadContract' is defined but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
-  3:10  warning  'formatUnits' is defined but never used. Allowed unused vars must match /^[A-Z_]/u      no-unused-vars
-
-C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\Chat.jsx
-   10:52  warning  'onClearedAddress' is defined but never used                                               no-unused-vars
-  216:12  warning  'isLoading' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
-
-C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\CreateJob.jsx
-   2:22  warning  'useWalletClient' is defined but never used. Allowed unused vars must match /^[A-Z_]/u              no-unused-vars
-   2:87  warning  'useReadContract' is defined but never used. Allowed unused vars must match /^[A-Z_]/u              no-unused-vars
-   3:10  warning  'parseEther' is defined but never used. Allowed unused vars must match /^[A-Z_]/u                   no-unused-vars
-   3:34  warning  'erc20Abi' is defined but never used. Allowed unused vars must match /^[A-Z_]/u                     no-unused-vars
-  10:10  warning  'api' is defined but never used. Allowed unused vars must match /^[A-Z_]/u                          no-unused-vars
-  57:25  warning  'setDescription' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u      no-unused-vars
-  60:12  warning  'paymentToken' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u        no-unused-vars
-  60:26  warning  'setPaymentToken' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u     no-unused-vars
-  64:12  warning  'activeIpfsHash' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u      no-unused-vars
-  69:40  warning  'writeContractAsync' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
-
-C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\CrossChainDashboard.jsx
-   4:10  warning  'ethers' is defined but never used. Allowed unused vars must match /^[A-Z_]/u                           no-unused-vars
-   5:10  warning  'motion' is defined but never used. Allowed unused vars must match /^[A-Z_]/u                           no-unused-vars
-  39:14  warning  'balancesLoading' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u         no-unused-vars
-  46:10  warning  'pendingTransactions' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u     no-unused-vars
-  46:31  warning  'setPendingTransactions' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
-
-C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\DaoDashboard.jsx
-  324:18  warning  'e' is defined but never used  no-unused-vars
-  340:18  warning  'e' is defined but never used  no-unused-vars
-
-C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\Dashboard.jsx
-  167:12  warning  'isLoadingAnalytics' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
-
-C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\InvoiceMarketplace.jsx
-   2:22  warning  'useReadContract' is defined but never used. Allowed unused vars must match /^[A-Z_]/u   no-unused-vars
-  20:11  warning  'address' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\DisputeModal.jsx
+  10:27  warning  'submitChatLogsAsEvidence' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
 
 C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\JobsList.jsx
-    2:22  warning  'useReadContract' is defined but never used. Allowed unused vars must match /^[A-Z_]/u               no-unused-vars
-    2:39  warning  'useWriteContract' is defined but never used. Allowed unused vars must match /^[A-Z_]/u              no-unused-vars
-    2:57  warning  'useWaitForTransactionReceipt' is defined but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
-    7:10  warning  'formatEther' is defined but never used. Allowed unused vars must match /^[A-Z_]/u                   no-unused-vars
-    7:36  warning  'parseUnits' is defined but never used. Allowed unused vars must match /^[A-Z_]/u                    no-unused-vars
-    9:10  warning  'api' is defined but never used. Allowed unused vars must match /^[A-Z_]/u                           no-unused-vars
-   12:10  warning  'useTransactionToast' is defined but never used. Allowed unused vars must match /^[A-Z_]/u           no-unused-vars
-   13:10  warning  'uploadJSONToIPFS' is defined but never used. Allowed unused vars must match /^[A-Z_]/u              no-unused-vars
-   14:38  warning  'submitWorkGasless' is defined but never used. Allowed unused vars must match /^[A-Z_]/u             no-unused-vars
-   15:10  warning  'useTokenPrice' is defined but never used. Allowed unused vars must match /^[A-Z_]/u                 no-unused-vars
-   18:7   warning  'statusLabels' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u         no-unused-vars
-   39:21  warning  'onUserClick' is defined but never used                                                              no-unused-vars
-   52:26  warning  'setStatusFilter' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u      no-unused-vars
-  227:11  warning  'cardRef' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u              no-unused-vars
-
-C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\LiveJobFeed.jsx
-   1:27  warning  'useEffect' is defined but never used. Allowed unused vars must match /^[A-Z_]/u             no-unused-vars
-  10:13  warning  'address' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u      no-unused-vars
-  12:12  warning  'isListening' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+   71:32  warning  'api' is not defined         no-undef
+  296:26  error    'CreditCard' is not defined  react/jsx-no-undef
 
 C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\ManagerDashboard.jsx
-  37:19  warning  'jobCount' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+  37:13  warning  'raiseDispute' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
 
-C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\NFTGallery.jsx
-  90:19  warning  'uri' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
-
-C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\SpecialistMarketplace.jsx
-  2:10  warning  'useAccount' is defined but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
-
-C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\WithdrawButton.jsx
-  6:10  warning  'formatEther' is defined but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
-
-C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\hooks\useMultiChain.js
-  196:9  warning  '_messageType' is defined but never used      no-unused-vars
-  197:9  warning  '_contractAddress' is defined but never used  no-unused-vars
-
-Γ£û 58 problems (0 errors, 58 warnings)
+Γ£û 4 problems (1 error, 3 warnings)
 

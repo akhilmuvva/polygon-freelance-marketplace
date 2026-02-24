@@ -101,7 +101,8 @@ app.use(cors({
         'https://localhost:5176', 'https://localhost:5177',
         'http://localhost:5173', 'http://localhost:5174', 'http://localhost:5175',
         'http://localhost:5176', 'http://localhost:5177',
-        'https://polygon-freelance-marketplace-onf5efcpb.vercel.app'
+        'https://polygon-freelance-marketplace-onf5efcpb.vercel.app',
+        'https://polylance.codes', 'https://www.polylance.codes', 'https://polylance-zenith.vercel.app'
     ],
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],

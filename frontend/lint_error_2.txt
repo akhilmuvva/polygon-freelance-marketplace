@@ -1,0 +1,21 @@
+
+> frontend@0.0.0 lint
+> eslint .
+
+
+Oops! Something went wrong! :(
+
+ESLint: 10.0.2
+
+TypeError: Error while loading rule 'react/no-direct-mutation-state': contextOrFilename.getFilename is not a function
+Occurred while linting C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\eslint.config.js
+    at resolveBasedir (C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\node_modules\eslint-plugin-react\lib\util\version.js:31:100)
+    at detectReactVersion (C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\node_modules\eslint-plugin-react\lib\util\version.js:85:19)
+    at getReactVersionFromContext (C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\node_modules\eslint-plugin-react\lib\util\version.js:116:25)
+    at testReactVersion (C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\node_modules\eslint-plugin-react\lib\util\version.js:181:28)
+    at usedPropTypesInstructions (C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\node_modules\eslint-plugin-react\lib\util\usedPropTypes.js:307:36)
+    at Components.componentRule (C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\node_modules\eslint-plugin-react\lib\util\Components.js:940:37)
+    at createRuleListeners (C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\node_modules\eslint\lib\linter\linter.js:497:15)
+    at C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\node_modules\eslint\lib\linter\linter.js:623:7
+    at Array.forEach (<anonymous>)
+    at runRules (C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\node_modules\eslint\lib\linter\linter.js:557:31)

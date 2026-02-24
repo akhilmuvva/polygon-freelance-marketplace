@@ -1,4 +1,0 @@
-Error HH801: Plugin @nomicfoundation/hardhat-chai-matchers requires the following dependencies to be installed: chai.
-Please run: npm install --save-dev "chai@^4.2.0"
-
-For more info go to https://hardhat.org/HH801 or run Hardhat with --show-stack-traces

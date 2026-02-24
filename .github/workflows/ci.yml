@@ -18,12 +18,13 @@ jobs:
       - name: Install Dependencies
         run: |
           cd contracts
-          rm -f package-lock.json
-          npm install --legacy-peer-deps
-      - name: Run Contract Tests
+          npm ci || npm install --legacy-peer-deps
+      - name: Run Sanity Test
+        run: cd contracts && npx hardhat test test/Barebones.test.js
+      - name: Run Full Contract Tests
         env:
           CI: true
-        run: cd contracts && npx hardhat test
+        run: cd contracts && npx hardhat test --network hardhat
 
   test-frontend:
     runs-on: ubuntu-latest

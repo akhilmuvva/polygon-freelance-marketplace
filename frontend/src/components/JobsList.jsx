@@ -5,12 +5,13 @@ import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { useAnimeAnimations } from '../hooks/useAnimeAnimations';
 import { createBiconomySmartAccount } from '../utils/biconomy';
-import { RefreshCcw, Search, Filter, ChevronDown, Briefcase, Calendar, DollarSign, ArrowRight, ArrowUpDown, MessageSquare } from 'lucide-react';
+import { RefreshCcw, Search, Filter, ChevronDown, Briefcase, Calendar, DollarSign, ArrowRight, ArrowUpDown, MessageSquare, CreditCard } from 'lucide-react';
 import { formatUnits } from 'viem';
 import { SUPPORTED_TOKENS } from '../constants';
 import UserLink from './UserLink';
 import AiMatchRating from './AiMatchRating';
 import { motion } from 'framer-motion';
+import api from '../services/api';
 
 const GET_JOBS = gql`
     query GetJobs {
@@ -64,21 +65,22 @@ const JobsList = ({ onSelectChat, onFiatPay, gasless, smartAccount: propSmartAcc
     const [apiJobs, setApiJobs] = useState([]);
     const [isApiLoading, setIsApiLoading] = useState(false);
 
-    // Fallback fetching from backend if subgraph is down or empty
+    // Fetching from backend is strictly a fallback or for metadata enrichment
     const fetchApiJobs = React.useCallback(async () => {
         setIsApiLoading(true);
         try {
             const data = await api.getJobsMetadata();
-            setApiJobs(data || []);
+            if (Array.isArray(data)) setApiJobs(data);
         } catch (err) {
-            console.warn('[JobsList] API Fallback failed:', err);
+            console.warn('[JobsList] API Fallback unreachable:', err);
         } finally {
             setIsApiLoading(false);
         }
     }, []);
 
     useEffect(() => {
-        if (subgraphError || (!isLoadingJobs && (!subgraphData || !subgraphData.jobs?.length))) {
+        // If subgraph is empty or failing, try API
+        if (!isLoadingJobs && (!subgraphData?.jobs?.length || subgraphError)) {
             fetchApiJobs();
         }
     }, [subgraphError, isLoadingJobs, subgraphData, fetchApiJobs]);

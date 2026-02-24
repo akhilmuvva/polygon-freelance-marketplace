@@ -1,4 +1,5 @@
-const API_URL = import.meta.env.VITE_API_BASE_URL || (window.location.protocol === 'https:' ? 'https://localhost:3001/api' : 'http://localhost:3001/api');
+const IS_PROD = window.location.hostname === 'polylance.codes' || window.location.hostname.endsWith('vercel.app');
+const API_URL = import.meta.env.VITE_API_BASE_URL || (IS_PROD ? 'https://api.polylance.codes/api' : (window.location.protocol === 'https:' ? 'https://localhost:3001/api' : 'http://localhost:3001/api'));
 
 const handleResponse = async (response) => {
     if (!response.ok) {

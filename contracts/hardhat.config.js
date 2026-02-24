@@ -1,4 +1,5 @@
-require("@nomicfoundation/hardhat-toolbox");
+require("@nomicfoundation/hardhat-ethers");
+require("@nomicfoundation/hardhat-chai-matchers");
 require("@openzeppelin/hardhat-upgrades");
 require("dotenv").config();
 require("solidity-coverage");
@@ -19,6 +20,7 @@ module.exports = {
     networks: {
         hardhat: {
             allowUnlimitedContractSize: true,
+            hardfork: "shanghai"
         },
     },
 };

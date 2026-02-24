@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { api } from '../services/api';
+import { SubgraphService } from '../services/SubgraphService';
 import { Trophy, Medal, Award, ExternalLink, User, Star, TrendingUp, Loader2 } from 'lucide-react';
 import { formatEther } from 'viem';
 import { useAnimeAnimations } from '../hooks/useAnimeAnimations';
@@ -12,14 +13,26 @@ function Leaderboard() {
     const { scaleIn, slideInLeft, staggerFadeIn } = useAnimeAnimations();
 
     useEffect(() => {
-        api.getLeaderboard().then(data => {
-            setLeaders(Array.isArray(data) ? data : []);
-            setLoading(false);
-        }).catch(err => {
-            console.error('Failed to fetch leaderboard:', err);
-            setLeaders([]);
-            setLoading(false);
-        });
+        const fetchLeaders = async () => {
+            setLoading(true);
+            try {
+                // Priority: Subgraph
+                const data = await SubgraphService.getLeaderboard();
+                if (data && data.length > 0) {
+                    setLeaders(data);
+                } else {
+                    // Fallback to API if Subgraph is empty/new
+                    const apiData = await api.getLeaderboard();
+                    setLeaders(Array.isArray(apiData) ? apiData : []);
+                }
+            } catch (err) {
+                console.error('Failed to fetch leaderboard:', err);
+                setLeaders([]);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchLeaders();
     }, []);
 
     // Animate on data load

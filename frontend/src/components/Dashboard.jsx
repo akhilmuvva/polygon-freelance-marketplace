@@ -16,6 +16,7 @@ import WithdrawButton from './WithdrawButton';
 import YieldManagerDashboard from './YieldManagerDashboard';
 import { useAnimeAnimations } from '../hooks/useAnimeAnimations';
 import StorageService from '../services/StorageService';
+import { SubgraphService } from '../services/SubgraphService';
 import { Camera, Loader2 } from 'lucide-react';
 
 /* ─── Inline Styles ─── */
@@ -264,13 +265,28 @@ function Dashboard({ address: propAddress }) {
         if (isInitial && !profile.address) setIsLoadingProfile(true);
 
         try {
-            const [pData, aData] = await Promise.all([
+            const [pData, aData, sData] = await Promise.all([
                 api.getProfile(address).catch(() => null),
                 api.getAnalytics().catch(() => ({})),
+                SubgraphService.getUserStats(address).catch(() => null),
             ]);
 
             if (pData?.address) setProfile(pData);
-            if (aData?.totalJobs !== undefined) setAnalytics(aData);
+
+            // Merge Subgraph stats into analytics if possible
+            if (sData) {
+                const totalVolume = (parseFloat(sData.freelancer?.totalEarned || '0') + parseFloat(sData.client?.totalSpent || '0')) / 1e18;
+                setAnalytics({
+                    ...aData,
+                    totalVolume: totalVolume || aData.totalVolume,
+                    totalJobs: sData.freelancer?.jobsCompleted || aData.totalJobs,
+                });
+                if (sData.freelancer?.reputationScore) {
+                    setProfile(prev => ({ ...prev, reputationScore: sData.freelancer.reputationScore }));
+                }
+            } else if (aData?.totalJobs !== undefined) {
+                setAnalytics(aData);
+            }
         } catch (err) {
             console.warn('Dashboard Refresh:', err.message);
         } finally {

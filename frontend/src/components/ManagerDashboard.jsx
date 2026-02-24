@@ -5,7 +5,7 @@ import {
     Activity, Lock, AlertCircle, CheckCircle2, Search,
     LayoutDashboard, ArrowUpRight, Clock, Shield, Gavel, FileUp
 } from 'lucide-react';
-import { useArbitration } from '../hooks/useArbitration';
+
 import { api } from '../services/api';
 import DisputeModal from './DisputeModal';
 import EvidenceModal from './EvidenceModal';
@@ -34,7 +34,7 @@ const ManagerDashboard = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [disputeJob, setDisputeJob] = useState(null);
     const [evidenceJob, setEvidenceJob] = useState(null);
-    const { raiseDispute } = useArbitration();
+    // raiseDispute is handled via DisputeModal now
 
 
 

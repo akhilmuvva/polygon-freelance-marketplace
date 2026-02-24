@@ -7,7 +7,7 @@ import { useArbitration } from '../hooks/useArbitration';
 const DisputeModal = ({ isOpen, onClose, jobId, jobTitle }) => {
     const [reason, setReason] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const { raiseDispute, submitChatLogsAsEvidence } = useArbitration();
+    const { raiseDispute } = useArbitration();
 
     const handleRaiseDispute = async () => {
         if (!reason.trim()) {
