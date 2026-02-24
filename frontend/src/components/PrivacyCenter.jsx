@@ -18,7 +18,7 @@ function PrivacyCenter({ address }) {
             const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
-            a.href = url; a.download = `polylance-data-${address.slice(0, 6)}.json`; a.click();
+            a.href = url; a.download = `polylance-data-${address?.slice(0, 6) || 'user'}.json`; a.click();
             toast.success('Data export started!');
         } catch (error) { toast.error(error.message); }
         finally { setLoading(false); }

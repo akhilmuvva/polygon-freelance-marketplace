@@ -104,28 +104,28 @@ contract StreamingEscrow is ReentrancyGuard, AccessControl, Pausable {
         uint256 duration = stopTime - startTime;
         if (deposit < duration) revert InvalidDeposit();
 
-        uint256 actualDeposit = deposit - (deposit % duration);
-        uint256 ratePerSecond = actualDeposit / duration;
+        // Maintain high precision for rate calculation
+        uint256 ratePerSecond = (deposit * 1e18) / duration;
 
-        IERC20(tokenAddress).safeTransferFrom(msg.sender, address(this), actualDeposit);
+        IERC20(tokenAddress).safeTransferFrom(msg.sender, address(this), deposit);
 
         uint256 streamId = nextStreamId++;
         streams[streamId] = Stream({
             sender: msg.sender,
             recipient: recipient,
-            deposit: actualDeposit,
+            deposit: deposit,
             tokenAddress: tokenAddress,
             startTime: startTime,
             stopTime: stopTime,
             ratePerSecond: ratePerSecond,
-            remainingBalance: actualDeposit,
+            remainingBalance: deposit,
             lastUpdateTimestamp: startTime,
             totalPausedDuration: 0,
             isPaused: false,
             isDisputed: false
         });
 
-        emit StreamCreated(streamId, msg.sender, recipient, actualDeposit, tokenAddress, startTime, stopTime);
+        emit StreamCreated(streamId, msg.sender, recipient, deposit, tokenAddress, startTime, stopTime);
         return streamId;
     }
 
@@ -133,11 +133,11 @@ contract StreamingEscrow is ReentrancyGuard, AccessControl, Pausable {
      * @notice Calculates the amount currently available for withdrawal.
      */
     function balanceOf(uint256 streamId) public view returns (uint256 recipientBalance, uint256 senderBalance) {
+        if (streamId == 0 || streamId >= nextStreamId) return (0, 0);
         Stream memory stream = streams[streamId];
-        if (streamId >= nextStreamId || stream.deposit == 0) return (0, 0);
 
         uint256 timeElapsed = _calculateTimeElapsed(stream);
-        uint256 flowableAmount = timeElapsed * stream.ratePerSecond;
+        uint256 flowableAmount = (timeElapsed * stream.ratePerSecond) / 1e18;
 
         if (flowableAmount > stream.deposit) flowableAmount = stream.deposit;
 
@@ -149,8 +149,8 @@ contract StreamingEscrow is ReentrancyGuard, AccessControl, Pausable {
      * @notice Withdraws available funds from the stream.
      */
     function withdrawFromStream(uint256 streamId, uint256 amount) external whenNotPaused nonReentrant {
+        if (streamId == 0 || streamId >= nextStreamId) revert StreamDoesNotExist();
         Stream storage stream = streams[streamId];
-        if (streamId >= nextStreamId || stream.deposit == 0) revert StreamDoesNotExist();
         if (stream.isPaused || stream.isDisputed) revert StreamPausedOrDisputed();
         
         (uint256 available, ) = balanceOf(streamId);
@@ -207,8 +207,8 @@ contract StreamingEscrow is ReentrancyGuard, AccessControl, Pausable {
      * @notice Arbitrator resolves a dispute.
      */
     function resolveDispute(uint256 streamId, uint256 senderAmount, uint256 recipientAmount) external onlyRole(ARBITRATOR_ROLE) nonReentrant {
+        if (streamId == 0 || streamId >= nextStreamId) revert StreamDoesNotExist();
         Stream storage stream = streams[streamId];
-        if (streamId >= nextStreamId || stream.deposit == 0) revert StreamDoesNotExist();
         if (senderAmount + recipientAmount > stream.remainingBalance) revert InsufficientBalance();
 
         address sender = stream.sender;

@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
-import { useAccount, useContractWrite, useWaitForTransaction } from 'wagmi';
+import { useAccount, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
 import { parseUnits } from 'viem';
 import AssetTokenizerABI from '../abis/AssetTokenizer.json';
-import InvoiceNFTABI from '../abis/InvoiceNFT.json';
 
 const ASSET_TYPES = {
     INVOICE: 0,
@@ -24,14 +23,10 @@ export default function TokenizeAssetForm({ contractAddress }) {
         legalHash: ''
     });
 
-    const { data, write: tokenizeAsset } = useContractWrite({
-        address: contractAddress,
-        abi: AssetTokenizerABI,
-        functionName: 'tokenizeAsset'
-    });
+    const { data: hash, writeContract: tokenizeAsset } = useWriteContract();
 
-    const { isLoading, isSuccess } = useWaitForTransaction({
-        hash: data?.hash
+    const { isLoading, isSuccess } = useWaitForTransactionReceipt({
+        hash,
     });
 
     const handleSubmit = async (e) => {
@@ -41,6 +36,9 @@ export default function TokenizeAssetForm({ contractAddress }) {
         const legalHashBytes = formData.legalHash || '0x' + '0'.repeat(64);
 
         tokenizeAsset({
+            address: contractAddress,
+            abi: AssetTokenizerABI,
+            functionName: 'tokenizeAsset',
             args: [
                 formData.assetType,
                 formData.paymentToken,
@@ -152,7 +150,7 @@ export default function TokenizeAssetForm({ contractAddress }) {
 
                 {isSuccess && (
                     <div className="success-message">
-                        ✅ Asset tokenized successfully! Transaction: {data?.hash.slice(0, 10)}...
+                        ✅ Asset tokenized successfully! Transaction: {hash?.slice(0, 10)}...
                     </div>
                 )}
             </form>

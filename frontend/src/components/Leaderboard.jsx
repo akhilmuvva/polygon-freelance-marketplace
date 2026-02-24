@@ -13,7 +13,11 @@ function Leaderboard() {
 
     useEffect(() => {
         api.getLeaderboard().then(data => {
-            setLeaders(data);
+            setLeaders(Array.isArray(data) ? data : []);
+            setLoading(false);
+        }).catch(err => {
+            console.error('Failed to fetch leaderboard:', err);
+            setLeaders([]);
             setLoading(false);
         });
     }, []);

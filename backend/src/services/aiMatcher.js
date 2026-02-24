@@ -1,10 +1,8 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import axios from 'axios';
 import { Profile } from '../models/Profile.js';
 
 // Load Gemini API Key from environment
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const SUBGRAPH_URL = process.env.SUBGRAPH_URL || 'https://api.thegraph.com/subgraphs/name/username/polylance';
 
 /**
  * AI Job Matcher Service v2
@@ -13,7 +11,7 @@ const SUBGRAPH_URL = process.env.SUBGRAPH_URL || 'https://api.thegraph.com/subgr
 // Helper to sanitize inputs for AI prompts to prevent injection
 export function sanitizeForPrompt(text) {
     if (!text) return "";
-    return text.toString().replace(/[{}]/g, '').replace(/[\"\\]/g, '').slice(0, 1000); // Remove JSON-breaking chars & limit length
+    return text.toString().replace(/[{}]/g, '').replace(/["\\]/g, '').slice(0, 1000); // Remove JSON-breaking chars & limit length
 }
 
 export async function calculateMatchScore(jobDescription, freelancerProfile) {
@@ -106,7 +104,7 @@ export async function determineSearchIntent(userInput) {
         const result = await model.generateContent(prompt);
         const jsonMatch = result.response.text().match(/\{.*\}/s);
         return jsonMatch ? JSON.parse(jsonMatch[0]) : { query: userInput, category: 'All' };
-    } catch (e) {
+    } catch {
         return { query: userInput, category: 'All' };
     }
 }
@@ -134,7 +132,7 @@ export async function calculateJobRecommendations(freelancerProfile, jobsList) {
         const result = await model.generateContent(prompt);
         const arrayMatch = (await result.response).text().match(/\[.*\]/);
         return arrayMatch ? JSON.parse(arrayMatch[0]) : [];
-    } catch (e) {
+    } catch {
         return [];
     }
 }

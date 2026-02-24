@@ -1,0 +1,15 @@
+
+> backend@1.0.0 lint
+> eslint .
+
+
+C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\backend\scripts\computeRoles.cjs
+  3:1  error  'console' is not defined  no-undef
+  4:1  error  'console' is not defined  no-undef
+  5:1  error  'console' is not defined  no-undef
+
+C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\backend\src\server.js
+  799:25  warning  '_next' is defined but never used  no-unused-vars
+
+Γ£û 4 problems (3 errors, 1 warning)
+

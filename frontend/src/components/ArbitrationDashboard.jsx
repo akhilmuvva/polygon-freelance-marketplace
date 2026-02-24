@@ -31,11 +31,17 @@ const ArbitrationDashboard = () => {
 
     useEffect(() => {
         fetchDisputes();
-        if (headerRef.current) slideInLeft(headerRef.current);
-        setTimeout(() => staggerFadeIn('.dispute-card', 100), 300);
-        const cleanup = revealOnScroll('.glass-card');
-        return cleanup;
     }, []);
+
+    // Animate after data is loaded
+    useEffect(() => {
+        if (!loading && disputes.length > 0) {
+            if (headerRef.current) slideInLeft(headerRef.current);
+            setTimeout(() => staggerFadeIn('.dispute-card', 100), 300);
+            const cleanup = revealOnScroll('.glass-card');
+            return typeof cleanup === 'function' ? cleanup : undefined;
+        }
+    }, [loading, disputes.length]);
 
     const fetchDisputes = async () => {
         try { const data = await api.getDisputes(); setDisputes(data); }

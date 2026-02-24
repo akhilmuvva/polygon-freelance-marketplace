@@ -3,11 +3,9 @@
 > eslint .
 
 
-C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\NFTGallery.jsx
-  90:19  warning  'uri' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
-
-C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\WithdrawButton.jsx
-  6:10  warning  'formatEther' is defined but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\TokenizeAssetForm.jsx
+   14:45  warning  'contractAddress' is defined but never used  no-unused-vars
+  150:71  warning  'data' is not defined                        no-undef
 
 Γ£û 2 problems (0 errors, 2 warnings)
 

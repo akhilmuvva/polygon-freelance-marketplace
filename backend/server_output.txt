@@ -1,0 +1,42 @@
+[dotenv@17.2.3] injecting env (12) from .env -- tip: ΓÜÖ∩╕Å  write to custom object with { processEnv: myObject }
+[dotenv@17.2.3] injecting env (0) from .env -- tip: ΓÜÖ∩╕Å  specify custom .env file path with { path: '/custom/path/.env' }
+[dotenv@17.2.3] injecting env (0) from .env -- tip: ≡ƒæÑ sync secrets across teammates & machines: https://dotenvx.com/ops
+[dotenv@17.2.3] injecting env (0) from .env -- tip: ≡ƒöÉ prevent building .env in docker: https://dotenvx.com/prebuild
+2026-02-20T18:43:00.131Z Γä╣∩╕Å  INFO [CONFIG]: --- Environment Diagnostic ---
+2026-02-20T18:43:00.132Z Γä╣∩╕Å  INFO [CONFIG]: MONGODB_URI: LOADED
+2026-02-20T18:43:00.132Z Γä╣∩╕Å  INFO [CONFIG]: RAZORPAY: CONFIGURED
+2026-02-20T18:43:00.133Z Γä╣∩╕Å  INFO [CONFIG]: RPC_URL: LOADED
+2026-02-20T18:43:00.145Z Γä╣∩╕Å  INFO [SERVER]: Loaded SSL certificates.
+2026-02-20T18:43:00.278Z Γ£à SUCCESS [DB]: Connected to MongoDB Atlas
+2026-02-20T18:43:00.293Z Γä╣∩╕Å  INFO [SERVER]: HTTPS Server running on port 3001
+2026-02-20T18:43:00.293Z Γ¢ô∩╕Å  SYNC [BC-SYNC]: Starting blockchain event syncer (Socket.io Enabled)...
+2026-02-20T18:43:00.802Z Γ£à SUCCESS [SYNC]: Blockchain connection verified. Current block: 34242754
+2026-02-20T18:43:00.802Z Γ¢ô∩╕Å  SYNC [BC-SYNC]: [BC-SYNC]: Scanning 0x25F6C8... (34242630 to 34242639)
+2026-02-20T18:43:01.352Z Γ¢ô∩╕Å  SYNC [BC-SYNC]: [BC-SYNC]: Scanning 0x25F6C8... (34242640 to 34242649)
+2026-02-20T18:43:01.907Z Γ¢ô∩╕Å  SYNC [BC-SYNC]: [BC-SYNC]: Scanning 0x25F6C8... (34242650 to 34242659)
+2026-02-20T18:43:02.378Z Γä╣∩╕Å  INFO [SOCKET]: Socket connected: W1ygdxShTqULTUnTAAAB
+2026-02-20T18:43:02.441Z Γ¢ô∩╕Å  SYNC [BC-SYNC]: [BC-SYNC]: Scanning 0x25F6C8... (34242660 to 34242669)
+2026-02-20T18:43:03.027Z Γ¢ô∩╕Å  SYNC [BC-SYNC]: [BC-SYNC]: Scanning 0x25F6C8... (34242670 to 34242679)
+2026-02-20T18:43:03.602Z Γ¢ô∩╕Å  SYNC [BC-SYNC]: [BC-SYNC]: Scanning 0x25F6C8... (34242680 to 34242689)
+2026-02-20T18:43:04.168Z Γ¢ô∩╕Å  SYNC [BC-SYNC]: [BC-SYNC]: Scanning 0x25F6C8... (34242690 to 34242699)
+2026-02-20T18:43:04.685Z Γ¢ô∩╕Å  SYNC [BC-SYNC]: [BC-SYNC]: Scanning 0x25F6C8... (34242700 to 34242709)
+2026-02-20T18:43:05.230Z Γ¢ô∩╕Å  SYNC [BC-SYNC]: [BC-SYNC]: Scanning 0x25F6C8... (34242710 to 34242719)
+2026-02-20T18:43:05.773Z Γ¢ô∩╕Å  SYNC [BC-SYNC]: [BC-SYNC]: Scanning 0x25F6C8... (34242720 to 34242729)
+2026-02-20T18:43:06.302Z Γ¢ô∩╕Å  SYNC [BC-SYNC]: [BC-SYNC]: Scanning 0x25F6C8... (34242730 to 34242739)
+2026-02-20T18:43:06.829Z Γ¢ô∩╕Å  SYNC [BC-SYNC]: [BC-SYNC]: Scanning 0x25F6C8... (34242740 to 34242749)
+2026-02-20T18:43:07.665Z Γ¢ô∩╕Å  SYNC [BC-SYNC]: [BC-SYNC]: Scanning 0x25F6C8... (34242750 to 34242759)
+2026-02-20T18:43:08.181Z Γ¢ô∩╕Å  SYNC [BC-SYNC]: [BC-SYNC]: Scanning 0x5C4aF9... (34242630 to 34242639)
+2026-02-20T18:43:08.741Z Γ¢ô∩╕Å  SYNC [BC-SYNC]: [BC-SYNC]: Scanning 0x5C4aF9... (34242640 to 34242649)
+2026-02-20T18:43:09.278Z Γ¢ô∩╕Å  SYNC [BC-SYNC]: [BC-SYNC]: Scanning 0x5C4aF9... (34242650 to 34242659)
+2026-02-20T18:43:09.979Z Γ¢ô∩╕Å  SYNC [BC-SYNC]: [BC-SYNC]: Scanning 0x5C4aF9... (34242660 to 34242669)
+2026-02-20T18:43:10.641Z Γ¢ô∩╕Å  SYNC [BC-SYNC]: [BC-SYNC]: Scanning 0x5C4aF9... (34242670 to 34242679)
+2026-02-20T18:43:11.211Z Γ¢ô∩╕Å  SYNC [BC-SYNC]: [BC-SYNC]: Scanning 0x5C4aF9... (34242680 to 34242689)
+2026-02-20T18:43:11.788Z Γ¢ô∩╕Å  SYNC [BC-SYNC]: [BC-SYNC]: Scanning 0x5C4aF9... (34242690 to 34242699)
+2026-02-20T18:43:12.442Z Γ¢ô∩╕Å  SYNC [BC-SYNC]: [BC-SYNC]: Scanning 0x5C4aF9... (34242700 to 34242709)
+2026-02-20T18:43:12.951Z Γ¢ô∩╕Å  SYNC [BC-SYNC]: [BC-SYNC]: Scanning 0x5C4aF9... (34242710 to 34242719)
+2026-02-20T18:43:13.505Z Γ¢ô∩╕Å  SYNC [BC-SYNC]: [BC-SYNC]: Scanning 0x5C4aF9... (34242720 to 34242729)
+2026-02-20T18:43:14.027Z Γ¢ô∩╕Å  SYNC [BC-SYNC]: [BC-SYNC]: Scanning 0x5C4aF9... (34242730 to 34242739)
+2026-02-20T18:43:14.569Z Γ¢ô∩╕Å  SYNC [BC-SYNC]: [BC-SYNC]: Scanning 0x5C4aF9... (34242740 to 34242749)
+2026-02-20T18:43:15.200Z Γ¢ô∩╕Å  SYNC [BC-SYNC]: [BC-SYNC]: Scanning 0x5C4aF9... (34242750 to 34242759)
+2026-02-20T18:43:15.779Z Γ£à SUCCESS [SYNC]: Event syncer caught up and watching for live events.
+2026-02-20T18:57:59.639Z Γä╣∩╕Å  INFO [SOCKET]: Socket disconnected: W1ygdxShTqULTUnTAAAB

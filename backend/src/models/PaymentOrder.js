@@ -8,6 +8,8 @@ const paymentOrderSchema = new mongoose.Schema({
     status: { type: String, default: 'PENDING' },
     gateway: { type: String, required: true },
     paymentId: { type: String },
+    fulfillmentTx: { type: String },
+    isMock: { type: Boolean, default: false },
     customerDetails: {
         id: String,
         phone: String,

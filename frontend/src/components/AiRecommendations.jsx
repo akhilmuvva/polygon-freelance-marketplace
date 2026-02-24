@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://localhost:3001/api';
+import { api } from '../services/api';
 
 const AiRecommendations = ({ address }) => {
     const [jobs, setJobs] = useState([]);
@@ -12,8 +10,8 @@ const AiRecommendations = ({ address }) => {
     useEffect(() => {
         const fetchRecommendations = async () => {
             try {
-                const response = await axios.get(`${API_BASE_URL}/recommendations/${address}`);
-                setJobs(response.data);
+                const data = await api.getRecommendations(address);
+                setJobs(Array.isArray(data) ? data : []);
             } catch (err) {
                 console.error('Failed to fetch recommendations:', err);
             } finally {

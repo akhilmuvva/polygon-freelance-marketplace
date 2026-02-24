@@ -2,12 +2,10 @@ import { useEffect, useState, useCallback } from 'react';
 import { io } from 'socket.io-client';
 
 const getSocketUrl = () => {
-    const envUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
-    // If it's a relative URL or already has a protocol, handle it
-    if (envUrl.startsWith('http')) {
-        return envUrl.replace('http', 'ws');
-    }
-    return envUrl; // Fallback
+    // Use the same base URL as the API, but strip the /api path
+    const envUrl = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || 'http://localhost:3001';
+    // Socket.io expects HTTP/HTTPS URLs — it handles the WS upgrade internally
+    return envUrl.replace(/\/api\/?$/, '');
 };
 
 const SOCKET_URL = getSocketUrl();

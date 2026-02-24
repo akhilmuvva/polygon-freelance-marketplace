@@ -702,13 +702,9 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
         uint256 payout = job.amount - job.totalPaidOut;
         uint256 stake = job.freelancerStake;
         
+        // 1. Effects: Update state BEFORE any external interactions
         job.paid = true;
         
-        // Withdraw from yield manager if active
-        if (yieldManager != address(0) && job.yieldStrategy != IYieldManager.Strategy.NONE) {
-            IYieldManager(yieldManager).withdraw(job.yieldStrategy, job.token, payout + stake, address(this));
-        }
-
         if (ruling == 1) { // Refuse to Rule / Split 50-50
             job.status = JobStatus.Cancelled;
             balances[job.client][job.token] += (payout / 2);
@@ -720,6 +716,17 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
             job.status = JobStatus.Completed;
             job.totalPaidOut += payout;
             balances[job.freelancer][job.token] += (payout + stake);
+        } else {
+            revert InvalidStatus(); // Invalid ruling
+        }
+
+        // 2. Interactions: Yield manager withdrawal (Interaction with local vault manager)
+        if (yieldManager != address(0) && job.yieldStrategy != IYieldManager.Strategy.NONE) {
+            IYieldManager(yieldManager).withdraw(job.yieldStrategy, job.token, payout + stake, address(this));
+        }
+
+        // 3. Interactions: SBT Minting (External contract calls)
+        if (ruling == 3) {
             _mintSBT(job.freelancer, jobId);
         }
         

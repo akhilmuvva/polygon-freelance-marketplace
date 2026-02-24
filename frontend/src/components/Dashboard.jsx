@@ -15,6 +15,8 @@ import AiRecommendations from './AiRecommendations';
 import WithdrawButton from './WithdrawButton';
 import YieldManagerDashboard from './YieldManagerDashboard';
 import { useAnimeAnimations } from '../hooks/useAnimeAnimations';
+import StorageService from '../services/StorageService';
+import { Camera, Loader2 } from 'lucide-react';
 
 /* ─── Inline Styles ─── */
 const s = {
@@ -155,6 +157,19 @@ const s = {
         margin: '0 auto 28px',
         boxShadow: '0 0 30px rgba(124,92,252,0.15)',
     },
+    // Avatar styles
+    avatarUpload: {
+        position: 'relative', width: 100, height: 100, margin: '0 auto 20px',
+        borderRadius: '50%', border: '2px dashed rgba(124,92,252,0.3)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        cursor: 'pointer', overflow: 'hidden', transition: 'all 0.2s ease',
+    },
+    avatarImg: { width: '100%', height: '100%', objectFit: 'cover' },
+    avatarOverlay: {
+        position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.4)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        opacity: 0, transition: 'opacity 0.2s ease',
+    },
 };
 
 function Dashboard({ address: propAddress }) {
@@ -169,8 +184,9 @@ function Dashboard({ address: propAddress }) {
     const [isSaving, setIsSaving] = React.useState(false);
     const [profile, setProfile] = React.useState({
         name: '', bio: '', skills: '', category: 'Development',
-        reputationScore: 0, totalEarned: 0,
+        reputationScore: 0, totalEarned: 0, avatarIpfsHash: '',
     });
+    const [isUploading, setIsUploading] = React.useState(false);
     const [analytics, setAnalytics] = React.useState({
         totalJobs: 0, totalVolume: 0, avgReputation: 0, totalUsers: 0,
     });
@@ -201,7 +217,7 @@ function Dashboard({ address: propAddress }) {
     const sidebarRef = useRef(null);
     const connectCardRef = useRef(null);
     const statValueRefs = useRef([]);
-    const { staggerFadeIn, slideInLeft, float, countUp, revealOnScroll } = useAnimeAnimations();
+    const { staggerFadeIn, slideInLeft, float, countUp } = useAnimeAnimations();
 
     // Run entrance animations after data loads
     useEffect(() => {
@@ -210,8 +226,7 @@ function Dashboard({ address: propAddress }) {
             if (heroRef.current) slideInLeft(heroRef.current, 40);
             // Stagger stat cards
             setTimeout(() => staggerFadeIn('.stat-card', 80), 200);
-            // Reveal analytics and profile with scroll observer
-            if (analyticsRef.current) revealOnScroll('.anime-reveal');
+            // Analytics and profile sections are visible by default (no scroll reveal needed)
             // Count up numeric stat values
             setTimeout(() => {
                 statValueRefs.current.forEach(el => {
@@ -287,6 +302,22 @@ function Dashboard({ address: propAddress }) {
         finally { setIsPolishing(false); }
     };
 
+    const handleImageUpload = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        setIsUploading(true);
+        try {
+            const result = await StorageService.uploadFile(file);
+            setProfile(prev => ({ ...prev, avatarIpfsHash: result.cid }));
+        } catch (err) { console.error('Image upload failed:', err); }
+        finally { setIsUploading(false); }
+    };
+
+    const getAvatarUrl = (hash) => {
+        if (!hash) return null;
+        return `https://gateway.pinata.cloud/ipfs/${hash}`;
+    };
+
     /* ─── CONNECT SCREEN ─── */
     if (!isConnected) {
         return (
@@ -317,7 +348,7 @@ function Dashboard({ address: propAddress }) {
         <div style={s.page} className="dashboard-anime-root">
 
             {/* ══════ HERO SECTION ══════ */}
-            <div ref={heroRef} style={{ ...s.heroWrap, opacity: 0 }}>
+            <div ref={heroRef} style={s.heroWrap}>
                 <div style={s.heroGlow} />
                 <div style={s.heroGlow2} />
                 <div style={s.heroContent}>
@@ -356,7 +387,11 @@ function Dashboard({ address: propAddress }) {
                             </div>
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-                            <img src="/logo.png" alt="PolyLance" style={{ width: 80, height: 80, borderRadius: 16, boxShadow: '0 8px 32px rgba(124,92,252,0.25)', border: '1px solid rgba(124,92,252,0.2)' }} />
+                            {profile.avatarIpfsHash ? (
+                                <img src={getAvatarUrl(profile.avatarIpfsHash)} alt="Profile" style={{ width: 80, height: 80, borderRadius: 16, objectFit: 'cover', boxShadow: '0 8px 32px rgba(124,92,252,0.25)', border: '1px solid rgba(124,92,252,0.2)' }} />
+                            ) : (
+                                <img src="/logo.png" alt="PolyLance" style={{ width: 80, height: 80, borderRadius: 16, boxShadow: '0 8px 32px rgba(124,92,252,0.25)', border: '1px solid rgba(124,92,252,0.2)' }} />
+                            )}
                             <div style={{ display: 'flex', gap: 10 }}>
                                 <button className="btn btn-primary" style={{ borderRadius: 12 }}>
                                     <Rocket size={15} /> New Job
@@ -389,7 +424,7 @@ function Dashboard({ address: propAddress }) {
                         label: 'Network Agents', cls: 'stat-card-blue', icls: 'stat-icon-blue',
                     },
                 ].map((item, i) => (
-                    <div key={i} className={`stat-card ${item.cls}`} style={{ opacity: 0, transform: 'translateY(20px)' }}>
+                    <div key={i} className={`stat-card ${item.cls}`}>
                         <div className={`stat-icon ${item.icls}`}>
                             {item.icon}
                         </div>
@@ -460,7 +495,7 @@ function Dashboard({ address: propAddress }) {
             </div>
 
             {/* ══════ ANALYTICS ══════ */}
-            <div ref={analyticsRef} className="card anime-reveal" style={{ position: 'relative', overflow: 'hidden', opacity: 0, transform: 'translateY(50px)' }}>
+            <div ref={analyticsRef} className="card" style={{ position: 'relative', overflow: 'hidden' }}>
                 <div style={{ position: 'absolute', top: -60, right: -60, width: 180, height: 180, borderRadius: '50%', background: 'radial-gradient(circle, rgba(34,211,238,0.06) 0%, transparent 70%)', pointerEvents: 'none' }} />
                 <div style={{ ...s.sectionHead, position: 'relative', zIndex: 1 }}>
                     <div style={{ ...s.sectionIcon, background: 'linear-gradient(135deg, rgba(34,211,238,0.15), rgba(34,211,238,0.03))', color: 'var(--cyan)' }}>
@@ -504,7 +539,7 @@ function Dashboard({ address: propAddress }) {
             {/* ══════ PROFILE + SIDEBAR ══════ */}
             <div style={s.twoCol}>
                 {/* ── Profile Card ── */}
-                <div ref={profileRef} className="card anime-reveal" style={{ position: 'relative', overflow: 'hidden', opacity: 0, transform: 'translateY(50px)' }}>
+                <div ref={profileRef} className="card" style={{ position: 'relative', overflow: 'hidden' }}>
                     <div style={{ position: 'absolute', bottom: -80, left: -60, width: 200, height: 200, borderRadius: '50%', background: 'radial-gradient(circle, rgba(124,92,252,0.06) 0%, transparent 70%)', pointerEvents: 'none' }} />
 
                     <div style={{ ...s.sectionHead, position: 'relative', zIndex: 1 }}>
@@ -515,6 +550,26 @@ function Dashboard({ address: propAddress }) {
                             <h3 style={s.sectionTitle}>Identity & Credentials</h3>
                             <p style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', marginTop: 1 }}>Your on-chain professional profile</p>
                         </div>
+                    </div>
+
+                    {/* Avatar Upload */}
+                    <div
+                        style={{ ...s.avatarUpload, borderColor: isUploading ? 'var(--accent-light)' : 'rgba(124,92,252,0.3)' }}
+                        onClick={() => document.getElementById('avatar-input').click()}
+                        onMouseEnter={e => e.currentTarget.querySelector('.avatar-ovl').style.opacity = 1}
+                        onMouseLeave={e => e.currentTarget.querySelector('.avatar-ovl').style.opacity = 0}
+                    >
+                        {isUploading ? (
+                            <Loader2 className="animate-spin" size={24} style={{ color: 'var(--accent-light)' }} />
+                        ) : profile.avatarIpfsHash ? (
+                            <img src={getAvatarUrl(profile.avatarIpfsHash)} style={s.avatarImg} alt="Avatar" />
+                        ) : (
+                            <Camera size={24} style={{ color: 'var(--text-tertiary)' }} />
+                        )}
+                        <div className="avatar-ovl" style={s.avatarOverlay}>
+                            <Camera size={20} style={{ color: '#fff' }} />
+                        </div>
+                        <input id="avatar-input" type="file" hidden accept="image/*" onChange={handleImageUpload} />
                     </div>
 
                     <form onSubmit={handleSaveProfile} style={{ display: 'flex', flexDirection: 'column', gap: 16, position: 'relative', zIndex: 1 }}>
@@ -570,7 +625,7 @@ function Dashboard({ address: propAddress }) {
                 </div>
 
                 {/* ── Right Sidebar ── */}
-                <div ref={sidebarRef} className="anime-reveal" style={{ display: 'flex', flexDirection: 'column', gap: 16, opacity: 0, transform: 'translateY(50px)' }}>
+                <div ref={sidebarRef} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                     <div className="card">
                         <div style={s.sectionHead}>
                             <div style={{ ...s.sectionIcon, background: 'linear-gradient(135deg, rgba(251,191,36,0.15), rgba(251,191,36,0.03))', color: 'var(--warning)' }}>

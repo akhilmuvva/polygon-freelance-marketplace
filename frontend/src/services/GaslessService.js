@@ -26,11 +26,17 @@ export const getWebsocketTransport = (alchemyId) => {
  * Example of how to use Gasless Relay with a Smart Account
  */
 export async function sendGaslessTransaction(smartAccount, tx) {
+    if (!smartAccount) {
+        throw new Error('Smart Account not initialized');
+    }
     try {
         // Construct the User Operation
         const userOp = await smartAccount.buildUserOp([tx]);
 
         // Let the Paymaster sign the operation (Sponsoring gas)
+        if (!smartAccount.paymaster) {
+            throw new Error('Paymaster not configured on Smart Account. Check your Biconomy dashboard settings.');
+        }
         const paymasterServiceData = {
             mode: "SPONSORED",
         };

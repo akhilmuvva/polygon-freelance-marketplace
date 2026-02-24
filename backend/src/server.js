@@ -6,7 +6,6 @@ import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import { verifyMessage, formatEther } from 'viem';
-import { polygonAmoy } from 'viem/chains';
 import { startSyncer } from './services/syncer.js';
 import { publicClient, testBlockchainConnection } from './config/blockchain.js';
 import { Server } from 'socket.io';
@@ -18,7 +17,6 @@ import { Profile } from './models/Profile.js';
 import { JobMetadata } from './models/JobMetadata.js';
 import { SiweMessage } from 'siwe';
 import { SyncProgress } from './models/SyncProgress.js';
-import https from 'https';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -111,6 +109,33 @@ app.use(cors({
 }));
 app.use(express.json({ limit: '10kb' })); // Body limiting to prevent DoS
 
+// HTTPS Configuration
+const certPath = path.join(process.cwd(), 'certs');
+let httpsOptions = null;
+
+if (process.env.NODE_ENV !== 'production') {
+    try {
+        if (fs.existsSync(path.join(certPath, 'server.key')) && fs.existsSync(path.join(certPath, 'server.cert'))) {
+            httpsOptions = {
+                key: fs.readFileSync(path.join(certPath, 'server.key')),
+                cert: fs.readFileSync(path.join(certPath, 'server.cert'))
+            };
+            logger.info('Loaded SSL certificates.', 'SERVER');
+        } else {
+            logger.warn('SSL certificates not found in backend/certs. Generating self-signed certificates...', 'SERVER');
+            const attrs = [{ name: 'commonName', value: 'localhost' }];
+            const pems = selfsigned.generate(attrs, { days: 365 });
+            if (!fs.existsSync(certPath)) fs.mkdirSync(certPath);
+            fs.writeFileSync(path.join(certPath, 'server.key'), pems.private);
+            fs.writeFileSync(path.join(certPath, 'server.cert'), pems.cert);
+            httpsOptions = { key: pems.private, cert: pems.cert };
+            logger.success('Self-signed certificates generated successfully.', 'SERVER');
+        }
+    } catch (err) {
+        logger.error('Failed to setup HTTPS certificates', 'SERVER', err);
+    }
+}
+
 // Database Connection
 mongoose.connect(MONGODB_URI)
     .then(() => {
@@ -162,7 +187,7 @@ function startServer() {
         shutdown(server, 'UNCAUGHT_EXCEPTION');
     });
 
-    process.on('unhandledRejection', (reason, promise) => {
+    process.on('unhandledRejection', (reason) => {
         logger.error('CRITICAL: Unhandled Rejection', 'PROCESS', reason);
         // We don't necessarily exit for rejections, but logging is vital
     });
@@ -291,7 +316,7 @@ app.post('/api/profiles',
         const errors = validationResult(req);
         if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
 
-        const { address, name, bio, skills, signature, message } = req.body;
+        const { address, name, bio, skills, avatarIpfsHash, signature, message } = req.body;
         console.log(`[AUTH] Verifying profile for ${address}`);
         console.log(`[AUTH] Received body:`, JSON.stringify(req.body, null, 2));
         try {
@@ -329,7 +354,7 @@ app.post('/api/profiles',
             // Update profile and clear nonce
             const updatedProfile = await Profile.findOneAndUpdate(
                 { address: address.toLowerCase() },
-                { name, bio, skills, nonce: null },
+                { name, bio, skills, avatarIpfsHash, nonce: null },
                 { upsert: true, new: true }
             );
             console.log(`[AUTH] Profile updated/verified for ${address}`);
@@ -382,13 +407,16 @@ app.post('/api/jobs',
 
         const { jobId, title, description, category, tags } = req.body;
         try {
-            const job = await JobMetadata.create({
-                jobId: parseInt(jobId),
-                title,
-                description,
-                category,
-                tags,
-            });
+            const job = await JobMetadata.findOneAndUpdate(
+                { jobId: parseInt(jobId) },
+                {
+                    title,
+                    description,
+                    category,
+                    tags,
+                },
+                { upsert: true, new: true }
+            );
             res.json(job);
         } catch (error) {
             res.status(500).json({ error: error.message });
@@ -487,8 +515,6 @@ app.get('/api/match/:jobId/:address', apiLimiter, async (req, res) => {
     const { jobId, address } = req.params;
     try {
         const job = await JobMetadata.findOne({ jobId: parseInt(jobId) });
-        if (!job) return res.status(404).json({ error: 'Job not found' });
-
         if (!job) return res.status(404).json({ error: 'Job not found' });
 
         const profile = await Profile.findOne({ address: address.toLowerCase() });
@@ -763,37 +789,7 @@ app.delete('/api/gdpr/delete/:address', async (req, res) => {
 });
 
 
-// Start HTTPS Server
-// Try to load certs, fallback to HTTP if missing (for prod/CI)
-const certPath = path.join(process.cwd(), 'certs');
-let httpsOptions = null;
-
-if (process.env.NODE_ENV !== 'production') {
-    try {
-        if (fs.existsSync(path.join(certPath, 'server.key')) && fs.existsSync(path.join(certPath, 'server.cert'))) {
-            httpsOptions = {
-                key: fs.readFileSync(path.join(certPath, 'server.key')),
-                cert: fs.readFileSync(path.join(certPath, 'server.cert'))
-            };
-            console.log('Loaded SSL certificates.');
-        } else {
-            console.warn('SSL certificates not found in backend/certs. Generating self-signed certificates...');
-            const attrs = [{ name: 'commonName', value: 'localhost' }];
-            const pems = selfsigned.generate(attrs, { days: 365 });
-            httpsOptions = {
-                key: pems.private,
-                cert: pems.cert
-            };
-            // mkdir if not exists
-            if (!fs.existsSync(certPath)) fs.mkdirSync(certPath);
-            fs.writeFileSync(path.join(certPath, 'server.key'), pems.private);
-            fs.writeFileSync(path.join(certPath, 'server.cert'), pems.cert);
-            console.log('Generated and saved new SSL certificates.');
-        }
-    } catch (e) {
-        console.warn('Error loading/generating SSL certs:', e.message);
-    }
-}
+// API Routes initialized above
 
 // 404 Handler
 app.use((req, res) => {
@@ -801,7 +797,7 @@ app.use((req, res) => {
 });
 
 // Global Error Handler
-app.use((err, req, res, next) => {
+app.use((err, req, res, _next) => {
     logger.error('Unhandled application error', 'APP', err);
     const status = err.status || 500;
     const message = process.env.NODE_ENV === 'production' ? 'Internal server error' : err.message;

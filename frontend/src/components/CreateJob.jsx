@@ -95,15 +95,27 @@ function CreateJob({ onJobCreated, gasless, smartAccount }) {
 
         const deadline = Math.floor(Date.now() / 1000) + (Number(durationDays) * 86400);
 
+        const params = {
+            categoryId: 1n,
+            freelancer: freelancer,
+            token: selectedToken.address,
+            amount: rawAmount,
+            ipfsHash,
+            deadline: BigInt(deadline),
+            mAmounts: milestones.filter(m => m.amount).map(m => parseUnits(m.amount, selectedToken.decimals)),
+            mHashes: milestones.filter(m => m.amount).map(m => m.description || ""),
+            mIsUpfront: milestones.filter(m => m.amount).map(() => false),
+            yieldStrategy: yieldStrategy,
+            paymentToken: selectedToken.address,
+            paymentAmount: rawAmount,
+            minAmountOut: 0n
+        };
+
         if (gasless && smartAccount) {
             setIsProcessingGasless(true);
             try {
-                const res = await createJobGasless(smartAccount, CONTRACT_ADDRESS, FreelanceEscrowABI.abi, {
-                    categoryId: 1, freelancer, token: selectedToken.address, amount: rawAmount, ipfsHash, deadline: BigInt(deadline),
-                    mAmounts: milestones.filter(m => m.amount).map(m => parseUnits(m.amount, selectedToken.decimals)),
-                    mHashes: milestones.filter(m => m.amount).map(m => m.description || "")
-                });
-                if (res) onJobCreated();
+                const res = await createJobGasless(smartAccount, CONTRACT_ADDRESS, FreelanceEscrowABI.abi, params);
+                if (res) onJobCreated?.();
             } catch (err) { console.error(err); }
             finally { setIsProcessingGasless(false); }
             return;
@@ -111,13 +123,12 @@ function CreateJob({ onJobCreated, gasless, smartAccount }) {
 
         writeContract({
             address: CONTRACT_ADDRESS, abi: FreelanceEscrowABI.abi, functionName: 'createJob',
-            args: [1, freelancer, selectedToken.address, rawAmount, ipfsHash, BigInt(deadline),
-                milestones.filter(m => m.amount).map(m => parseUnits(m.amount, selectedToken.decimals)),
-                milestones.filter(m => m.amount).map(m => m.description || "")]
+            args: [params],
+            value: selectedToken.address === '0x0000000000000000000000000000000000000000' ? rawAmount : 0n
         });
     };
 
-    React.useEffect(() => { if (isSuccess) onJobCreated(); }, [isSuccess]);
+    React.useEffect(() => { if (isSuccess) onJobCreated?.(); }, [isSuccess]);
 
     return (
         <div style={st.page}>
@@ -167,7 +178,7 @@ function CreateJob({ onJobCreated, gasless, smartAccount }) {
                             <div>
                                 <label style={st.label}>Asset</label>
                                 <select style={st.select} value={selectedToken.symbol}
-                                    onChange={(e) => setSelectedToken(SUPPORTED_TOKENS.find(t => t.symbol === e.target.value))}>
+                                    onChange={(e) => setSelectedToken(SUPPORTED_TOKENS.find(t => t.symbol === e.target.value) || SUPPORTED_TOKENS[0])}>
                                     {SUPPORTED_TOKENS.map(t => <option key={t.symbol}>{t.symbol}</option>)}
                                 </select>
                             </div>

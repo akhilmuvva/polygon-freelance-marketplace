@@ -96,7 +96,7 @@ const FiatOnramp = ({ address }) => {
                 email: "user@polylance.com"
             });
 
-            if (order.id.startsWith('mock_')) {
+            if (order.id && order.id.startsWith('mock_')) {
                 setMockOrder(order);
                 setShowMockModal(true);
                 setLoading(false);
@@ -118,7 +118,10 @@ const FiatOnramp = ({ address }) => {
                     try {
                         const verifyRes = await api.verifyRazorpayPayment(response);
                         if (verifyRes.status === 'SUCCESS') {
-                            toast.success("Payment successful! Crypto will be credited shortly.");
+                            const msg = verifyRes.txHash
+                                ? `Payment successful! Tokens sent: ${verifyRes.txHash.substring(0, 10)}...`
+                                : "Payment successful! Crypto will be credited shortly.";
+                            toast.success(msg);
                         } else {
                             toast.error("Verification failed");
                         }
@@ -155,7 +158,10 @@ const FiatOnramp = ({ address }) => {
             };
             const verifyRes = await api.verifyRazorpayPayment(mockResponse);
             if (verifyRes.status === 'SUCCESS') {
-                toast.success("Mock Payment successful! Simulating receipt...");
+                const msg = verifyRes.txHash
+                    ? `Success! TX: ${verifyRes.txHash.substring(0, 10)}...`
+                    : "Mock Payment successful!";
+                toast.success(msg);
                 setShowMockModal(false);
             }
         } catch {

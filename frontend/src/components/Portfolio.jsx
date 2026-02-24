@@ -19,6 +19,9 @@ function Portfolio({ address, onBack }) {
             api.getPortfolio(address).then(res => {
                 setData(res);
                 setLoading(false);
+            }).catch(err => {
+                console.error('Failed to fetch portfolio:', err);
+                setLoading(false);
             });
         }
     }, [address]);
@@ -65,7 +68,8 @@ function Portfolio({ address, onBack }) {
         </div>
     );
 
-    const { profile, jobs } = data;
+    const { profile, jobs: rawJobs } = data;
+    const jobs = rawJobs || [];
     const completedJobs = jobs.filter(j => j.status === 'Completed' || j.status === 2 || j.status === 4);
     const ratedJobs = completedJobs.filter(j => j.rating > 0);
     const avgRating = ratedJobs.length > 0

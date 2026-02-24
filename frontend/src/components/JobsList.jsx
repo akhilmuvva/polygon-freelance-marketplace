@@ -1,16 +1,21 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useAccount, useWalletClient } from 'wagmi';
-import { motion } from 'framer-motion';
-import { Briefcase, RefreshCcw, MessageSquare, Search, Filter, ArrowUpDown } from 'lucide-react';
-import axios from 'axios';
-import { formatUnits } from 'viem';
-import { SUPPORTED_TOKENS } from '../constants';
-import UserLink from './UserLink';
-import AiMatchRating from './AiMatchRating';
-import { createBiconomySmartAccount } from '../utils/biconomy';
-import { useAnimeAnimations } from '../hooks/useAnimeAnimations';
+import { useQuery, gql } from '@apollo/client';
 
-
+const GET_JOBS = gql`
+    query GetJobs {
+        jobs(orderBy: createdAt, orderDirection: desc, first: 100) {
+            id
+            jobId
+            client
+            freelancer
+            amount
+            status
+            deadline
+            categoryId
+            ipfsHash
+            createdAt
+        }
+    }
+`;
 
 const st = {
     container: { display: 'flex', flexDirection: 'column', gap: 32 },
@@ -39,8 +44,11 @@ const JobsList = ({ onSelectChat, gasless, smartAccount: propSmartAccount, addre
     const { staggerFadeIn, slideInLeft } = useAnimeAnimations();
     const headerRef = useRef(null);
 
-    const [jobs, setJobs] = useState([]);
-    const [isLoadingJobs, setIsLoadingJobs] = useState(true);
+    const { loading: isLoadingJobs, data: subgraphData, error: subgraphError, refetch: fetchJobs } = useQuery(GET_JOBS, {
+        pollInterval: 10000, // Sync with Antigravity speed: refresh every 10s
+    });
+
+    const jobs = subgraphData?.jobs || [];
     const [filter, setFilter] = useState('All Categories');
     const [searchQuery, setSearchQuery] = useState('');
     const [sortBy, setSortBy] = useState('Newest');
@@ -66,23 +74,6 @@ const JobsList = ({ onSelectChat, gasless, smartAccount: propSmartAccount, addre
         initSA();
     }, [gasless, walletClient, smartAccount, propSmartAccount]);
 
-    const fetchJobs = async () => {
-        setIsLoadingJobs(true);
-        try {
-            const apiBase = import.meta.env.VITE_API_BASE_URL || 'https://localhost:3001/api';
-            const response = await axios.get(`${apiBase}/jobs`);
-            setJobs(response.data);
-        } catch (err) {
-            console.error('Failed to fetch jobs:', err);
-        } finally {
-            setIsLoadingJobs(false);
-        }
-    };
-
-    useEffect(() => {
-        fetchJobs();
-    }, []);
-
     useEffect(() => {
         const timer = setTimeout(async () => {
             if (searchQuery.length > 5) {
@@ -107,7 +98,7 @@ const JobsList = ({ onSelectChat, gasless, smartAccount: propSmartAccount, addre
         }
 
         if (statusFilter !== 'All') {
-            res = res.filter(j => j.status.toString() === statusFilter);
+            res = res.filter(j => j.status != null && j.status.toString() === statusFilter);
         }
 
         if (searchQuery && !aiResults) {

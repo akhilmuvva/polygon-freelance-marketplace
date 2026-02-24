@@ -143,18 +143,21 @@ const CrossChainDashboard = () => {
       <div style={st.section}>
         <h2 style={st.sectionTitle}><Wallet size={20} /> Unified Balances</h2>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 16 }}>
-          {Object.entries(balances).map(([chainId, data]) => (
+          {Object.entries(balances).map(([chainId, data]) => {
+            if (!data?.chainInfo) return null;
+            return (
             <div key={chainId} style={st.card}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
                 <span style={{ fontSize: '1.2rem' }}>{data.chainInfo.icon}</span>
                 <span style={{ fontWeight: 700, fontSize: '0.85rem', color: '#fff' }}>{data.chainInfo.name}</span>
               </div>
               <div style={{ fontSize: '1.4rem', fontWeight: 900, color: '#fff' }}>
-                {data.error ? '---' : parseFloat(data.native).toFixed(4)}
+                {data.error ? '---' : parseFloat(data.native || 0).toFixed(4)}
                 <span style={{ fontSize: '0.7rem', color: 'var(--text-tertiary)', marginLeft: 6, fontWeight: 500 }}>Native</span>
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 

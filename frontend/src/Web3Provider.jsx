@@ -11,16 +11,19 @@ import { WagmiProvider, http, fallback, useAccount } from 'wagmi';
 import { polygon, polygonAmoy } from 'wagmi/chains';
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 import { SiweMessage } from 'siwe';
-// import { ApolloClient, InMemoryCache, ApolloProvider } from '@apollo/client';
+import { ApolloClient, InMemoryCache, ApolloProvider } from '@apollo/client';
 import { HuddleClient, HuddleProvider } from '@huddle01/react';
 import { api } from './services/api';
 
-const huddleClient = new HuddleClient({
-    projectId: import.meta.env.VITE_HUDDLE_PROJECT_ID,
-    options: {
-        activeSpeakersLimit: 5,
-    },
-});
+const huddleProjectId = import.meta.env.VITE_HUDDLE_PROJECT_ID;
+const huddleClient = huddleProjectId
+    ? new HuddleClient({
+        projectId: huddleProjectId,
+        options: {
+            activeSpeakersLimit: 5,
+        },
+    })
+    : null;
 
 
 function ConnectionLogger({ children }) {
@@ -47,10 +50,10 @@ const queryClient = new QueryClient({
     },
 });
 
-// const apolloClient = new ApolloClient({
-//     uri: import.meta.env.VITE_SUBGRAPH_URL || 'https://api.studio.thegraph.com/query/STUDIO_ID/poly-lance/v0.0.1',
-//     cache: new InMemoryCache(),
-// });
+const apolloClient = new ApolloClient({
+    uri: import.meta.env.VITE_SUBGRAPH_URL || 'https://api.studio.thegraph.com/query/STUDIO_ID/poly-lance/v0.0.1',
+    cache: new InMemoryCache(),
+});
 
 export function Web3Provider({ children }) {
     const [authStatus, setAuthStatus] = useState('unauthenticated');
@@ -59,7 +62,10 @@ export function Web3Provider({ children }) {
         console.log('[NETWORK] Current App Origin:', window.location.origin);
     }, []);
 
-    const projectId = import.meta.env.VITE_WALLET_CONNECT_PROJECT_ID || '65a5f1dd3b7df21cef34448cac019cd5';
+    const projectId = import.meta.env.VITE_WALLET_CONNECT_PROJECT_ID || import.meta.env.VITE_WALLETCONNECT_PROJECT_ID;
+    if (!projectId) {
+        console.warn('[WEB3] VITE_WALLET_CONNECT_PROJECT_ID is not set. WalletConnect will not work.');
+    }
 
     const config = useMemo(() => {
         const alchemyId = import.meta.env.VITE_ALCHEMY_ID;
@@ -84,15 +90,22 @@ export function Web3Provider({ children }) {
             },
             pollingInterval: 1_000, // Faster polling (1s) to match Antigravity speed
             ssr: false,
+            reconnectOnMount: false,
         });
     }, [projectId]);
 
     const authAdapter = useMemo(() => createAuthenticationAdapter({
         getNonce: async () => {
             try {
-                const address = window.ethereum?.selectedAddress || 'default';
-                console.log('[AUTH] Requesting nonce for:', address);
-                const { nonce } = await api.getNonce(address);
+                // Use the connected wallet address from RainbowKit/WAGMI if available
+                const connectedAddress = window.ethereum?.selectedAddress
+                    || document.querySelector('[data-testid="rk-account-button"]')?.textContent
+                    || null;
+                if (!connectedAddress || connectedAddress === 'default') {
+                    throw new Error('No wallet address available for nonce request');
+                }
+                console.log('[AUTH] Requesting nonce for:', connectedAddress);
+                const { nonce } = await api.getNonce(connectedAddress);
                 console.log('[AUTH] Nonce received:', nonce);
                 return nonce;
             } catch (error) {
@@ -150,25 +163,31 @@ export function Web3Provider({ children }) {
     return (
         <WagmiProvider config={config}>
             <QueryClientProvider client={queryClient}>
-                {/* <ApolloProvider client={apolloClient}> */}
-                <RainbowKitAuthenticationProvider
-                    adapter={authAdapter}
-                    status={authStatus}
-                >
-                    <RainbowKitProvider theme={darkTheme({
-                        accentColor: '#8a2be2',
-                        accentColorForeground: 'white',
-                        borderRadius: 'medium',
-                        overlayBlur: 'small',
-                    })}>
-                        <HuddleProvider client={huddleClient}>
-                            <ConnectionLogger>
-                                {children}
-                            </ConnectionLogger>
-                        </HuddleProvider>
-                    </RainbowKitProvider>
-                </RainbowKitAuthenticationProvider>
-                {/* </ApolloProvider> */}
+                <ApolloProvider client={apolloClient}>
+                    <RainbowKitAuthenticationProvider
+                        adapter={authAdapter}
+                        status={authStatus}
+                    >
+                        <RainbowKitProvider theme={darkTheme({
+                            accentColor: '#8a2be2',
+                            accentColorForeground: 'white',
+                            borderRadius: 'medium',
+                            overlayBlur: 'small',
+                        })}>
+                            {huddleClient ? (
+                                <HuddleProvider client={huddleClient}>
+                                    <ConnectionLogger>
+                                        {children}
+                                    </ConnectionLogger>
+                                </HuddleProvider>
+                            ) : (
+                                <ConnectionLogger>
+                                    {children}
+                                </ConnectionLogger>
+                            )}
+                        </RainbowKitProvider>
+                    </RainbowKitAuthenticationProvider>
+                </ApolloProvider>
             </QueryClientProvider>
         </WagmiProvider>
     );

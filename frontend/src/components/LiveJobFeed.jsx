@@ -59,7 +59,7 @@ export default function LiveJobFeed() {
                             </div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.75rem', color: 'var(--text-tertiary)' }}>
                                 <User size={12} />
-                                <span>{job.client.slice(0, 6)}...{job.client.slice(-4)}</span>
+                                <span>{job.client?.slice(0, 6)}...{job.client?.slice(-4)}</span>
                             </div>
                             <div style={{ marginTop: 8, display: 'flex', justifyContent: 'flex-end' }}>
                                 <a

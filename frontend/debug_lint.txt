@@ -1,0 +1,730 @@
+2026-02-20T18:45:06.688Z eslint:cli CLI args: [ '.', '--debug' ]
+2026-02-20T18:45:06.691Z eslint:cli Using flat config? true
+2026-02-20T18:45:06.696Z eslint:cli Running on files
+2026-02-20T18:45:06.697Z eslint:eslint Using file patterns: .
+2026-02-20T18:45:06.697Z eslint:eslint Searching for eslint.config.js
+2026-02-20T18:45:06.700Z eslint:eslint Loading config from C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\eslint.config.js
+2026-02-20T18:45:06.700Z eslint:eslint Config file URL is file:///C:/Users/akhil/.gemini/antigravity/scratch/polygon-freelance-marketplace/frontend/eslint.config.js
+2026-02-20T18:45:06.956Z eslint:eslint Deleting cache file at C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\.eslintcache
+2026-02-20T18:45:06.970Z eslint:rules Loading rule 'constructor-super' (remaining=289)
+2026-02-20T18:45:06.974Z eslint:rules Loading rule 'for-direction' (remaining=288)
+2026-02-20T18:45:06.976Z eslint:rules Loading rule 'getter-return' (remaining=287)
+2026-02-20T18:45:06.983Z eslint:rules Loading rule 'no-async-promise-executor' (remaining=286)
+2026-02-20T18:45:06.984Z eslint:rules Loading rule 'no-case-declarations' (remaining=285)
+2026-02-20T18:45:06.985Z eslint:rules Loading rule 'no-class-assign' (remaining=284)
+2026-02-20T18:45:06.985Z eslint:rules Loading rule 'no-compare-neg-zero' (remaining=283)
+2026-02-20T18:45:06.986Z eslint:rules Loading rule 'no-cond-assign' (remaining=282)
+2026-02-20T18:45:06.988Z eslint:rules Loading rule 'no-const-assign' (remaining=281)
+2026-02-20T18:45:06.988Z eslint:rules Loading rule 'no-constant-binary-expression' (remaining=280)
+2026-02-20T18:45:06.989Z eslint:rules Loading rule 'no-constant-condition' (remaining=279)
+2026-02-20T18:45:06.991Z eslint:rules Loading rule 'no-control-regex' (remaining=278)
+2026-02-20T18:45:06.994Z eslint:rules Loading rule 'no-debugger' (remaining=277)
+2026-02-20T18:45:06.995Z eslint:rules Loading rule 'no-delete-var' (remaining=276)
+2026-02-20T18:45:06.995Z eslint:rules Loading rule 'no-dupe-args' (remaining=275)
+2026-02-20T18:45:06.995Z eslint:rules Loading rule 'no-dupe-class-members' (remaining=274)
+2026-02-20T18:45:06.995Z eslint:rules Loading rule 'no-dupe-else-if' (remaining=273)
+2026-02-20T18:45:06.996Z eslint:rules Loading rule 'no-dupe-keys' (remaining=272)
+2026-02-20T18:45:06.996Z eslint:rules Loading rule 'no-duplicate-case' (remaining=271)
+2026-02-20T18:45:06.996Z eslint:rules Loading rule 'no-empty' (remaining=270)
+2026-02-20T18:45:06.997Z eslint:rules Loading rule 'no-empty-character-class' (remaining=269)
+2026-02-20T18:45:06.998Z eslint:rules Loading rule 'no-empty-pattern' (remaining=268)
+2026-02-20T18:45:06.999Z eslint:rules Loading rule 'no-empty-static-block' (remaining=267)
+2026-02-20T18:45:06.999Z eslint:rules Loading rule 'no-ex-assign' (remaining=266)
+2026-02-20T18:45:07.000Z eslint:rules Loading rule 'no-extra-boolean-cast' (remaining=265)
+2026-02-20T18:45:07.001Z eslint:rules Loading rule 'no-fallthrough' (remaining=264)
+2026-02-20T18:45:07.004Z eslint:rules Loading rule 'no-func-assign' (remaining=263)
+2026-02-20T18:45:07.005Z eslint:rules Loading rule 'no-global-assign' (remaining=262)
+2026-02-20T18:45:07.006Z eslint:rules Loading rule 'no-import-assign' (remaining=261)
+2026-02-20T18:45:07.007Z eslint:rules Loading rule 'no-invalid-regexp' (remaining=260)
+2026-02-20T18:45:07.008Z eslint:rules Loading rule 'no-irregular-whitespace' (remaining=259)
+2026-02-20T18:45:07.009Z eslint:rules Loading rule 'no-loss-of-precision' (remaining=258)
+2026-02-20T18:45:07.010Z eslint:rules Loading rule 'no-misleading-character-class' (remaining=257)
+2026-02-20T18:45:07.015Z eslint:rules Loading rule 'no-new-native-nonconstructor' (remaining=256)
+2026-02-20T18:45:07.016Z eslint:rules Loading rule 'no-nonoctal-decimal-escape' (remaining=255)
+2026-02-20T18:45:07.016Z eslint:rules Loading rule 'no-obj-calls' (remaining=254)
+2026-02-20T18:45:07.016Z eslint:rules Loading rule 'no-octal' (remaining=253)
+2026-02-20T18:45:07.017Z eslint:rules Loading rule 'no-prototype-builtins' (remaining=252)
+2026-02-20T18:45:07.017Z eslint:rules Loading rule 'no-redeclare' (remaining=251)
+2026-02-20T18:45:07.018Z eslint:rules Loading rule 'no-regex-spaces' (remaining=250)
+2026-02-20T18:45:07.018Z eslint:rules Loading rule 'no-self-assign' (remaining=249)
+2026-02-20T18:45:07.019Z eslint:rules Loading rule 'no-setter-return' (remaining=248)
+2026-02-20T18:45:07.019Z eslint:rules Loading rule 'no-shadow-restricted-names' (remaining=247)
+2026-02-20T18:45:07.020Z eslint:rules Loading rule 'no-sparse-arrays' (remaining=246)
+2026-02-20T18:45:07.020Z eslint:rules Loading rule 'no-this-before-super' (remaining=245)
+2026-02-20T18:45:07.021Z eslint:rules Loading rule 'no-undef' (remaining=244)
+2026-02-20T18:45:07.022Z eslint:rules Loading rule 'no-unexpected-multiline' (remaining=243)
+2026-02-20T18:45:07.023Z eslint:rules Loading rule 'no-unreachable' (remaining=242)
+2026-02-20T18:45:07.024Z eslint:rules Loading rule 'no-unsafe-finally' (remaining=241)
+2026-02-20T18:45:07.024Z eslint:rules Loading rule 'no-unsafe-negation' (remaining=240)
+2026-02-20T18:45:07.025Z eslint:rules Loading rule 'no-unsafe-optional-chaining' (remaining=239)
+2026-02-20T18:45:07.026Z eslint:rules Loading rule 'no-unused-labels' (remaining=238)
+2026-02-20T18:45:07.026Z eslint:rules Loading rule 'no-unused-private-class-members' (remaining=237)
+2026-02-20T18:45:07.027Z eslint:rules Loading rule 'no-unused-vars' (remaining=236)
+2026-02-20T18:45:07.028Z eslint:rules Loading rule 'no-useless-backreference' (remaining=235)
+2026-02-20T18:45:07.029Z eslint:rules Loading rule 'no-useless-catch' (remaining=234)
+2026-02-20T18:45:07.029Z eslint:rules Loading rule 'no-useless-escape' (remaining=233)
+2026-02-20T18:45:07.030Z eslint:rules Loading rule 'no-with' (remaining=232)
+2026-02-20T18:45:07.030Z eslint:rules Loading rule 'require-yield' (remaining=231)
+2026-02-20T18:45:07.031Z eslint:rules Loading rule 'use-isnan' (remaining=230)
+2026-02-20T18:45:07.031Z eslint:rules Loading rule 'valid-typeof' (remaining=229)
+2026-02-20T18:45:07.051Z eslint:eslint 60 files found in: 95ms
+2026-02-20T18:45:07.055Z eslint:eslint Lint C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\eslint.config.js
+2026-02-20T18:45:07.056Z eslint:linter Linting code for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\eslint.config.js (pass 1)
+2026-02-20T18:45:07.056Z eslint:linter Verify
+2026-02-20T18:45:07.056Z eslint:linter With flat config: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\eslint.config.js
+2026-02-20T18:45:07.057Z eslint:languages:js Parsing: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\eslint.config.js
+2026-02-20T18:45:07.065Z eslint:languages:js Parsing successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\eslint.config.js
+2026-02-20T18:45:07.065Z eslint:languages:js Scope analysis: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\eslint.config.js
+2026-02-20T18:45:07.066Z eslint:languages:js Scope analysis successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\eslint.config.js
+2026-02-20T18:45:07.101Z eslint:linter Generating fixed text for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\eslint.config.js (pass 1)
+2026-02-20T18:45:07.101Z eslint:source-code-fixer Applying fixes
+2026-02-20T18:45:07.101Z eslint:source-code-fixer shouldFix parameter was false, not attempting fixes
+2026-02-20T18:45:07.101Z eslint:eslint Lint C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\constants.js
+2026-02-20T18:45:07.101Z eslint:linter Linting code for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\constants.js (pass 1)
+2026-02-20T18:45:07.101Z eslint:linter Verify
+2026-02-20T18:45:07.101Z eslint:linter With flat config: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\constants.js
+2026-02-20T18:45:07.101Z eslint:languages:js Parsing: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\constants.js
+2026-02-20T18:45:07.104Z eslint:languages:js Parsing successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\constants.js
+2026-02-20T18:45:07.105Z eslint:languages:js Scope analysis: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\constants.js
+2026-02-20T18:45:07.106Z eslint:languages:js Scope analysis successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\constants.js
+2026-02-20T18:45:07.116Z eslint:linter Generating fixed text for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\constants.js (pass 1)
+2026-02-20T18:45:07.116Z eslint:source-code-fixer Applying fixes
+2026-02-20T18:45:07.116Z eslint:source-code-fixer shouldFix parameter was false, not attempting fixes
+2026-02-20T18:45:07.116Z eslint:eslint Lint C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\vitest.config.js
+2026-02-20T18:45:07.117Z eslint:linter Linting code for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\vitest.config.js (pass 1)
+2026-02-20T18:45:07.117Z eslint:linter Verify
+2026-02-20T18:45:07.117Z eslint:linter With flat config: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\vitest.config.js
+2026-02-20T18:45:07.117Z eslint:languages:js Parsing: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\vitest.config.js
+2026-02-20T18:45:07.117Z eslint:languages:js Parsing successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\vitest.config.js
+2026-02-20T18:45:07.117Z eslint:languages:js Scope analysis: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\vitest.config.js
+2026-02-20T18:45:07.118Z eslint:languages:js Scope analysis successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\vitest.config.js
+2026-02-20T18:45:07.133Z eslint:linter Generating fixed text for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\vitest.config.js (pass 1)
+2026-02-20T18:45:07.133Z eslint:source-code-fixer Applying fixes
+2026-02-20T18:45:07.133Z eslint:source-code-fixer shouldFix parameter was false, not attempting fixes
+2026-02-20T18:45:07.133Z eslint:eslint Lint C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\App.test.jsx
+2026-02-20T18:45:07.133Z eslint:linter Linting code for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\App.test.jsx (pass 1)
+2026-02-20T18:45:07.133Z eslint:linter Verify
+2026-02-20T18:45:07.133Z eslint:linter With flat config: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\App.test.jsx
+2026-02-20T18:45:07.133Z eslint:languages:js Parsing: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\App.test.jsx
+2026-02-20T18:45:07.134Z eslint:languages:js Parsing successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\App.test.jsx
+2026-02-20T18:45:07.134Z eslint:languages:js Scope analysis: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\App.test.jsx
+2026-02-20T18:45:07.135Z eslint:languages:js Scope analysis successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\App.test.jsx
+2026-02-20T18:45:07.141Z eslint:linter Generating fixed text for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\App.test.jsx (pass 1)
+2026-02-20T18:45:07.141Z eslint:source-code-fixer Applying fixes
+2026-02-20T18:45:07.141Z eslint:source-code-fixer shouldFix parameter was false, not attempting fixes
+2026-02-20T18:45:07.141Z eslint:eslint Lint C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\vite.config.js
+2026-02-20T18:45:07.141Z eslint:linter Linting code for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\vite.config.js (pass 1)
+2026-02-20T18:45:07.141Z eslint:linter Verify
+2026-02-20T18:45:07.141Z eslint:linter With flat config: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\vite.config.js
+2026-02-20T18:45:07.141Z eslint:languages:js Parsing: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\vite.config.js
+2026-02-20T18:45:07.143Z eslint:languages:js Parsing successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\vite.config.js
+2026-02-20T18:45:07.143Z eslint:languages:js Scope analysis: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\vite.config.js
+2026-02-20T18:45:07.144Z eslint:languages:js Scope analysis successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\vite.config.js
+2026-02-20T18:45:07.154Z eslint:linter Generating fixed text for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\vite.config.js (pass 1)
+2026-02-20T18:45:07.154Z eslint:source-code-fixer Applying fixes
+2026-02-20T18:45:07.154Z eslint:source-code-fixer shouldFix parameter was false, not attempting fixes
+2026-02-20T18:45:07.154Z eslint:eslint Lint C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\Web3Provider.jsx
+2026-02-20T18:45:07.154Z eslint:linter Linting code for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\Web3Provider.jsx (pass 1)
+2026-02-20T18:45:07.154Z eslint:linter Verify
+2026-02-20T18:45:07.154Z eslint:linter With flat config: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\Web3Provider.jsx
+2026-02-20T18:45:07.154Z eslint:languages:js Parsing: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\Web3Provider.jsx
+2026-02-20T18:45:07.162Z eslint:languages:js Parsing successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\Web3Provider.jsx
+2026-02-20T18:45:07.162Z eslint:languages:js Scope analysis: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\Web3Provider.jsx
+2026-02-20T18:45:07.167Z eslint:languages:js Scope analysis successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\Web3Provider.jsx
+2026-02-20T18:45:07.195Z eslint:linter Generating fixed text for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\Web3Provider.jsx (pass 1)
+2026-02-20T18:45:07.195Z eslint:source-code-fixer Applying fixes
+2026-02-20T18:45:07.195Z eslint:source-code-fixer shouldFix parameter was false, not attempting fixes
+2026-02-20T18:45:07.195Z eslint:eslint Lint C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\main.jsx
+2026-02-20T18:45:07.195Z eslint:linter Linting code for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\main.jsx (pass 1)
+2026-02-20T18:45:07.196Z eslint:linter Verify
+2026-02-20T18:45:07.196Z eslint:linter With flat config: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\main.jsx
+2026-02-20T18:45:07.196Z eslint:languages:js Parsing: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\main.jsx
+2026-02-20T18:45:07.197Z eslint:languages:js Parsing successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\main.jsx
+2026-02-20T18:45:07.197Z eslint:languages:js Scope analysis: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\main.jsx
+2026-02-20T18:45:07.198Z eslint:languages:js Scope analysis successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\main.jsx
+2026-02-20T18:45:07.207Z eslint:linter Generating fixed text for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\main.jsx (pass 1)
+2026-02-20T18:45:07.207Z eslint:source-code-fixer Applying fixes
+2026-02-20T18:45:07.207Z eslint:source-code-fixer shouldFix parameter was false, not attempting fixes
+2026-02-20T18:45:07.208Z eslint:eslint Lint C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\AiMatchRating.jsx
+2026-02-20T18:45:07.208Z eslint:linter Linting code for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\AiMatchRating.jsx (pass 1)
+2026-02-20T18:45:07.208Z eslint:linter Verify
+2026-02-20T18:45:07.208Z eslint:linter With flat config: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\AiMatchRating.jsx
+2026-02-20T18:45:07.208Z eslint:languages:js Parsing: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\AiMatchRating.jsx
+2026-02-20T18:45:07.215Z eslint:languages:js Parsing successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\AiMatchRating.jsx
+2026-02-20T18:45:07.215Z eslint:languages:js Scope analysis: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\AiMatchRating.jsx
+2026-02-20T18:45:07.218Z eslint:languages:js Scope analysis successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\AiMatchRating.jsx
+2026-02-20T18:45:07.231Z eslint:linter Generating fixed text for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\AiMatchRating.jsx (pass 1)
+2026-02-20T18:45:07.231Z eslint:source-code-fixer Applying fixes
+2026-02-20T18:45:07.231Z eslint:source-code-fixer shouldFix parameter was false, not attempting fixes
+2026-02-20T18:45:07.231Z eslint:eslint Lint C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\AiRecommendations.jsx
+2026-02-20T18:45:07.231Z eslint:linter Linting code for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\AiRecommendations.jsx (pass 1)
+2026-02-20T18:45:07.231Z eslint:linter Verify
+2026-02-20T18:45:07.231Z eslint:linter With flat config: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\AiRecommendations.jsx
+2026-02-20T18:45:07.231Z eslint:languages:js Parsing: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\AiRecommendations.jsx
+2026-02-20T18:45:07.236Z eslint:languages:js Parsing successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\AiRecommendations.jsx
+2026-02-20T18:45:07.236Z eslint:languages:js Scope analysis: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\AiRecommendations.jsx
+2026-02-20T18:45:07.238Z eslint:languages:js Scope analysis successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\AiRecommendations.jsx
+2026-02-20T18:45:07.251Z eslint:linter Generating fixed text for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\AiRecommendations.jsx (pass 1)
+2026-02-20T18:45:07.251Z eslint:source-code-fixer Applying fixes
+2026-02-20T18:45:07.251Z eslint:source-code-fixer shouldFix parameter was false, not attempting fixes
+2026-02-20T18:45:07.251Z eslint:eslint Lint C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\App.jsx
+2026-02-20T18:45:07.251Z eslint:linter Linting code for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\App.jsx (pass 1)
+2026-02-20T18:45:07.251Z eslint:linter Verify
+2026-02-20T18:45:07.251Z eslint:linter With flat config: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\App.jsx
+2026-02-20T18:45:07.251Z eslint:languages:js Parsing: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\App.jsx
+2026-02-20T18:45:07.283Z eslint:languages:js Parsing successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\App.jsx
+2026-02-20T18:45:07.283Z eslint:languages:js Scope analysis: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\App.jsx
+2026-02-20T18:45:07.291Z eslint:languages:js Scope analysis successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\App.jsx
+2026-02-20T18:45:07.337Z eslint:linter Generating fixed text for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\App.jsx (pass 1)
+2026-02-20T18:45:07.337Z eslint:source-code-fixer Applying fixes
+2026-02-20T18:45:07.338Z eslint:source-code-fixer shouldFix parameter was false, not attempting fixes
+2026-02-20T18:45:07.338Z eslint:eslint Lint C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\config\env.js
+2026-02-20T18:45:07.338Z eslint:linter Linting code for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\config\env.js (pass 1)
+2026-02-20T18:45:07.338Z eslint:linter Verify
+2026-02-20T18:45:07.338Z eslint:linter With flat config: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\config\env.js
+2026-02-20T18:45:07.338Z eslint:languages:js Parsing: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\config\env.js
+2026-02-20T18:45:07.338Z eslint:languages:js Parsing successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\config\env.js
+2026-02-20T18:45:07.339Z eslint:languages:js Scope analysis: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\config\env.js
+2026-02-20T18:45:07.339Z eslint:languages:js Scope analysis successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\config\env.js
+2026-02-20T18:45:07.345Z eslint:linter Generating fixed text for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\config\env.js (pass 1)
+2026-02-20T18:45:07.345Z eslint:source-code-fixer Applying fixes
+2026-02-20T18:45:07.345Z eslint:source-code-fixer shouldFix parameter was false, not attempting fixes
+2026-02-20T18:45:07.345Z eslint:eslint Lint C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\AnalyticsDashboard.jsx
+2026-02-20T18:45:07.345Z eslint:linter Linting code for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\AnalyticsDashboard.jsx (pass 1)
+2026-02-20T18:45:07.345Z eslint:linter Verify
+2026-02-20T18:45:07.345Z eslint:linter With flat config: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\AnalyticsDashboard.jsx
+2026-02-20T18:45:07.346Z eslint:languages:js Parsing: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\AnalyticsDashboard.jsx
+2026-02-20T18:45:07.351Z eslint:languages:js Parsing successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\AnalyticsDashboard.jsx
+2026-02-20T18:45:07.351Z eslint:languages:js Scope analysis: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\AnalyticsDashboard.jsx
+2026-02-20T18:45:07.355Z eslint:languages:js Scope analysis successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\AnalyticsDashboard.jsx
+2026-02-20T18:45:07.372Z eslint:linter Generating fixed text for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\AnalyticsDashboard.jsx (pass 1)
+2026-02-20T18:45:07.372Z eslint:source-code-fixer Applying fixes
+2026-02-20T18:45:07.372Z eslint:source-code-fixer shouldFix parameter was false, not attempting fixes
+2026-02-20T18:45:07.372Z eslint:eslint Lint C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\AnimationShowcase.jsx
+2026-02-20T18:45:07.372Z eslint:linter Linting code for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\AnimationShowcase.jsx (pass 1)
+2026-02-20T18:45:07.372Z eslint:linter Verify
+2026-02-20T18:45:07.372Z eslint:linter With flat config: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\AnimationShowcase.jsx
+2026-02-20T18:45:07.372Z eslint:languages:js Parsing: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\AnimationShowcase.jsx
+2026-02-20T18:45:07.377Z eslint:languages:js Parsing successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\AnimationShowcase.jsx
+2026-02-20T18:45:07.384Z eslint:languages:js Scope analysis: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\AnimationShowcase.jsx
+2026-02-20T18:45:07.386Z eslint:languages:js Scope analysis successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\AnimationShowcase.jsx
+2026-02-20T18:45:07.403Z eslint:linter Generating fixed text for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\AnimationShowcase.jsx (pass 1)
+2026-02-20T18:45:07.403Z eslint:source-code-fixer Applying fixes
+2026-02-20T18:45:07.403Z eslint:source-code-fixer shouldFix parameter was false, not attempting fixes
+2026-02-20T18:45:07.403Z eslint:eslint Lint C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\AuthPortal.jsx
+2026-02-20T18:45:07.403Z eslint:linter Linting code for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\AuthPortal.jsx (pass 1)
+2026-02-20T18:45:07.403Z eslint:linter Verify
+2026-02-20T18:45:07.403Z eslint:linter With flat config: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\AuthPortal.jsx
+2026-02-20T18:45:07.403Z eslint:languages:js Parsing: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\AuthPortal.jsx
+2026-02-20T18:45:07.407Z eslint:languages:js Parsing successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\AuthPortal.jsx
+2026-02-20T18:45:07.407Z eslint:languages:js Scope analysis: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\AuthPortal.jsx
+2026-02-20T18:45:07.408Z eslint:languages:js Scope analysis successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\AuthPortal.jsx
+2026-02-20T18:45:07.425Z eslint:linter Generating fixed text for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\AuthPortal.jsx (pass 1)
+2026-02-20T18:45:07.425Z eslint:source-code-fixer Applying fixes
+2026-02-20T18:45:07.425Z eslint:source-code-fixer shouldFix parameter was false, not attempting fixes
+2026-02-20T18:45:07.426Z eslint:eslint Lint C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\Chat.jsx
+2026-02-20T18:45:07.426Z eslint:linter Linting code for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\Chat.jsx (pass 1)
+2026-02-20T18:45:07.426Z eslint:linter Verify
+2026-02-20T18:45:07.426Z eslint:linter With flat config: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\Chat.jsx
+2026-02-20T18:45:07.426Z eslint:languages:js Parsing: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\Chat.jsx
+2026-02-20T18:45:07.431Z eslint:languages:js Parsing successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\Chat.jsx
+2026-02-20T18:45:07.432Z eslint:languages:js Scope analysis: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\Chat.jsx
+2026-02-20T18:45:07.437Z eslint:languages:js Scope analysis successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\Chat.jsx
+2026-02-20T18:45:07.457Z eslint:linter Generating fixed text for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\Chat.jsx (pass 1)
+2026-02-20T18:45:07.457Z eslint:source-code-fixer Applying fixes
+2026-02-20T18:45:07.457Z eslint:source-code-fixer shouldFix parameter was false, not attempting fixes
+2026-02-20T18:45:07.458Z eslint:eslint Lint C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\AssetDashboard.jsx
+2026-02-20T18:45:07.458Z eslint:linter Linting code for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\AssetDashboard.jsx (pass 1)
+2026-02-20T18:45:07.458Z eslint:linter Verify
+2026-02-20T18:45:07.458Z eslint:linter With flat config: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\AssetDashboard.jsx
+2026-02-20T18:45:07.458Z eslint:languages:js Parsing: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\AssetDashboard.jsx
+2026-02-20T18:45:07.461Z eslint:languages:js Parsing successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\AssetDashboard.jsx
+2026-02-20T18:45:07.461Z eslint:languages:js Scope analysis: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\AssetDashboard.jsx
+2026-02-20T18:45:07.471Z eslint:languages:js Scope analysis successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\AssetDashboard.jsx
+2026-02-20T18:45:07.483Z eslint:linter Generating fixed text for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\AssetDashboard.jsx (pass 1)
+2026-02-20T18:45:07.483Z eslint:source-code-fixer Applying fixes
+2026-02-20T18:45:07.483Z eslint:source-code-fixer shouldFix parameter was false, not attempting fixes
+2026-02-20T18:45:07.483Z eslint:eslint Lint C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\ComplianceCenter.jsx
+2026-02-20T18:45:07.484Z eslint:linter Linting code for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\ComplianceCenter.jsx (pass 1)
+2026-02-20T18:45:07.484Z eslint:linter Verify
+2026-02-20T18:45:07.484Z eslint:linter With flat config: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\ComplianceCenter.jsx
+2026-02-20T18:45:07.484Z eslint:languages:js Parsing: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\ComplianceCenter.jsx
+2026-02-20T18:45:07.487Z eslint:languages:js Parsing successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\ComplianceCenter.jsx
+2026-02-20T18:45:07.487Z eslint:languages:js Scope analysis: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\ComplianceCenter.jsx
+2026-02-20T18:45:07.490Z eslint:languages:js Scope analysis successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\ComplianceCenter.jsx
+2026-02-20T18:45:07.510Z eslint:linter Generating fixed text for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\ComplianceCenter.jsx (pass 1)
+2026-02-20T18:45:07.510Z eslint:source-code-fixer Applying fixes
+2026-02-20T18:45:07.510Z eslint:source-code-fixer shouldFix parameter was false, not attempting fixes
+2026-02-20T18:45:07.510Z eslint:eslint Lint C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\CreateCrossChainJob.jsx
+2026-02-20T18:45:07.510Z eslint:linter Linting code for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\CreateCrossChainJob.jsx (pass 1)
+2026-02-20T18:45:07.510Z eslint:linter Verify
+2026-02-20T18:45:07.510Z eslint:linter With flat config: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\CreateCrossChainJob.jsx
+2026-02-20T18:45:07.510Z eslint:languages:js Parsing: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\CreateCrossChainJob.jsx
+2026-02-20T18:45:07.521Z eslint:languages:js Parsing successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\CreateCrossChainJob.jsx
+2026-02-20T18:45:07.521Z eslint:languages:js Scope analysis: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\CreateCrossChainJob.jsx
+2026-02-20T18:45:07.525Z eslint:languages:js Scope analysis successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\CreateCrossChainJob.jsx
+2026-02-20T18:45:07.539Z eslint:linter Generating fixed text for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\CreateCrossChainJob.jsx (pass 1)
+2026-02-20T18:45:07.539Z eslint:source-code-fixer Applying fixes
+2026-02-20T18:45:07.539Z eslint:source-code-fixer shouldFix parameter was false, not attempting fixes
+2026-02-20T18:45:07.539Z eslint:eslint Lint C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\CreateJob.jsx
+2026-02-20T18:45:07.539Z eslint:linter Linting code for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\CreateJob.jsx (pass 1)
+2026-02-20T18:45:07.539Z eslint:linter Verify
+2026-02-20T18:45:07.539Z eslint:linter With flat config: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\CreateJob.jsx
+2026-02-20T18:45:07.539Z eslint:languages:js Parsing: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\CreateJob.jsx
+2026-02-20T18:45:07.544Z eslint:languages:js Parsing successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\CreateJob.jsx
+2026-02-20T18:45:07.544Z eslint:languages:js Scope analysis: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\CreateJob.jsx
+2026-02-20T18:45:07.547Z eslint:languages:js Scope analysis successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\CreateJob.jsx
+2026-02-20T18:45:07.562Z eslint:linter Generating fixed text for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\CreateJob.jsx (pass 1)
+2026-02-20T18:45:07.562Z eslint:source-code-fixer Applying fixes
+2026-02-20T18:45:07.562Z eslint:source-code-fixer shouldFix parameter was false, not attempting fixes
+2026-02-20T18:45:07.562Z eslint:eslint Lint C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\ArbitrationDashboard.jsx
+2026-02-20T18:45:07.562Z eslint:linter Linting code for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\ArbitrationDashboard.jsx (pass 1)
+2026-02-20T18:45:07.562Z eslint:linter Verify
+2026-02-20T18:45:07.562Z eslint:linter With flat config: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\ArbitrationDashboard.jsx
+2026-02-20T18:45:07.562Z eslint:languages:js Parsing: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\ArbitrationDashboard.jsx
+2026-02-20T18:45:07.567Z eslint:languages:js Parsing successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\ArbitrationDashboard.jsx
+2026-02-20T18:45:07.568Z eslint:languages:js Scope analysis: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\ArbitrationDashboard.jsx
+2026-02-20T18:45:07.571Z eslint:languages:js Scope analysis successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\ArbitrationDashboard.jsx
+2026-02-20T18:45:07.594Z eslint:linter Generating fixed text for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\ArbitrationDashboard.jsx (pass 1)
+2026-02-20T18:45:07.594Z eslint:source-code-fixer Applying fixes
+2026-02-20T18:45:07.594Z eslint:source-code-fixer shouldFix parameter was false, not attempting fixes
+2026-02-20T18:45:07.594Z eslint:eslint Lint C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\DaoDashboard.jsx
+2026-02-20T18:45:07.594Z eslint:linter Linting code for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\DaoDashboard.jsx (pass 1)
+2026-02-20T18:45:07.595Z eslint:linter Verify
+2026-02-20T18:45:07.595Z eslint:linter With flat config: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\DaoDashboard.jsx
+2026-02-20T18:45:07.595Z eslint:languages:js Parsing: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\DaoDashboard.jsx
+2026-02-20T18:45:07.602Z eslint:languages:js Parsing successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\DaoDashboard.jsx
+2026-02-20T18:45:07.602Z eslint:languages:js Scope analysis: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\DaoDashboard.jsx
+2026-02-20T18:45:07.610Z eslint:languages:js Scope analysis successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\DaoDashboard.jsx
+2026-02-20T18:45:07.635Z eslint:linter Generating fixed text for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\DaoDashboard.jsx (pass 1)
+2026-02-20T18:45:07.636Z eslint:source-code-fixer Applying fixes
+2026-02-20T18:45:07.636Z eslint:source-code-fixer shouldFix parameter was false, not attempting fixes
+2026-02-20T18:45:07.636Z eslint:eslint Lint C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\CrossChainDashboard.jsx
+2026-02-20T18:45:07.636Z eslint:linter Linting code for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\CrossChainDashboard.jsx (pass 1)
+2026-02-20T18:45:07.636Z eslint:linter Verify
+2026-02-20T18:45:07.636Z eslint:linter With flat config: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\CrossChainDashboard.jsx
+2026-02-20T18:45:07.636Z eslint:languages:js Parsing: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\CrossChainDashboard.jsx
+2026-02-20T18:45:07.638Z eslint:languages:js Parsing successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\CrossChainDashboard.jsx
+2026-02-20T18:45:07.638Z eslint:languages:js Scope analysis: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\CrossChainDashboard.jsx
+2026-02-20T18:45:07.641Z eslint:languages:js Scope analysis successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\CrossChainDashboard.jsx
+2026-02-20T18:45:07.649Z eslint:linter Generating fixed text for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\CrossChainDashboard.jsx (pass 1)
+2026-02-20T18:45:07.649Z eslint:source-code-fixer Applying fixes
+2026-02-20T18:45:07.649Z eslint:source-code-fixer shouldFix parameter was false, not attempting fixes
+2026-02-20T18:45:07.649Z eslint:eslint Lint C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\Dashboard.jsx
+2026-02-20T18:45:07.649Z eslint:linter Linting code for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\Dashboard.jsx (pass 1)
+2026-02-20T18:45:07.649Z eslint:linter Verify
+2026-02-20T18:45:07.650Z eslint:linter With flat config: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\Dashboard.jsx
+2026-02-20T18:45:07.650Z eslint:languages:js Parsing: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\Dashboard.jsx
+2026-02-20T18:45:07.658Z eslint:languages:js Parsing successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\Dashboard.jsx
+2026-02-20T18:45:07.659Z eslint:languages:js Scope analysis: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\Dashboard.jsx
+2026-02-20T18:45:07.664Z eslint:languages:js Scope analysis successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\Dashboard.jsx
+2026-02-20T18:45:07.685Z eslint:linter Generating fixed text for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\Dashboard.jsx (pass 1)
+2026-02-20T18:45:07.685Z eslint:source-code-fixer Applying fixes
+2026-02-20T18:45:07.685Z eslint:source-code-fixer shouldFix parameter was false, not attempting fixes
+2026-02-20T18:45:07.686Z eslint:eslint Lint C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\FiatOnramp.jsx
+2026-02-20T18:45:07.686Z eslint:linter Linting code for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\FiatOnramp.jsx (pass 1)
+2026-02-20T18:45:07.686Z eslint:linter Verify
+2026-02-20T18:45:07.686Z eslint:linter With flat config: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\FiatOnramp.jsx
+2026-02-20T18:45:07.686Z eslint:languages:js Parsing: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\FiatOnramp.jsx
+2026-02-20T18:45:07.688Z eslint:languages:js Parsing successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\FiatOnramp.jsx
+2026-02-20T18:45:07.688Z eslint:languages:js Scope analysis: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\FiatOnramp.jsx
+2026-02-20T18:45:07.690Z eslint:languages:js Scope analysis successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\FiatOnramp.jsx
+2026-02-20T18:45:07.700Z eslint:linter Generating fixed text for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\FiatOnramp.jsx (pass 1)
+2026-02-20T18:45:07.700Z eslint:source-code-fixer Applying fixes
+2026-02-20T18:45:07.700Z eslint:source-code-fixer shouldFix parameter was false, not attempting fixes
+2026-02-20T18:45:07.700Z eslint:eslint Lint C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\InvoiceMarketplace.jsx
+2026-02-20T18:45:07.700Z eslint:linter Linting code for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\InvoiceMarketplace.jsx (pass 1)
+2026-02-20T18:45:07.700Z eslint:linter Verify
+2026-02-20T18:45:07.700Z eslint:linter With flat config: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\InvoiceMarketplace.jsx
+2026-02-20T18:45:07.700Z eslint:languages:js Parsing: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\InvoiceMarketplace.jsx
+2026-02-20T18:45:07.702Z eslint:languages:js Parsing successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\InvoiceMarketplace.jsx
+2026-02-20T18:45:07.702Z eslint:languages:js Scope analysis: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\InvoiceMarketplace.jsx
+2026-02-20T18:45:07.704Z eslint:languages:js Scope analysis successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\InvoiceMarketplace.jsx
+2026-02-20T18:45:07.711Z eslint:linter Generating fixed text for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\InvoiceMarketplace.jsx (pass 1)
+2026-02-20T18:45:07.711Z eslint:source-code-fixer Applying fixes
+2026-02-20T18:45:07.711Z eslint:source-code-fixer shouldFix parameter was false, not attempting fixes
+2026-02-20T18:45:07.711Z eslint:eslint Lint C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\JobsList.jsx
+2026-02-20T18:45:07.711Z eslint:linter Linting code for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\JobsList.jsx (pass 1)
+2026-02-20T18:45:07.711Z eslint:linter Verify
+2026-02-20T18:45:07.711Z eslint:linter With flat config: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\JobsList.jsx
+2026-02-20T18:45:07.711Z eslint:languages:js Parsing: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\JobsList.jsx
+2026-02-20T18:45:07.717Z eslint:languages:js Parsing successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\JobsList.jsx
+2026-02-20T18:45:07.717Z eslint:languages:js Scope analysis: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\JobsList.jsx
+2026-02-20T18:45:07.721Z eslint:languages:js Scope analysis successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\JobsList.jsx
+2026-02-20T18:45:07.733Z eslint:linter Generating fixed text for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\JobsList.jsx (pass 1)
+2026-02-20T18:45:07.733Z eslint:source-code-fixer Applying fixes
+2026-02-20T18:45:07.733Z eslint:source-code-fixer shouldFix parameter was false, not attempting fixes
+2026-02-20T18:45:07.733Z eslint:eslint Lint C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\Leaderboard.jsx
+2026-02-20T18:45:07.733Z eslint:linter Linting code for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\Leaderboard.jsx (pass 1)
+2026-02-20T18:45:07.733Z eslint:linter Verify
+2026-02-20T18:45:07.733Z eslint:linter With flat config: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\Leaderboard.jsx
+2026-02-20T18:45:07.733Z eslint:languages:js Parsing: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\Leaderboard.jsx
+2026-02-20T18:45:07.735Z eslint:languages:js Parsing successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\Leaderboard.jsx
+2026-02-20T18:45:07.735Z eslint:languages:js Scope analysis: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\Leaderboard.jsx
+2026-02-20T18:45:07.737Z eslint:languages:js Scope analysis successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\Leaderboard.jsx
+2026-02-20T18:45:07.750Z eslint:linter Generating fixed text for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\Leaderboard.jsx (pass 1)
+2026-02-20T18:45:07.751Z eslint:source-code-fixer Applying fixes
+2026-02-20T18:45:07.751Z eslint:source-code-fixer shouldFix parameter was false, not attempting fixes
+2026-02-20T18:45:07.751Z eslint:eslint Lint C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\LiveJobFeed.jsx
+2026-02-20T18:45:07.751Z eslint:linter Linting code for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\LiveJobFeed.jsx (pass 1)
+2026-02-20T18:45:07.751Z eslint:linter Verify
+2026-02-20T18:45:07.751Z eslint:linter With flat config: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\LiveJobFeed.jsx
+2026-02-20T18:45:07.751Z eslint:languages:js Parsing: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\LiveJobFeed.jsx
+2026-02-20T18:45:07.752Z eslint:languages:js Parsing successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\LiveJobFeed.jsx
+2026-02-20T18:45:07.752Z eslint:languages:js Scope analysis: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\LiveJobFeed.jsx
+2026-02-20T18:45:07.753Z eslint:languages:js Scope analysis successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\LiveJobFeed.jsx
+2026-02-20T18:45:07.758Z eslint:linter Generating fixed text for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\LiveJobFeed.jsx (pass 1)
+2026-02-20T18:45:07.758Z eslint:source-code-fixer Applying fixes
+2026-02-20T18:45:07.758Z eslint:source-code-fixer shouldFix parameter was false, not attempting fixes
+2026-02-20T18:45:07.758Z eslint:eslint Lint C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\ManagerDashboard.jsx
+2026-02-20T18:45:07.758Z eslint:linter Linting code for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\ManagerDashboard.jsx (pass 1)
+2026-02-20T18:45:07.758Z eslint:linter Verify
+2026-02-20T18:45:07.758Z eslint:linter With flat config: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\ManagerDashboard.jsx
+2026-02-20T18:45:07.758Z eslint:languages:js Parsing: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\ManagerDashboard.jsx
+2026-02-20T18:45:07.761Z eslint:languages:js Parsing successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\ManagerDashboard.jsx
+2026-02-20T18:45:07.761Z eslint:languages:js Scope analysis: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\ManagerDashboard.jsx
+2026-02-20T18:45:07.764Z eslint:languages:js Scope analysis successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\ManagerDashboard.jsx
+2026-02-20T18:45:07.778Z eslint:linter Generating fixed text for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\ManagerDashboard.jsx (pass 1)
+2026-02-20T18:45:07.778Z eslint:source-code-fixer Applying fixes
+2026-02-20T18:45:07.778Z eslint:source-code-fixer shouldFix parameter was false, not attempting fixes
+2026-02-20T18:45:07.778Z eslint:eslint Lint C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\NotificationManager.jsx
+2026-02-20T18:45:07.778Z eslint:linter Linting code for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\NotificationManager.jsx (pass 1)
+2026-02-20T18:45:07.778Z eslint:linter Verify
+2026-02-20T18:45:07.778Z eslint:linter With flat config: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\NotificationManager.jsx
+2026-02-20T18:45:07.778Z eslint:languages:js Parsing: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\NotificationManager.jsx
+2026-02-20T18:45:07.779Z eslint:languages:js Parsing successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\NotificationManager.jsx
+2026-02-20T18:45:07.779Z eslint:languages:js Scope analysis: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\NotificationManager.jsx
+2026-02-20T18:45:07.780Z eslint:languages:js Scope analysis successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\NotificationManager.jsx
+2026-02-20T18:45:07.785Z eslint:linter Generating fixed text for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\NotificationManager.jsx (pass 1)
+2026-02-20T18:45:07.785Z eslint:source-code-fixer Applying fixes
+2026-02-20T18:45:07.785Z eslint:source-code-fixer shouldFix parameter was false, not attempting fixes
+2026-02-20T18:45:07.785Z eslint:eslint Lint C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\NFTGallery.jsx
+2026-02-20T18:45:07.785Z eslint:linter Linting code for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\NFTGallery.jsx (pass 1)
+2026-02-20T18:45:07.785Z eslint:linter Verify
+2026-02-20T18:45:07.785Z eslint:linter With flat config: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\NFTGallery.jsx
+2026-02-20T18:45:07.785Z eslint:languages:js Parsing: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\NFTGallery.jsx
+2026-02-20T18:45:07.786Z eslint:languages:js Parsing successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\NFTGallery.jsx
+2026-02-20T18:45:07.786Z eslint:languages:js Scope analysis: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\NFTGallery.jsx
+2026-02-20T18:45:07.787Z eslint:languages:js Scope analysis successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\NFTGallery.jsx
+2026-02-20T18:45:07.793Z eslint:linter Generating fixed text for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\NFTGallery.jsx (pass 1)
+2026-02-20T18:45:07.793Z eslint:source-code-fixer Applying fixes
+2026-02-20T18:45:07.793Z eslint:source-code-fixer shouldFix parameter was false, not attempting fixes
+2026-02-20T18:45:07.793Z eslint:eslint Lint C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\Portfolio.jsx
+2026-02-20T18:45:07.793Z eslint:linter Linting code for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\Portfolio.jsx (pass 1)
+2026-02-20T18:45:07.793Z eslint:linter Verify
+2026-02-20T18:45:07.793Z eslint:linter With flat config: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\Portfolio.jsx
+2026-02-20T18:45:07.793Z eslint:languages:js Parsing: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\Portfolio.jsx
+2026-02-20T18:45:07.796Z eslint:languages:js Parsing successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\Portfolio.jsx
+2026-02-20T18:45:07.796Z eslint:languages:js Scope analysis: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\Portfolio.jsx
+2026-02-20T18:45:07.805Z eslint:languages:js Scope analysis successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\Portfolio.jsx
+2026-02-20T18:45:07.815Z eslint:linter Generating fixed text for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\Portfolio.jsx (pass 1)
+2026-02-20T18:45:07.815Z eslint:source-code-fixer Applying fixes
+2026-02-20T18:45:07.815Z eslint:source-code-fixer shouldFix parameter was false, not attempting fixes
+2026-02-20T18:45:07.815Z eslint:eslint Lint C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\PrivacyCenter.jsx
+2026-02-20T18:45:07.815Z eslint:linter Linting code for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\PrivacyCenter.jsx (pass 1)
+2026-02-20T18:45:07.815Z eslint:linter Verify
+2026-02-20T18:45:07.815Z eslint:linter With flat config: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\PrivacyCenter.jsx
+2026-02-20T18:45:07.815Z eslint:languages:js Parsing: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\PrivacyCenter.jsx
+2026-02-20T18:45:07.816Z eslint:languages:js Parsing successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\PrivacyCenter.jsx
+2026-02-20T18:45:07.816Z eslint:languages:js Scope analysis: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\PrivacyCenter.jsx
+2026-02-20T18:45:07.818Z eslint:languages:js Scope analysis successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\PrivacyCenter.jsx
+2026-02-20T18:45:07.824Z eslint:linter Generating fixed text for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\PrivacyCenter.jsx (pass 1)
+2026-02-20T18:45:07.824Z eslint:source-code-fixer Applying fixes
+2026-02-20T18:45:07.824Z eslint:source-code-fixer shouldFix parameter was false, not attempting fixes
+2026-02-20T18:45:07.824Z eslint:eslint Lint C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\SBTGallery.jsx
+2026-02-20T18:45:07.824Z eslint:linter Linting code for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\SBTGallery.jsx (pass 1)
+2026-02-20T18:45:07.824Z eslint:linter Verify
+2026-02-20T18:45:07.824Z eslint:linter With flat config: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\SBTGallery.jsx
+2026-02-20T18:45:07.824Z eslint:languages:js Parsing: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\SBTGallery.jsx
+2026-02-20T18:45:07.830Z eslint:languages:js Parsing successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\SBTGallery.jsx
+2026-02-20T18:45:07.830Z eslint:languages:js Scope analysis: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\SBTGallery.jsx
+2026-02-20T18:45:07.833Z eslint:languages:js Scope analysis successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\SBTGallery.jsx
+2026-02-20T18:45:07.839Z eslint:linter Generating fixed text for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\SBTGallery.jsx (pass 1)
+2026-02-20T18:45:07.839Z eslint:source-code-fixer Applying fixes
+2026-02-20T18:45:07.839Z eslint:source-code-fixer shouldFix parameter was false, not attempting fixes
+2026-02-20T18:45:07.839Z eslint:eslint Lint C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\Reputation3D.jsx
+2026-02-20T18:45:07.839Z eslint:linter Linting code for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\Reputation3D.jsx (pass 1)
+2026-02-20T18:45:07.839Z eslint:linter Verify
+2026-02-20T18:45:07.839Z eslint:linter With flat config: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\Reputation3D.jsx
+2026-02-20T18:45:07.839Z eslint:languages:js Parsing: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\Reputation3D.jsx
+2026-02-20T18:45:07.840Z eslint:languages:js Parsing successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\Reputation3D.jsx
+2026-02-20T18:45:07.840Z eslint:languages:js Scope analysis: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\Reputation3D.jsx
+2026-02-20T18:45:07.841Z eslint:languages:js Scope analysis successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\Reputation3D.jsx
+2026-02-20T18:45:07.845Z eslint:linter Generating fixed text for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\Reputation3D.jsx (pass 1)
+2026-02-20T18:45:07.845Z eslint:source-code-fixer Applying fixes
+2026-02-20T18:45:07.845Z eslint:source-code-fixer shouldFix parameter was false, not attempting fixes
+2026-02-20T18:45:07.845Z eslint:eslint Lint C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\PrivacyPolicy.jsx
+2026-02-20T18:45:07.845Z eslint:linter Linting code for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\PrivacyPolicy.jsx (pass 1)
+2026-02-20T18:45:07.845Z eslint:linter Verify
+2026-02-20T18:45:07.845Z eslint:linter With flat config: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\PrivacyPolicy.jsx
+2026-02-20T18:45:07.845Z eslint:languages:js Parsing: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\PrivacyPolicy.jsx
+2026-02-20T18:45:07.846Z eslint:languages:js Parsing successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\PrivacyPolicy.jsx
+2026-02-20T18:45:07.846Z eslint:languages:js Scope analysis: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\PrivacyPolicy.jsx
+2026-02-20T18:45:07.846Z eslint:languages:js Scope analysis successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\PrivacyPolicy.jsx
+2026-02-20T18:45:07.848Z eslint:linter Generating fixed text for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\PrivacyPolicy.jsx (pass 1)
+2026-02-20T18:45:07.848Z eslint:source-code-fixer Applying fixes
+2026-02-20T18:45:07.848Z eslint:source-code-fixer shouldFix parameter was false, not attempting fixes
+2026-02-20T18:45:07.849Z eslint:eslint Lint C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\SpecialistMarketplace.jsx
+2026-02-20T18:45:07.849Z eslint:linter Linting code for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\SpecialistMarketplace.jsx (pass 1)
+2026-02-20T18:45:07.849Z eslint:linter Verify
+2026-02-20T18:45:07.849Z eslint:linter With flat config: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\SpecialistMarketplace.jsx
+2026-02-20T18:45:07.849Z eslint:languages:js Parsing: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\SpecialistMarketplace.jsx
+2026-02-20T18:45:07.850Z eslint:languages:js Parsing successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\SpecialistMarketplace.jsx
+2026-02-20T18:45:07.850Z eslint:languages:js Scope analysis: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\SpecialistMarketplace.jsx
+2026-02-20T18:45:07.852Z eslint:languages:js Scope analysis successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\SpecialistMarketplace.jsx
+2026-02-20T18:45:07.864Z eslint:linter Generating fixed text for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\SpecialistMarketplace.jsx (pass 1)
+2026-02-20T18:45:07.864Z eslint:source-code-fixer Applying fixes
+2026-02-20T18:45:07.864Z eslint:source-code-fixer shouldFix parameter was false, not attempting fixes
+2026-02-20T18:45:07.864Z eslint:eslint Lint C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\TermsOfService.jsx
+2026-02-20T18:45:07.864Z eslint:linter Linting code for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\TermsOfService.jsx (pass 1)
+2026-02-20T18:45:07.864Z eslint:linter Verify
+2026-02-20T18:45:07.864Z eslint:linter With flat config: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\TermsOfService.jsx
+2026-02-20T18:45:07.864Z eslint:languages:js Parsing: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\TermsOfService.jsx
+2026-02-20T18:45:07.864Z eslint:languages:js Parsing successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\TermsOfService.jsx
+2026-02-20T18:45:07.864Z eslint:languages:js Scope analysis: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\TermsOfService.jsx
+2026-02-20T18:45:07.865Z eslint:languages:js Scope analysis successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\TermsOfService.jsx
+2026-02-20T18:45:07.868Z eslint:linter Generating fixed text for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\TermsOfService.jsx (pass 1)
+2026-02-20T18:45:07.868Z eslint:source-code-fixer Applying fixes
+2026-02-20T18:45:07.868Z eslint:source-code-fixer shouldFix parameter was false, not attempting fixes
+2026-02-20T18:45:07.868Z eslint:eslint Lint C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\TokenizeAssetForm.jsx
+2026-02-20T18:45:07.868Z eslint:linter Linting code for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\TokenizeAssetForm.jsx (pass 1)
+2026-02-20T18:45:07.868Z eslint:linter Verify
+2026-02-20T18:45:07.868Z eslint:linter With flat config: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\TokenizeAssetForm.jsx
+2026-02-20T18:45:07.868Z eslint:languages:js Parsing: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\TokenizeAssetForm.jsx
+2026-02-20T18:45:07.869Z eslint:languages:js Parsing successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\TokenizeAssetForm.jsx
+2026-02-20T18:45:07.869Z eslint:languages:js Scope analysis: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\TokenizeAssetForm.jsx
+2026-02-20T18:45:07.871Z eslint:languages:js Scope analysis successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\TokenizeAssetForm.jsx
+2026-02-20T18:45:07.876Z eslint:linter Generating fixed text for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\TokenizeAssetForm.jsx (pass 1)
+2026-02-20T18:45:07.876Z eslint:source-code-fixer Applying fixes
+2026-02-20T18:45:07.876Z eslint:source-code-fixer shouldFix parameter was false, not attempting fixes
+2026-02-20T18:45:07.876Z eslint:eslint Lint C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\UserLink.jsx
+2026-02-20T18:45:07.876Z eslint:linter Linting code for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\UserLink.jsx (pass 1)
+2026-02-20T18:45:07.876Z eslint:linter Verify
+2026-02-20T18:45:07.876Z eslint:linter With flat config: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\UserLink.jsx
+2026-02-20T18:45:07.876Z eslint:languages:js Parsing: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\UserLink.jsx
+2026-02-20T18:45:07.877Z eslint:languages:js Parsing successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\UserLink.jsx
+2026-02-20T18:45:07.877Z eslint:languages:js Scope analysis: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\UserLink.jsx
+2026-02-20T18:45:07.878Z eslint:languages:js Scope analysis successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\UserLink.jsx
+2026-02-20T18:45:07.886Z eslint:linter Generating fixed text for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\UserLink.jsx (pass 1)
+2026-02-20T18:45:07.886Z eslint:source-code-fixer Applying fixes
+2026-02-20T18:45:07.886Z eslint:source-code-fixer shouldFix parameter was false, not attempting fixes
+2026-02-20T18:45:07.886Z eslint:eslint Lint C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\WithdrawButton.jsx
+2026-02-20T18:45:07.886Z eslint:linter Linting code for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\WithdrawButton.jsx (pass 1)
+2026-02-20T18:45:07.886Z eslint:linter Verify
+2026-02-20T18:45:07.886Z eslint:linter With flat config: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\WithdrawButton.jsx
+2026-02-20T18:45:07.886Z eslint:languages:js Parsing: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\WithdrawButton.jsx
+2026-02-20T18:45:07.887Z eslint:languages:js Parsing successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\WithdrawButton.jsx
+2026-02-20T18:45:07.887Z eslint:languages:js Scope analysis: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\WithdrawButton.jsx
+2026-02-20T18:45:07.888Z eslint:languages:js Scope analysis successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\WithdrawButton.jsx
+2026-02-20T18:45:07.892Z eslint:linter Generating fixed text for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\WithdrawButton.jsx (pass 1)
+2026-02-20T18:45:07.892Z eslint:source-code-fixer Applying fixes
+2026-02-20T18:45:07.892Z eslint:source-code-fixer shouldFix parameter was false, not attempting fixes
+2026-02-20T18:45:07.892Z eslint:eslint Lint C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\YieldManagerDashboard.jsx
+2026-02-20T18:45:07.892Z eslint:linter Linting code for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\YieldManagerDashboard.jsx (pass 1)
+2026-02-20T18:45:07.892Z eslint:linter Verify
+2026-02-20T18:45:07.892Z eslint:linter With flat config: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\YieldManagerDashboard.jsx
+2026-02-20T18:45:07.892Z eslint:languages:js Parsing: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\YieldManagerDashboard.jsx
+2026-02-20T18:45:07.893Z eslint:languages:js Parsing successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\YieldManagerDashboard.jsx
+2026-02-20T18:45:07.893Z eslint:languages:js Scope analysis: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\YieldManagerDashboard.jsx
+2026-02-20T18:45:07.895Z eslint:languages:js Scope analysis successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\YieldManagerDashboard.jsx
+2026-02-20T18:45:07.900Z eslint:linter Generating fixed text for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\components\YieldManagerDashboard.jsx (pass 1)
+2026-02-20T18:45:07.900Z eslint:source-code-fixer Applying fixes
+2026-02-20T18:45:07.900Z eslint:source-code-fixer shouldFix parameter was false, not attempting fixes
+2026-02-20T18:45:07.900Z eslint:eslint Lint C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\hooks\useAnimeAnimations.js
+2026-02-20T18:45:07.900Z eslint:linter Linting code for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\hooks\useAnimeAnimations.js (pass 1)
+2026-02-20T18:45:07.900Z eslint:linter Verify
+2026-02-20T18:45:07.900Z eslint:linter With flat config: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\hooks\useAnimeAnimations.js
+2026-02-20T18:45:07.900Z eslint:languages:js Parsing: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\hooks\useAnimeAnimations.js
+2026-02-20T18:45:07.902Z eslint:languages:js Parsing successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\hooks\useAnimeAnimations.js
+2026-02-20T18:45:07.902Z eslint:languages:js Scope analysis: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\hooks\useAnimeAnimations.js
+2026-02-20T18:45:07.909Z eslint:languages:js Scope analysis successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\hooks\useAnimeAnimations.js
+2026-02-20T18:45:07.916Z eslint:linter Generating fixed text for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\hooks\useAnimeAnimations.js (pass 1)
+2026-02-20T18:45:07.916Z eslint:source-code-fixer Applying fixes
+2026-02-20T18:45:07.916Z eslint:source-code-fixer shouldFix parameter was false, not attempting fixes
+2026-02-20T18:45:07.916Z eslint:eslint Lint C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\hooks\useArbitration.js
+2026-02-20T18:45:07.916Z eslint:linter Linting code for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\hooks\useArbitration.js (pass 1)
+2026-02-20T18:45:07.916Z eslint:linter Verify
+2026-02-20T18:45:07.916Z eslint:linter With flat config: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\hooks\useArbitration.js
+2026-02-20T18:45:07.916Z eslint:languages:js Parsing: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\hooks\useArbitration.js
+2026-02-20T18:45:07.917Z eslint:languages:js Parsing successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\hooks\useArbitration.js
+2026-02-20T18:45:07.917Z eslint:languages:js Scope analysis: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\hooks\useArbitration.js
+2026-02-20T18:45:07.918Z eslint:languages:js Scope analysis successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\hooks\useArbitration.js
+2026-02-20T18:45:07.922Z eslint:linter Generating fixed text for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\hooks\useArbitration.js (pass 1)
+2026-02-20T18:45:07.922Z eslint:source-code-fixer Applying fixes
+2026-02-20T18:45:07.922Z eslint:source-code-fixer shouldFix parameter was false, not attempting fixes
+2026-02-20T18:45:07.922Z eslint:eslint Lint C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\hooks\useEthersSigner.js
+2026-02-20T18:45:07.922Z eslint:linter Linting code for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\hooks\useEthersSigner.js (pass 1)
+2026-02-20T18:45:07.922Z eslint:linter Verify
+2026-02-20T18:45:07.922Z eslint:linter With flat config: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\hooks\useEthersSigner.js
+2026-02-20T18:45:07.922Z eslint:languages:js Parsing: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\hooks\useEthersSigner.js
+2026-02-20T18:45:07.923Z eslint:languages:js Parsing successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\hooks\useEthersSigner.js
+2026-02-20T18:45:07.923Z eslint:languages:js Scope analysis: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\hooks\useEthersSigner.js
+2026-02-20T18:45:07.923Z eslint:languages:js Scope analysis successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\hooks\useEthersSigner.js
+2026-02-20T18:45:07.927Z eslint:linter Generating fixed text for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\hooks\useEthersSigner.js (pass 1)
+2026-02-20T18:45:07.927Z eslint:source-code-fixer Applying fixes
+2026-02-20T18:45:07.927Z eslint:source-code-fixer shouldFix parameter was false, not attempting fixes
+2026-02-20T18:45:07.927Z eslint:eslint Lint C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\hooks\useMultiChain.js
+2026-02-20T18:45:07.927Z eslint:linter Linting code for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\hooks\useMultiChain.js (pass 1)
+2026-02-20T18:45:07.927Z eslint:linter Verify
+2026-02-20T18:45:07.927Z eslint:linter With flat config: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\hooks\useMultiChain.js
+2026-02-20T18:45:07.927Z eslint:languages:js Parsing: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\hooks\useMultiChain.js
+2026-02-20T18:45:07.929Z eslint:languages:js Parsing successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\hooks\useMultiChain.js
+2026-02-20T18:45:07.929Z eslint:languages:js Scope analysis: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\hooks\useMultiChain.js
+2026-02-20T18:45:07.934Z eslint:languages:js Scope analysis successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\hooks\useMultiChain.js
+2026-02-20T18:45:07.942Z eslint:linter Generating fixed text for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\hooks\useMultiChain.js (pass 1)
+2026-02-20T18:45:07.942Z eslint:source-code-fixer Applying fixes
+2026-02-20T18:45:07.942Z eslint:source-code-fixer shouldFix parameter was false, not attempting fixes
+2026-02-20T18:45:07.942Z eslint:eslint Lint C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\hooks\useSocket.js
+2026-02-20T18:45:07.942Z eslint:linter Linting code for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\hooks\useSocket.js (pass 1)
+2026-02-20T18:45:07.942Z eslint:linter Verify
+2026-02-20T18:45:07.942Z eslint:linter With flat config: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\hooks\useSocket.js
+2026-02-20T18:45:07.942Z eslint:languages:js Parsing: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\hooks\useSocket.js
+2026-02-20T18:45:07.944Z eslint:languages:js Parsing successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\hooks\useSocket.js
+2026-02-20T18:45:07.944Z eslint:languages:js Scope analysis: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\hooks\useSocket.js
+2026-02-20T18:45:07.945Z eslint:languages:js Scope analysis successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\hooks\useSocket.js
+2026-02-20T18:45:07.951Z eslint:linter Generating fixed text for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\hooks\useSocket.js (pass 1)
+2026-02-20T18:45:07.951Z eslint:source-code-fixer Applying fixes
+2026-02-20T18:45:07.951Z eslint:source-code-fixer shouldFix parameter was false, not attempting fixes
+2026-02-20T18:45:07.951Z eslint:eslint Lint C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\hooks\useOptimisticTransaction.js
+2026-02-20T18:45:07.951Z eslint:linter Linting code for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\hooks\useOptimisticTransaction.js (pass 1)
+2026-02-20T18:45:07.951Z eslint:linter Verify
+2026-02-20T18:45:07.951Z eslint:linter With flat config: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\hooks\useOptimisticTransaction.js
+2026-02-20T18:45:07.951Z eslint:languages:js Parsing: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\hooks\useOptimisticTransaction.js
+2026-02-20T18:45:07.953Z eslint:languages:js Parsing successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\hooks\useOptimisticTransaction.js
+2026-02-20T18:45:07.953Z eslint:languages:js Scope analysis: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\hooks\useOptimisticTransaction.js
+2026-02-20T18:45:07.954Z eslint:languages:js Scope analysis successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\hooks\useOptimisticTransaction.js
+2026-02-20T18:45:07.959Z eslint:linter Generating fixed text for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\hooks\useOptimisticTransaction.js (pass 1)
+2026-02-20T18:45:07.960Z eslint:source-code-fixer Applying fixes
+2026-02-20T18:45:07.960Z eslint:source-code-fixer shouldFix parameter was false, not attempting fixes
+2026-02-20T18:45:07.960Z eslint:eslint Lint C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\hooks\useTokenPrice.js
+2026-02-20T18:45:07.960Z eslint:linter Linting code for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\hooks\useTokenPrice.js (pass 1)
+2026-02-20T18:45:07.960Z eslint:linter Verify
+2026-02-20T18:45:07.960Z eslint:linter With flat config: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\hooks\useTokenPrice.js
+2026-02-20T18:45:07.960Z eslint:languages:js Parsing: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\hooks\useTokenPrice.js
+2026-02-20T18:45:07.961Z eslint:languages:js Parsing successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\hooks\useTokenPrice.js
+2026-02-20T18:45:07.961Z eslint:languages:js Scope analysis: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\hooks\useTokenPrice.js
+2026-02-20T18:45:07.962Z eslint:languages:js Scope analysis successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\hooks\useTokenPrice.js
+2026-02-20T18:45:07.968Z eslint:linter Generating fixed text for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\hooks\useTokenPrice.js (pass 1)
+2026-02-20T18:45:07.968Z eslint:source-code-fixer Applying fixes
+2026-02-20T18:45:07.968Z eslint:source-code-fixer shouldFix parameter was false, not attempting fixes
+2026-02-20T18:45:07.969Z eslint:eslint Lint C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\services\GaslessService.js
+2026-02-20T18:45:07.969Z eslint:linter Linting code for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\services\GaslessService.js (pass 1)
+2026-02-20T18:45:07.969Z eslint:linter Verify
+2026-02-20T18:45:07.969Z eslint:linter With flat config: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\services\GaslessService.js
+2026-02-20T18:45:07.969Z eslint:languages:js Parsing: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\services\GaslessService.js
+2026-02-20T18:45:07.969Z eslint:languages:js Parsing successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\services\GaslessService.js
+2026-02-20T18:45:07.969Z eslint:languages:js Scope analysis: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\services\GaslessService.js
+2026-02-20T18:45:07.970Z eslint:languages:js Scope analysis successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\services\GaslessService.js
+2026-02-20T18:45:07.979Z eslint:linter Generating fixed text for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\services\GaslessService.js (pass 1)
+2026-02-20T18:45:07.979Z eslint:source-code-fixer Applying fixes
+2026-02-20T18:45:07.979Z eslint:source-code-fixer shouldFix parameter was false, not attempting fixes
+2026-02-20T18:45:07.979Z eslint:eslint Lint C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\services\StorageService.js
+2026-02-20T18:45:07.979Z eslint:linter Linting code for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\services\StorageService.js (pass 1)
+2026-02-20T18:45:07.979Z eslint:linter Verify
+2026-02-20T18:45:07.979Z eslint:linter With flat config: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\services\StorageService.js
+2026-02-20T18:45:07.979Z eslint:languages:js Parsing: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\services\StorageService.js
+2026-02-20T18:45:07.980Z eslint:languages:js Parsing successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\services\StorageService.js
+2026-02-20T18:45:07.980Z eslint:languages:js Scope analysis: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\services\StorageService.js
+2026-02-20T18:45:07.980Z eslint:languages:js Scope analysis successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\services\StorageService.js
+2026-02-20T18:45:07.983Z eslint:linter Generating fixed text for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\services\StorageService.js (pass 1)
+2026-02-20T18:45:07.983Z eslint:source-code-fixer Applying fixes
+2026-02-20T18:45:07.983Z eslint:source-code-fixer shouldFix parameter was false, not attempting fixes
+2026-02-20T18:45:07.983Z eslint:eslint Lint C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\services\api.js
+2026-02-20T18:45:07.983Z eslint:linter Linting code for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\services\api.js (pass 1)
+2026-02-20T18:45:07.983Z eslint:linter Verify
+2026-02-20T18:45:07.983Z eslint:linter With flat config: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\services\api.js
+2026-02-20T18:45:07.983Z eslint:languages:js Parsing: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\services\api.js
+2026-02-20T18:45:07.984Z eslint:languages:js Parsing successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\services\api.js
+2026-02-20T18:45:07.985Z eslint:languages:js Scope analysis: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\services\api.js
+2026-02-20T18:45:07.986Z eslint:languages:js Scope analysis successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\services\api.js
+2026-02-20T18:45:07.991Z eslint:linter Generating fixed text for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\services\api.js (pass 1)
+2026-02-20T18:45:07.992Z eslint:source-code-fixer Applying fixes
+2026-02-20T18:45:07.992Z eslint:source-code-fixer shouldFix parameter was false, not attempting fixes
+2026-02-20T18:45:07.992Z eslint:eslint Lint C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\test\setup.js
+2026-02-20T18:45:07.992Z eslint:linter Linting code for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\test\setup.js (pass 1)
+2026-02-20T18:45:07.992Z eslint:linter Verify
+2026-02-20T18:45:07.992Z eslint:linter With flat config: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\test\setup.js
+2026-02-20T18:45:07.992Z eslint:languages:js Parsing: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\test\setup.js
+2026-02-20T18:45:07.992Z eslint:languages:js Parsing successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\test\setup.js
+2026-02-20T18:45:07.992Z eslint:languages:js Scope analysis: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\test\setup.js
+2026-02-20T18:45:07.992Z eslint:languages:js Scope analysis successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\test\setup.js
+2026-02-20T18:45:07.995Z eslint:linter Generating fixed text for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\test\setup.js (pass 1)
+2026-02-20T18:45:07.995Z eslint:source-code-fixer Applying fixes
+2026-02-20T18:45:07.995Z eslint:source-code-fixer shouldFix parameter was false, not attempting fixes
+2026-02-20T18:45:07.995Z eslint:eslint Lint C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\utils\biconomy.js
+2026-02-20T18:45:07.995Z eslint:linter Linting code for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\utils\biconomy.js (pass 1)
+2026-02-20T18:45:07.995Z eslint:linter Verify
+2026-02-20T18:45:07.995Z eslint:linter With flat config: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\utils\biconomy.js
+2026-02-20T18:45:07.995Z eslint:languages:js Parsing: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\utils\biconomy.js
+2026-02-20T18:45:07.996Z eslint:languages:js Parsing successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\utils\biconomy.js
+2026-02-20T18:45:07.996Z eslint:languages:js Scope analysis: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\utils\biconomy.js
+2026-02-20T18:45:07.997Z eslint:languages:js Scope analysis successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\utils\biconomy.js
+2026-02-20T18:45:08.009Z eslint:linter Generating fixed text for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\utils\biconomy.js (pass 1)
+2026-02-20T18:45:08.010Z eslint:source-code-fixer Applying fixes
+2026-02-20T18:45:08.010Z eslint:source-code-fixer shouldFix parameter was false, not attempting fixes
+2026-02-20T18:45:08.010Z eslint:eslint Lint C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\utils\daoABIs.js
+2026-02-20T18:45:08.010Z eslint:linter Linting code for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\utils\daoABIs.js (pass 1)
+2026-02-20T18:45:08.010Z eslint:linter Verify
+2026-02-20T18:45:08.010Z eslint:linter With flat config: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\utils\daoABIs.js
+2026-02-20T18:45:08.010Z eslint:languages:js Parsing: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\utils\daoABIs.js
+2026-02-20T18:45:08.011Z eslint:languages:js Parsing successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\utils\daoABIs.js
+2026-02-20T18:45:08.011Z eslint:languages:js Scope analysis: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\utils\daoABIs.js
+2026-02-20T18:45:08.011Z eslint:languages:js Scope analysis successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\utils\daoABIs.js
+2026-02-20T18:45:08.016Z eslint:linter Generating fixed text for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\utils\daoABIs.js (pass 1)
+2026-02-20T18:45:08.016Z eslint:source-code-fixer Applying fixes
+2026-02-20T18:45:08.016Z eslint:source-code-fixer shouldFix parameter was false, not attempting fixes
+2026-02-20T18:45:08.016Z eslint:eslint Lint C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\utils\ipfs.js
+2026-02-20T18:45:08.016Z eslint:linter Linting code for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\utils\ipfs.js (pass 1)
+2026-02-20T18:45:08.016Z eslint:linter Verify
+2026-02-20T18:45:08.016Z eslint:linter With flat config: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\utils\ipfs.js
+2026-02-20T18:45:08.016Z eslint:languages:js Parsing: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\utils\ipfs.js
+2026-02-20T18:45:08.017Z eslint:languages:js Parsing successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\utils\ipfs.js
+2026-02-20T18:45:08.017Z eslint:languages:js Scope analysis: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\utils\ipfs.js
+2026-02-20T18:45:08.017Z eslint:languages:js Scope analysis successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\utils\ipfs.js
+2026-02-20T18:45:08.021Z eslint:linter Generating fixed text for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\utils\ipfs.js (pass 1)
+2026-02-20T18:45:08.021Z eslint:source-code-fixer Applying fixes
+2026-02-20T18:45:08.021Z eslint:source-code-fixer shouldFix parameter was false, not attempting fixes
+2026-02-20T18:45:08.021Z eslint:eslint Lint C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\hooks\useTransactionToast.js
+2026-02-20T18:45:08.021Z eslint:linter Linting code for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\hooks\useTransactionToast.js (pass 1)
+2026-02-20T18:45:08.021Z eslint:linter Verify
+2026-02-20T18:45:08.021Z eslint:linter With flat config: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\hooks\useTransactionToast.js
+2026-02-20T18:45:08.021Z eslint:languages:js Parsing: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\hooks\useTransactionToast.js
+2026-02-20T18:45:08.022Z eslint:languages:js Parsing successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\hooks\useTransactionToast.js
+2026-02-20T18:45:08.022Z eslint:languages:js Scope analysis: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\hooks\useTransactionToast.js
+2026-02-20T18:45:08.023Z eslint:languages:js Scope analysis successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\hooks\useTransactionToast.js
+2026-02-20T18:45:08.026Z eslint:linter Generating fixed text for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\hooks\useTransactionToast.js (pass 1)
+2026-02-20T18:45:08.026Z eslint:source-code-fixer Applying fixes
+2026-02-20T18:45:08.026Z eslint:source-code-fixer shouldFix parameter was false, not attempting fixes
+2026-02-20T18:45:08.026Z eslint:eslint Lint C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\utils\metaTx.js
+2026-02-20T18:45:08.026Z eslint:linter Linting code for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\utils\metaTx.js (pass 1)
+2026-02-20T18:45:08.026Z eslint:linter Verify
+2026-02-20T18:45:08.026Z eslint:linter With flat config: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\utils\metaTx.js
+2026-02-20T18:45:08.026Z eslint:languages:js Parsing: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\utils\metaTx.js
+2026-02-20T18:45:08.026Z eslint:languages:js Parsing successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\utils\metaTx.js
+2026-02-20T18:45:08.027Z eslint:languages:js Scope analysis: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\utils\metaTx.js
+2026-02-20T18:45:08.027Z eslint:languages:js Scope analysis successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\utils\metaTx.js
+2026-02-20T18:45:08.033Z eslint:linter Generating fixed text for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\utils\metaTx.js (pass 1)
+2026-02-20T18:45:08.033Z eslint:source-code-fixer Applying fixes
+2026-02-20T18:45:08.033Z eslint:source-code-fixer shouldFix parameter was false, not attempting fixes
+2026-02-20T18:45:08.033Z eslint:eslint Lint C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\utils\riskMitigation.js
+2026-02-20T18:45:08.033Z eslint:linter Linting code for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\utils\riskMitigation.js (pass 1)
+2026-02-20T18:45:08.033Z eslint:linter Verify
+2026-02-20T18:45:08.033Z eslint:linter With flat config: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\utils\riskMitigation.js
+2026-02-20T18:45:08.034Z eslint:languages:js Parsing: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\utils\riskMitigation.js
+2026-02-20T18:45:08.034Z eslint:languages:js Parsing successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\utils\riskMitigation.js
+2026-02-20T18:45:08.034Z eslint:languages:js Scope analysis: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\utils\riskMitigation.js
+2026-02-20T18:45:08.035Z eslint:languages:js Scope analysis successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\utils\riskMitigation.js
+2026-02-20T18:45:08.037Z eslint:linter Generating fixed text for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\utils\riskMitigation.js (pass 1)
+2026-02-20T18:45:08.037Z eslint:source-code-fixer Applying fixes
+2026-02-20T18:45:08.037Z eslint:source-code-fixer shouldFix parameter was false, not attempting fixes
+2026-02-20T18:45:08.037Z eslint:eslint Lint C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\utils\feedback.jsx
+2026-02-20T18:45:08.037Z eslint:linter Linting code for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\utils\feedback.jsx (pass 1)
+2026-02-20T18:45:08.037Z eslint:linter Verify
+2026-02-20T18:45:08.037Z eslint:linter With flat config: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\utils\feedback.jsx
+2026-02-20T18:45:08.037Z eslint:languages:js Parsing: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\utils\feedback.jsx
+2026-02-20T18:45:08.038Z eslint:languages:js Parsing successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\utils\feedback.jsx
+2026-02-20T18:45:08.038Z eslint:languages:js Scope analysis: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\utils\feedback.jsx
+2026-02-20T18:45:08.039Z eslint:languages:js Scope analysis successful: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\utils\feedback.jsx
+2026-02-20T18:45:08.043Z eslint:linter Generating fixed text for C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\src\utils\feedback.jsx (pass 1)
+2026-02-20T18:45:08.043Z eslint:source-code-fixer Applying fixes
+2026-02-20T18:45:08.043Z eslint:source-code-fixer shouldFix parameter was false, not attempting fixes

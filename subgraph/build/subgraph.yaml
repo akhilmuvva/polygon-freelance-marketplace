@@ -1,6 +1,6 @@
 specVersion: 0.0.5
 schema:
-  file: ./schema.graphql
+  file: schema.graphql
 dataSources:
   - kind: ethereum
     name: FreelanceEscrow
@@ -18,7 +18,7 @@ dataSources:
         - Milestone
       abis:
         - name: FreelanceEscrow
-          file: ./abis/FreelanceEscrow.json
+          file: FreelanceEscrow\abis\FreelanceEscrow.json
       eventHandlers:
         - event: JobCreated(indexed uint256,indexed address,indexed address,uint256,uint256)
           handler: handleJobCreated
@@ -42,7 +42,7 @@ dataSources:
           handler: handleRuling
         - event: ReviewSubmitted(indexed uint256,indexed address,indexed address,uint8,string)
           handler: handleReviewSubmitted
-      file: ./src/mapping.ts
+      file: FreelanceEscrow\FreelanceEscrow.wasm
   - kind: ethereum
     name: FreelancerReputation
     network: amoy
@@ -58,10 +58,10 @@ dataSources:
         - Freelancer
       abis:
         - name: FreelancerReputation
-          file: ./abis/FreelancerReputation.json
+          file: FreelancerReputation\abis\FreelancerReputation.json
       eventHandlers:
         - event: RatingUpdated(indexed address,uint8,uint256)
           handler: handleRatingUpdated
         - event: PortfolioUpdated(indexed address,string)
           handler: handlePortfolioUpdated
-      file: ./src/mapping.ts
+      file: FreelanceEscrow\FreelanceEscrow.wasm

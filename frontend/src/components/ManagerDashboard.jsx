@@ -53,7 +53,7 @@ const ManagerDashboard = () => {
 
     const stats = {
         active: jobs.filter(j => j.status <= 2).length,
-        funded: jobs.reduce((acc, j) => acc + (j.amount || 0), 0),
+        funded: jobs.reduce((acc, j) => acc + (Number(j.amount) || 0), 0),
         disputed: jobs.filter(j => j.status === 3).length,
         completed: jobs.filter(j => j.status === 5).length,
     };

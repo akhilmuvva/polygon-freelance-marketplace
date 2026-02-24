@@ -15,16 +15,26 @@ const cardBg = { padding: 32, borderRadius: 14, background: 'rgba(255,255,255,0.
 const dimLabel = { fontSize: '0.62rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--text-tertiary)', marginBottom: 4 };
 
 export default function AnalyticsDashboard() {
-    const [data, setData] = useState(null);
+    const [data, setData] = useState({
+        totalJobs: 0, totalVolume: 0, avgReputation: 0, totalUsers: 0, tvl: 0,
+        trends: [], categoryDistribution: []
+    });
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
     const statRefs = useRef([]);
     const { countUp, staggerFadeIn, revealOnScroll } = useAnimeAnimations();
 
     useEffect(() => { fetchAnalytics(); }, []);
     const fetchAnalytics = async () => {
-        try { const stats = await api.getAnalytics(); setData(stats); }
-        catch (error) { console.error('Failed to fetch analytics:', error); }
-        finally { setLoading(false); }
+        try {
+            const stats = await api.getAnalytics();
+            if (stats) setData(prev => ({ ...prev, ...stats }));
+        } catch (err) {
+            console.error('Failed to fetch analytics:', err);
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
     };
 
     useEffect(() => {
@@ -32,10 +42,10 @@ export default function AnalyticsDashboard() {
             staggerFadeIn('.analytics-stat-card', 100);
             revealOnScroll('.analytics-reveal');
 
-            // Animate numbers
             statRefs.current.forEach((el) => {
                 if (el) {
-                    const val = parseFloat(el.getAttribute('data-value').replace(/[^0-9.]/g, ''));
+                    const attrVal = el.getAttribute('data-value') || '0';
+                    const val = parseFloat(attrVal.replace(/[^0-9.]/g, ''));
                     if (!isNaN(val)) countUp(el, val, 2000);
                 }
             });
@@ -44,144 +54,129 @@ export default function AnalyticsDashboard() {
 
     if (loading) return (
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 400, gap: 16 }}>
-            <Loader2 size={40} style={{ color: 'var(--accent-light)', animation: 'spin 1s linear infinite' }} />
+            <Loader2 size={40} className="animate-spin" style={{ color: 'var(--accent-light)' }} />
             <p style={dimLabel}>Synchronizing Neural Data...</p>
         </div>
     );
 
-    const statColors = ['#34d399', '#60a5fa', 'var(--accent-light)', '#a855f7'];
+    if (error) return (
+        <div style={{ ...cardBg, textAlign: 'center', color: '#f43f5e', padding: 40 }}>
+            <Activity size={40} style={{ marginBottom: 16, opacity: 0.5 }} />
+            <h3 style={{ fontWeight: 800 }}>Network Connection Interrupted</h3>
+            <p style={{ fontSize: '0.8rem', opacity: 0.8 }}>{error}</p>
+            <button onClick={fetchAnalytics} className="btn btn-secondary btn-sm" style={{ marginTop: 20 }}>Retry Sync</button>
+        </div>
+    );
+
     const stats = [
-        { label: 'Total Value Locked', value: `$${parseFloat(data.tvl || 0).toLocaleString()}`, icon: DollarSign, color: statColors[0] },
-        { label: 'Network Citizens', value: data.totalUsers, icon: Users, color: statColors[1] },
-        { label: 'Active Contracts', value: data.totalJobs, icon: Briefcase, color: statColors[2] },
-        { label: 'Total Ecosystem Volume', value: `$${parseFloat(data.totalVolume || 0).toLocaleString()}`, icon: Activity, color: statColors[3] },
+        { label: 'Total Value Locked', value: `$${parseFloat(data.tvl || 0).toLocaleString()}`, icon: DollarSign, color: '#10b981' },
+        { label: 'Network Citizens', value: data.totalUsers.toString(), icon: Users, color: '#60a5fa' },
+        { label: 'Active Contracts', value: data.totalJobs.toString(), icon: Briefcase, color: 'var(--accent-light)' },
+        { label: 'Ecosystem Volume', value: `$${parseFloat(data.totalVolume || 0).toLocaleString()}`, icon: Activity, color: '#a855f7' },
     ];
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 32, paddingBottom: 48 }}>
             {/* Stats Grid */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 16 }}>
                 {stats.map((stat, i) => (
                     <div key={i} className="analytics-stat-card"
-                        style={{ ...cardBg, display: 'flex', alignItems: 'center', justifyContent: 'space-between', transition: 'border-color 0.3s ease', opacity: 0, transform: 'translateY(20px)' }}>
+                        style={{ ...cardBg, display: 'flex', alignItems: 'center', justifyContent: 'space-between', opacity: 0 }}>
                         <div>
                             <p style={dimLabel}>{stat.label}</p>
-                            <h3 style={{ fontSize: '1.5rem', fontWeight: 900, letterSpacing: '-0.03em' }}>
-                                {stat.label.includes('Value') || stat.label.includes('Volume') ? '$' : ''}
+                            <h3 style={{ fontSize: '1.6rem', fontWeight: 900, letterSpacing: '-0.04em' }}>
                                 <span ref={el => statRefs.current[i] = el} data-value={stat.value}>0</span>
                             </h3>
                         </div>
-                        <div style={{ padding: 12, borderRadius: 16, background: 'rgba(255,255,255,0.04)', color: stat.color }}>
-                            <stat.icon size={24} />
+                        <div style={{ width: 48, height: 48, borderRadius: 14, background: `${stat.color}15`, color: stat.color, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <stat.icon size={22} />
                         </div>
                     </div>
                 ))}
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 24 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: 24 }}>
                 {/* Growth Trends */}
-                <div className="analytics-reveal"
-                    style={{ ...cardBg, height: 400, display: 'flex', flexDirection: 'column', opacity: 0, transform: 'translateY(30px)' }}>
+                <div className="analytics-reveal" style={{ ...cardBg, height: 400, opacity: 0 }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 32 }}>
                         <div>
-                            <h3 style={{ fontSize: '1.1rem', fontWeight: 900, display: 'flex', alignItems: 'center', gap: 8 }}>
-                                <TrendingUp size={20} style={{ color: 'var(--accent-light)' }} /> Ecosystem Growth
+                            <h3 style={{ fontSize: '1rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: 8 }}>
+                                <TrendingUp size={18} style={{ color: 'var(--accent-light)' }} /> Growth Velocity
                             </h3>
-                            <p style={{ fontSize: '0.78rem', color: 'var(--text-tertiary)', fontWeight: 500 }}>Daily contract creation volume</p>
+                            <p style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)' }}>30-day transactional pulse</p>
                         </div>
-                        <span style={{
-                            padding: '4px 12px', borderRadius: 20,
-                            background: 'rgba(124,92,252,0.08)', border: '1px solid rgba(124,92,252,0.15)',
-                            ...dimLabel, color: 'var(--accent-light)', marginBottom: 0,
-                        }}>Live Metrics</span>
                     </div>
-                    <div style={{ flex: 1, width: '100%' }}>
+                    <div style={{ height: 280, width: '100%' }}>
                         <ResponsiveContainer width="100%" height="100%">
-                            <AreaChart data={data.trends}>
+                            <AreaChart data={data.trends.length ? data.trends : [{ date: new Date().toISOString(), count: 0 }]}>
                                 <defs>
-                                    <linearGradient id="colorCount" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.3} />
-                                        <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0} />
+                                    <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="0%" stopColor="var(--accent-light)" stopOpacity={0.4} />
+                                        <stop offset="100%" stopColor="var(--accent-light)" stopOpacity={0} />
                                     </linearGradient>
                                 </defs>
-                                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
-                                <XAxis dataKey="date" stroke="rgba(255,255,255,0.3)" fontSize={10} tickLine={false} axisLine={false}
-                                    tickFormatter={(val) => new Date(val).toLocaleDateString('en-US', { day: 'numeric', month: 'short' })} />
-                                <YAxis stroke="rgba(255,255,255,0.3)" fontSize={10} tickLine={false} axisLine={false} />
-                                <Tooltip contentStyle={{ backgroundColor: '#02040a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12, fontSize: 12, fontWeight: 700 }}
-                                    itemStyle={{ color: '#8b5cf6' }} />
-                                <Area type="monotone" dataKey="count" stroke="#8b5cf6" strokeWidth={3} fillOpacity={1} fill="url(#colorCount)" animationDuration={2000} />
+                                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.03)" vertical={false} />
+                                <XAxis dataKey="date" stroke="rgba(255,255,255,0.2)" fontSize={10} axisLine={false} tickLine={false}
+                                    tickFormatter={(str) => new Date(str).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })} />
+                                <YAxis stroke="rgba(255,255,255,0.2)" fontSize={10} axisLine={false} tickLine={false} />
+                                <Tooltip
+                                    contentStyle={{ background: 'rgba(10,10,25,0.95)', border: '1px solid var(--border)', borderRadius: 12, backdropFilter: 'blur(10px)' }}
+                                    itemStyle={{ color: 'var(--accent-light)', fontWeight: 700 }}
+                                />
+                                <Area type="monotone" dataKey="count" stroke="var(--accent-light)" strokeWidth={3} fill="url(#chartGradient)" />
                             </AreaChart>
                         </ResponsiveContainer>
                     </div>
                 </div>
 
-                {/* Category Distribution */}
-                <div className="analytics-reveal"
-                    style={{ ...cardBg, height: 400, display: 'flex', flexDirection: 'column', opacity: 0, transform: 'translateY(30px)' }}>
+                {/* Sector Allocation */}
+                <div className="analytics-reveal" style={{ ...cardBg, height: 400, opacity: 0 }}>
                     <div style={{ marginBottom: 32 }}>
-                        <h3 style={{ fontSize: '1.1rem', fontWeight: 900, display: 'flex', alignItems: 'center', gap: 8 }}>
-                            <PieIcon size={20} style={{ color: 'var(--accent-light)' }} /> Sector Load
+                        <h3 style={{ fontSize: '1rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <PieIcon size={18} style={{ color: '#a855f7' }} /> Sector Allocation
                         </h3>
-                        <p style={{ fontSize: '0.78rem', color: 'var(--text-tertiary)', fontWeight: 500 }}>Work distribution by category</p>
+                        <p style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)' }}>Network distribution by vertical</p>
                     </div>
-                    <div style={{ flex: 1, width: '100%', position: 'relative' }}>
+                    <div style={{ height: 200, position: 'relative' }}>
                         <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
-                                <Pie data={data.categoryDistribution} cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value">
-                                    {data.categoryDistribution.map((entry, index) => (
+                                <Pie
+                                    data={data.categoryDistribution.length ? data.categoryDistribution : [{ name: 'Stable', value: 1 }]}
+                                    innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value"
+                                >
+                                    {(data.categoryDistribution.length ? data.categoryDistribution : [{ name: 'Stable', value: 1 }]).map((entry, index) => (
                                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                     ))}
                                 </Pie>
-                                <Tooltip contentStyle={{ backgroundColor: '#02040a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12, fontSize: 12 }} />
+                                <Tooltip contentStyle={{ background: 'rgba(10,10,25,0.95)', border: '1px solid var(--border)', borderRadius: 12 }} />
                             </PieChart>
                         </ResponsiveContainer>
-                        <div style={{
-                            position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column',
-                            alignItems: 'center', justifyContent: 'center', pointerEvents: 'none',
-                        }}>
-                            <span style={{ ...dimLabel, marginBottom: 0 }}>Global</span>
-                            <span style={{ fontSize: '1.2rem', fontWeight: 900 }}>RECAP</span>
-                        </div>
                     </div>
-                    <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                    <div style={{ marginTop: 20, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                         {data.categoryDistribution.slice(0, 4).map((entry, i) => (
                             <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                <div style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: COLORS[i % COLORS.length] }} />
-                                <span style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-tertiary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                    {entry.name}
-                                </span>
+                                <div style={{ width: 10, height: 10, borderRadius: '50%', background: COLORS[i % COLORS.length], boxShadow: `0 0 10px ${COLORS[i % COLORS.length]}60` }} />
+                                <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', fontWeight: 600 }}>{entry.name}</span>
                             </div>
                         ))}
                     </div>
                 </div>
             </div>
 
-            {/* Neural Insights */}
-            <div className="analytics-reveal"
-                style={{ ...cardBg, background: 'rgba(124,92,252,0.04)', borderColor: 'rgba(124,92,252,0.15)', opacity: 0, transform: 'translateY(30px)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 32, flexWrap: 'wrap' }}>
-                    <div style={{
-                        padding: 24, borderRadius: 40, background: 'rgba(124,92,252,0.12)',
-                        color: 'var(--accent-light)', boxShadow: '0 25px 50px -12px rgba(124,92,252,0.2)', flexShrink: 0,
-                    }}>
-                        <Globe size={48} style={{ animation: 'spin 10s linear infinite' }} />
+            {/* Neural Summary */}
+            <div className="analytics-reveal" style={{ ...cardBg, background: 'linear-gradient(135deg, rgba(124,92,252,0.06), rgba(124,92,252,0.02))', borderColor: 'rgba(124,92,252,0.2)', opacity: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 24, flexWrap: 'wrap' }}>
+                    <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'var(--accent-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 30px rgba(124,92,252,0.3)', flexShrink: 0 }}>
+                        <Globe size={32} className="animate-spin-slow" />
                     </div>
-                    <div>
+                    <div style={{ flex: 1 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                            <span style={{
-                                padding: '2px 8px', borderRadius: 4, background: 'var(--accent-light)', color: '#fff',
-                                fontSize: '0.62rem', fontWeight: 900, textTransform: 'uppercase',
-                            }}>AI Protocol</span>
-                            <h3 style={{ fontSize: '1.2rem', fontWeight: 900 }}>Neural Network Insight</h3>
+                            <span style={{ padding: '3px 8px', borderRadius: 4, background: '#34d399', color: '#000', fontSize: '0.6rem', fontWeight: 900, textTransform: 'uppercase' }}>SYNCHRONIZED</span>
+                            <h3 style={{ fontSize: '1.2rem', fontWeight: 900 }}>PolyLance Ecosystem Pulse</h3>
                         </div>
-                        <p style={{ color: 'var(--text-tertiary)', fontSize: '0.88rem', lineHeight: 1.7, maxWidth: 700, fontWeight: 500 }}>
-                            Synthesizing on-chain data: The PolyLance ecosystem is currently operating at{' '}
-                            <span style={{ color: 'var(--accent-light)', fontWeight: 700 }}>SUPREME</span> efficiency.
-                            Active contract volume has grown significantly in the last period, with a focus on{' '}
-                            <span style={{ color: '#34d399', fontWeight: 700 }}>{data.categoryDistribution[0]?.name || 'High-Tier'}</span> projects.
-                            Reputation synchronization across Neural Nodes is maintaining a network average of{' '}
-                            <span style={{ color: '#60a5fa', fontWeight: 700 }}>{data.avgReputation.toFixed(1)}/100</span>.
+                        <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: 1.6, fontWeight: 500 }}>
+                            The network is currently processing <span style={{ color: 'var(--accent-light)', fontWeight: 700 }}>{data.totalJobs} live contracts</span> with a total ecosystem volume of <span style={{ color: '#10b981', fontWeight: 700 }}>{data.totalVolume.toFixed(2)} MATIC</span>.
+                            Node synchronization is maintaining a professional reputation threshold of <span style={{ color: '#60a5fa', fontWeight: 700 }}>{data.avgReputation.toFixed(1)}%</span> across all registered entities.
                         </p>
                     </div>
                 </div>
@@ -189,3 +184,4 @@ export default function AnalyticsDashboard() {
         </div>
     );
 }
+

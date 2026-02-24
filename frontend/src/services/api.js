@@ -1,16 +1,24 @@
-const API_URL = import.meta.env.VITE_API_BASE_URL || 'https://localhost:3001/api';
+const API_URL = import.meta.env.VITE_API_BASE_URL || (window.location.protocol === 'https:' ? 'https://localhost:3001/api' : 'http://localhost:3001/api');
 
 const handleResponse = async (response) => {
     if (!response.ok) {
         const error = await response.json().catch(() => ({ error: 'An unknown error occurred' }));
         throw new Error(error.error || `HTTP error! status: ${response.status}`);
     }
+    // Handle 204 No Content or empty body
+    const contentType = response.headers.get('content-type');
+    if (response.status === 204 || !contentType || !contentType.includes('application/json')) {
+        return {};
+    }
     return response.json();
 };
 
 const safeFetch = async (url, options) => {
     try {
-        const response = await fetch(url, options);
+        const response = await fetch(url, {
+            ...options,
+            credentials: 'include',
+        });
         return await handleResponse(response);
     } catch (error) {
         console.error(`API Call failed: ${url}`, error.message);
@@ -58,6 +66,8 @@ export const api = {
     getMatchScore: (jobId, address) => safeFetch(`${API_URL}/match/${jobId}/${address}`),
 
     getJobMatches: (jobId) => safeFetch(`${API_URL}/jobs/match/${jobId}`),
+
+    getRecommendations: (address) => safeFetch(`${API_URL}/recommendations/${address}`),
 
 
     createRazorpayOrder: (amount, address, customer_details) => safeFetch(`${API_URL}/payments/create-order`, {

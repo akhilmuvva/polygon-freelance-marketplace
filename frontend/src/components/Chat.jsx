@@ -341,7 +341,7 @@ function MessageContainer({ conversation, address, contractContext, loadingConte
             {/* Messages */}
             <div style={{ flex: 1, overflowY: 'auto', padding: 20, display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {messages.map((msg) => {
-                    const isMe = msg.senderAddress.toLowerCase() === address.toLowerCase();
+                    const isMe = msg.senderAddress?.toLowerCase() === address?.toLowerCase();
                     return (
                         <motion.div key={msg.id}
                             initial={{ opacity: 0, y: 10, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }}

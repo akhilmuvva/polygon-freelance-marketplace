@@ -30,6 +30,7 @@ PolyLance is a decentralized freelance marketplace built on Polygon with enterpr
 - **Oracles**: Chainlink Price Feeds for USD pegging
 - **Messaging**: XMTP V3 for decentralized chat
 - **Cross-chain**: Chainlink CCIP + LayerZero integration
+- **Sovereign Shift**: Moving from Express/MongoDB to Subgraph + IPFS (See [SOVEREIGN_ROADMAP.md](./SOVEREIGN_ROADMAP.md))
 
 ### Tech Stack
 
@@ -683,6 +684,11 @@ For actions like work submission, we use the `useOptimisticTransaction` hook.
 ### 4. Gasless Relay (4337)
 - **Paymasters**: Use sponsored gas for core freelancer actions (Submit Work, Accept Job).
 - **Bundlers**: Configure the bundler with an Antigravity-specific endpoint to minimize UserOp latency.
+
+### 5. Sovereignty & Resilience
+- **Data Persistence**: All critical metadata (Job CIDs) are stored on IPFS.
+- **Index Transparency**: Subgraphs provide a public, verifiable record of all platform activity.
+- **Censorship Resistance**: The platform can be accessed via any Fleek gateway, making it independent of any single provider.
 
 ---
 

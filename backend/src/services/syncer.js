@@ -11,6 +11,7 @@ import { BlockchainEvent } from '../models/BlockchainEvent.js';
 import { SystemSettings } from '../models/SystemSettings.js';
 import { logger } from '../utils/logger.js';
 import { publicClient as client } from '../config/blockchain.js';
+import { getJSONFromIPFS } from './ipfs.js';
 
 let ioInstance = null;
 
@@ -27,7 +28,8 @@ const DEPLOY_BLOCK = 34230000n;
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 // Updated default address for FreelanceEscrow
-let CONTRACT_ADDRESS = IS_AMOY ? '0x38c76A767d45Fc390160449948aF80569E2C4217' : '0x38c76A767d45Fc390160449948aF80569E2C4217';
+// Updated default address for FreelanceEscrow - Aligned with frontend constants.js
+let CONTRACT_ADDRESS = IS_AMOY ? '0x25F6C8ed995C811E6c0ADb1D66A60830E8115e9A' : '0x38c76A767d45Fc390160449948aF80569E2C4217';
 let CROSS_CHAIN_MANAGER_ADDRESS = IS_AMOY ? '0x5C4aF960570bFc0861198A699435b54FC9012345' : '0x5C4aF960570bFc0861198A699435b54FC9012345';
 
 try {
@@ -39,7 +41,7 @@ try {
             CROSS_CHAIN_MANAGER_ADDRESS = deployData.CrossChainEscrowManager || CROSS_CHAIN_MANAGER_ADDRESS;
         }
     }
-} catch (err) {
+} catch {
     logger.warn('Could not load dynamic contract addresses, using defaults', 'SYNC');
 }
 
@@ -59,9 +61,8 @@ const EVENTS = {
     DisputeResolved: parseAbiItem('event DisputeResolved(uint256 indexed jobId, uint256 freelancerBps)'),
     Evidence: parseAbiItem('event Evidence(address indexed _arbitrator, uint256 indexed _evidenceID, address indexed _party, string _evidence)'),
     ReviewSubmitted: parseAbiItem('event ReviewSubmitted(uint256 indexed jobId, address indexed client, address indexed freelancer, uint8 rating, string review)'),
-    MilestoneReleased: parseAbiItem('event MilestoneReleased(uint256 indexed jobId, uint256 indexed milestoneId, uint256 amount)'),
-    ApplicationSubmitted: parseAbiItem('event ApplicationSubmitted(uint256 indexed jobId, address indexed applicant, uint256 stake)'),
-    MilestoneCreated: parseAbiItem('event MilestoneCreated(uint256 indexed jobId, uint256 milestoneId, uint256 amount, string description)')
+    MilestoneReleased: parseAbiItem('event MilestoneReleased(uint256 indexed jobId, address indexed freelancer, uint256 indexed milestoneId, uint256 amount)'),
+    JobApplied: parseAbiItem('event JobApplied(uint256 indexed jobId, address indexed freelancer, uint256 stake)')
 };
 
 const CROSS_CHAIN_EVENTS = {
@@ -71,8 +72,30 @@ const CROSS_CHAIN_EVENTS = {
 };
 
 const handlers = {
-    JobCreated: async (args) => {
+    JobCreated: async (args, log) => {
         const { jobId, client, freelancer, amount, deadline } = args;
+
+        // IPFS hash is not in event, fetch it from contract
+        let ipfsHash = '';
+        try {
+            const jobData = await client.readContract({
+                address: CONTRACT_ADDRESS,
+                abi,
+                functionName: 'jobs',
+                args: [jobId]
+            });
+            // Job struct index 14 is ipfsHash (0-based)
+            ipfsHash = Array.isArray(jobData) ? jobData[14] : jobData.ipfsHash;
+        } catch (e) {
+            logger.warn(`Could not fetch job metadata for #${jobId}: ${e.message}`, 'SYNC');
+        }
+
+        let metadata = {};
+        if (ipfsHash) {
+            const enriched = await getJSONFromIPFS(ipfsHash);
+            if (enriched) metadata = enriched;
+        }
+
         const job = await JobMetadata.findOneAndUpdate(
             { jobId: Number(jobId) },
             {
@@ -80,22 +103,45 @@ const handlers = {
                 freelancer: freelancer.toLowerCase(),
                 amount: amount.toString(),
                 deadline: Number(deadline),
-                status: 1 // Active
+                title: metadata.title || `Job #${jobId}`,
+                description: metadata.description || '',
+                category: metadata.category || 'Development',
+                status: 1, // Active
+                ipfsHash: ipfsHash,
+                transactionHash: log.transactionHash
             },
             { upsert: true, new: true }
         );
 
         if (!job.notified) {
-            await sendNotification('Freelancer', freelancer, `New Job Created! ID: ${jobId}`, `/jobs/${jobId}`);
+            await sendNotification('Freelancer', freelancer, `New Job: ${job.title}`, `/jobs/${jobId}`);
             await JobMetadata.updateOne({ jobId: Number(jobId) }, { notified: true });
+        }
+
+        // Re-emit with enriched data if socket is active
+        if (ioInstance) {
+            ioInstance.emit('NEW_BLOCKCHAIN_EVENT', {
+                type: 'JobCreated',
+                data: { ...args, title: job.title, category: job.category },
+                txHash: log.transactionHash
+            });
         }
     },
     FundsReleased: async (args) => {
         const { jobId, freelancer, amount } = args;
         await JobMetadata.findOneAndUpdate({ jobId: Number(jobId) }, { status: 2 }); // Completed
+
+        // Handle BigInt summation safely for totalEarned string field
+        const prof = await Profile.findOne({ address: freelancer.toLowerCase() });
+        const currentEarned = BigInt(prof?.totalEarned || '0');
+        const newEarned = (currentEarned + BigInt(amount)).toString();
+
         await Profile.findOneAndUpdate(
             { address: freelancer.toLowerCase() },
-            { $inc: { totalEarned: Number(amount), completedJobs: 1 } },
+            {
+                totalEarned: newEarned,
+                $inc: { completedJobs: 1 }
+            },
             { upsert: true }
         );
     },
@@ -138,11 +184,11 @@ const handlers = {
             { $set: { "milestones.$.isReleased": true } }
         );
     },
-    ApplicationSubmitted: async (args) => {
-        const { jobId, applicant, stake } = args;
+    JobApplied: async (args) => {
+        const { jobId, freelancer, stake } = args;
         await JobMetadata.updateOne(
             { jobId: Number(jobId) },
-            { $push: { applicants: { address: applicant.toLowerCase(), stake: stake.toString() } } }
+            { $push: { applicants: { address: freelancer.toLowerCase(), stake: stake.toString() } } }
         );
     },
     CrossChainJobCreated: async (args) => {
@@ -171,7 +217,6 @@ async function processLog(log, eventName) {
         const handler = handlers[eventName];
         if (handler) {
             // Prevent duplicate notifications
-            const eventId = `${log.transactionHash}_${log.logIndex}`;
             const existingEvent = await BlockchainEvent.findOne({ transactionHash: log.transactionHash, logIndex: log.logIndex });
 
             if (!existingEvent) {
@@ -194,7 +239,7 @@ async function processLog(log, eventName) {
             await handler(log.args, log);
 
             // Emit real-time notification via Socket.io
-            if (ioInstance) {
+            if (ioInstance && eventName !== 'JobCreated') {
                 ioInstance.emit('NEW_BLOCKCHAIN_EVENT', {
                     type: eventName,
                     data: log.args,
@@ -248,7 +293,7 @@ async function fetchLogsInChunks(address, targetAbi, from, to, contractName) {
                         topics: log.topics,
                     });
                     await processLog({ ...log, args: decoded.args }, decoded.eventName);
-                } catch (e) {
+                } catch {
                     // Skip logs that don't match target ABI
                 }
             }

@@ -32,11 +32,10 @@ const FiatOnramp = lazy(() => import('./components/FiatOnramp'));
 import { NotificationManager } from './components/NotificationManager';
 import AuthPortal from './components/AuthPortal';
 import { Toaster, toast as hotToast } from 'react-hot-toast';
-import { useSocket } from './hooks/useSocket';
-import { useAccount, useWalletClient } from 'wagmi';
+import { useAccount, useWalletClient, useDisconnect, useBlockNumber } from 'wagmi';
 import { initSocialLogin, createBiconomySmartAccount } from './utils/biconomy';
 import { createWalletClient, custom } from 'viem';
-import { SiweMessage } from 'siwe';
+import { polygonAmoy } from 'viem/chains';
 
 /* ── Inline styles for the shell — zero Tailwind dependency ── */
 const styles = {
@@ -276,35 +275,14 @@ const NAV_VAULT = [
 
 function App() {
   const { address, isConnected: isWalletConnected } = useAccount();
-  const { isConnected: isSocketConnected, subscribeToEvents } = useSocket();
-  const { data: walletClient } = useWalletClient();
-  const [activeTab, setActiveTab] = useState('dashboard');
-  const [portfolioAddress, setPortfolioAddress] = useState(null);
-  const [chatPeerAddress, setChatPeerAddress] = useState(null);
-  const [isGasless, setIsGasless] = useState(true);
-  const [smartAccount, setSmartAccount] = useState(null);
-  const [socialProvider, setSocialProvider] = useState(null);
-  const [isLoggingIn, setIsLoggingIn] = useState(false);
-  const [isInitializingGasless, setIsInitializingGasless] = useState(false);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const { data: blockNumber } = useBlockNumber({ watch: true });
 
   useEffect(() => {
-    if (!subscribeToEvents) return;
-    const unsubscribe = subscribeToEvents((event) => {
-      const { type, data } = event;
-      if (type === 'JobCreated') {
-        hotToast.success(`New Job: ${data.title || 'Job #' + data.jobId}`, { icon: '💼', position: 'bottom-right' });
-      } else if (type === 'MilestoneReleased' || type === 'FundsReleased') {
-        hotToast.success(`Payment Released for Job #${data.jobId || data._metaEvidenceID}!`, { icon: '💰', position: 'bottom-right' });
-      } else if (type === 'DisputeRaised' || type === 'Dispute') {
-        hotToast.error(`Dispute Alert on Job #${data.jobId || data._metaEvidenceID}`, { icon: '⚖️', position: 'bottom-right' });
-      }
-
-      // Global trigger for dashboard refresh
+    if (blockNumber) {
+      // Global trigger for dashboard refresh on new block
       window.dispatchEvent(new CustomEvent('REFRESH_DASHBOARD'));
-    });
-    return unsubscribe;
-  }, [subscribeToEvents]);
+    }
+  }, [blockNumber]);
 
   // Anime.js hooks
   const sidebarRef = React.useRef(null);
@@ -316,21 +294,45 @@ function App() {
       slideInLeft(sidebarRef.current, 100);
       setTimeout(() => staggerFadeIn('.anime-nav-item', 60), 300);
     }
-  }, []);
+  }, [slideInLeft, staggerFadeIn]);
 
-  React.useEffect(() => {
-    const initGasless = async () => {
-      if (isWalletConnected && walletClient && isGasless && !smartAccount && !isLoggingIn && !isInitializingGasless) {
-        setIsInitializingGasless(true);
-        try {
-          const sa = await createBiconomySmartAccount(walletClient);
-          if (sa) { setSmartAccount(sa); hotToast.success("Gas relay active"); }
-        } catch (e) { console.error("[Gasless]", e); }
-        finally { setIsInitializingGasless(false); }
+  // Gasless toggle handler — only inits Biconomy when user manually enables
+  const handleToggleGasless = async () => {
+    if (isGasless) {
+      // Turning OFF — just flip the flag, keep smartAccount cached
+      setIsGasless(false);
+      hotToast.success('Gasless mode disabled');
+      return;
+    }
+    // Turning ON
+    if (!isWalletConnected || !walletClient) {
+      hotToast.error('Connect your wallet first');
+      return;
+    }
+    if (smartAccount) {
+      // Already initialized from a previous toggle, just re-enable
+      setIsGasless(true);
+      hotToast.success('Gasless mode enabled');
+      return;
+    }
+    // First-time init
+    setIsInitializingGasless(true);
+    try {
+      const sa = await createBiconomySmartAccount(walletClient);
+      if (sa) {
+        setSmartAccount(sa);
+        setIsGasless(true);
+        hotToast.success('Gas relay active');
+      } else {
+        hotToast.error('Failed to initialize gasless mode');
       }
-    };
-    initGasless();
-  }, [isWalletConnected, walletClient, isGasless, smartAccount, isLoggingIn]);
+    } catch (e) {
+      console.error('[Gasless]', e);
+      hotToast.error('Gasless init failed: ' + (e.message || 'Unknown error'));
+    } finally {
+      setIsInitializingGasless(false);
+    }
+  };
 
   const handleSocialLogin = async () => {
     setIsLoggingIn(true);
@@ -341,12 +343,13 @@ function App() {
       const { ParticleProvider } = await import("@biconomy/particle-auth");
       const provider = new ParticleProvider(particle.auth);
       const wc = createWalletClient({
-        chain: { id: 80002 },
+        chain: polygonAmoy,
         transport: custom(provider)
       });
       if (particle.isMock) wc.isMock = true;
 
       const sa = await createBiconomySmartAccount(wc);
+      if (!sa) throw new Error('Smart account creation failed');
       setSmartAccount(sa);
       setSocialProvider(particle);
       hotToast.success('🎉 Welcome back!', {
@@ -358,10 +361,20 @@ function App() {
 
   const handleLogout = async () => {
     if (socialProvider) await socialProvider.auth.logout();
+    disconnect(); // Universal disconnect
     setSmartAccount(null);
     setSocialProvider(null);
+    setIsGasless(false);
     hotToast.success("Logged out");
   };
+
+  // Reset gasless when wallet disconnects
+  React.useEffect(() => {
+    if (!isWalletConnected) {
+      setIsGasless(false);
+      setSmartAccount(null);
+    }
+  }, [isWalletConnected]);
 
   const effectiveAddress = smartAccount?.accountAddress || address;
 
@@ -460,7 +473,7 @@ function App() {
             ].map(item => (
               <div key={item.id} className="anime-nav-item"
                 onClick={() => { setActiveTab(item.id); setIsSidebarOpen(false); }}
-                style={{ ...styles.navItem(activeTab === item.id), opacity: 0, transform: 'translateY(10px)' }}>
+                style={styles.navItem(activeTab === item.id)}>
                 <item.icon size={16} /> {item.label}
               </div>
             ))}
@@ -475,7 +488,7 @@ function App() {
             ].map(item => (
               <div key={item.id} className="anime-nav-item"
                 onClick={() => { setActiveTab(item.id); setIsSidebarOpen(false); }}
-                style={{ ...styles.navItem(activeTab === item.id), opacity: 0, transform: 'translateY(10px)' }}>
+                style={styles.navItem(activeTab === item.id)}>
                 <item.icon size={16} /> {item.label}
               </div>
             ))}
@@ -490,7 +503,7 @@ function App() {
             ].map(item => (
               <div key={item.id} className="anime-nav-item"
                 onClick={() => { setActiveTab(item.id); setIsSidebarOpen(false); }}
-                style={{ ...styles.navItem(activeTab === item.id), opacity: 0, transform: 'translateY(10px)' }}>
+                style={styles.navItem(activeTab === item.id)}>
                 <item.icon size={16} /> {item.label}
               </div>
             ))}
@@ -511,9 +524,12 @@ function App() {
               </div>
               <div style={styles.toggleRow}>
                 <span style={styles.toggleLabel}>Gasless Mode</span>
-                <button style={styles.toggle(isGasless)} onClick={() => setIsGasless(!isGasless)}>
+                <button style={styles.toggle(isGasless)} onClick={handleToggleGasless} disabled={isInitializingGasless}>
                   <div style={styles.toggleDot(isGasless)} />
                 </button>
+                {isInitializingGasless && (
+                  <span style={{ fontSize: '0.6rem', color: 'var(--accent-light)', marginLeft: 4 }}>Setting up...</span>
+                )}
               </div>
             </div>
           </div>
@@ -527,10 +543,10 @@ function App() {
                 <Menu size={18} />
               </button>
               <div>
-                <div style={styles.headerTitle}>{activeTab.replace('-', ' ')}</div>
+                <div style={styles.headerTitle}>{(activeTab || '').replace('-', ' ')}</div>
                 <div style={styles.headerStatus}>
-                  <div style={{ ...styles.statusDot, background: isSocketConnected ? '#10b981' : '#f43f5e' }} />
-                  {isSocketConnected ? 'Live' : 'Syncing'}
+                  <div style={{ ...styles.statusDot, background: '#10b981' }} />
+                  Polygon PoS On-chain
                 </div>
               </div>
             </div>
@@ -540,26 +556,13 @@ function App() {
               <button
                 className="desktop-only"
                 style={styles.gasBtn(isGasless)}
-                onClick={() => setIsGasless(!isGasless)}
+                onClick={handleToggleGasless}
+                disabled={isInitializingGasless}
                 aria-label={`Toggle Gasless mode, currently ${isGasless ? 'on' : 'off'}`}
               >
-                {isGasless ? <ShieldCheck size={14} /> : <Shield size={14} />}
-                {isGasless ? 'Gasless' : 'Standard'}
+                {isInitializingGasless ? <Shield size={14} className="spin" /> : isGasless ? <ShieldCheck size={14} /> : <Shield size={14} />}
+                {isInitializingGasless ? 'Initializing...' : isGasless ? 'Gasless' : 'Standard'}
               </button>
-
-              {smartAccount && smartAccount.accountAddress && (
-                <div className="desktop-only" style={styles.smartWallet}>
-                  <div>
-                    <div style={styles.saLabel}>Smart Wallet</div>
-                    <div style={styles.saAddr}>
-                      {smartAccount.accountAddress.slice(0, 6)}...{smartAccount.accountAddress.slice(-4)}
-                    </div>
-                  </div>
-                  <button style={styles.logoutBtn} onClick={handleLogout}>
-                    <LogOut size={14} />
-                  </button>
-                </div>
-              )}
 
               {!smartAccount && (
                 <button className="desktop-only" style={styles.socialBtn} onClick={handleSocialLogin} disabled={isLoggingIn}>
@@ -568,7 +571,19 @@ function App() {
                 </button>
               )}
 
-              <ConnectButton accountStatus="avatar" chainStatus="icon" showBalance={false} />
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <ConnectButton accountStatus="avatar" chainStatus="icon" showBalance={false} />
+                {(isWalletConnected || smartAccount) && (
+                  <button
+                    style={{ ...styles.logoutBtn, height: 40, width: 40, justifyContent: 'center' }}
+                    onClick={handleLogout}
+                    title="Sign Out"
+                    aria-label="Logout"
+                  >
+                    <LogOut size={16} />
+                  </button>
+                )}
+              </div>
             </div>
           </header>
 

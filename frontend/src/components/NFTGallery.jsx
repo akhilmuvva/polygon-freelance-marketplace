@@ -88,8 +88,6 @@ function NFTCard({ balanceIndex, owner }) {
         address: CONTRACT_ADDRESS, abi: FreelanceEscrowABI.abi, functionName: 'tokenOfOwnerByIndex', args: [owner, BigInt(balanceIndex)],
     });
 
-
-
     const image = "https://images.unsplash.com/photo-1639762681485-074b7f938ba0?auto=format&fit=crop&w=800&q=80";
 
     return (

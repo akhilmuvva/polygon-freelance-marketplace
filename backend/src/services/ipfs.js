@@ -68,3 +68,18 @@ export const uploadFileToIPFS = async (fileBuffer, fileName) => {
         throw error;
     }
 };
+/**
+ * Fetches JSON from IPFS
+ * @param {string} hash 
+ * @returns {Promise<Object>}
+ */
+export const getJSONFromIPFS = async (hash) => {
+    if (!hash) return null;
+    try {
+        const response = await axios.get(`https://gateway.pinata.cloud/ipfs/${hash}`, { timeout: 10000 });
+        return response.data;
+    } catch (error) {
+        console.warn(`[IPFS] Failed to fetch ${hash}:`, error.message);
+        return null; // Fallback
+    }
+};
