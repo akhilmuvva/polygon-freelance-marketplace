@@ -38,4 +38,4 @@ The scope of this policy includes:
 - Social engineering or phishing attacks.
 
 Thank you for helping keep PolyLance secure!
-- **Security Lead:** Akhil Muvva
+- **Security Leads:** Akhil Muvva & Jhansi Kupireddy

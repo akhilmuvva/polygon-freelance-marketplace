@@ -1,4 +1,5 @@
 # PolyLance Developer Quick Reference
+**By Akhil Muvva & Jhansi Kupireddy**
 
 ## 🚀 Quick Start
 

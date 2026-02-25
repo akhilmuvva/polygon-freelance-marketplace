@@ -1,4 +1,5 @@
 # Environment Variables Setup Guide
+**Maintained by:** Akhil Muvva & Jhansi Kupireddy
 
 ## 🔑 Required Environment Variables
 

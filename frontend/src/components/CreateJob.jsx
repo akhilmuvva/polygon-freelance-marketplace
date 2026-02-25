@@ -5,7 +5,7 @@ import { Send, Loader2, Info, Plus, Trash2, Target, Cpu, Sparkles } from 'lucide
 import { createJobGasless } from '../utils/biconomy';
 import FreelanceEscrowABI from '../contracts/FreelanceEscrow.json';
 import { CONTRACT_ADDRESS, SUPPORTED_TOKENS } from '../constants';
-import { uploadJSONToIPFS } from '../utils/ipfs';
+import StorageService from '../services/StorageService';
 import { useTransactionToast } from '../hooks/useTransactionToast';
 import { useAnimeAnimations } from '../hooks/useAnimeAnimations';
 
@@ -86,12 +86,29 @@ function CreateJob({ onJobCreated, gasless, smartAccount }) {
         if (!freelancer || !amount || !title) return;
         const rawAmount = parseUnits(amount, selectedToken.decimals);
         let ipfsHash = '';
+
         try {
-            ipfsHash = await uploadJSONToIPFS({
-                title, category, client: address, freelancer, amount, token: selectedToken.symbol,
-                milestones: milestones.map(m => ({ amount: m.amount, description: m.description }))
-            });
-        } catch (err) { console.error('IPFS failed:', err); }
+            // Pack job details for IPFS
+            const metadata = {
+                title,
+                category,
+                client: address,
+                freelancer,
+                amount,
+                token: selectedToken.symbol,
+                milestones: milestones.map(m => ({
+                    amount: m.amount,
+                    description: m.description
+                }))
+            };
+
+            const { cid } = await StorageService.uploadMetadata(metadata);
+            ipfsHash = cid;
+            console.log('Job metadata saved to IPFS:', ipfsHash);
+        } catch (err) {
+            console.error('Failed to save job metadata to IPFS:', err);
+            // We continue even if IPFS fails, though it's not ideal for the UI
+        }
 
         const deadline = Math.floor(Date.now() / 1000) + (Number(durationDays) * 86400);
 

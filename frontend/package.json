@@ -1,7 +1,12 @@
 {
   "name": "frontend",
+  "version": "1.1.0",
+  "author": "Akhil Muvva",
+  "contributors": [
+    "Jhansi Kupireddy"
+  ],
+  "license": "Apache-2.0",
   "private": true,
-  "version": "0.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite --host --port 5174",

@@ -1,5 +1,5 @@
-# PolyLance Zenith: The Supreme Decentralized Marketplace
-**Founding Architect:** Akhil Muvva
+# PolyLance Zenith
+**Maintained and Developed by:** [Akhil Muvva](https://github.com/akhilmuvva) & [Jhansi Kupireddy](https://github.com/jhansikupireddy-lang)
 ## 👥 Contributors
 | Name | GitHub |
 | :--- | :--- |
@@ -141,7 +141,7 @@ If deploying to a new network, verify contracts using Hardhat:
 npx hardhat verify --network polygon_amoy <CONTRACT_ADDRESS> <CONSTRUCTOR_ARGS>
 ```
 *Ensure `POLYGONSCAN_API_KEY` is set in your `.env` file.*
-## 👥 Contributors
+## 👥 Developers
 | Name | GitHub |
 | :--- | :--- |
 | **Muvva Akhil Yadav** | [@akhilmuvva](https://github.com/akhilmuvva) |

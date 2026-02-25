@@ -1,4 +1,5 @@
 # PolyLance Platform Architecture
+**Designed and Maintained by:** Akhil Muvva & Jhansi Kupireddy
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐

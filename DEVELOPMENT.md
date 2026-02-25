@@ -1,5 +1,5 @@
 # PolyLance Development Documentation
-**Lead Author:** Akhil Muvva
+**Authors:** Akhil Muvva & Jhansi Kupireddy
 
 ## Table of Contents
 1. [Architecture Overview](#architecture-overview)

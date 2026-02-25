@@ -116,6 +116,9 @@ export const GET_DISPUTES = gql`
 `;
 
 export const SubgraphService = {
+  /**
+   * Fetches a list of recent jobs
+   */
   getJobs: async (first = 20, skip = 0) => {
     try {
       const { data } = await client.query({
@@ -125,11 +128,14 @@ export const SubgraphService = {
       });
       return data.jobs;
     } catch (error) {
-      console.error('[SUBGRAPH] Failed to fetch jobs:', error);
+      console.error('Failed to fetch jobs from subgraph:', error);
       return [];
     }
   },
 
+  /**
+   * Gets stats for a specific user address
+   */
   getUserStats: async (address) => {
     try {
       const { data } = await client.query({
@@ -139,11 +145,14 @@ export const SubgraphService = {
       });
       return data;
     } catch (error) {
-      console.error('[SUBGRAPH] Failed to fetch user stats:', error);
+      console.error('Failed to fetch user stats from subgraph:', error);
       return null;
     }
   },
 
+  /**
+   * Gets the full portfolio and job history for a user
+   */
   getUserPortfolio: async (address) => {
     try {
       const { data } = await client.query({
@@ -153,11 +162,14 @@ export const SubgraphService = {
       });
       return data;
     } catch (error) {
-      console.error('[SUBGRAPH] Failed to fetch user portfolio:', error);
+      console.error('Failed to fetch user portfolio from subgraph:', error);
       return null;
     }
   },
 
+  /**
+   * Gets the top freelancers by reputation
+   */
   getLeaderboard: async () => {
     try {
       const { data } = await client.query({
@@ -166,11 +178,14 @@ export const SubgraphService = {
       });
       return data.freelancers;
     } catch (error) {
-      console.error('[SUBGRAPH] Failed to fetch leaderboard:', error);
+      console.error('Failed to fetch leaderboard from subgraph:', error);
       return [];
     }
   },
 
+  /**
+   * Gets global platform statistics
+   */
   getEcosystemStats: async () => {
     try {
       const { data } = await client.query({
@@ -179,11 +194,14 @@ export const SubgraphService = {
       });
       return data.globalStat;
     } catch (error) {
-      console.error('[SUBGRAPH] Failed to fetch ecosystem stats:', error);
+      console.error('Failed to fetch ecosystem stats from subgraph:', error);
       return null;
     }
   },
 
+  /**
+   * Gets a list of jobs that are currently in dispute
+   */
   getDisputes: async () => {
     try {
       const { data } = await client.query({
@@ -192,7 +210,7 @@ export const SubgraphService = {
       });
       return data.jobs;
     } catch (error) {
-      console.error('[SUBGRAPH] Failed to fetch disputes:', error);
+      console.error('Failed to fetch disputes from subgraph:', error);
       return [];
     }
   }

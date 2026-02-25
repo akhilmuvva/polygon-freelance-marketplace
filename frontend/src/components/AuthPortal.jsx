@@ -138,17 +138,17 @@ const AuthPortal = ({ onSocialLogin, isLoggingIn }) => {
                     <div>
                         <div style={st.badge}>
                             <Sparkles size={13} style={{ color: 'var(--accent)' }} />
-                            <span style={st.badgeText}>PolyLance Protocol</span>
+                            <span style={st.badgeText}>Decentralized Freelancing</span>
                         </div>
 
                         <h1 style={st.heading}>
-                            The Freelance<br />
-                            <span style={st.headingAccent}>Marketplace</span><br />
-                            for Web3.
+                            Your Work,<br />
+                            <span style={st.headingAccent}>Your Income</span><br />
+                            Your Rules.
                         </h1>
 
                         <p style={st.desc}>
-                            Connect your wallet to access decentralized escrow, on-chain reputation, and global cross-chain payments.
+                            Join a trustless marketplace for developers and designers. Secure contracts, fast payments, and on-chain verification.
                         </p>
 
                         <div style={st.features}>
@@ -179,7 +179,7 @@ const AuthPortal = ({ onSocialLogin, isLoggingIn }) => {
 
                         <div style={{ position: 'relative', zIndex: 1 }}>
                             <h3 style={st.authTitle}>Seamless Access</h3>
-                            <p style={st.authSub}>Experience the hyper-structure with zero friction.</p>
+                            <p style={st.authSub}>Secure, decentralized access to the workspace.</p>
 
                             <div style={st.btnGroup}>
                                 <motion.button

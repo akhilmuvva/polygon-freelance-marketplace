@@ -55,7 +55,7 @@ const ProofOfWorkModal = ({ isOpen, onClose, jobId, onSubmitted }) => {
 
     React.useEffect(() => {
         if (isSuccess) {
-            toast.success("Proof of Work successfully anchored to the protocol! 🚀");
+            toast.success("Work submitted successfully! The client has been notified. 🚀");
             if (onSubmitted) onSubmitted();
             onClose();
         }

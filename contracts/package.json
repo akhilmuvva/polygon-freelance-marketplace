@@ -1,7 +1,11 @@
 {
   "name": "contracts",
-  "version": "1.0.0",
-  "description": "",
+  "version": "1.1.0",
+  "author": "Akhil Muvva",
+  "contributors": [
+    "Jhansi Kupireddy"
+  ],
+  "description": "Smart contracts for PolyLance Zenith marketplace",
   "main": "hardhat.config.js",
   "scripts": {
     "test": "npx hardhat test",

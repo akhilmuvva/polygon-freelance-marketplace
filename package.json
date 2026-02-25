@@ -1,6 +1,10 @@
 {
     "name": "polylance-root",
     "version": "1.0.0",
+    "author": "Akhil Muvva",
+    "contributors": [
+        "Jhansi Kupireddy"
+    ],
     "private": true,
     "scripts": {
         "install": "npm install --prefix backend",

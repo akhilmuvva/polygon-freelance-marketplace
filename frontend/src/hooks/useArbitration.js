@@ -1,7 +1,7 @@
 import { useWriteContract, useAccount, usePublicClient } from 'wagmi';
 import FreelanceEscrowABI from '../contracts/FreelanceEscrow.json';
 import { CONTRACT_ADDRESS } from '../constants';
-import { uploadJSONToIPFS } from '../utils/ipfs';
+import StorageService from '../services/StorageService';
 import { toast } from 'react-toastify';
 
 /**
@@ -65,14 +65,13 @@ export function useArbitration() {
     };
 
     /**
-     * Submit evidence to the decentralized court
-     * @param {number} jobId 
-     * @param {object} evidenceData - JSON evidence data
+     * Submits evidence to the dispute. We upload the JSON details to IPFS
+     * and then anchor the CID on the blockchain.
      */
     const submitEvidence = async (jobId, evidenceData) => {
         try {
             toast.info("Uploading evidence to IPFS...");
-            const cid = await uploadJSONToIPFS(evidenceData);
+            const { cid } = await StorageService.uploadMetadata(evidenceData);
 
             const tx = await writeContractAsync({
                 address: CONTRACT_ADDRESS,
@@ -81,11 +80,11 @@ export function useArbitration() {
                 args: [BigInt(jobId), cid]
             });
 
-            toast.success("Evidence submitted to on-chain court.");
+            toast.success("Evidence submitted successfully.");
             return tx;
         } catch (error) {
-            console.error('[ARBITRATION] Failed to submit evidence:', error);
-            toast.error("Evidence submission failed.");
+            console.error('Evidence submission failed:', error);
+            toast.error("Failed to submit evidence.");
             throw error;
         }
     };
