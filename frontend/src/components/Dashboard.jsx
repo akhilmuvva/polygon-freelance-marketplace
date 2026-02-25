@@ -8,8 +8,9 @@ import {
     Cpu, Rocket, Target, Flame, Diamond
 } from 'lucide-react';
 import FreelanceEscrowABI from '../contracts/FreelanceEscrow.json';
-import { CONTRACT_ADDRESS } from '../constants';
+import { CONTRACT_ADDRESS, REPUTATION_ADDRESS } from '../constants';
 import { api } from '../services/api';
+import ProfileService from '../services/ProfileService';
 import LiveJobFeed from './LiveJobFeed';
 import AiRecommendations from './AiRecommendations';
 import WithdrawButton from './WithdrawButton';
@@ -18,6 +19,17 @@ import { useAnimeAnimations } from '../hooks/useAnimeAnimations';
 import StorageService from '../services/StorageService';
 import { SubgraphService } from '../services/SubgraphService';
 import { Camera, Loader2 } from 'lucide-react';
+import { useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
+
+const REPUTATION_ABI = [
+    {
+        "inputs": [{ "internalType": "string", "name": "cid", "type": "string" }],
+        "name": "updatePortfolio",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    }
+];
 
 /* ─── Inline Styles ─── */
 const s = {
@@ -220,6 +232,9 @@ function Dashboard({ address: propAddress }) {
     const statValueRefs = useRef([]);
     const { staggerFadeIn, slideInLeft, float, countUp } = useAnimeAnimations();
 
+    const { data: hash, writeContract, isPending: isContractPending } = useWriteContract();
+    const { isLoading: isTxConfirming } = useWaitForTransactionReceipt({ hash });
+
     // Run entrance animations after data loads
     useEffect(() => {
         if (!isLoadingProfile && isConnected) {
@@ -261,17 +276,16 @@ function Dashboard({ address: propAddress }) {
     const fetchData = React.useCallback(async (isInitial = false) => {
         if (!isConnected || !address) return;
 
-        // Only show skeletons if we have absolutely no address in state yet (first mount)
         if (isInitial && !profile.address) setIsLoadingProfile(true);
 
         try {
             const [pData, aData, sData] = await Promise.all([
-                api.getProfile(address).catch(() => null),
+                ProfileService.getProfile(address).catch(() => null),
                 api.getAnalytics().catch(() => ({})),
                 SubgraphService.getUserStats(address).catch(() => null),
             ]);
 
-            if (pData?.address) setProfile(pData);
+            if (pData?.address) setProfile(prev => ({ ...prev, ...pData }));
 
             // Merge Subgraph stats into analytics if possible
             if (sData) {
@@ -308,13 +322,30 @@ function Dashboard({ address: propAddress }) {
         e.preventDefault();
         setIsSaving(true);
         try {
+            // 1. Upload to IPFS (Decentralized Database)
+            console.log('[Dashboard] Initiating sovereign profile save...');
+            const cid = await ProfileService.uploadToIPFS(profile);
+
+            // 2. Save CID on-chain (Directly to FreelancerReputation contract)
+            writeContract({
+                address: REPUTATION_ADDRESS,
+                abi: REPUTATION_ABI,
+                functionName: 'updatePortfolio',
+                args: [cid],
+            });
+
+            // 3. Optional: Sync with backend for legacy/search support
             const { nonce } = await api.getNonce(address);
-            if (!nonce) throw new Error('No nonce');
-            const message = `Login to PolyLance: ${nonce}`;
-            const signature = await signMessageAsync({ message });
-            await api.updateProfile({ address, ...profile, signature, message });
-        } catch (err) { console.error(err); }
-        finally { setIsSaving(false); }
+            if (nonce) {
+                const message = `Login to PolyLance: ${nonce}`;
+                const signature = await signMessageAsync({ message });
+                await api.updateProfile({ address, ...profile, signature, message, ipfsCID: cid });
+            }
+        } catch (err) {
+            console.error('Save Profile Failed:', err);
+        } finally {
+            setIsSaving(false);
+        }
     };
 
     const handleAiPolish = async () => {

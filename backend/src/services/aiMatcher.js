@@ -20,7 +20,7 @@ export async function calculateMatchScore(jobDescription, freelancerProfile) {
 
         // Upgrading to 2026-spec Gemini 2.0 for higher reasoning density
         const model = genAI.getGenerativeModel({
-            model: "gemini-2.0-flash-exp",
+            model: "gemini-1.5-flash",
             generationConfig: {
                 temperature: 0.1, // Precision over creativity
                 topP: 0.95,
@@ -206,7 +206,7 @@ export async function polishProfileBio(name, category, skills, roughBio) {
 export async function analyzeDispute(jobData, chatHistory, workMetadata) {
     try {
         const model = genAI.getGenerativeModel({
-            model: "gemini-2.0-flash-exp",
+            model: "gemini-1.5-flash",
             generationConfig: { temperature: 0.05 }
         });
 

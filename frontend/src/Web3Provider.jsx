@@ -11,8 +11,8 @@ import { WagmiProvider, http, fallback, useAccount } from 'wagmi';
 import { polygon, polygonAmoy } from 'wagmi/chains';
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 import { SiweMessage } from 'siwe';
-import { ApolloClient, InMemoryCache, HttpLink } from '@apollo/client/core/index.js';
-import { ApolloProvider } from '@apollo/client/react/index.js';
+import { ApolloClient, InMemoryCache, HttpLink } from '@apollo/client';
+import { ApolloProvider } from '@apollo/client/react';
 import { HuddleClient, HuddleProvider } from '@huddle01/react';
 import { api } from './services/api';
 
@@ -53,7 +53,7 @@ const queryClient = new QueryClient({
 
 const apolloClient = new ApolloClient({
     link: new HttpLink({
-        uri: import.meta.env.VITE_SUBGRAPH_URL || 'https://api.studio.thegraph.com/query/STUDIO_ID/poly-lance/v0.0.1',
+        uri: import.meta.env.VITE_SUBGRAPH_URL || 'https://api.studio.thegraph.com/query/poly-lance-studio/poly-lance/v0.0.1',
     }),
     cache: new InMemoryCache(),
 });
@@ -164,32 +164,27 @@ export function Web3Provider({ children }) {
     }), []);
 
     return (
-        <WagmiProvider config={config}>
+        <WagmiProvider config={config} reconnectOnMount={false}>
             <QueryClientProvider client={queryClient}>
                 <ApolloProvider client={apolloClient}>
-                    <RainbowKitAuthenticationProvider
-                        adapter={authAdapter}
-                        status={authStatus}
-                    >
-                        <RainbowKitProvider theme={darkTheme({
-                            accentColor: '#8a2be2',
-                            accentColorForeground: 'white',
-                            borderRadius: 'medium',
-                            overlayBlur: 'small',
-                        })}>
-                            {huddleClient ? (
-                                <HuddleProvider client={huddleClient}>
-                                    <ConnectionLogger>
-                                        {children}
-                                    </ConnectionLogger>
-                                </HuddleProvider>
-                            ) : (
+                    <RainbowKitProvider theme={darkTheme({
+                        accentColor: '#8a2be2',
+                        accentColorForeground: 'white',
+                        borderRadius: 'medium',
+                        overlayBlur: 'small',
+                    })}>
+                        {huddleClient ? (
+                            <HuddleProvider client={huddleClient}>
                                 <ConnectionLogger>
                                     {children}
                                 </ConnectionLogger>
-                            )}
-                        </RainbowKitProvider>
-                    </RainbowKitAuthenticationProvider>
+                            </HuddleProvider>
+                        ) : (
+                            <ConnectionLogger>
+                                {children}
+                            </ConnectionLogger>
+                        )}
+                    </RainbowKitProvider>
                 </ApolloProvider>
             </QueryClientProvider>
         </WagmiProvider>

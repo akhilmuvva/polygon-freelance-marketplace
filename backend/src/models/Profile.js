@@ -6,6 +6,7 @@ const profileSchema = new mongoose.Schema({
     bio: { type: String },
     skills: { type: String },
     avatarIpfsHash: { type: String },
+    ipfsCID: { type: String }, // The primary CID for the whole profile object
     website: { type: String },
     github: { type: String },
     totalEarned: { type: String, default: '0' },
@@ -15,6 +16,7 @@ const profileSchema = new mongoose.Schema({
     ratingCount: { type: Number, default: 0 },
     reputationScore: { type: Number, default: 0 },
     nonce: { type: String },
+    isSovereign: { type: Boolean, default: false }, // Flag to indicate data is backed by IPFS
 }, { timestamps: true });
 
 profileSchema.index({ reputationScore: -1 });

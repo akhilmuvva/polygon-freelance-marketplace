@@ -81,6 +81,17 @@ export const app = express();
 const PORT = process.env.PORT || 3001;
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/polylance';
 
+const REPUTATION_ADDRESS = process.env.REPUTATION_ADDRESS || '0x89791A9A3210667c828492DB98DCa3e2076cc373';
+const REPUTATION_ABI = [
+    {
+        "inputs": [{ "internalType": "address", "name": "", "type": "address" }],
+        "name": "portfolioCID",
+        "outputs": [{ "internalType": "string", "name": "", "type": "string" }],
+        "stateMutability": "view",
+        "type": "function"
+    }
+];
+
 app.use(helmet({
     contentSecurityPolicy: {
         directives: {
@@ -302,9 +313,42 @@ app.post('/api/auth/verify', async (req, res) => {
 // Profile Routes
 app.get('/api/profiles/:address', async (req, res) => {
     const { address } = req.params;
+    const cleanAddress = address.toLowerCase();
     try {
-        const profile = await Profile.findOne({ address: address.toLowerCase() });
-        res.json(profile || {});
+        let profile = await Profile.findOne({ address: cleanAddress });
+
+        // DECENTRALIZED FALLBACK: If not in Mongo, check On-Chain
+        if (!profile || !profile.name) {
+            console.log(`[SOVEREIGN] Profile missing in DB, checking on-chain: ${cleanAddress}`);
+            try {
+                const portfolioCID = await publicClient.readContract({
+                    address: REPUTATION_ADDRESS,
+                    abi: REPUTATION_ABI,
+                    functionName: 'portfolioCID',
+                    args: [cleanAddress]
+                });
+
+                if (portfolioCID) {
+                    console.log(`[SOVEREIGN] Found CID on-chain: ${portfolioCID}. Fetching from IPFS...`);
+                    const { getJSONFromIPFS } = await import('./services/ipfs.js');
+                    const ipfsData = await getJSONFromIPFS(portfolioCID);
+
+                    if (ipfsData) {
+                        // Auto-cache to Mongo for search performance
+                        profile = await Profile.findOneAndUpdate(
+                            { address: cleanAddress },
+                            { ...ipfsData, ipfsCID: portfolioCID, isSovereign: true },
+                            { upsert: true, new: true }
+                        );
+                        console.log(`[SOVEREIGN] Profile successfully resolved and cached from IPFS.`);
+                    }
+                }
+            } catch (chainErr) {
+                console.warn(`[SOVEREIGN] Remote resolution failed for ${cleanAddress}: ${chainErr.message}`);
+            }
+        }
+
+        res.json(profile || { address: cleanAddress, isPlaceholder: true });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -320,7 +364,7 @@ app.post('/api/profiles',
         const errors = validationResult(req);
         if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
 
-        const { address, name, bio, skills, avatarIpfsHash, signature, message } = req.body;
+        const { address, name, bio, skills, avatarIpfsHash, ipfsCID, signature, message } = req.body;
         console.log(`[AUTH] Verifying profile for ${address}`);
         console.log(`[AUTH] Received body:`, JSON.stringify(req.body, null, 2));
         try {
@@ -356,9 +400,15 @@ app.post('/api/profiles',
             }
 
             // Update profile and clear nonce
+            const updateFields = { name, bio, skills, avatarIpfsHash, nonce: null };
+            if (ipfsCID) {
+                updateFields.ipfsCID = ipfsCID;
+                updateFields.isSovereign = true;
+            }
+
             const updatedProfile = await Profile.findOneAndUpdate(
                 { address: address.toLowerCase() },
-                { name, bio, skills, avatarIpfsHash, nonce: null },
+                updateFields,
                 { upsert: true, new: true }
             );
             console.log(`[AUTH] Profile updated/verified for ${address}`);
@@ -391,7 +441,52 @@ app.get('/api/jobs', async (req, res) => {
 app.get('/api/jobs/:jobId', async (req, res) => {
     const { jobId } = req.params;
     try {
-        const job = await JobMetadata.findOne({ jobId: parseInt(jobId) });
+        let job = await JobMetadata.findOne({ jobId: parseInt(jobId) });
+
+        // SOVEREIGN FALLBACK
+        if (!job) {
+            console.log(`[SOVEREIGN] Job #${jobId} missing in DB, checking on-chain...`);
+            try {
+                const { CONTRACT_ADDRESS } = await import('./services/syncer.js');
+                const FreelanceEscrowABI = JSON.parse(fs.readFileSync(path.join(__dirname, '../contracts', 'FreelanceEscrow.json'), 'utf8'));
+
+                const jobData = await publicClient.readContract({
+                    address: CONTRACT_ADDRESS,
+                    abi: FreelanceEscrowABI.abi,
+                    functionName: 'jobs',
+                    args: [BigInt(jobId)]
+                });
+
+                const ipfsHash = Array.isArray(jobData) ? jobData[14] : jobData.ipfsHash;
+                if (ipfsHash) {
+                    const { getJSONFromIPFS } = await import('./services/ipfs.js');
+                    const metadata = await getJSONFromIPFS(ipfsHash);
+
+                    if (metadata) {
+                        job = await JobMetadata.findOneAndUpdate(
+                            { jobId: parseInt(jobId) },
+                            {
+                                jobId: parseInt(jobId),
+                                title: metadata.title || `Job #${jobId}`,
+                                description: metadata.description || '',
+                                category: metadata.category || 'General',
+                                ipfsHash: ipfsHash,
+                                client: Array.isArray(jobData) ? jobData[1].toLowerCase() : jobData.client.toLowerCase(),
+                                freelancer: Array.isArray(jobData) ? jobData[2].toLowerCase() : jobData.freelancer.toLowerCase(),
+                                amount: Array.isArray(jobData) ? jobData[3].toString() : jobData.amount.toString(),
+                                status: Array.isArray(jobData) ? jobData[10] : jobData.status,
+                                deadline: Number(Array.isArray(jobData) ? jobData[4] : jobData.deadline)
+                            },
+                            { upsert: true, new: true }
+                        );
+                        console.log(`[SOVEREIGN] Job #${jobId} successfully recovered from On-Chain + IPFS.`);
+                    }
+                }
+            } catch (err) {
+                console.warn(`[SOVEREIGN] Job #${jobId} recovery failed: ${err.message}`);
+            }
+        }
+
         if (!job) return res.status(404).json({ error: 'Job not found' });
         res.json(job);
     } catch (error) {

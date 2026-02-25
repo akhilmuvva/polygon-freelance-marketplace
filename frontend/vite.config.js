@@ -14,6 +14,10 @@ export default defineConfig({
     react(),
     process.env.NODE_ENV === 'development' && basicSsl(),
   ].filter(Boolean),
+  define: {
+    'process.env': {},
+    'global': 'globalThis',
+  },
   resolve: {
     alias: {
       process: 'process/browser',

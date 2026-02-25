@@ -31,6 +31,7 @@ const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 // Updated default address for FreelanceEscrow - Aligned with frontend constants.js
 let CONTRACT_ADDRESS = IS_AMOY ? '0x25F6C8ed995C811E6c0ADb1D66A60830E8115e9A' : '0x38c76A767d45Fc390160449948aF80569E2C4217';
 let CROSS_CHAIN_MANAGER_ADDRESS = IS_AMOY ? '0x5C4aF960570bFc0861198A699435b54FC9012345' : '0x5C4aF960570bFc0861198A699435b54FC9012345';
+let REPUTATION_ADDRESS = IS_AMOY ? '0x89791A9A3210667c828492DB98DCa3e2076cc373' : '0xDC57724Ea354ec925BaFfCA0cCf8A1248a8E5CF1';
 
 try {
     const deployPath = path.join(__dirname, '../../../contracts/scripts/deployment_addresses.json');
@@ -62,7 +63,8 @@ const EVENTS = {
     Evidence: parseAbiItem('event Evidence(address indexed _arbitrator, uint256 indexed _evidenceID, address indexed _party, string _evidence)'),
     ReviewSubmitted: parseAbiItem('event ReviewSubmitted(uint256 indexed jobId, address indexed client, address indexed freelancer, uint8 rating, string review)'),
     MilestoneReleased: parseAbiItem('event MilestoneReleased(uint256 indexed jobId, address indexed freelancer, uint256 indexed milestoneId, uint256 amount)'),
-    JobApplied: parseAbiItem('event JobApplied(uint256 indexed jobId, address indexed freelancer, uint256 stake)')
+    JobApplied: parseAbiItem('event JobApplied(uint256 indexed jobId, address indexed freelancer, uint256 stake)'),
+    PortfolioUpdated: parseAbiItem('event PortfolioUpdated(address indexed freelancer, string cid)')
 };
 
 const CROSS_CHAIN_EVENTS = {
@@ -209,6 +211,24 @@ const handlers = {
     CrossChainDisputeInitiated: async (args) => {
         const { localJobId } = args;
         await JobMetadata.findOneAndUpdate({ jobId: Number(localJobId) }, { status: 3 });
+    },
+    PortfolioUpdated: async (args) => {
+        const { freelancer, cid } = args;
+        logger.sync(`[SOVEREIGN] Portfolio update detected for ${freelancer}: ${cid}`);
+
+        try {
+            const metadata = await getJSONFromIPFS(cid);
+            if (metadata) {
+                await Profile.findOneAndUpdate(
+                    { address: freelancer.toLowerCase() },
+                    { ...metadata, ipfsCID: cid, isSovereign: true },
+                    { upsert: true }
+                );
+                logger.success(`[SOVEREIGN] Profile cache updated for ${freelancer}`);
+            }
+        } catch (err) {
+            logger.error(`[SOVEREIGN] Failed to update profile cache for ${freelancer}`, 'SYNC', err);
+        }
     }
 };
 
@@ -348,9 +368,10 @@ export async function startSyncer(io) {
 
     // 2. Catch up in Chunks
     if (currentBlock >= resumeBlock) {
-        // Sync both contracts from the same resume point to ensure consistency
+        // Sync contracts from the same resume point to ensure consistency
         await fetchLogsInChunks(CONTRACT_ADDRESS, abi, resumeBlock, currentBlock, 'FreelanceEscrow');
         await fetchLogsInChunks(CROSS_CHAIN_MANAGER_ADDRESS, crossChainAbi, resumeBlock, currentBlock, 'CrossChainEscrowManager');
+        await fetchLogsInChunks(REPUTATION_ADDRESS, [EVENTS.PortfolioUpdated], resumeBlock, currentBlock, 'FreelancerReputation');
     }
 
     // 3. Start Live Watchers
@@ -371,6 +392,14 @@ export async function startSyncer(io) {
             onError: (err) => logger.error(`Watcher error for ${name}:`, 'SYNC', err)
         });
     }
+
+    // Watch Reputation Contract for Sovereign Profile updates
+    client.watchEvent({
+        address: REPUTATION_ADDRESS,
+        event: EVENTS.PortfolioUpdated,
+        onLogs: (logs) => logs.forEach(log => processLog(log, 'PortfolioUpdated')),
+        onError: (err) => logger.error(`Watcher error for PortfolioUpdated:`, 'SYNC', err)
+    });
 
     logger.success('Event syncer caught up and watching for live events.', 'SYNC');
 }

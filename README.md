@@ -146,3 +146,6 @@ npx hardhat verify --network polygon_amoy <CONTRACT_ADDRESS> <CONSTRUCTOR_ARGS>
 | :--- | :--- |
 | **Muvva Akhil Yadav** | [@akhilmuvva](https://github.com/akhilmuvva) |
 | **Jhansi Kupireddy** | [@jhansikupireddy-lang](https://github.com/jhansikupireddy-lang) |
+
+## 📜 License
+This project is licensed under the **Apache License 2.0**. See the [LICENSE](LICENSE) file for the full text.

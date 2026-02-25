@@ -12,6 +12,7 @@ import UserLink from './UserLink';
 import AiMatchRating from './AiMatchRating';
 import { motion } from 'framer-motion';
 import api from '../services/api';
+import JobService from '../services/JobService';
 
 const GET_JOBS = gql`
     query GetJobs {
@@ -253,6 +254,24 @@ const JobsList = ({ onSelectChat, onFiatPay, gasless, smartAccount: propSmartAcc
 
 const JobCard = ({ job, address, onSelectChat, onFiatPay }) => {
     const tokenInfo = SUPPORTED_TOKENS.find(t => t.address?.toLowerCase() === job.token?.toLowerCase()) || SUPPORTED_TOKENS[0];
+
+    // Local state for IPFS-resolved data
+    const [meta, setMeta] = useState({
+        title: job.title || 'Loading...',
+        description: job.description || 'Fetching decentralized metadata...',
+        category: job.category || 'General'
+    });
+
+    useEffect(() => {
+        const resolve = async () => {
+            if (!job.title || !job.description) {
+                const resolved = await JobService.resolveMetadata(job.ipfsHash);
+                if (resolved) setMeta(resolved);
+            }
+        };
+        resolve();
+    }, [job.ipfsHash, job.title, job.description]);
+
     const statusColor = job.status === 0 ? 'var(--success)' : job.status === 3 ? 'var(--danger)' : 'var(--accent-light)';
 
     return (
@@ -267,16 +286,16 @@ const JobCard = ({ job, address, onSelectChat, onFiatPay }) => {
                     padding: '4px 10px', borderRadius: 8, background: `${statusColor}15`,
                     color: statusColor, fontSize: '0.62rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.05em'
                 }}>
-                    {job.category || 'Development'}
+                    {meta.category}
                 </div>
                 <div style={{ fontSize: '1.2rem', fontWeight: 900, color: '#fff' }}>
                     {formatUnits(BigInt(job.amount || '0'), tokenInfo.decimals)} <span style={{ fontSize: '0.8rem', fontWeight: 500, color: 'var(--text-tertiary)' }}>{tokenInfo.symbol}</span>
                 </div>
             </div>
 
-            <h3 style={{ fontSize: '1.1rem', fontWeight: 800, marginBottom: 12, lineHeight: 1.4, color: '#fff' }}>{job.title}</h3>
+            <h3 style={{ fontSize: '1.1rem', fontWeight: 800, marginBottom: 12, lineHeight: 1.4, color: '#fff' }}>{meta.title}</h3>
             <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: 20, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', lineHeight: 1.6 }}>
-                {job.description}
+                {meta.description}
             </p>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 20 }}>

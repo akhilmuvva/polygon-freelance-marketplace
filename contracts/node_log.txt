@@ -1,4 +1,0 @@
-[dotenv@17.2.4] injecting env (3) from .env -- tip: Γ£à audit secrets and track compliance: https://dotenvx.com/ops
-
-Error HH604: Error running JSON-RPC server: vm_trace_decoder_1.VmTraceDecoder is not a constructor
-For more info go to https://hardhat.org/HH604 or run Hardhat with --show-stack-traces
