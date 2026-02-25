@@ -2,20 +2,36 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { nodePolyfills } from 'vite-plugin-node-polyfills'
 import basicSsl from '@vitejs/plugin-basic-ssl'
+import path from 'path'
+import { fileURLToPath } from 'url'
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 // https://vite.dev/config/
 export default defineConfig({
   base: './',
   plugins: [
     react(),
-    nodePolyfills(),
     process.env.NODE_ENV === 'development' && basicSsl(),
   ].filter(Boolean),
+  resolve: {
+    alias: {
+      process: 'process/browser',
+      stream: 'stream-browserify',
+      zlib: 'browserify-zlib',
+      util: 'util',
+      buffer: 'buffer',
+      string_decoder: 'string_decoder',
+    },
+  },
   server: {
     host: true,
   },
   build: {
     chunkSizeWarningLimit: 1200,
+    commonjsOptions: {
+      transformMixedEsModules: true,
+    },
     rollupOptions: {
       output: {
         manualChunks(id) {

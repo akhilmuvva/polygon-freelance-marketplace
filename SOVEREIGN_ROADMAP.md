@@ -33,7 +33,10 @@ To achieve a "bare metal," censorship-resistant marketplace, we must migrate awa
 
 ## 5. Hosting & Deployment (Fleek/IPFS)
 *   **Target:** Move frontend hosting from Vercel/Render to **Fleek**.
-*   **Constraint:** Ensure `base: './'` in `vite.config.js` for IPFS-compatible relative paths.
+*   **Status:** **IN PROGRESS** (fleek.config.js created).
+*   **Actionable:**
+    *   Initialize `fleek.config.js` for IPFS deployments.
+    *   Configure Spheron for backend compute.
 
 ---
 **Lead Architect:** Akhil Muvva  

@@ -106,3 +106,5 @@ export const api = {
     }),
     checkHealth: () => safeFetch(`${API_URL}/health`),
 };
+
+export default api;
