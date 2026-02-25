@@ -42,4 +42,4 @@ jobs:
       - name: Run Frontend Tests
         env:
           CI: true
-        run: cd frontend && npm test -- --poolOptions.threads.singleThread
+        run: cd frontend && npm test -- --pool-options.threads.singleThread
