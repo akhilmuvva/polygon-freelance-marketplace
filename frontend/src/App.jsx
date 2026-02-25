@@ -279,7 +279,47 @@ const NAV_VAULT = [
   { id: 'onramp', icon: CreditCard, label: 'Buy Crypto' },
 ];
 
+// Hook to periodically check if our decentralised infrastructure is working
+const useNetworkHealth = () => {
+  const [status, setStatus] = useState({ indexing: 'Loading', storage: 'Loading' });
+
+  useEffect(() => {
+    const checkStatus = async () => {
+      let indexing = 'Healthy';
+      let storage = 'Healthy';
+
+      try {
+        // Check if the subgraph is responding
+        const res = await fetch(import.meta.env.VITE_SUBGRAPH_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query: '{ _meta { block { number } } }' })
+        });
+        if (!res.ok) indexing = 'Degraded';
+      } catch (e) {
+        indexing = 'Down';
+      }
+
+      try {
+        // Ping a gateway to see if IPFS is reachable
+        await fetch('https://gateway.pinata.cloud/ipfs/QmUNLLsP2chJvph9ESr8z6idWV5hYS7qUvf88vkyQp374f', { method: 'HEAD' });
+      } catch (e) {
+        storage = 'Fallback'; // Might be hitting other gateways
+      }
+
+      setStatus({ indexing, storage });
+    };
+
+    checkStatus();
+    const interval = setInterval(checkStatus, 30000); // Check every 30s
+    return () => clearInterval(interval);
+  }, []);
+
+  return status;
+};
+
 function App() {
+  const { indexing, storage } = useNetworkHealth();
   const { address, isConnected: isWalletConnected } = useAccount();
   const { data: walletClient } = useWalletClient();
   const { disconnect } = useDisconnect();
@@ -547,7 +587,17 @@ function App() {
                 <div style={styles.versionAvatar} />
                 <div>
                   <div style={styles.versionText}>Protocol</div>
-                  <div style={styles.versionNum}>v1.2.0</div>
+                  <div style={styles.versionNum}>v1.5.0</div>
+                </div>
+              </div>
+              <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid rgba(255,255,255,0.04)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+                  <span style={{ fontSize: '0.55rem', fontWeight: 700, color: 'var(--text-tertiary)', textTransform: 'uppercase' }}>Indexing</span>
+                  <span style={{ fontSize: '0.55rem', fontWeight: 800, color: indexing === 'Healthy' ? '#10b981' : '#f59e0b' }}>{indexing}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ fontSize: '0.55rem', fontWeight: 700, color: 'var(--text-tertiary)', textTransform: 'uppercase' }}>Storage</span>
+                  <span style={{ fontSize: '0.55rem', fontWeight: 800, color: storage === 'Healthy' ? '#10b981' : '#3b82f6' }}>{storage}</span>
                 </div>
               </div>
               <div style={styles.toggleRow}>
@@ -555,9 +605,6 @@ function App() {
                 <button style={styles.toggle(isGasless)} onClick={handleToggleGasless} disabled={isInitializingGasless}>
                   <div style={styles.toggleDot(isGasless)} />
                 </button>
-                {isInitializingGasless && (
-                  <span style={{ fontSize: '0.6rem', color: 'var(--accent-light)', marginLeft: 4 }}>Setting up...</span>
-                )}
               </div>
             </div>
           </div>

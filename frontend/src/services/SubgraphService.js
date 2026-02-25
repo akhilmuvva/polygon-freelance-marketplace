@@ -55,6 +55,62 @@ export const GET_LEADERBOARD = gql`
       reputationScore
       totalEarned
       jobsCompleted
+      portfolioCID
+    }
+  }
+`;
+
+export const GET_ECOSYSTEM_STATS = gql`
+  query GetEcosystemStats {
+    globalStat(id: "1") {
+      totalJobs
+      totalVolume
+      activeUsers
+    }
+  }
+`;
+
+export const GET_USER_PORTFOLIO = gql`
+  query GetUserPortfolio($address: String!) {
+    freelancer(id: $address) {
+      id
+      totalEarned
+      reputationScore
+      jobsCompleted
+      activeJobs
+      portfolioCID
+      jobs(orderBy: createdAt, orderDirection: desc) {
+        id
+        jobId
+        amount
+        status
+        deadline
+        ipfsHash
+        createdAt
+        rating
+      }
+    }
+    client(id: $address) {
+      id
+      totalSpent
+      activeEscrows
+    }
+  }
+`;
+
+export const GET_DISPUTES = gql`
+  query GetDisputes {
+    jobs(where: { status: "3" }, orderBy: createdAt, orderDirection: desc) {
+      id
+      jobId
+      client
+      freelancer
+      amount
+      token
+      status
+      deadline
+      ipfsHash
+      createdAt
     }
   }
 `;
@@ -88,6 +144,20 @@ export const SubgraphService = {
     }
   },
 
+  getUserPortfolio: async (address) => {
+    try {
+      const { data } = await client.query({
+        query: GET_USER_PORTFOLIO,
+        variables: { address: address.toLowerCase() },
+        fetchPolicy: 'network-only'
+      });
+      return data;
+    } catch (error) {
+      console.error('[SUBGRAPH] Failed to fetch user portfolio:', error);
+      return null;
+    }
+  },
+
   getLeaderboard: async () => {
     try {
       const { data } = await client.query({
@@ -97,6 +167,32 @@ export const SubgraphService = {
       return data.freelancers;
     } catch (error) {
       console.error('[SUBGRAPH] Failed to fetch leaderboard:', error);
+      return [];
+    }
+  },
+
+  getEcosystemStats: async () => {
+    try {
+      const { data } = await client.query({
+        query: GET_ECOSYSTEM_STATS,
+        fetchPolicy: 'network-only'
+      });
+      return data.globalStat;
+    } catch (error) {
+      console.error('[SUBGRAPH] Failed to fetch ecosystem stats:', error);
+      return null;
+    }
+  },
+
+  getDisputes: async () => {
+    try {
+      const { data } = await client.query({
+        query: GET_DISPUTES,
+        fetchPolicy: 'network-only'
+      });
+      return data.jobs;
+    } catch (error) {
+      console.error('[SUBGRAPH] Failed to fetch disputes:', error);
       return [];
     }
   }

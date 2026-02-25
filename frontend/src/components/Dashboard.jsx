@@ -1,5 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 import { useAccount, useReadContract, useSignMessage } from 'wagmi';
+import { formatEther } from 'viem';
 import { useConnectModal } from '@rainbow-me/rainbowkit';
 import {
     Wallet, Briefcase, CheckCircle, Clock, Save, User, Award,
@@ -210,9 +211,9 @@ function Dashboard({ address: propAddress }) {
     useEffect(() => {
         const checkHealth = async () => {
             try {
-                const health = await api.checkHealth();
-                setBackendStatus(health.status === 'ok' ? 'online' : 'error');
-                if (health.lastSyncedBlock) setLastSyncedBlock(health.lastSyncedBlock);
+                const stats = await SubgraphService.getEcosystemStats();
+                setBackendStatus(stats ? 'online' : 'error');
+                // Mock block height for now or fetch from publicClient
             } catch {
                 setBackendStatus('offline');
             }
@@ -281,25 +282,26 @@ function Dashboard({ address: propAddress }) {
         try {
             const [pData, aData, sData] = await Promise.all([
                 ProfileService.getProfile(address).catch(() => null),
-                api.getAnalytics().catch(() => ({})),
+                SubgraphService.getEcosystemStats().catch(() => null),
                 SubgraphService.getUserStats(address).catch(() => null),
             ]);
 
             if (pData?.address) setProfile(prev => ({ ...prev, ...pData }));
 
+            // Merge Ecosystem Stats
+            if (aData) {
+                setAnalytics({
+                    totalJobs: Number(aData.totalJobs),
+                    totalVolume: parseFloat(import.meta.env.VITE_SUBGRAPH_URL ? formatEther(BigInt(aData.totalVolume)) : '0'),
+                    totalUsers: aData.activeUsers?.length || 0,
+                });
+            }
+
             // Merge Subgraph stats into analytics if possible
             if (sData) {
-                const totalVolume = (parseFloat(sData.freelancer?.totalEarned || '0') + parseFloat(sData.client?.totalSpent || '0')) / 1e18;
-                setAnalytics({
-                    ...aData,
-                    totalVolume: totalVolume || aData.totalVolume,
-                    totalJobs: sData.freelancer?.jobsCompleted || aData.totalJobs,
-                });
                 if (sData.freelancer?.reputationScore) {
                     setProfile(prev => ({ ...prev, reputationScore: sData.freelancer.reputationScore }));
                 }
-            } else if (aData?.totalJobs !== undefined) {
-                setAnalytics(aData);
             }
         } catch (err) {
             console.warn('Dashboard Refresh:', err.message);

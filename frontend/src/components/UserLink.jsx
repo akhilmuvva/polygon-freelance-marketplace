@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { api } from '../services/api';
+import { ProfileService } from '../services/ProfileService';
 import { useEnsName, useEnsAvatar } from 'wagmi';
 import { mainnet } from 'wagmi/chains';
 
@@ -13,12 +13,12 @@ export function UserLink({ address, style }) {
         if (!address) return;
         const fetchProfile = async () => {
             try {
-                const profile = await api.getProfile(address.toLowerCase());
-                if (profile && profile.name) {
+                const profile = await ProfileService.getProfile(address.toLowerCase());
+                if (profile && profile.name && profile.name !== 'New User') {
                     setName(profile.name);
                 }
             } catch (err) {
-                console.error('Failed to fetch profile:', err);
+                console.warn('[UserLink] Sovereign fetch failed:', err.message);
             }
         };
         fetchProfile();

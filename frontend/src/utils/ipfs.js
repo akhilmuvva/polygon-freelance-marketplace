@@ -1,24 +1,34 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://localhost:3001/api';
+const PINATA_API_KEY = import.meta.env.VITE_PINATA_API_KEY;
+const PINATA_API_SECRET = import.meta.env.VITE_PINATA_API_SECRET;
 
 /**
- * Uploads a JSON object to IPFS via the Backend Relay (Secure).
+ * Uploads a JSON object directly to IPFS via Pinata (Sovereign).
  * @param {Object} data - The JSON data to upload.
  * @returns {Promise<string>} - The IPFS hash (CID).
  */
 export const uploadJSONToIPFS = async (data) => {
     try {
-        const response = await axios.post(`${API_BASE_URL}/storage/upload-json`, data);
-        return response.data.cid;
+        const response = await axios.post(
+            'https://api.pinata.cloud/pinning/pinJSONToIPFS',
+            data,
+            {
+                headers: {
+                    'pinata_api_key': PINATA_API_KEY,
+                    'pinata_secret_api_key': PINATA_API_SECRET
+                }
+            }
+        );
+        return response.data.IpfsHash;
     } catch (error) {
-        console.error('Error uploading JSON to IPFS via relay:', error);
+        console.error('Error uploading JSON to IPFS (Sovereign):', error);
         throw error;
     }
 };
 
 /**
- * Uploads a file to IPFS via the Backend Relay (Secure).
+ * Uploads a file directly to IPFS via Pinata (Sovereign).
  * @param {File} file - The file to upload.
  * @returns {Promise<string>} - The IPFS hash (CID).
  */
@@ -27,12 +37,21 @@ export const uploadFileToIPFS = async (file) => {
     formData.append('file', file);
 
     try {
-        const response = await axios.post(`${API_BASE_URL}/storage/upload-file`, formData, {
-            headers: { 'Content-Type': 'multipart/form-data' }
-        });
-        return response.data.cid;
+        const response = await axios.post(
+            'https://api.pinata.cloud/pinning/pinFileToIPFS',
+            formData,
+            {
+                maxBodyLength: 'Infinity',
+                headers: {
+                    'Content-Type': `multipart/form-data; boundary=${formData._boundary}`,
+                    'pinata_api_key': PINATA_API_KEY,
+                    'pinata_secret_api_key': PINATA_API_SECRET
+                }
+            }
+        );
+        return response.data.IpfsHash;
     } catch (error) {
-        console.error('Error uploading file to IPFS via relay:', error);
+        console.error('Error uploading file to IPFS (Sovereign):', error);
         throw error;
     }
 };

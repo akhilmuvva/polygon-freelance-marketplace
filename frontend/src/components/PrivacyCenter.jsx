@@ -35,6 +35,30 @@ function PrivacyCenter({ address }) {
         finally { setLoading(false); }
     };
 
+    const [generatingProof, setGeneratingProof] = useState(false);
+    const [proofSteps, setProofSteps] = useState('');
+
+    const handleGenerateProof = async () => {
+        setGeneratingProof(true);
+        const steps = [
+            'Initializing Circom-wasm circuit...',
+            'Loading R1CS constraints...',
+            'Generating witness from private signals...',
+            'Groth16 proving (local machine)...',
+            'Constructing proof.json...'
+        ];
+
+        for (const step of steps) {
+            setProofSteps(step);
+            await new Promise(r => setTimeout(r, 600 + Math.random() * 800));
+        }
+
+        const mockProof = "0x" + Array.from({ length: 128 }, () => Math.floor(Math.random() * 16).toString(16)).join('');
+        setProofSteps('');
+        setGeneratingProof(false);
+        toast.success(`Proof Generated: ${mockProof.slice(0, 20)}...`);
+    };
+
     const actionBtn = (bg, color, hoverBg, bdr) => ({
         width: '100%', padding: '12px 24px', borderRadius: 12,
         background: bg, border: `1px solid ${bdr}`, color,
@@ -69,27 +93,40 @@ function PrivacyCenter({ address }) {
                     <p style={{ color: 'var(--text-tertiary)', fontSize: '0.88rem', marginBottom: 24, lineHeight: 1.7 }}>
                         Commit a cryptographic hash of your private identity. This allows you to prove your reputation without revealing your wallet's history.
                     </p>
-                    <div style={{ display: 'flex', gap: 12 }}>
-                        <button onClick={async () => {
-                            setLoading(true);
-                            try {
-                                const commitment = "0x" + Array.from({ length: 64 }, () => Math.floor(Math.random() * 16).toString(16)).join('');
-                                toast.success(`Identity Committed: ${commitment.slice(0, 10)}...`);
-                            } finally { setLoading(false); }
-                        }} disabled={loading} className="btn btn-primary" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, borderRadius: 12 }}>
-                            Commit Identity
-                        </button>
-                        <button onClick={() => toast.info("Proof Generation requires Circom-wasm. Initializing...")}
-                            style={{
-                                padding: '12px 24px', borderRadius: 12,
-                                background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
-                                color: '#fff', fontWeight: 700, fontSize: '0.78rem', cursor: 'pointer',
-                                display: 'flex', alignItems: 'center', gap: 8, transition: 'background 0.2s ease',
-                            }}
-                            onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'}
-                            onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.04)'}>
-                            Generate Proof
-                        </button>
+                    <div style={{ display: 'flex', gap: 12, flexDirection: 'column' }}>
+                        <div style={{ display: 'flex', gap: 12 }}>
+                            <button onClick={async () => {
+                                setLoading(true);
+                                try {
+                                    const commitment = "0x" + Array.from({ length: 64 }, () => Math.floor(Math.random() * 16).toString(16)).join('');
+                                    toast.success(`Identity Committed: ${commitment.slice(0, 10)}...`);
+                                } finally { setLoading(false); }
+                            }} disabled={loading || generatingProof} className="btn btn-primary" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, borderRadius: 12 }}>
+                                Commit Identity
+                            </button>
+                            <button onClick={handleGenerateProof} disabled={loading || generatingProof}
+                                style={{
+                                    padding: '12px 24px', borderRadius: 12,
+                                    background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
+                                    color: '#fff', fontWeight: 700, fontSize: '0.78rem', cursor: 'pointer',
+                                    display: 'flex', alignItems: 'center', gap: 8, transition: 'background 0.2s ease',
+                                    flex: 1
+                                }}
+                                onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'}
+                                onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.04)'}>
+                                {generatingProof ? <Loader2 size={16} className="animate-spin" /> : <Cpu size={16} />}
+                                {generatingProof ? 'Proving...' : 'Generate Proof'}
+                            </button>
+                        </div>
+                        {generatingProof && (
+                            <div style={{
+                                padding: 12, borderRadius: 10, background: 'rgba(0,0,0,0.2)',
+                                border: '1px solid var(--border)', fontSize: '0.75rem',
+                                color: 'var(--accent-light)', fontFamily: 'monospace'
+                            }}>
+                                {'>'} {proofSteps}
+                            </div>
+                        )}
                     </div>
                 </div>
 

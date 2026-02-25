@@ -1,37 +1,32 @@
-import axios from 'axios';
-
-const IPFS_GATEWAY = 'https://gateway.pinata.cloud/ipfs/';
-
-const metadataCache = new Map();
+import resolver from '../utils/IPFSResolver';
 
 /**
- * JobService resolves job metadata from IPFS.
+ * JobService: Handles pulling job details from IPFS.
+ * We normalize the data here so the rest of the app doesn't have to 
+ * worry about different metadata formats (e.g. 'title' vs 'name').
  */
 export const JobService = {
     /**
-     * Resolves a job's metadata from its IPFS hash
+     * Resolves job metadata by hash. Uses our custom resolver for reliability.
      */
     resolveMetadata: async (ipfsHash) => {
         if (!ipfsHash) return null;
-        if (metadataCache.has(ipfsHash)) return metadataCache.get(ipfsHash);
 
         try {
-            const url = `${IPFS_GATEWAY}${ipfsHash}`;
-            const response = await axios.get(url, { timeout: 5000 });
-            const data = response.data;
+            const data = await resolver.resolve(ipfsHash);
+            if (!data) return null;
 
-            // Normalize data (handling field name variations)
-            const resolved = {
-                title: data.title || data.name || 'Untitled Job',
-                description: data.description || data.bio || (data.milestones?.[0]?.description) || 'No description provided.',
+            // Make sure we have a consistent object structure
+            return {
+                title: data.title || data.name || 'Untitled Gig',
+                description: data.description || data.bio || (data.milestones?.[0]?.description) || 'No description found in IPFS.',
                 category: data.category || 'General',
-                skills: data.skills || []
+                skills: data.skills || [],
+                type: data.type || 'Standard',
+                version: data.version || '1.0'
             };
-
-            metadataCache.set(ipfsHash, resolved);
-            return resolved;
         } catch (error) {
-            console.warn(`[JobService] Failed to resolve IPFS hash ${ipfsHash}:`, error.message);
+            console.error('JobService error fetching metadata:', error.message);
             return null;
         }
     }

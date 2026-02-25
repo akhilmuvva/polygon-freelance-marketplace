@@ -8,7 +8,9 @@ import CrossChainEscrowManagerABI from '../contracts/CrossChainEscrowManager.jso
 import { CONTRACT_ADDRESS, CROSS_CHAIN_ESCROW_MANAGER_ADDRESS } from '../constants';
 import { api } from '../services/api';
 import { toast } from 'react-toastify';
-import { useAnimeAnimations } from '../hooks/useAnimeAnimations';
+import { SubgraphService } from '../services/SubgraphService';
+import { ProfileService } from '../services/ProfileService';
+import { JobService } from '../services/JobService';
 
 const ArbitrationDashboard = () => {
     const { address } = useAccount();
@@ -31,7 +33,7 @@ const ArbitrationDashboard = () => {
 
     useEffect(() => {
         fetchDisputes();
-    }, []);
+    }, [address, isAdmin]);
 
     // Animate after data is loaded
     useEffect(() => {
@@ -44,18 +46,27 @@ const ArbitrationDashboard = () => {
     }, [loading, disputes.length]);
 
     const fetchDisputes = async () => {
+        setLoading(true);
         try {
-            const data = await api.getDisputes();
-            // If not admin, filter for disputes the user is involved in
-            if (!isAdmin && address) {
-                const userDisputes = data.filter(d =>
+            // 1. Fetch from Subgraph
+            const rawDisputes = await SubgraphService.getDisputes();
+
+            // 2. Filter & Hydrate
+            const filtered = rawDisputes.filter(d =>
+                isAdmin ||
+                (address && (
                     d.client?.toLowerCase() === address.toLowerCase() ||
                     d.freelancer?.toLowerCase() === address.toLowerCase()
-                );
-                setDisputes(userDisputes);
-            } else {
-                setDisputes(data);
-            }
+                ))
+            );
+
+            // 3. Resolve Metadata (IPFS)
+            const hydrated = await Promise.all(filtered.map(async (d) => {
+                const meta = await JobService.resolveMetadata(d.ipfsHash);
+                return { ...d, ...meta };
+            }));
+
+            setDisputes(hydrated);
         }
         catch (err) { console.error('Failed to fetch disputes:', err); }
         finally { setLoading(false); }

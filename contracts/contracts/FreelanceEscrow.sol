@@ -293,8 +293,7 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
         if (job.status != JobStatus.Ongoing) revert InvalidStatus();
 
         job.ipfsHash = ipfsHash;
-        // Optionally update status to 'Submitted' if we had such a state, 
-        // but traditionally we just wait for client to release funds.
+        emit WorkSubmitted(jobId, _msgSender(), ipfsHash);
     }
 
     /**

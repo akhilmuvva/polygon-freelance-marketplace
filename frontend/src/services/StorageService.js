@@ -1,42 +1,91 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://localhost:3001/api';
+const PINATA_API_KEY = import.meta.env.VITE_PINATA_API_KEY;
+const PINATA_API_SECRET = import.meta.env.VITE_PINATA_API_SECRET;
+const IPFS_GATEWAY = 'https://gateway.pinata.cloud/ipfs/';
 
 /**
- * StorageService handles communication with the backend's IPFS relay.
+ * StorageService: Handles direct uploads to IPFS via Pinata.
+ * This lets us store larger metadata (like gig descriptions) without 
+ * paying high gas fees to store text on the blockchain.
  */
 const StorageService = {
     /**
-     * Uploads JSON metadata to IPFS via backend
+     * Uploads JSON metadata directly to Pinata (IPFS)
      * @param {Object} metadata 
      * @returns {Promise<{cid: string, url: string}>}
      */
     async uploadMetadata(metadata) {
-        try {
-            const response = await axios.post(`${API_BASE_URL}/storage/upload-json`, metadata);
-            return response.data;
-        } catch (error) {
-            console.error('IPFS JSON upload failed:', error);
-            throw error;
+        if (!PINATA_API_KEY || !PINATA_API_SECRET) {
+            throw new Error('Pinata credentials missing. Check .env file.');
         }
+
+        const MAX_RETRIES = 2;
+        let lastError;
+
+        for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+            try {
+                const response = await axios.post(
+                    'https://api.pinata.cloud/pinning/pinJSONToIPFS',
+                    metadata,
+                    {
+                        headers: {
+                            'pinata_api_key': PINATA_API_KEY,
+                            'pinata_secret_api_key': PINATA_API_SECRET
+                        },
+                        timeout: 10000
+                    }
+                );
+
+                console.log(`[StorageService] Metadata anchored to IPFS path: ${response.data.IpfsHash}`);
+                return {
+                    cid: response.data.IpfsHash,
+                    url: `${IPFS_GATEWAY}${response.data.IpfsHash}`
+                };
+            } catch (error) {
+                lastError = error;
+                console.warn(`[StorageService] Upload attempt ${attempt + 1} failed:`, error.message);
+                if (attempt < MAX_RETRIES) await new Promise(r => setTimeout(r, 2000));
+            }
+        }
+
+        console.error('[StorageService] All upload attempts failed.');
+        throw lastError;
     },
 
     /**
-     * Uploads a file to IPFS via backend
+     * Uploads a file directly to Pinata (IPFS)
      * @param {File} file 
      * @returns {Promise<{cid: string, url: string}>}
      */
     async uploadFile(file) {
+        if (!PINATA_API_KEY || !PINATA_API_SECRET) {
+            throw new Error('Pinata credentials missing. Check .env file.');
+        }
+
         const formData = new FormData();
         formData.append('file', file);
 
         try {
-            const response = await axios.post(`${API_BASE_URL}/storage/upload-file`, formData, {
-                headers: { 'Content-Type': 'multipart/form-data' }
-            });
-            return response.data;
+            const response = await axios.post(
+                'https://api.pinata.cloud/pinning/pinFileToIPFS',
+                formData,
+                {
+                    maxBodyLength: 'Infinity',
+                    headers: {
+                        'Content-Type': `multipart/form-data; boundary=${formData._boundary}`,
+                        'pinata_api_key': PINATA_API_KEY,
+                        'pinata_secret_api_key': PINATA_API_SECRET
+                    }
+                }
+            );
+
+            return {
+                cid: response.data.IpfsHash,
+                url: `${IPFS_GATEWAY}${response.data.IpfsHash}`
+            };
         } catch (error) {
-            console.error('IPFS File upload failed:', error);
+            console.error('[StorageService] Direct File upload failed:', error);
             throw error;
         }
     }

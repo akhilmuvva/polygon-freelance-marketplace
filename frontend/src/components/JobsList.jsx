@@ -1,18 +1,21 @@
 import { useQuery } from '@apollo/client/react/index.js';
 import { gql } from '@apollo/client/core/index.js';
-import { useAccount, useWalletClient } from 'wagmi';
+import { useAccount, useWalletClient, useWriteContract } from 'wagmi';
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { useAnimeAnimations } from '../hooks/useAnimeAnimations';
 import { createBiconomySmartAccount } from '../utils/biconomy';
-import { RefreshCcw, Search, Filter, ChevronDown, Briefcase, Calendar, DollarSign, ArrowRight, ArrowUpDown, MessageSquare, CreditCard } from 'lucide-react';
+import { RefreshCcw, Search, Filter, ChevronDown, Briefcase, Calendar, DollarSign, ArrowRight, ArrowUpDown, MessageSquare, CreditCard, Rocket } from 'lucide-react';
 import { formatUnits } from 'viem';
-import { SUPPORTED_TOKENS } from '../constants';
+import { SUPPORTED_TOKENS, CONTRACT_ADDRESS } from '../constants';
 import UserLink from './UserLink';
 import AiMatchRating from './AiMatchRating';
 import { motion } from 'framer-motion';
-import api from '../services/api';
 import JobService from '../services/JobService';
+import SubgraphService from '../services/SubgraphService';
+import FreelanceEscrowABI from '../contracts/FreelanceEscrow.json';
+import ProofOfWorkModal from './ProofOfWorkModal';
+import ProofOfWorkBadge from './ProofOfWorkBadge';
 
 const GET_JOBS = gql`
     query GetJobs {
@@ -63,37 +66,12 @@ const JobsList = ({ onSelectChat, onFiatPay, gasless, smartAccount: propSmartAcc
         errorPolicy: 'all',
     });
 
-    const [apiJobs, setApiJobs] = useState([]);
-    const [isApiLoading, setIsApiLoading] = useState(false);
-
-    // Fetching from backend is strictly a fallback or for metadata enrichment
-    const fetchApiJobs = React.useCallback(async () => {
-        setIsApiLoading(true);
-        try {
-            const data = await api.getJobsMetadata();
-            if (Array.isArray(data)) setApiJobs(data);
-        } catch (err) {
-            console.warn('[JobsList] API Fallback unreachable:', err);
-        } finally {
-            setIsApiLoading(false);
-        }
-    }, []);
-
-    useEffect(() => {
-        // If subgraph is empty or failing, try API
-        if (!isLoadingJobs && (!subgraphData?.jobs?.length || subgraphError)) {
-            fetchApiJobs();
-        }
-    }, [subgraphError, isLoadingJobs, subgraphData, fetchApiJobs]);
-
-    const jobs = (subgraphData?.jobs?.length ? subgraphData.jobs : apiJobs) || [];
+    const jobs = subgraphData?.jobs || [];
     const [filter, setFilter] = useState('All Categories');
     const [searchQuery, setSearchQuery] = useState('');
     const [sortBy, setSortBy] = useState('Newest');
     const [statusFilter] = useState('All');
     const [showMyJobs, setShowMyJobs] = useState(false);
-    const [aiResults, setAiResults] = useState(null);
-    const [isAiLoading, setIsAiLoading] = useState(false);
 
     useEffect(() => {
         if (headerRef.current) slideInLeft(headerRef.current);
@@ -112,37 +90,23 @@ const JobsList = ({ onSelectChat, onFiatPay, gasless, smartAccount: propSmartAcc
         initSA();
     }, [gasless, walletClient, smartAccount, propSmartAccount]);
 
-    useEffect(() => {
-        const timer = setTimeout(async () => {
-            if (searchQuery.length > 5) {
-                setIsAiLoading(true);
-                try {
-                    const apiBase = import.meta.env.VITE_API_BASE_URL || 'https://localhost:3001/api';
-                    const response = await axios.get(`${apiBase}/search?q=${searchQuery}`);
-                    if (response.data.jobs) setAiResults(response.data.jobs.map(j => j.jobId));
-                } catch (err) { console.error('AI Search failed:', err); }
-                finally { setIsAiLoading(false); }
-            } else { setAiResults(null); }
-        }, 800);
-        return () => clearTimeout(timer);
-    }, [searchQuery]);
-
     const filteredJobs = React.useMemo(() => {
         let res = [...jobs];
-        if (aiResults) res = res.filter(j => aiResults.includes(Number(j.jobId)));
 
         if (filter !== 'All Categories') {
-            res = res.filter(j => j.category === filter);
+            res = res.filter(j => j.categoryId === filter);
         }
 
         if (statusFilter !== 'All') {
             res = res.filter(j => j.status != null && j.status.toString() === statusFilter);
         }
 
-        if (searchQuery && !aiResults) {
+        if (searchQuery) {
+            const q = searchQuery.toLowerCase();
             res = res.filter(j =>
-                j.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                j.description?.toLowerCase().includes(searchQuery.toLowerCase())
+                j.jobId.toString().includes(q) ||
+                j.client.toLowerCase().includes(q) ||
+                (j.title && j.title.toLowerCase().includes(q))
             );
         }
 
@@ -162,17 +126,16 @@ const JobsList = ({ onSelectChat, onFiatPay, gasless, smartAccount: propSmartAcc
         }
 
         return res;
-    }, [jobs, aiResults, filter, statusFilter, searchQuery, showMyJobs, address, sortBy]);
+    }, [jobs, filter, statusFilter, searchQuery, showMyJobs, address, sortBy]);
 
     useEffect(() => {
         if (filteredJobs.length > 0) setTimeout(() => staggerFadeIn('.job-card-wrapper', 60), 100);
     }, [filteredJobs.length]);
 
-    const isLoading = (isLoadingJobs && !apiJobs.length) || isAiLoading || isApiLoading;
+    const isLoading = isLoadingJobs;
 
     const handleRefresh = () => {
         fetchSubgraph();
-        fetchApiJobs();
     };
 
     return (
@@ -252,8 +215,13 @@ const JobsList = ({ onSelectChat, onFiatPay, gasless, smartAccount: propSmartAcc
     );
 };
 
+
 const JobCard = ({ job, address, onSelectChat, onFiatPay }) => {
     const tokenInfo = SUPPORTED_TOKENS.find(t => t.address?.toLowerCase() === job.token?.toLowerCase()) || SUPPORTED_TOKENS[0];
+    const [isPoWOpen, setIsPoWOpen] = useState(false);
+
+    // Contract Interactions
+    const { writeContract } = useWriteContract();
 
     // Local state for IPFS-resolved data
     const [meta, setMeta] = useState({
@@ -266,13 +234,29 @@ const JobCard = ({ job, address, onSelectChat, onFiatPay }) => {
         const resolve = async () => {
             if (!job.title || !job.description) {
                 const resolved = await JobService.resolveMetadata(job.ipfsHash);
-                if (resolved) setMeta(resolved);
+                if (resolved && resolved.type !== 'ProofOfWork') {
+                    setMeta(resolved);
+                }
             }
         };
         resolve();
     }, [job.ipfsHash, job.title, job.description]);
 
-    const statusColor = job.status === 0 ? 'var(--success)' : job.status === 3 ? 'var(--danger)' : 'var(--accent-light)';
+    const isClient = address?.toLowerCase() === job.client?.toLowerCase();
+    const isFreelancer = address?.toLowerCase() === job.freelancer?.toLowerCase();
+
+    // Status Logic
+    const statusCode = Number(job.status || 0);
+    const statusColor = statusCode === 5 ? 'var(--success)' : (statusCode === 3 || statusCode === 4) ? 'var(--danger)' : 'var(--accent-light)';
+
+    const handleRelease = () => {
+        writeContract({
+            address: CONTRACT_ADDRESS,
+            abi: FreelanceEscrowABI.abi,
+            functionName: 'releaseFunds',
+            args: [BigInt(job.jobId)],
+        });
+    };
 
     return (
         <motion.div className="job-card-wrapper"
@@ -286,7 +270,7 @@ const JobCard = ({ job, address, onSelectChat, onFiatPay }) => {
                     padding: '4px 10px', borderRadius: 8, background: `${statusColor}15`,
                     color: statusColor, fontSize: '0.62rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.05em'
                 }}>
-                    {meta.category}
+                    {meta.category} • {['Created', 'Accepted', 'Ongoing', 'Disputed', 'Arbitration', 'Completed', 'Cancelled'][statusCode]}
                 </div>
                 <div style={{ fontSize: '1.2rem', fontWeight: 900, color: '#fff' }}>
                     {formatUnits(BigInt(job.amount || '0'), tokenInfo.decimals)} <span style={{ fontSize: '0.8rem', fontWeight: 500, color: 'var(--text-tertiary)' }}>{tokenInfo.symbol}</span>
@@ -294,6 +278,19 @@ const JobCard = ({ job, address, onSelectChat, onFiatPay }) => {
             </div>
 
             <h3 style={{ fontSize: '1.1rem', fontWeight: 800, marginBottom: 12, lineHeight: 1.4, color: '#fff' }}>{meta.title}</h3>
+
+            {/* Proof of Work Showcase */}
+            {statusCode === 2 && (
+                <div style={{ marginBottom: 20 }}>
+                    <ProofOfWorkBadge
+                        ipfsHash={job.ipfsHash}
+                        status={statusCode}
+                        isClient={isClient}
+                        onReleaseFunds={handleRelease}
+                    />
+                </div>
+            )}
+
             <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: 20, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', lineHeight: 1.6 }}>
                 {meta.description}
             </p>
@@ -303,15 +300,31 @@ const JobCard = ({ job, address, onSelectChat, onFiatPay }) => {
                     <span style={{ fontSize: '0.6rem', fontWeight: 700, color: 'var(--text-tertiary)', textTransform: 'uppercase' }}>Client</span>
                     <span style={{ fontSize: '0.78rem', fontWeight: 600 }}><UserLink address={job.client} /></span>
                 </div>
+                {job.freelancer && job.freelancer !== '0x0000000000000000000000000000000000000000' && (
+                    <>
+                        <div style={{ width: 1, height: 24, background: 'var(--border)' }} />
+                        <div style={{ display: 'flex', flexDirection: 'column' }}>
+                            <span style={{ fontSize: '0.6rem', fontWeight: 700, color: 'var(--text-tertiary)', textTransform: 'uppercase' }}>Freelancer</span>
+                            <span style={{ fontSize: '0.78rem', fontWeight: 600 }}><UserLink address={job.freelancer} /></span>
+                        </div>
+                    </>
+                )}
                 <div style={{ width: 1, height: 24, background: 'var(--border)' }} />
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
                     <span style={{ fontSize: '0.6rem', fontWeight: 700, color: 'var(--text-tertiary)', textTransform: 'uppercase' }}>Deadline</span>
-                    <span style={{ fontSize: '0.78rem', fontWeight: 600 }}>{new Date(Number(job.deadline) * 1000).toLocaleDateString()}</span>
+                    <span style={{ fontSize: '0.78rem', fontWeight: 600 }}>{isNaN(Number(job.deadline)) ? 'No deadline' : new Date(Number(job.deadline) * 1000).toLocaleDateString()}</span>
                 </div>
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 'auto' }}>
-                <button className="btn btn-primary" style={{ flex: 1, height: 40, borderRadius: 10, fontSize: '0.8rem', fontWeight: 700 }}>View Gig</button>
+                {isFreelancer && statusCode === 2 ? (
+                    <button onClick={() => setIsPoWOpen(true)} className="btn btn-primary" style={{ flex: 1, height: 40, borderRadius: 10, fontSize: '0.8rem', background: 'linear-gradient(135deg, #10b981, #059669)', color: '#fff' }}>
+                        <Rocket size={15} /> Submit Proof
+                    </button>
+                ) : (
+                    <button className="btn btn-primary" style={{ flex: 1, height: 40, borderRadius: 10, fontSize: '0.8rem', fontWeight: 700 }}>View Details</button>
+                )}
+
                 {onFiatPay && (
                     <button onClick={() => onFiatPay(job.freelancer || job.client)} className="btn btn-secondary" style={{ height: 40, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '0 12px' }}>
                         <CreditCard size={14} /> <span style={{ fontSize: '0.72rem', fontWeight: 700 }}>Fiat Pay</span>
@@ -321,6 +334,12 @@ const JobCard = ({ job, address, onSelectChat, onFiatPay }) => {
                     <MessageSquare size={16} />
                 </button>
             </div>
+
+            <ProofOfWorkModal
+                isOpen={isPoWOpen}
+                onClose={() => setIsPoWOpen(false)}
+                jobId={job.jobId}
+            />
 
             {address && (
                 <div style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid rgba(255,255,255,0.04)' }}>

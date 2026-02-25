@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { api } from '../services/api';
 import { SubgraphService } from '../services/SubgraphService';
 import { Trophy, Medal, Award, ExternalLink, User, Star, TrendingUp, Loader2 } from 'lucide-react';
 import { formatEther } from 'viem';
@@ -16,17 +15,11 @@ function Leaderboard() {
         const fetchLeaders = async () => {
             setLoading(true);
             try {
-                // Priority: Subgraph
+                // Strictly Decentralized: Subgraph
                 const data = await SubgraphService.getLeaderboard();
-                if (data && data.length > 0) {
-                    setLeaders(data);
-                } else {
-                    // Fallback to API if Subgraph is empty/new
-                    const apiData = await api.getLeaderboard();
-                    setLeaders(Array.isArray(apiData) ? apiData : []);
-                }
+                setLeaders(data || []);
             } catch (err) {
-                console.error('Failed to fetch leaderboard:', err);
+                console.error('[Leaderboard] Subgraph query failed:', err);
                 setLeaders([]);
             } finally {
                 setLoading(false);
