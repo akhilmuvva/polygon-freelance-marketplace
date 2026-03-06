@@ -44,29 +44,7 @@ class CeramicService {
    */
   async getProfile(address) {
     try {
-      const query = `
-        query GetProfile($address: String!) {
-          profileIndex(filters: { address: { eq: $address } }, first: 1) {
-            edges {
-              node {
-                id
-                name
-                bio
-                skills
-                reputationScore
-                totalEarned
-                avatarIpfsHash
-                website
-                github
-                visibility
-              }
-            }
-          }
-        }
-      `;
-
       // In a real environment, we'd execute the query via the client
-      // For this prototype, we'll return a simulated response if the service is offline
       console.log('[CERAMIC] Querying profile for:', address);
 
       // Simulating a successful response structure
@@ -93,17 +71,6 @@ class CeramicService {
       console.warn('[CERAMIC] Updating weightless stream (SIMULATION):', profileData);
       return { id: 'stream-id-123', status: 'SYNCHRONIZED' };
     }
-
-    const mutation = `
-      mutation CreateProfile($input: CreateProfileInput!) {
-        createProfile(input: $input) {
-          document {
-            id
-            name
-          }
-        }
-      }
-    `;
 
     console.log('[CERAMIC] Updating weightless stream with data:', profileData);
     // return await this.client.executeQuery(mutation, { input: { content: profileData } });

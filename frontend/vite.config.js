@@ -12,6 +12,14 @@ export default defineConfig({
   base: './',
   plugins: [
     react(),
+    nodePolyfills({
+      include: ['buffer', 'process', 'util', 'stream', 'zlib', 'string_decoder', 'events'],
+      globals: {
+        Buffer: true,
+        global: true,
+        process: true,
+      },
+    }),
     process.env.NODE_ENV === 'development' && basicSsl(),
   ].filter(Boolean),
   define: {
@@ -20,12 +28,15 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      process: 'process/browser',
-      stream: 'stream-browserify',
-      zlib: 'browserify-zlib',
-      util: 'util',
-      buffer: 'buffer',
-      string_decoder: 'string_decoder',
+      '@': path.resolve(__dirname, './src'),
+      'string_decoder/': 'string_decoder',
+      'string-decoder': 'string_decoder',
+      'rollup-plugin-node-polyfills/polyfills/string-decoder': 'string_decoder',
+      'process': 'process/browser',
+      'stream': 'stream-browserify',
+      'zlib': 'browserify-zlib',
+      'util': 'util',
+      'buffer': 'buffer',
     },
   },
   server: {

@@ -2,7 +2,7 @@
  * Antigravity "Stabilizer" Service
  * Autonomous Dispute Pre-emption via XMTP & Chainlink Functions.
  */
-import { ethers } from 'ethers';
+// import { ethers } from 'ethers';
 import ReasoningProofService from './ReasoningProofService';
 
 export const StabilizerService = {
@@ -67,11 +67,7 @@ export const StabilizerService = {
         // Simulation: Semantic & Technical Audit (Semantic AI Simulation)
         const alignmentScore = 0.98; // Simulated result
 
-        const decision = {
-            id: `AGA_ATTESTATION_${Date.now()}`,
-            score: alignmentScore,
-            status: alignmentScore > 0.95 ? 'PURIFIED_WEIGHTLESS' : 'HIGH_GRAVITY_DEFICIT'
-        };
+        console.log(`[AGA-ORACLE] Score: ${alignmentScore}`);
 
         if (alignmentScore > 0.95) {
             const attestation = {

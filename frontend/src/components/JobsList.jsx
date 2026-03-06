@@ -2,7 +2,7 @@ import { useQuery } from '@apollo/client/react/index.js';
 import { gql } from '@apollo/client/core/index.js';
 import { useAccount, useWalletClient, useWriteContract } from 'wagmi';
 import React, { useState, useEffect, useRef } from 'react';
-import axios from 'axios';
+// import axios from 'axios';
 import { useAnimeAnimations } from '../hooks/useAnimeAnimations';
 import { createBiconomySmartAccount } from '../utils/biconomy';
 import { RefreshCcw, Search, Filter, ChevronDown, Briefcase, Calendar, DollarSign, ArrowRight, ArrowUpDown, MessageSquare, CreditCard, Rocket } from 'lucide-react';
@@ -61,7 +61,7 @@ const JobsList = ({ onSelectChat, onFiatPay, gasless, smartAccount: propSmartAcc
     const { staggerFadeIn, slideInLeft } = useAnimeAnimations();
     const headerRef = useRef(null);
 
-    const { loading: isLoadingJobs, data: subgraphData, error: subgraphError, refetch: fetchSubgraph } = useQuery(GET_JOBS, {
+    const { loading: isLoadingJobs, data: subgraphData, refetch: fetchSubgraph } = useQuery(GET_JOBS, {
         pollInterval: 15000,
         errorPolicy: 'all',
     });
@@ -72,8 +72,8 @@ const JobsList = ({ onSelectChat, onFiatPay, gasless, smartAccount: propSmartAcc
     const [sortBy, setSortBy] = useState('Newest');
     const [statusFilter] = useState('All');
     const [showMyJobs, setShowMyJobs] = useState(false);
-    const [isApiLoading, setIsApiLoading] = useState(false);
-    const [isAiLoading, setIsAiLoading] = useState(false);
+    const [isApiLoading] = useState(false);
+    const [isAiLoading] = useState(false);
 
     useEffect(() => {
         if (headerRef.current) slideInLeft(headerRef.current);

@@ -296,14 +296,14 @@ const useNetworkHealth = () => {
           body: JSON.stringify({ query: '{ _meta { block { number } } }' })
         });
         if (!res.ok) indexing = 'Degraded';
-      } catch (e) {
+      } catch {
         indexing = 'Down';
       }
 
       try {
         // Ping a gateway to see if IPFS is reachable
         await fetch('https://gateway.pinata.cloud/ipfs/QmUNLLsP2chJvph9ESr8z6idWV5hYS7qUvf88vkyQp374f', { method: 'HEAD' });
-      } catch (e) {
+      } catch {
         storage = 'Fallback'; // Might be hitting other gateways
       }
 

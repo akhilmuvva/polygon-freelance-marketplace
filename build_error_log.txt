@@ -1,0 +1,37 @@
+
+> frontend@1.1.0 build
+> vite build
+
+[36mvite v7.3.1 [32mbuilding client environment for production...[36m[39m
+transforming...
+node_modules/porto/node_modules/ox/_esm/core/Base64.js (6:27): A comment
+
+"/*#__PURE__*/"
+
+in "node_modules/porto/node_modules/ox/_esm/core/Base64.js" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+node_modules/ox/_esm/core/Address.js (6:21): A comment
+
+"/*#__PURE__*/"
+
+in "node_modules/ox/_esm/core/Address.js" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+node_modules/ox/_esm/core/Base64.js (6:27): A comment
+
+"/*#__PURE__*/"
+
+in "node_modules/ox/_esm/core/Base64.js" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+node_modules/ox/_esm/core/internal/cursor.js (2:21): A comment
+
+"/*#__PURE__*/"
+
+in "node_modules/ox/_esm/core/internal/cursor.js" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[32mΓ£ô[39m 7809 modules transformed.
+Γ£ù Build failed in 14.30s
+error during build:
+[commonjs--resolver] Could not load rollup-plugin-node-polyfills/polyfills/string-decoder/: ENOENT: no such file or directory, open 'C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\frontend\rollup-plugin-node-polyfills\polyfills\string-decoder'
+file: C:/Users/akhil/.gemini/antigravity/scratch/polygon-freelance-marketplace/frontend/node_modules/cbw-sdk/dist/CoinbaseWalletSDK.js
+    at async open (node:internal/fs/promises:641:25)
+    at async Object.readFile (node:internal/fs/promises:1245:14)
+    at async Object.handler (file:///C:/Users/akhil/.gemini/antigravity/scratch/polygon-freelance-marketplace/frontend/node_modules/vite/dist/node/chunks/config.js:33169:21)
+    at async PluginDriver.hookFirstAndGetPlugin (file:///C:/Users/akhil/.gemini/antigravity/scratch/polygon-freelance-marketplace/frontend/node_modules/rollup/dist/es/shared/node-entry.js:22453:28)
+    at async file:///C:/Users/akhil/.gemini/antigravity/scratch/polygon-freelance-marketplace/frontend/node_modules/rollup/dist/es/shared/node-entry.js:21445:33
+    at async Queue.work (file:///C:/Users/akhil/.gemini/antigravity/scratch/polygon-freelance-marketplace/frontend/node_modules/rollup/dist/es/shared/node-entry.js:22681:32)

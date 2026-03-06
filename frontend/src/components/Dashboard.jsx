@@ -197,7 +197,7 @@ function Dashboard({ address: propAddress }) {
     const address = propAddress || wagmiAddress;
     const isConnected = !!address;
     const { openConnectModal } = useConnectModal();
-    const { signMessageAsync } = useSignMessage();
+    const { signMessageAsync: _signMessageAsync } = useSignMessage();
 
     // Antigravity: Resolve social identity (Lens/ENS)
     const identity = useIdentity(address);
@@ -215,8 +215,6 @@ function Dashboard({ address: propAddress }) {
         totalJobs: 0, totalVolume: 0, avgReputation: 0, totalUsers: 0,
     });
     const [isPolishing, setIsPolishing] = React.useState(false);
-    const [backendStatus, setBackendStatus] = React.useState('checking');
-    const [lastSyncedBlock, setLastSyncedBlock] = React.useState(null);
 
     // Antigravity AI: Autonomous Agent Metrics
     const gravityStats = React.useMemo(() => GravityScoreService.calculateScore({
@@ -251,11 +249,10 @@ function Dashboard({ address: propAddress }) {
     useEffect(() => {
         const checkHealth = async () => {
             try {
-                const stats = await SubgraphService.getEcosystemStats();
-                setBackendStatus(stats ? 'online' : 'error');
+                await SubgraphService.getEcosystemStats();
                 // Mock block height for now or fetch from publicClient
             } catch {
-                setBackendStatus('offline');
+                // handle error
             }
         };
         checkHealth();
@@ -273,8 +270,8 @@ function Dashboard({ address: propAddress }) {
     const statValueRefs = useRef([]);
     const { staggerFadeIn, slideInLeft, float, countUp } = useAnimeAnimations();
 
-    const { data: hash, writeContract, isPending: isContractPending } = useWriteContract();
-    const { isLoading: isTxConfirming } = useWaitForTransactionReceipt({ hash });
+    const { data: hash, writeContract } = useWriteContract();
+    const { isLoading: _isTxConfirming } = useWaitForTransactionReceipt({ hash });
 
     // Run entrance animations after data loads
     useEffect(() => {

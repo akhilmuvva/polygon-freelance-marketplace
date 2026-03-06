@@ -78,7 +78,7 @@ class IPFSResolver {
                     // It worked! We can slightly 'forgive' previous failures on this gateway
                     gateway.fails = Math.max(0, gateway.fails - 1);
                     return response.data;
-                } catch (err) {
+                } catch {
                     console.warn(`Gateway ${gateway.url} failed for ${cid}. Attempt ${i + 1}/${this.maxRetries + 1}`);
                     gateway.fails++;
                 }
@@ -105,7 +105,7 @@ class IPFSResolver {
                     delete this.cache[keys[0]];
                 }
                 localStorage.setItem(this.cacheKey, JSON.stringify(this.cache));
-            } catch (e) {
+            } catch {
                 // LocalStorage might be full or private mode might block it
             }
         }, 10);

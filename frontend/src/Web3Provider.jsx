@@ -167,24 +167,29 @@ export function Web3Provider({ children }) {
         <WagmiProvider config={config} reconnectOnMount={false}>
             <QueryClientProvider client={queryClient}>
                 <ApolloProvider client={apolloClient}>
-                    <RainbowKitProvider theme={darkTheme({
-                        accentColor: '#8a2be2',
-                        accentColorForeground: 'white',
-                        borderRadius: 'medium',
-                        overlayBlur: 'small',
-                    })}>
-                        {huddleClient ? (
-                            <HuddleProvider client={huddleClient}>
+                    <RainbowKitAuthenticationProvider
+                        adapter={authAdapter}
+                        status={authStatus}
+                    >
+                        <RainbowKitProvider theme={darkTheme({
+                            accentColor: '#8a2be2',
+                            accentColorForeground: 'white',
+                            borderRadius: 'medium',
+                            overlayBlur: 'small',
+                        })}>
+                            {huddleClient ? (
+                                <HuddleProvider client={huddleClient}>
+                                    <ConnectionLogger>
+                                        {children}
+                                    </ConnectionLogger>
+                                </HuddleProvider>
+                            ) : (
                                 <ConnectionLogger>
                                     {children}
                                 </ConnectionLogger>
-                            </HuddleProvider>
-                        ) : (
-                            <ConnectionLogger>
-                                {children}
-                            </ConnectionLogger>
-                        )}
-                    </RainbowKitProvider>
+                            )}
+                        </RainbowKitProvider>
+                    </RainbowKitAuthenticationProvider>
                 </ApolloProvider>
             </QueryClientProvider>
         </WagmiProvider>
