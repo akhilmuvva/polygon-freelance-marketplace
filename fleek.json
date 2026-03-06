@@ -2,7 +2,7 @@
     "site": {
         "name": "polylance-zenith-antigravity",
         "dist": "dist",
-        "buildCommand": "yarn install --ignore-engines && yarn build",
+        "buildCommand": "NODE_OPTIONS=--max-old-space-size=4096 yarn install --ignore-engines && NODE_OPTIONS=--max-old-space-size=4096 yarn build",
         "baseDir": "frontend",
         "publicDir": "public"
     },

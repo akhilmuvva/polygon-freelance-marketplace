@@ -43,6 +43,8 @@ export default defineConfig({
     host: true,
   },
   build: {
+    sourcemap: false,
+    minify: 'esbuild',
     chunkSizeWarningLimit: 1200,
     commonjsOptions: {
       transformMixedEsModules: true,
