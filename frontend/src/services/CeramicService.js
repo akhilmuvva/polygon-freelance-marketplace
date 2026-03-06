@@ -1,7 +1,13 @@
-import { ComposeClient } from '@composedb/client';
+// import { ComposeClient } from '@composedb/client';
+const ComposeClient = class {
+  constructor() { this.did = { authenticated: false }; }
+  setDID() { }
+  async executeQuery() { return { data: {} }; }
+};
 // import { definition } from '../schemas/profile-definition'; 
 // In a real implementation, 'definition' would be a generated JS file 
 // from the graphql schema using the ComposeDB CLI.
+
 
 /**
  * CeramicService: The core of the "Weightless" data layer.

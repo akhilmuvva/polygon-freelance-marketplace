@@ -1,4 +1,4 @@
-import { CeramicService } from './CeramicService';
+import CeramicService from './CeramicService';
 import ReasoningProofService from './ReasoningProofService';
 
 export const GhostModeratorService = {
