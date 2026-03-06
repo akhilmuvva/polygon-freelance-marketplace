@@ -9,9 +9,14 @@ The PolyLance Zenith ecosystem uses modern ECMAScript features and high-performa
 *   **Operating System**: Linux/macOS preferred for CI; Windows ARM64 requires the Hardhat Fallback Parser (pre-injected).
 
 ## 🏗️ 2. Decentralized Hosting (IPFS/4EVERLAND)
-By hosting the frontend on IPFS via Fleek or 4EVERLAND, we ensure that:
-1.  **Content-Addressability:** Each version of the app has a unique hash (CID).
-2.  **Decentralized Storage:** No single server can "take it down."
+The PolyLance Zenith repository is structured as a **High-Performance NPM Workspace**. 
+
+### ⚙️ Universal Setup
+To prepare the entire ecosystem (Root, Backend, and Frontend) in one command:
+```bash
+npm install
+```
+This automatically resolves dependencies across all "Weightless" modules without manual folder switching.
 
 ### ☁️ 4EVERLAND Integration
 4EVERLAND provides a "Weightless" cloud experience with global acceleration and support for multiple protocols.
