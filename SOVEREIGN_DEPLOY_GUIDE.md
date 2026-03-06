@@ -12,11 +12,11 @@ The PolyLance Zenith ecosystem uses modern ECMAScript features and high-performa
 The PolyLance Zenith repository is structured as a **High-Performance NPM Workspace**. 
 
 ### ⚙️ Universal Setup
-To prepare the entire ecosystem (Root, Backend, and Frontend) in one command:
+To prepare the entire ecosystem (Root, Backend, and Frontend), install dependencies separately to gracefully handle Web3 peer-dependency strictness on modern Node versions:
 ```bash
-npm install
+npm run install:all
 ```
-This automatically resolves dependencies across all "Weightless" modules without manual folder switching.
+This runs legacy npm resolutions for the backend and uses `yarn --ignore-engines` for the frontend to prevent `ERESOLVE` build errors.
 
 ### ☁️ 4EVERLAND Integration
 4EVERLAND provides a "Weightless" cloud experience with global acceleration and support for multiple protocols.
