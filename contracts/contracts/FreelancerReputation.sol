@@ -56,7 +56,7 @@ contract FreelancerReputation is Initializable, ERC1155Upgradeable, AccessContro
     function initialize(address defaultAdmin, string memory uri) public initializer {
         __ERC1155_init(uri);
         __AccessControl_init();
-        __UUPSUpgradeable_init();
+
 
         _grantRole(DEFAULT_ADMIN_ROLE, defaultAdmin);
         _grantRole(MINTER_ROLE, defaultAdmin);

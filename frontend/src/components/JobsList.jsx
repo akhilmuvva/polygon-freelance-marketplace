@@ -72,6 +72,8 @@ const JobsList = ({ onSelectChat, onFiatPay, gasless, smartAccount: propSmartAcc
     const [sortBy, setSortBy] = useState('Newest');
     const [statusFilter] = useState('All');
     const [showMyJobs, setShowMyJobs] = useState(false);
+    const [isApiLoading, setIsApiLoading] = useState(false);
+    const [isAiLoading, setIsAiLoading] = useState(false);
 
     useEffect(() => {
         if (headerRef.current) slideInLeft(headerRef.current);

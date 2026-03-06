@@ -119,7 +119,7 @@ app.use(cors({
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
 }));
-app.use(express.json({ limit: '10kb' })); // Body limiting to prevent DoS
+app.use(express.json({ limit: '100kb' })); // Body limiting to prevent DoS
 
 // HTTPS Configuration
 const certPath = path.join(process.cwd(), 'certs');

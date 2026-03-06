@@ -111,7 +111,7 @@ contract QuadraticGovernance is
         __GovernorCountingSimple_init();
         __GovernorVotes_init(_token);
         __GovernorVotesQuorumFraction_init(4); // 4% quorum
-        __UUPSUpgradeable_init();
+
         __AccessControl_init();
 
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);

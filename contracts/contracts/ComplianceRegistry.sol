@@ -80,7 +80,7 @@ contract ComplianceRegistry is AccessControlUpgradeable, UUPSUpgradeable {
 
     function initialize() public initializer {
         __AccessControl_init();
-        __UUPSUpgradeable_init();
+
 
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _grantRole(KYC_OPERATOR_ROLE, msg.sender);

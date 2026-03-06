@@ -78,7 +78,6 @@
     "bn.js": "5.2.3",
     "elliptic": "6.6.1",
     "undici": "6.23.0",
-    "ajv": "8.17.1",
     "cookie": "0.7.0",
     "cross-spawn": "7.0.6"
   }

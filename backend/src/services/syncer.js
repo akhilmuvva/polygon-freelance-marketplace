@@ -10,7 +10,7 @@ import { SyncProgress } from '../models/SyncProgress.js';
 import { BlockchainEvent } from '../models/BlockchainEvent.js';
 import { SystemSettings } from '../models/SystemSettings.js';
 import { logger } from '../utils/logger.js';
-import { publicClient as client } from '../config/blockchain.js';
+import { publicClient as bcClient } from '../config/blockchain.js';
 import { getJSONFromIPFS } from './ipfs.js';
 
 let ioInstance = null;
@@ -64,6 +64,7 @@ const EVENTS = {
     ReviewSubmitted: parseAbiItem('event ReviewSubmitted(uint256 indexed jobId, address indexed client, address indexed freelancer, uint8 rating, string review)'),
     MilestoneReleased: parseAbiItem('event MilestoneReleased(uint256 indexed jobId, address indexed freelancer, uint256 indexed milestoneId, uint256 amount)'),
     JobApplied: parseAbiItem('event JobApplied(uint256 indexed jobId, address indexed freelancer, uint256 stake)'),
+    WorkSubmitted: parseAbiItem('event WorkSubmitted(uint256 indexed jobId, address indexed freelancer, string ipfsHash)'),
     PortfolioUpdated: parseAbiItem('event PortfolioUpdated(address indexed freelancer, string cid)')
 };
 
@@ -80,7 +81,7 @@ const handlers = {
         // IPFS hash is not in event, fetch it from contract
         let ipfsHash = '';
         try {
-            const jobData = await client.readContract({
+            const jobData = await bcClient.readContract({
                 address: CONTRACT_ADDRESS,
                 abi,
                 functionName: 'jobs',
@@ -212,6 +213,38 @@ const handlers = {
         const { localJobId } = args;
         await JobMetadata.findOneAndUpdate({ jobId: Number(localJobId) }, { status: 3 });
     },
+    WorkSubmitted: async (args) => {
+        const { jobId, ipfsHash } = args;
+        const metadata = await getJSONFromIPFS(ipfsHash);
+
+        const job = await JobMetadata.findOne({ jobId: Number(jobId) });
+        if (job) {
+            const { analyzeSubmission } = await import('./aiMatcher.js');
+            const auditResult = await analyzeSubmission(job.description, metadata);
+
+            await JobMetadata.findOneAndUpdate(
+                { jobId: Number(jobId) },
+                {
+                    ipfsHash: ipfsHash,
+                    submissionDetails: metadata || {},
+                    lastSubmittedAt: new Date(),
+                    auditResult: auditResult,
+                    status: auditResult.isVerified ? 'VERIFIED' : 'PENDING_REVISION'
+                }
+            );
+            logger.info(`Work submitted and audited for job #${jobId}: ${auditResult.nextAction}`, 'SYNC');
+        } else {
+            await JobMetadata.findOneAndUpdate(
+                { jobId: Number(jobId) },
+                {
+                    ipfsHash: ipfsHash,
+                    submissionDetails: metadata || {},
+                    lastSubmittedAt: new Date()
+                },
+                { upsert: true }
+            );
+        }
+    },
     PortfolioUpdated: async (args) => {
         const { freelancer, cid } = args;
         logger.sync(`[SOVEREIGN] Portfolio update detected for ${freelancer}: ${cid}`);
@@ -299,7 +332,7 @@ async function fetchLogsInChunks(address, targetAbi, from, to, contractName) {
         logger.sync(`[BC-SYNC]: Scanning ${address.slice(0, 8)}... (${current} to ${chunkTo})`);
 
         try {
-            const logs = await client.getLogs({
+            const logs = await bcClient.getLogs({
                 address,
                 fromBlock: current,
                 toBlock: chunkTo
@@ -364,7 +397,7 @@ export async function startSyncer(io) {
         resumeBlock = BigInt(lastSyncedSetting.value + 1);
     }
 
-    const currentBlock = await client.getBlockNumber();
+    const currentBlock = await bcClient.getBlockNumber();
 
     // 2. Catch up in Chunks
     if (currentBlock >= resumeBlock) {
@@ -376,7 +409,7 @@ export async function startSyncer(io) {
 
     // 3. Start Live Watchers
     for (const [name, event] of Object.entries(EVENTS)) {
-        client.watchEvent({
+        bcClient.watchEvent({
             address: CONTRACT_ADDRESS,
             event: event,
             onLogs: (logs) => logs.forEach(log => processLog(log, name)),
@@ -385,7 +418,7 @@ export async function startSyncer(io) {
     }
 
     for (const [name, event] of Object.entries(CROSS_CHAIN_EVENTS)) {
-        client.watchEvent({
+        bcClient.watchEvent({
             address: CROSS_CHAIN_MANAGER_ADDRESS,
             event: event,
             onLogs: (logs) => logs.forEach(log => processLog(log, name)),
@@ -394,7 +427,7 @@ export async function startSyncer(io) {
     }
 
     // Watch Reputation Contract for Sovereign Profile updates
-    client.watchEvent({
+    bcClient.watchEvent({
         address: REPUTATION_ADDRESS,
         event: EVENTS.PortfolioUpdated,
         onLogs: (logs) => logs.forEach(log => processLog(log, 'PortfolioUpdated')),

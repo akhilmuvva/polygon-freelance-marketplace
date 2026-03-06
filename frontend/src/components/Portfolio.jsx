@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { User, Briefcase, MapPin, Link as LinkIcon, Award, ExternalLink, Globe, Github, Twitter, Zap, Coins, CreditCard } from 'lucide-react';
+import { User, Briefcase, MapPin, Link as LinkIcon, Award, ExternalLink, Globe, Github, Twitter, Zap, Coins, CreditCard, ShieldCheck } from 'lucide-react';
 import { useReadContract } from 'wagmi';
 import { erc20Abi, formatEther } from 'viem';
 import { POLY_TOKEN_ADDRESS, CONTRACT_ADDRESS } from '../constants';

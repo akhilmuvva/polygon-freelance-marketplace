@@ -25,6 +25,7 @@ import { StabilizerService } from '../services/StabilizerService';
 import { GravityScoreService } from '../services/GravityScoreService';
 import { GhostModeratorService } from '../services/GhostModeratorService';
 import { TreasuryButlerService } from '../services/TreasuryButlerService';
+import GovernanceWatcherService from '../services/GovernanceWatcherService';
 import { useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
 
 const REPUTATION_ABI = [
@@ -227,7 +228,8 @@ function Dashboard({ address: propAddress }) {
     const [autonStatus, setAutonStatus] = React.useState({
         stabilizer: 'IDLE',
         treasury: 'STABLE',
-        sybil: 'READY'
+        sybil: 'READY',
+        governance: 'MONITORING'
     });
 
     React.useEffect(() => {
@@ -235,10 +237,12 @@ function Dashboard({ address: propAddress }) {
             if (!isConnected) return;
             const stab = await StabilizerService.evaluateStallRisk({ id: 101, deadline: Date.now() / 1000 + 3600 }, 'hash1', 'hash1');
             const trea = await TreasuryButlerService.monitorYieldGap(50000);
+            const gov = await GovernanceWatcherService.evaluateUpgrade('0x', '0x4653251486a57f90Ee89F9f34E098b9218659b83');
             setAutonStatus({
                 stabilizer: stab.action === 'NONE' ? 'HEALTHY' : 'STALL_DETECTED',
                 treasury: trea.action === 'NONE' ? 'OPTIMIZED' : 'MIGRATION_PENDING',
-                sybil: 'PROTECTED (ZK)'
+                sybil: 'PROTECTED (ZK)',
+                governance: gov.status === 'UPGRADE_VERIFIED' ? 'SECURE' : 'THREAT_MITIGATED'
             });
         };
         analyze();

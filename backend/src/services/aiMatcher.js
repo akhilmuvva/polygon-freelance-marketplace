@@ -236,3 +236,85 @@ export async function analyzeDispute(jobData, chatHistory, workMetadata) {
         return { suggestedSplit: 50, verdict: "Manual review required" };
     }
 }
+/**
+ * analyzeSubmission
+ * Autonomous Weightless Audit: Verifies deliverables against job requirements.
+ */
+export async function analyzeSubmission(jobRequirement, submissionContent) {
+    try {
+        const model = genAI.getGenerativeModel({
+            model: "gemini-1.5-flash",
+            generationConfig: { temperature: 0.1 }
+        });
+
+        const prompt = `
+            # POLY-AGENCY AUDIT: PIONEER VERIFICATION
+            Evaluate if the submitted work meets the Job Requirements.
+            Skepticism level: ZENITH-EXTREME.
+
+            REQUIREMENTS: "${sanitizeForPrompt(jobRequirement)}"
+            SUBMISSION: "${sanitizeForPrompt(JSON.stringify(submissionContent))}"
+
+            # CRITERIA:
+            1. Technical Completeness (>95% criteria match).
+            2. Adherence to non-functional requirements (Performance, Security, Design).
+            3. Documentation quality.
+
+            # OUTPUT JSON:
+            {
+                "isVerified": true/false,
+                "confidenceScore": 0.0-1.0,
+                "missingElements": ["list"],
+                "qualityReport": "string",
+                "nextAction": "APPROVE" | "REQUEST_REVISION"
+            }
+        `;
+
+        const result = await model.generateContent(prompt);
+        const text = result.response.text();
+        const jsonMatch = text.match(/\{.*\}/s);
+
+        if (jsonMatch) {
+            return JSON.parse(jsonMatch[0]);
+        }
+        throw new Error("Invalid AI Audit response");
+    } catch (error) {
+        console.error("AI Audit Error:", error);
+        return { isVerified: false, nextAction: "MANUAL_REVIEW_REQUIRED", qualityReport: "Audit engine timed out." };
+    }
+}
+
+/**
+ * detectSybilAttack
+ * Detects Sybil attacks by comparing ZK-Identity roots against ENS names.
+ * If 3+ accounts share the same ZK root but different ENS labels, they are flagged.
+ */
+export async function detectSybilAttack(accounts) {
+    const counts = {};
+    const flaggedClusters = [];
+
+    accounts.forEach(acc => {
+        if (!acc.zkRoot) return;
+        if (!counts[acc.zkRoot]) {
+            counts[acc.zkRoot] = { count: 0, addresses: [], ensNames: new Set() };
+        }
+
+        counts[acc.zkRoot].count++;
+        counts[acc.zkRoot].addresses.push(acc.address);
+        if (acc.ensName) counts[acc.zkRoot].ensNames.add(acc.ensName);
+
+        // If 3 accounts share same ZK root but have different (or potentially same) ENS
+        // The requirement specifically mentions "different ENS names"
+        if (counts[acc.zkRoot].count >= 3 && counts[acc.zkRoot].ensNames.size >= 2) {
+            flaggedClusters.push({
+                zkRoot: acc.zkRoot,
+                nodes: counts[acc.zkRoot].addresses,
+                gravityAdjustment: "HIGH_RESTRICTION",
+                reason: `Sybil Cluster Detected: ${counts[acc.zkRoot].count} nodes with shared ZK-Identity root.`
+            });
+        }
+    });
+
+    return flaggedClusters;
+}
+

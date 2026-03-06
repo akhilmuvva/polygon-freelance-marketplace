@@ -31,6 +31,9 @@ contract AntigravityGovernance is Ownable, ReentrancyGuard {
     IFreelanceSBT public sbtContract;
     address public zodiacModule;
     address public treasury; // The Gnosis Safe address
+    address public antigravityAgent; // The AGA address allowed to trigger failsafe
+    address public activeEscrow;
+    bool public protocolFrozen;
 
     struct Proposal {
         uint256 id;
@@ -65,12 +68,33 @@ contract AntigravityGovernance is Ownable, ReentrancyGuard {
     event ConvictionStaked(uint256 indexed proposalId, address indexed user, uint256 amount);
     event ProposalExecuted(uint256 indexed id);
     event Ragequit(address indexed user, uint256 sbtAmount, address[] tokens);
+    event EmergencyFreezeTriggered(address indexed agent, string reason);
 
-    constructor(address _sbt, address _zodiac, address _treasury) Ownable(msg.sender) {
+    constructor(address _sbt, address _zodiac, address _treasury, address _agent, address _escrow) Ownable(msg.sender) {
         sbtContract = IFreelanceSBT(_sbt);
         zodiacModule = _zodiac;
         treasury = _treasury;
+        antigravityAgent = _agent;
+        activeEscrow = _escrow;
     }
+
+    /**
+     * @notice Trigger Emergency Failsafe: Freezes the protocol if a centralization attack is detected.
+     */
+    function triggerEmergencyFreeze(string calldata reason) external {
+        require(msg.sender == antigravityAgent || msg.sender == owner(), "Unauthorized");
+        protocolFrozen = true;
+        
+        // Trigger global freeze on Escrow
+        if (activeEscrow != address(0)) {
+            (bool success, ) = activeEscrow.call(abi.encodeWithSignature("sovereignFreeze()"));
+            require(success, "Global Escrow Freeze failed");
+        }
+        
+        emit EmergencyFreezeTriggered(msg.sender, reason);
+    }
+
+
 
     /**
      * @notice Create a proposal that conviction-accrues weight over time.

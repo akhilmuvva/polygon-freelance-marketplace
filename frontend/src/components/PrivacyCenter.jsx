@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Shield, Download, Trash2, CheckCircle, AlertTriangle, Loader2 } from 'lucide-react';
+import { Shield, Download, Trash2, CheckCircle, AlertTriangle, Loader2, Cpu } from 'lucide-react';
 import { toast } from 'react-toastify';
 
 const API_URL = import.meta.env.VITE_API_BASE_URL || 'https://localhost:3001/api';

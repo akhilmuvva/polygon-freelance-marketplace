@@ -4,7 +4,7 @@ pragma solidity ^0.8.20;
 import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts-upgradeable/utils/PausableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
@@ -68,9 +68,9 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
         if (admin == address(0) || forwarder == address(0) || _sbt == address(0) || _entry == address(0)) revert InvalidAddress();
         __ERC721_init("PolyLance Zenith Project", "ZENITH");
         __AccessControl_init();
-        __ReentrancyGuard_init();
+
         __Pausable_init();
-        __UUPSUpgradeable_init();
+
 
         _grantRole(DEFAULT_ADMIN_ROLE, admin);
         _grantRole(MANAGER_ROLE, admin);
@@ -283,7 +283,7 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
         Application[] storage apps = jobApplications[jobId];
         for (uint256 i = 0; i < apps.length; i++) {
             if (apps[i].freelancer != freelancer) {
-                if (yieldManager != address(0) && job.yieldStrategy != IYieldManager.Strategy.NONE) {
+                if (yieldManager != address(0) && job.yieldStrategy != IYieldManager.Strategy.NONE && job.token != address(0)) {
                     IYieldManager(yieldManager).withdraw(job.yieldStrategy, job.token, apps[i].stake, address(this));
                 }
                 balances[apps[i].freelancer][job.token] += apps[i].stake;
@@ -439,7 +439,7 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
         job.totalPaidOut += remaining;
         job.status = JobStatus.Cancelled;
 
-        if (yieldManager != address(0) && job.yieldStrategy != IYieldManager.Strategy.NONE) {
+        if (yieldManager != address(0) && job.yieldStrategy != IYieldManager.Strategy.NONE && job.token != address(0)) {
             IYieldManager(yieldManager).withdraw(job.yieldStrategy, job.token, remaining + job.freelancerStake, address(this));
         }
 
@@ -602,7 +602,7 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
         job.totalPaidOut += amt;
         
         // Finalize payout by withdrawing from yield manager if active
-        if (yieldManager != address(0) && job.yieldStrategy != IYieldManager.Strategy.NONE) {
+        if (yieldManager != address(0) && job.yieldStrategy != IYieldManager.Strategy.NONE && job.token != address(0)) {
             IYieldManager(yieldManager).withdraw(job.yieldStrategy, job.token, amt, address(this));
         }
 

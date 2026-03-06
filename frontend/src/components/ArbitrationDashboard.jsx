@@ -11,6 +11,7 @@ import { toast } from 'react-toastify';
 import { SubgraphService } from '../services/SubgraphService';
 import { ProfileService } from '../services/ProfileService';
 import { JobService } from '../services/JobService';
+import { useAnimeAnimations } from '../hooks/useAnimeAnimations.js';
 
 const ArbitrationDashboard = () => {
     const { address } = useAccount();

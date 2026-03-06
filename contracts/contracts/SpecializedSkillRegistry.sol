@@ -3,7 +3,7 @@ pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 /**
  * @title SpecializedSkillRegistry
@@ -13,7 +13,7 @@ import "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol
 contract SpecializedSkillRegistry is 
     AccessControlUpgradeable, 
     UUPSUpgradeable,
-    ReentrancyGuardUpgradeable 
+    ReentrancyGuard
 {
     bytes32 public constant VERIFIER_ROLE = keccak256("VERIFIER_ROLE");
     bytes32 public constant UPGRADER_ROLE = keccak256("UPGRADER_ROLE");
@@ -108,8 +108,8 @@ contract SpecializedSkillRegistry is
 
     function initialize() public initializer {
         __AccessControl_init();
-        __UUPSUpgradeable_init();
-        __ReentrancyGuard_init();
+
+
 
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _grantRole(VERIFIER_ROLE, msg.sender);
