@@ -1,0 +1,24 @@
+{
+    "site": {
+        "name": "polylance-zenith-antigravity",
+        "dist": "dist",
+        "buildCommand": "npm run build",
+        "baseDir": "frontend",
+        "publicDir": "public"
+    },
+    "hosting": {
+        "provider": "ipfs",
+        "framework": "vite",
+        "autoPublish": true,
+        "ipns": {
+            "enabled": true,
+            "autoUpdate": true,
+            "key": "polylance-zenith-prod"
+        }
+    },
+    "gateways": [
+        "https://cloudflare-ipfs.com",
+        "https://ipfs.io",
+        "https://dweb.link"
+    ]
+}

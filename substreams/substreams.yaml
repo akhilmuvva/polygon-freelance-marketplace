@@ -1,0 +1,29 @@
+specVersion: v0.1.0
+package:
+  name: polylance_substreams
+  version: v0.1.0
+
+protobuf:
+  files:
+    - proto/poly.proto
+  importPaths:
+    - ./proto
+
+modules:
+  - name: map_freelance_events
+    kind: map
+    initialBlock: 8560000
+    inputs:
+      - source: sf.ethereum.type.v2.Block
+    output:
+      type: proto:poly.v1.FreelanceEvents
+
+  - name: store_job_counts
+    kind: store
+    initialBlock: 8560000
+    updatePolicy: add
+    valueType: int64
+    inputs:
+      - map: map_freelance_events
+
+network: polygon-amoy

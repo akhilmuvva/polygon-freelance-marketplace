@@ -83,6 +83,7 @@ abstract contract FreelanceEscrowBase is
 
     bytes32 public constant ARBITRATOR_ROLE = keccak256("ARBITRATOR_ROLE");
     bytes32 public constant MANAGER_ROLE = keccak256("MANAGER_ROLE");
+    bytes32 public constant AGENT_ROLE = keccak256("AGENT_ROLE");
 
     address public arbitrator;
     address public sbtContract;
@@ -115,4 +116,6 @@ abstract contract FreelanceEscrowBase is
     event DisputeResolved(uint256 indexed jobId, uint256 freelancerBps);
     event ReviewSubmitted(uint256 indexed jobId, address indexed client, address indexed freelancer, uint8 rating, string review);
     event WorkSubmitted(uint256 indexed jobId, address indexed freelancer, string ipfsHash);
+    event TreasuryRebalanced(address indexed token, uint256 amount, IYieldManager.Strategy from, IYieldManager.Strategy to);
+    event FeeAdjusted(uint256 newBps);
 }

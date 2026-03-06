@@ -1,22 +1,37 @@
 import { SubgraphService } from './SubgraphService';
 import StorageService from './StorageService';
 import resolver from '../utils/IPFSResolver';
+import CeramicService from './CeramicService';
 
 /**
  * ProfileService: Manages user profile data.
- * Profiles are stored on IPFS and linked via the blockchain Subgraph.
+ * Updated for the "Antigravity" architecture: Prefers ComposeDB (Ceramic) for dApp-agnostic reputation.
  */
 export const ProfileService = {
     /**
-     * Gets a user's profile. We first check the subgraph for a CID,
-     * then fetch the actual JSON data from IPFS.
+     * Gets a user's profile.
+     * Hierarchy: 
+     * 1. Ceramic (ComposeDB) - the sovereign "Weightless" source.
+     * 2. Subgraph/IPFS - the legacy "on-chain link" source.
+     * 3. Default fallback.
      */
     getProfile: async (address) => {
         if (!address) return null;
         const addr = address.toLowerCase();
 
         try {
-            // 1. Check Subgraph to see if they have recorded a profile CID
+            // 1. Check weightless Ceramic stream first
+            const ceramicProfile = await CeramicService.getProfile(addr);
+            if (ceramicProfile) {
+                console.log('[PROFILE] Sovereign weightless source verified:', addr);
+                return {
+                    address: addr,
+                    ...ceramicProfile,
+                    source: 'ceramic'
+                };
+            }
+
+            // 2. Legacy fallback: Check Subgraph for CID
             const stats = await SubgraphService.getUserStats(addr);
             const cid = stats?.freelancer?.portfolioCID;
 
@@ -33,36 +48,52 @@ export const ProfileService = {
                 }
             }
 
-            // Fallback for new users who haven't set up a profile yet
+            // 3. Fallback for new users
             return {
                 address: addr,
-                name: 'Anonymous User',
-                bio: 'This user has not set up their profile yet.',
+                name: 'Sovereign Explorer',
+                bio: 'This user has not initialized their weightless profile yet.',
                 reputationScore: stats?.freelancer?.reputationScore || 0,
                 totalEarned: stats?.freelancer?.totalEarned || 0,
                 source: 'default'
             };
         } catch (err) {
-            console.error('Error in ProfileService.getProfile:', err);
+            console.error('[PROFILE] Resolver error:', err);
             return {
                 address: addr,
-                name: 'Loading...',
-                bio: 'We are having trouble pulling this profile right now.',
+                name: 'Identity Loading...',
+                bio: 'The weightless layer is currently synchronizing.',
                 source: 'error'
             };
         }
     },
 
     /**
-     * Prepares a profile for IPFS upload
+     * Prepares a profile for weightless upload
+     */
+    updateSovereignProfile: async (profileData) => {
+        console.log('[PROFILE] Propagating data to Ceramic node...');
+        return await CeramicService.updateProfile(profileData);
+    },
+
+    /**
+     * Legacy IPFS upload (kept for backward compatibility during migration)
      */
     uploadToIPFS: async (profileData) => {
-        console.log('[ProfileService] Uploading profile to IPFS...');
+        console.log('[PROFILE] Uploading legacy metadata to IPFS...');
         const result = await StorageService.uploadMetadata(profileData);
-        // Invalidate cache on upload
-        if (profileData.address) profileCache.delete(profileData.address.toLowerCase());
         return result.cid;
+    },
+
+    /**
+     * Shadow-Banning (Ghost Moderator): Invisibility for malicious actors.
+     * Updates Ceramic profile visibility to "Hidden".
+     */
+    shadowBan: async (address, reason) => {
+        console.warn(`[GHOST MODERATOR] Shadow-banning ${address} for ${reason}`);
+        return await CeramicService.updateProfileVisibility(address.toLowerCase(), 'Hidden');
     }
 };
 
 export default ProfileService;
+

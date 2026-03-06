@@ -215,3 +215,5 @@ export const SubgraphService = {
     }
   }
 };
+
+export default SubgraphService;

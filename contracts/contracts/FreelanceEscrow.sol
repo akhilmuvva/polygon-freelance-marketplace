@@ -138,6 +138,36 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
     }
 
     /**
+     * @notice Updates the platform fee based on network velocity (Autonomous Action).
+     * @param _bps New fee in basis points.
+     */
+    function updatePlatformFee(uint256 _bps) external onlyRole(AGENT_ROLE) {
+        if (_bps > MAX_PLATFORM_FEE_BPS) revert InvalidStatus();
+        platformFeeBps = _bps;
+        emit FeeAdjusted(_bps);
+    }
+
+    /**
+     * @notice Allows an authorized agent to rebalance idle vault funds.
+     * @param token Address of the token.
+     * @param amount Amount to rebalance.
+     * @param fromStrategy Current strategy.
+     * @param toStrategy Target strategy.
+     */
+    function rebalanceTreasury(address token, uint256 amount, IYieldManager.Strategy fromStrategy, IYieldManager.Strategy toStrategy) external onlyRole(AGENT_ROLE) {
+        if (yieldManager == address(0)) revert InvalidAddress();
+        
+        // 1. Withdraw from old strategy
+        IYieldManager(yieldManager).withdraw(fromStrategy, token, amount, address(this));
+        
+        // 2. Deposit into new strategy
+        IERC20(token).forceApprove(yieldManager, amount);
+        IYieldManager(yieldManager).deposit(toStrategy, token, amount);
+        
+        emit TreasuryRebalanced(token, amount, fromStrategy, toStrategy);
+    }
+
+    /**
      * @notice Updates the Completion Certificate contract address.
      * @param _cert New certificate address.
      */
@@ -374,6 +404,48 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
         else _unpause();
     }
 
+    /**
+     * @notice Sovereign Failsafe: Allows the AG Agent to freeze escrows if a centralization attack is detected.
+     */
+    function sovereignFreeze() external onlyRole(AGENT_ROLE) {
+        emergencyMode = true;
+        _pause();
+        emit FeeAdjusted(0); // SIGNAL: Trust minimization active
+    }
+
+    /**
+     * @notice Ragequit Failsafe: Allows instant withdrawal of locked funds during a sovereign freeze.
+     */
+    function sovereignWithdraw(uint256 jobId) external nonReentrant {
+        if (!emergencyMode) revert InvalidStatus();
+        Job storage job = jobs[jobId];
+        
+        uint256 remaining = job.amount - job.totalPaidOut;
+        if (remaining == 0) revert AlreadyPaid();
+
+        address recipient;
+        uint256 amount;
+
+        if (_msgSender() == job.client) {
+            recipient = job.client;
+            amount = remaining;
+        } else if (_msgSender() == job.freelancer) {
+            recipient = job.freelancer;
+            amount = job.freelancerStake;
+        } else {
+            revert NotAuthorized();
+        }
+
+        job.totalPaidOut += remaining;
+        job.status = JobStatus.Cancelled;
+
+        if (yieldManager != address(0) && job.yieldStrategy != IYieldManager.Strategy.NONE) {
+            IYieldManager(yieldManager).withdraw(job.yieldStrategy, job.token, remaining + job.freelancerStake, address(this));
+        }
+
+        _transferFunds(recipient, job.token, amount);
+    }
+
     struct CreateParams {
         uint256 categoryId;
         address freelancer;
@@ -488,11 +560,24 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
             }
         }
 
-        // Auto-deposit into yield manager if strategy is selected
-        if (yieldManager != address(0) && yieldStrategy != IYieldManager.Strategy.NONE && token != address(0)) {
-            IERC20(token).forceApprove(yieldManager, actualAmount);
-            IYieldManager(yieldManager).deposit(yieldStrategy, token, actualAmount);
+        // Auto-deposit into yield manager (Passive Paycheck Feature)
+        if (yieldManager != address(0) && token != address(0)) {
+            // Default to AAVE if no strategy provided to ensure capital efficiency
+            IYieldManager.Strategy strategy = (yieldStrategy == IYieldManager.Strategy.NONE) 
+                ? IYieldManager.Strategy.AAVE 
+                : yieldStrategy;
+            
+            _depositToAave(token, actualAmount, strategy);
         }
+    }
+
+    /**
+     * @notice Internal helper to deposit funds into the autonomous yield engine.
+     */
+    function _depositToAave(address token, uint256 amount, IYieldManager.Strategy strategy) internal {
+        if (yieldManager == address(0)) return;
+        IERC20(token).forceApprove(yieldManager, amount);
+        IYieldManager(yieldManager).deposit(strategy, token, amount);
     }
 
     /**

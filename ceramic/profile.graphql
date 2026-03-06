@@ -1,0 +1,35 @@
+"""
+  Profile schema for the PolyLance "Antigravity" weightless data layer.
+  Powered by Ceramic ComposeDB.
+"""
+
+type Profile @createModel(accountRelation: SINGLE, description: "PolyLance User Profile") {
+  address: String! @indexed
+  name: String @string(maxLength: 80)
+  bio: String @string(maxLength: 1000)
+  skills: [String] @list(maxLength: 20) @string(maxLength: 50)
+  avatarIpfsHash: String @string(maxLength: 100)
+  ipfsCID: String @string(maxLength: 100)
+  website: String @string(maxLength: 255)
+  github: String @string(maxLength: 255)
+  totalEarned: String @string(maxLength: 50)
+  completedJobs: Int
+  disputedJobs: Int
+  ratingSum: Int
+  ratingCount: Int
+  reputationScore: Int @indexed
+  isSovereign: Boolean
+  createdAt: DateTime
+  updatedAt: DateTime
+}
+
+type PortfolioItem @createModel(accountRelation: LIST, description: "Freelancer Portfolio Items") {
+  owner: DID! @documentAccount
+  profile: StreamID! @relationDocument(model: "Profile")
+  title: String! @string(maxLength: 100)
+  description: String @string(maxLength: 1000)
+  projectUrl: String @string(maxLength: 255)
+  imageCid: String @string(maxLength: 100)
+  category: String @string(maxLength: 50) @indexed
+  timestamp: DateTime
+}

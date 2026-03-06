@@ -104,14 +104,21 @@ export default function DaoDashboard() {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 20, marginBottom: 40 }}>
                 {[
                     { icon: Shield, label: 'Voting Weight', value: `${karmaBalance ? Number(karmaBalance) : 0}`, unit: 'Karma', color: 'var(--accent-light)', borderAccent: 'var(--accent-light)' },
-                    { icon: Globe, label: 'Network Reach', value: 'Polygon +', extra: '2 Remote', color: 'var(--info)' },
-                    { icon: Scale, label: 'Voting Model', value: 'Hybrid Quadratic', color: 'var(--accent-light)' },
+                    { icon: Scale, label: 'Governance Mode', value: 'Antigravity (Baal)', extraColor: 'var(--info)' },
                     { icon: TrendingUp, label: 'DAO Treasury', value: '$4.2M', extra: '▲ 12%', color: '#fff', extraColor: 'var(--success)' },
+                    { icon: AlertTriangle, label: 'Exit Strategy', value: 'Ragequit Active', color: 'var(--danger)' },
                 ].map((m, i) => (
                     <div key={i} style={{ ...cardBg, position: 'relative', borderLeft: m.borderAccent ? `3px solid ${m.borderAccent}` : undefined }}>
+                        {m.label === 'Exit Strategy' ? (
+                            <button onClick={() => {
+                                if (window.confirm("ARE YOU SURE? Ragequitting will burn your reputation and exit your share of the treasury. This is the ultimate sovereign act.")) {
+                                    toast.error("Ragequit Initiated... Burning SBTs...");
+                                }
+                            }} style={{ position: 'absolute', inset: 0, opacity: 0, cursor: 'pointer', zIndex: 10 }} />
+                        ) : null}
                         <m.icon size={40} style={{ position: 'absolute', top: 16, right: 16, opacity: 0.06 }} />
                         <span style={dimLabel}>{m.label}</span>
-                        <div style={{ fontSize: m.unit ? '2rem' : '1.2rem', fontWeight: 900 }}>
+                        <div style={{ fontSize: m.unit ? '2rem' : '1.1rem', fontWeight: 900, color: m.color }}>
                             {m.value}
                             {m.unit && <span style={{ fontSize: '0.82rem', fontWeight: 600, opacity: 0.4, marginLeft: 6 }}>{m.unit}</span>}
                             {m.extra && <span style={{ fontSize: '0.72rem', fontWeight: 700, color: m.extraColor || m.color, marginLeft: 6 }}>{m.extra}</span>}
@@ -119,6 +126,7 @@ export default function DaoDashboard() {
                     </div>
                 ))}
             </div>
+
 
             {/* Integrity Monitor */}
             <div style={{

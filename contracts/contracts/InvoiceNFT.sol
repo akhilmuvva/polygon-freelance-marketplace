@@ -15,6 +15,10 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
  * @notice Tokenizes invoices as NFTs for invoice financing and factoring
  * @dev Each NFT represents a unique invoice that can be sold/financed at a discount
  */
+interface IFreelancerReputation {
+    function gravityScores(address) external view returns (uint16);
+}
+
 contract InvoiceNFT is
     Initializable,
     ERC721Upgradeable,
@@ -28,6 +32,7 @@ contract InvoiceNFT is
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
     bytes32 public constant VERIFIER_ROLE = keccak256("VERIFIER_ROLE");
     bytes32 public constant UPGRADER_ROLE = keccak256("UPGRADER_ROLE");
+    bytes32 public constant TREASURY_ROLE = keccak256("TREASURY_ROLE");
 
     enum InvoiceStatus { PENDING, VERIFIED, FINANCED, PAID, DEFAULTED, DISPUTED }
 
@@ -57,6 +62,7 @@ contract InvoiceNFT is
     uint256 public defaultPenaltyBps;   // Penalty for late payment
     address public feeCollector;
     address public aiOracle;
+    address public reputationContract;
 
     mapping(uint256 => Invoice) public invoices;
     mapping(address => uint256[]) public issuerInvoices;
@@ -223,6 +229,36 @@ contract InvoiceNFT is
     }
 
     /**
+     * @notice Zenith Treasury "Liquidity Provider of Last Resort" (Feature C)
+     * @dev Allows the DAO to purchase verified invoices instantly.
+     */
+    function treasuryPurchase(uint256 invoiceId) external onlyRole(TREASURY_ROLE) nonReentrant {
+        Invoice storage invoice = invoices[invoiceId];
+        require(invoice.status == InvoiceStatus.VERIFIED, "InvoiceNFT: Not verified");
+        
+        uint256 discountBps = this.calculateDiscountRate(invoiceId);
+        uint256 discountAmount = (invoice.faceValue * discountBps) / 10000;
+        uint256 purchasePrice = invoice.faceValue - discountAmount;
+
+        address currentOwner = ownerOf(invoiceId);
+
+        if (invoice.paymentToken == address(0)) {
+            // Treasury must have native balance in the contract or we use transfer
+            (bool s, ) = payable(currentOwner).call{value: purchasePrice}("");
+            require(s, "InvoiceNFT: Treasury transfer failed");
+        } else {
+            IERC20(invoice.paymentToken).safeTransferFrom(msg.sender, currentOwner, purchasePrice);
+        }
+
+        _transfer(currentOwner, msg.sender, invoiceId);
+        invoice.financier = msg.sender;
+        invoice.financedAmount = purchasePrice;
+        invoice.status = InvoiceStatus.FINANCED;
+
+        emit InvoiceFinanced(invoiceId, msg.sender, purchasePrice);
+    }
+
+    /**
      * @notice Pays an invoice (by debtor)
      * @param invoiceId The invoice NFT ID
      */
@@ -306,6 +342,14 @@ contract InvoiceNFT is
     }
 
     /**
+     * @notice Sets the reputation contract address
+     * @param _rep Reputation contract
+     */
+    function setReputationContract(address _rep) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        reputationContract = _rep;
+    }
+
+    /**
      * @notice Returns all invoices issued by an address
      * @param issuer The issuer address
      */
@@ -338,11 +382,22 @@ contract InvoiceNFT is
         Invoice storage invoice = invoices[invoiceId];
         require(invoice.status == InvoiceStatus.VERIFIED, "InvoiceNFT: Not verified");
 
-        uint256 daysUntilDue = (invoice.dueDate - block.timestamp) / 1 days;
+        uint256 daysUntilDue = (invoice.dueDate > block.timestamp) ? (invoice.dueDate - block.timestamp) / 1 days : 0;
         
-        // Simple linear discount: 1% per 30 days
-        discountBps = (3000 * daysUntilDue) / 365; // Max ~30% for 1 year
-        if (discountBps > 3000) discountBps = 3000; // Cap at 30%
+        // Base linear discount: 1% per 30 days
+        discountBps = (3000 * daysUntilDue) / 365;
+
+        // Apply Antigravity Risk Adjustment (Gravity Score)
+        if (reputationContract != address(0)) {
+            try IFreelancerReputation(reputationContract).gravityScores(invoice.issuer) returns (uint16 gravityScore) {
+                // Higher Gravity Score = Higher Risk = Higher Yield required by arbitrageurs
+                // Increase discount by up to 50% extra based on gravity (gravity is 0-10000)
+                uint256 riskPremium = (discountBps * uint256(gravityScore)) / 20000;
+                discountBps += riskPremium;
+            } catch {}
+        }
+
+        if (discountBps > 5000) discountBps = 5000; // Cap at 50%
     }
 
     function tokenURI(uint256 tokenId)

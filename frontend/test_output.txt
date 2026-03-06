@@ -1,0 +1,18 @@
+
+> frontend@1.1.0 test
+> vitest run --poolOptions.threads.singleThread
+
+file:///C:/Users/akhil/.gemini/antigravity/scratch/polygon-freelance-marketplace/frontend/node_modules/vitest/dist/chunks/cac.DVeoLl0M.js:404
+          throw new CACError(`Unknown option \`${name.length > 1 ? `--${name}` : `-${name}`}\``);
+                ^
+
+CACError: Unknown option `--poolOptions`
+    at Command.checkUnknownOptions (file:///C:/Users/akhil/.gemini/antigravity/scratch/polygon-freelance-marketplace/frontend/node_modules/vitest/dist/chunks/cac.DVeoLl0M.js:404:17)
+    at CAC.runMatchedCommand (file:///C:/Users/akhil/.gemini/antigravity/scratch/polygon-freelance-marketplace/frontend/node_modules/vitest/dist/chunks/cac.DVeoLl0M.js:604:13)
+    at CAC.parse (file:///C:/Users/akhil/.gemini/antigravity/scratch/polygon-freelance-marketplace/frontend/node_modules/vitest/dist/chunks/cac.DVeoLl0M.js:545:12)
+    at file:///C:/Users/akhil/.gemini/antigravity/scratch/polygon-freelance-marketplace/frontend/node_modules/vitest/dist/cli.js:28:13
+    at ModuleJob.run (node:internal/modules/esm/module_job:345:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:651:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
+
+Node.js v22.19.0

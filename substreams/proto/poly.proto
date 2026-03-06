@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package poly.v1;
+
+message JobCreated {
+  uint256 id = 1;
+  string client = 2;
+  string freelancer = 3;
+  string amount = 4;
+  uint256 deadline = 5;
+  string ipfs_hash = 6;
+}
+
+message MilestoneFunded {
+  uint256 job_id = 1;
+  uint256 milestone_id = 2;
+  string amount = 3;
+  string payer = 4;
+}
+
+message FreelanceEvents {
+  repeated JobCreated job_createds = 1;
+  repeated MilestoneFunded milestone_fundeds = 2;
+}

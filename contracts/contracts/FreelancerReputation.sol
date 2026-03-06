@@ -36,6 +36,13 @@ contract FreelancerReputation is Initializable, ERC1155Upgradeable, AccessContro
     /// @notice IPFS CID for a freelancer's dynamic portfolio
     mapping(address => string) public portfolioCID;
 
+    /// @notice Tracks completion rate in basis points (10000 = 100%)
+    mapping(address => uint16) public completionRates;
+    /// @notice Tracks the current "Gravity Score" (Risk) 0-10000
+    mapping(address => uint16) public gravityScores;
+
+    event GravityMetricsUpdated(address indexed freelancer, uint16 completionRate, uint16 gravityScore);
+
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
         _disableInitializers();
@@ -94,6 +101,18 @@ contract FreelancerReputation is Initializable, ERC1155Upgradeable, AccessContro
     function updatePortfolio(string calldata cid) external {
         portfolioCID[msg.sender] = cid;
         emit PortfolioUpdated(msg.sender, cid);
+    }
+
+    /**
+     * @notice Updates Gravity Score and Completion Rate (Internal Agent Action)
+     * @param freelancer The freelancer addr
+     * @param _comp Completion rate bitset or value
+     * @param _score Gravity score/Risk value
+     */
+    function updateGravityMetrics(address freelancer, uint16 _comp, uint16 _score) external onlyRole(MINTER_ROLE) {
+        completionRates[freelancer] = _comp;
+        gravityScores[freelancer] = _score;
+        emit GravityMetricsUpdated(freelancer, _comp, _score);
     }
 
     /**
