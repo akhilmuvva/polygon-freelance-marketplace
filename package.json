@@ -17,6 +17,6 @@
         "lint:all": "npm run lint --prefix backend && npm run lint --prefix frontend"
     },
     "engines": {
-        "node": ">=20.19.0"
+        "node": ">=22.0.0"
     }
 }
