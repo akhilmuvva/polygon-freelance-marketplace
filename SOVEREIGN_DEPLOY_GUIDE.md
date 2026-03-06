@@ -2,7 +2,13 @@
 
 This guide outlines the final "Antigravity" step: Migrating from centralized Vercel/AWS to an immutable, censorship-resistant, and persistent edge layer.
 
-## 🏗️ 1. Immutable Hosting (IPFS)
+## 🛠️ 1. Environment Requirements
+The PolyLance Zenith ecosystem uses modern ECMAScript features and high-performance libraries.
+*   **Node.js**: `v20.19.0` or higher (LTS).
+*   **Package Manager**: `npm` (v10+) or `yarn` (v1.22+).
+*   **Operating System**: Linux/macOS preferred for CI; Windows ARM64 requires the Hardhat Fallback Parser (pre-injected).
+
+## 🏗️ 2. Immutable Hosting (IPFS)
 By hosting the frontend on IPFS, we ensure that:
 1.  **Content-Addressability:** Each version of the app has a unique hash (CID).
 2.  **Decentralized Storage:** No single server can "take it down."

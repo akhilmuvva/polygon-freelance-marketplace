@@ -11,5 +11,8 @@
         "postinstall": "npm install --prefix backend",
         "build": "npm install --prefix backend",
         "start": "node backend/src/server.js"
+    },
+    "engines": {
+        "node": ">=20.19.0"
     }
 }
