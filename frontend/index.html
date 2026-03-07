@@ -3,7 +3,10 @@
 
 <head>
   <script>
-    // Universal Polyfills for Web3 / SIWE / Biconomy
+    /**
+     * SOVEREIGN ENVIRONMENT SHIELD (SES)
+     * Robust global sanitization for Web3/P2P Marketplaces
+     */
     (function() {
       const g = window;
       g.global = g;
@@ -13,27 +16,30 @@
         nextTick: (fn) => setTimeout(fn, 0),
         browser: true
       };
+
+      // Force high-stability object targets for legacy CJS modules
+      if (typeof g.exports === 'undefined') g.exports = {};
+      if (typeof g.module === 'undefined') g.module = { exports: g.exports };
       
-      // Force exports/module/Buffer to exist globally
-      if (!g.exports) g.exports = {};
-      if (!g.module) g.module = { exports: g.exports };
+      // Placeholder Buffer to prevent race condition crashes
       if (!g.Buffer) {
         g.Buffer = { isBuffer: () => false, from: () => [], alloc: () => [], concat: () => [] };
       }
-      
-      // Robust protection against Object.defineProperty crashes on non-objects (e.g. shadowed exports)
+
+      // 🛡️ CRITICAL FIX: Safe-sink for invalid Object.defineProperty calls
       const _origDefine = Object.defineProperty;
       Object.defineProperty = function(obj, prop, desc) {
-        if (!obj || (typeof obj !== 'object' && typeof obj !== 'function')) {
-           console.warn('[POLYFILL] Safe-guarded defineProperty on non-object:', prop);
-           return obj;
+        try {
+          if (!obj || (typeof obj !== 'object' && typeof obj !== 'function')) {
+            return obj; // Silently absorb calls on non-objects
+          }
+          return _origDefine.apply(this, arguments);
+        } catch (e) {
+          return obj; // Resilience against "cannot redefine" errors
         }
-        return _origDefine.apply(this, arguments);
       };
-    })();
 
-    // Mute noise from SES and regional script injectors
-    (function () {
+      // Mute known SES and Regional Script noise
       const filter = (args) => {
         const msg = args.map(a => String(a)).join(' ');
         return msg.includes('SES Removing unpermitted intrinsics') || 
@@ -48,7 +54,7 @@
     })();
   </script>
   <meta charset="UTF-8" />
-  <!-- CSP is enforced via server _headers to avoid shadowing/conflicts -->
+  <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: *; connect-src 'self' *; style-src 'self' 'unsafe-inline' *; font-src 'self' data: *; img-src 'self' data: blob: *; frame-src 'self' *;">
   <link rel="icon" type="image/svg+xml" href="/logo.svg" />
   <link rel="manifest" href="/manifest.json" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />

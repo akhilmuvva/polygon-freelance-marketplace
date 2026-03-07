@@ -67,10 +67,11 @@ export default defineConfig({
     commonjsOptions: {
       transformMixedEsModules: true,
       include: [/node_modules/],
+      defaultIsModuleExports: true,
     },
     rollupOptions: {
       output: {
-        manualChunks: undefined, // Let Vite/Rollup decide the most stable chunking strategy
+        manualChunks: undefined, // Let Rollup use its most stable default strategy
       },
     },
   },
