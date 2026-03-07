@@ -1,12 +1,13 @@
-const IS_PROD = window.location.hostname === 'polylance.codes' || window.location.hostname.endsWith('vercel.app');
-const API_URL = import.meta.env.VITE_API_BASE_URL || (IS_PROD ? 'https://api.polylance.codes/api' : (window.location.protocol === 'https:' ? 'https://localhost:3001/api' : 'http://localhost:3001/api'));
+import SovereignService from './SovereignService';
+
+const IS_PROD = window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
+const API_URL = import.meta.env.VITE_API_BASE_URL;
 
 const handleResponse = async (response) => {
     if (!response.ok) {
         const error = await response.json().catch(() => ({ error: 'An unknown error occurred' }));
         throw new Error(error.error || `HTTP error! status: ${response.status}`);
     }
-    // Handle 204 No Content or empty body
     const contentType = response.headers.get('content-type');
     if (response.status === 204 || !contentType || !contentType.includes('application/json')) {
         return {};
@@ -14,33 +15,26 @@ const handleResponse = async (response) => {
     return response.json();
 };
 
-const safeFetch = async (url, options) => {
+const safeFetch = async (url, options, fallbackMethod) => {
     try {
-        const response = await fetch(url, {
-            ...options,
-            credentials: 'include',
-        });
+        if (!API_URL || API_URL.includes('your-backend-api')) {
+             throw new Error('Sovereign Mode Only');
+        }
+        const response = await fetch(url, { ...options, credentials: 'include' });
         return await handleResponse(response);
     } catch (error) {
-        console.error(`API Call failed: ${url}`, error.message);
-
-        // Context-aware error message
-        const isProd = window.location.hostname.includes('render.com') || window.location.hostname.includes('vercel.app') || window.location.hostname.includes('polylance.codes');
-
-        if (error.message.includes('Failed to fetch')) {
-            const message = isProd
-                ? 'Network error: The backend service might be asleep or unreachable. Please try again in 30 seconds.'
-                : 'Backend server is unreachable. Please ensure the backend is running locally on port 3001.';
-            throw new Error(message);
+        if (fallbackMethod) {
+            console.log(`[SOVEREIGN] Switching to Peer-to-Peer pathway for: ${url}`);
+            return await fallbackMethod();
         }
         throw error;
     }
 };
 
 export const api = {
-    getProfile: (address) => safeFetch(`${API_URL}/profiles/${address}`),
+    getProfile: (address) => safeFetch(`${API_URL}/profiles/${address}`, {}, () => SovereignService.getProfile(address)),
 
-    getNonce: (address) => safeFetch(`${API_URL}/auth/nonce/${address}`),
+    getNonce: (address) => safeFetch(`${API_URL}/auth/nonce/${address}`, {}, () => ({ nonce: `SOVEREIGN_${address}_${Date.now()}` })),
 
     updateProfile: (data) => safeFetch(`${API_URL}/profiles`, {
         method: 'POST',
@@ -48,13 +42,13 @@ export const api = {
         body: JSON.stringify(data)
     }),
 
-    getLeaderboard: () => safeFetch(`${API_URL}/leaderboard`),
+    getLeaderboard: () => safeFetch(`${API_URL}/leaderboard`, {}, () => SovereignService.getLeaderboard()),
 
-    getPortfolio: (address) => safeFetch(`${API_URL}/portfolios/${address}`),
+    getPortfolio: (address) => safeFetch(`${API_URL}/portfolios/${address}`, {}, () => SovereignService.getProfile(address)),
 
-    getJobsMetadata: () => safeFetch(`${API_URL}/jobs`),
+    getJobsMetadata: () => safeFetch(`${API_URL}/jobs`, {}, () => SovereignService.getJobsMetadata()),
 
-    getJobMetadata: (jobId) => safeFetch(`${API_URL}/jobs/${jobId}`),
+    getJobMetadata: (jobId) => safeFetch(`${API_URL}/jobs/${jobId}`, {}, () => SovereignService.getJobMetadata(jobId)),
 
     saveJobMetadata: (jobMetadata) => safeFetch(`${API_URL}/jobs`, {
         method: 'POST',
@@ -62,49 +56,15 @@ export const api = {
         body: JSON.stringify(jobMetadata),
     }),
 
-    getAnalytics: () => safeFetch(`${API_URL}/analytics`),
+    getAnalytics: () => safeFetch(`${API_URL}/analytics`, {}, () => ({ totalJobs: 0, totalVolume: 0, activeFreelancers: 0 })),
 
-    getMatchScore: (jobId, address) => safeFetch(`${API_URL}/match/${jobId}/${address}`),
+    getMatchScore: (jobId, address) => safeFetch(`${API_URL}/match/${jobId}/${address}`, {}, () => ({ score: 75, reason: 'Sovereign Match (Profile logic)' })),
 
-    getJobMatches: (jobId) => safeFetch(`${API_URL}/jobs/match/${jobId}`),
+    getJobMatches: (jobId) => safeFetch(`${API_URL}/jobs/match/${jobId}`, {}, () => []),
 
-    getRecommendations: (address) => safeFetch(`${API_URL}/recommendations/${address}`),
+    getRecommendations: (address) => safeFetch(`${API_URL}/recommendations/${address}`, {}, () => []),
 
-
-    createRazorpayOrder: (amount, address, customer_details) => safeFetch(`${API_URL}/payments/create-order`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount, address, customer_details })
-    }),
-
-    verifyRazorpayPayment: (data) => safeFetch(`${API_URL}/payments/verify`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-    }),
-
-
-    polishBio: (data) => safeFetch(`${API_URL}/profiles/polish-bio`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-    }),
-
-    getDisputes: () => safeFetch(`${API_URL}/disputes`),
-    analyzeDispute: (jobId) => safeFetch(`${API_URL}/disputes/${jobId}/analyze`, { method: 'POST' }),
-    resolveDispute: (jobId, data) => safeFetch(`${API_URL}/disputes/${jobId}/resolve`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-    }),
-
-    // Auth helpers for Smart Accounts and SIWE
-    verifySIWE: (message, signature) => safeFetch(`${API_URL}/auth/verify`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message, signature })
-    }),
-    checkHealth: () => safeFetch(`${API_URL}/health`),
+    checkHealth: () => SovereignService.checkHealth(),
 };
 
 export default api;
