@@ -281,7 +281,7 @@ const NAV_VAULT = [
 
 // Hook to periodically check if our decentralised infrastructure is working
 const useNetworkHealth = () => {
-  const [status, setStatus] = useState({ indexing: 'Loading', storage: 'Loading' });
+  const [status, setStatus] = useState({ indexing: 'Loading', storage: 'Loading', api: 'Loading' });
 
   useEffect(() => {
     const checkStatus = async () => {
@@ -301,13 +301,30 @@ const useNetworkHealth = () => {
       }
 
       try {
-        // Ping a gateway to see if IPFS is reachable
-        await fetch('https://gateway.pinata.cloud/ipfs/QmUNLLsP2chJvph9ESr8z6idWV5hYS7qUvf88vkyQp374f', { method: 'HEAD' });
+        // Use ipfs.io for health check - often higher availability in DNS
+        const ipfsRes = await fetch('https://ipfs.io/ipfs/QmUNLLsP2chJvph9ESr8z6idWV5hYS7qUvf88vkyQp374f', { 
+          method: 'HEAD',
+          mode: 'no-cors', // Avoid CORS noise for health check
+          signal: AbortSignal.timeout(5000)
+        });
+        storage = 'Healthy';
       } catch {
-        storage = 'Fallback'; // Might be hitting other gateways
+        storage = 'Degraded';
       }
 
-      setStatus({ indexing, storage });
+      let api = 'Healthy';
+      try {
+        const apiRes = await fetch(`${import.meta.env.VITE_API_BASE_URL}/health`, { 
+          signal: AbortSignal.timeout(3000) 
+        });
+        if (!apiRes.ok) api = 'Degraded';
+      } catch (err) {
+        // Handle SSL block specifically for Local Dev
+        api = 'SSL Blocked'; 
+        console.warn('[SECURITY] Backend SSL Certificate untrusted. Please visit ' + import.meta.env.VITE_API_BASE_URL + '/health in a new tab to authorize.');
+      }
+
+      setStatus({ indexing, storage, api });
     };
 
     checkStatus();
@@ -319,7 +336,7 @@ const useNetworkHealth = () => {
 };
 
 function App() {
-  const { indexing, storage } = useNetworkHealth();
+  const { indexing, storage, api } = useNetworkHealth();
   const { address, isConnected: isWalletConnected } = useAccount();
   const { data: walletClient } = useWalletClient();
   const { disconnect } = useDisconnect();
@@ -598,6 +615,10 @@ function App() {
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <span style={{ fontSize: '0.55rem', fontWeight: 700, color: 'var(--text-tertiary)', textTransform: 'uppercase' }}>Storage</span>
                   <span style={{ fontSize: '0.55rem', fontWeight: 800, color: storage === 'Healthy' ? '#10b981' : '#3b82f6' }}>{storage}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
+                  <span style={{ fontSize: '0.55rem', fontWeight: 700, color: 'var(--text-tertiary)', textTransform: 'uppercase' }}>API</span>
+                  <span style={{ fontSize: '0.55rem', fontWeight: 800, color: api === 'Healthy' ? '#10b981' : (api === 'SSL Blocked' ? '#f59e0b' : '#f43f5e') }}>{api}</span>
                 </div>
               </div>
               <div style={styles.toggleRow}>

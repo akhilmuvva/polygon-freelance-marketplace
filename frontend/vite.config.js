@@ -19,6 +19,7 @@ export default defineConfig({
         global: true,
         process: true,
       },
+      protocol: 'events',
     }),
     process.env.NODE_ENV === 'development' && basicSsl(),
   ].filter(Boolean),
@@ -29,20 +30,35 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
-      'string_decoder/': 'string_decoder',
-      'string-decoder': 'string_decoder',
-      'rollup-plugin-node-polyfills/polyfills/string-decoder': 'string_decoder',
-      'process': 'process/browser',
-      'stream': 'stream-browserify',
-      'zlib': 'browserify-zlib',
-      'util': 'util',
-      'buffer': 'buffer',
     },
   },
   server: {
+    port: 5174,
+    strictPort: true,
     host: true,
+    headers: {
+      'Content-Security-Policy': "default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: *; script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: *; style-src 'self' 'unsafe-inline' *; font-src 'self' data: *; connect-src 'self' 'unsafe-inline' 'unsafe-eval' *; frame-src 'self' *; img-src 'self' data: blob: *;"
+    }
+  },
+  optimizeDeps: {
+    // Force pre-bundling of common Web3/UI dependencies for stability
+    include: [
+      'react', 'react-dom', 'ethers', 'viem', 'wagmi', 
+      'eventemitter3', 'bn.js', 'buffer', 'process',
+      '@biconomy/account', 'lucide-react', 'animejs', 'framer-motion'
+    ],
+    esbuildOptions: {
+      define: {
+        global: 'globalThis',
+      },
+      target: 'esnext',
+      supported: { 
+        'bigint': true 
+      },
+    },
   },
   build: {
+    target: 'esnext',
     sourcemap: false,
     minify: 'esbuild',
     chunkSizeWarningLimit: 1200,

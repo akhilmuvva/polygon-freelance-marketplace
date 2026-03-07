@@ -8,9 +8,9 @@ import axios from 'axios';
 class IPFSResolver {
     constructor() {
         this.gateways = [
-            { url: 'https://gateway.pinata.cloud/ipfs/', fails: 0 },
             { url: 'https://cloudflare-ipfs.com/ipfs/', fails: 0 },
             { url: 'https://ipfs.io/ipfs/', fails: 0 },
+            { url: 'https://gateway.pinata.cloud/ipfs/', fails: 0 },
             { url: 'https://dweb.link/ipfs/', fails: 0 }
         ];
 

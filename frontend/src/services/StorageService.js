@@ -2,7 +2,7 @@ import axios from 'axios';
 
 const PINATA_API_KEY = import.meta.env.VITE_PINATA_API_KEY;
 const PINATA_API_SECRET = import.meta.env.VITE_PINATA_API_SECRET;
-const IPFS_GATEWAY = 'https://gateway.pinata.cloud/ipfs/';
+const IPFS_GATEWAY = 'https://cloudflare-ipfs.com/ipfs/';
 
 /**
  * StorageService: Handles direct uploads to IPFS via Pinata.
