@@ -3,15 +3,26 @@
 
 <head>
   <script>
-    // Polyfill for Web3 / Biconomy dependencies
-    window.global = window;
-    window.process = { env: {} };
+    // Polyfill for Web3 / Biconomy / SIWE dependencies
+    (function() {
+      window.global = window.global || window;
+      window.process = window.process || { env: { NODE_ENV: 'production' } };
+      
+      // Better exports/module polyfill to prevent "defineProperty called on non-object"
+      if (typeof window.exports === 'undefined') {
+        window.exports = {};
+      }
+      if (typeof window.module === 'undefined') {
+        window.module = { exports: window.exports };
+      }
+    })();
 
     // Absolute pre-emption of SES/library noise
     (function () {
       const filter = (args) => {
         const msg = args.map(a => String(a)).join(' ');
-        return msg.includes('SES Removing unpermitted intrinsics');
+        return msg.includes('SES Removing unpermitted intrinsics') || 
+               msg.includes('infird.com'); 
       };
       ['log', 'info', 'warn', 'debug', 'error'].forEach(method => {
         const _orig = console[method];
@@ -22,6 +33,7 @@
     })();
   </script>
   <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https://checkout.razorpay.com https://*.google.com https://*.gstatic.com https://*.4everland.app https://infird.com; connect-src 'self' https://*.4everland.app https://*.thegraph.com https://*.polygon.technology https://*.alchemyapi.io https://*.infura.io https://rpc.ankr.com https://*.biconomy.io https://*.particle.network; object-src 'none';">
   <link rel="icon" type="image/svg+xml" href="/logo.svg" />
   <link rel="manifest" href="/manifest.json" />
   <!-- CSP should be set via HTTP headers in production, not here -->

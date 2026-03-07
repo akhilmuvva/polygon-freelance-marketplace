@@ -24,7 +24,7 @@ export default defineConfig({
     process.env.NODE_ENV === 'development' && basicSsl(),
   ].filter(Boolean),
   define: {
-    'process.env': {},
+    'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'production'),
     'global': 'globalThis',
   },
   resolve: {
@@ -43,7 +43,7 @@ export default defineConfig({
   optimizeDeps: {
     // Force pre-bundling of common Web3/UI dependencies for stability
     include: [
-      'react', 'react-dom', 'ethers', 'viem', 'wagmi', 
+      'react', 'react-dom', 'ethers', 'viem', 'wagmi', 'siwe',
       'eventemitter3', 'bn.js', 'buffer', 'process',
       '@biconomy/account', 'lucide-react', 'animejs', 'framer-motion'
     ],
@@ -64,12 +64,13 @@ export default defineConfig({
     chunkSizeWarningLimit: 1200,
     commonjsOptions: {
       transformMixedEsModules: true,
+      include: [/node_modules/],
     },
     rollupOptions: {
       output: {
         manualChunks(id) {
           if (id.includes('node_modules')) {
-            if (id.includes('@biconomy') || id.includes('viem') || id.includes('wagmi') || id.includes('ethers')) {
+            if (id.includes('@biconomy') || id.includes('viem') || id.includes('wagmi') || id.includes('ethers') || id.includes('siwe')) {
               return 'vendor-web3';
             }
             if (id.includes('three') || id.includes('@react-three')) {
@@ -92,9 +93,9 @@ export default defineConfig({
             }
             return 'vendor';
           }
-        },
-      },
-    },
+        }
+      }
+    }
   },
   test: {
     globals: true,
