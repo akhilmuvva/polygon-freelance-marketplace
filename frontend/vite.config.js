@@ -39,7 +39,7 @@ export default defineConfig({
     strictPort: true,
     host: true,
     headers: {
-      'Content-Security-Policy': "default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: *; script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: *; style-src 'self' 'unsafe-inline' *; font-src 'self' data: *; connect-src 'self' 'unsafe-inline' 'unsafe-eval' *; frame-src 'self' *; img-src 'self' data: blob: *;"
+      'Content-Security-Policy': "default-src 'self' * data: blob: 'unsafe-inline' 'unsafe-eval'; script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: *; connect-src 'self' *; style-src 'self' 'unsafe-inline' *; font-src 'self' data: *; frame-src 'self' *; img-src 'self' data: blob: *;"
     }
   },
   optimizeDeps: {
