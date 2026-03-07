@@ -13,13 +13,13 @@ export default defineConfig({
   plugins: [
     react(),
     nodePolyfills({
-      include: ['buffer', 'process', 'util', 'stream', 'zlib', 'string_decoder', 'events'],
+      include: ['buffer', 'process', 'util', 'stream', 'zlib', 'string_decoder', 'events', 'crypto', 'http', 'https', 'os', 'url', 'path', 'fs'],
       globals: {
         Buffer: true,
         global: true,
         process: true,
       },
-      protocol: 'events',
+      // Removed invalid protocol: 'events'
     }),
     process.env.NODE_ENV === 'development' && basicSsl(),
   ].filter(Boolean),
@@ -32,6 +32,8 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
+      'string_decoder': 'string_decoder',
+      'string-decoder': 'string_decoder',
     },
   },
   server: {

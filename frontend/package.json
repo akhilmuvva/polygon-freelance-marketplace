@@ -52,7 +52,7 @@
     "siwe": "^3.0.0",
     "three": "^0.160.0",
     "viem": "^2.43.3",
-    "vite-plugin-node-polyfills": "^0.2.0",
+    "vite-plugin-node-polyfills": "^0.25.0",
     "wagmi": "^2.19.5"
   },
   "devDependencies": {
@@ -73,6 +73,7 @@
     "process": "^0.11.10",
     "stream-browserify": "^3.0.0",
     "string_decoder": "^1.3.0",
+    "string-decoder": "^1.3.0",
     "util": "^0.12.5",
     "vite": "^7.3.1",
     "vitest": "^4.0.18"
