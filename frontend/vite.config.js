@@ -25,6 +25,8 @@ export default defineConfig({
   ].filter(Boolean),
   define: {
     'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'production'),
+    'process.env': JSON.stringify({ NODE_ENV: 'production' }),
+    'process.browser': true,
     'global': 'globalThis',
   },
   resolve: {

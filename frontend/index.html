@@ -14,14 +14,18 @@
         browser: true
       };
       
-      // Force exports/module to exist globally for legacy CJS interop
+      // Force exports/module/Buffer to exist globally
       if (!g.exports) g.exports = {};
       if (!g.module) g.module = { exports: g.exports };
+      if (!g.Buffer) {
+        // Simple placeholder to prevent crash until full Buffer loads
+        g.Buffer = { isBuffer: () => false, from: () => [], alloc: () => [] };
+      }
       
-      // Patch for libraries that might try to redefine 'exports' on window
+      // Prevent libraries from breaking the global module/exports objects
       const _origDefine = Object.defineProperty;
       Object.defineProperty = function(obj, prop, desc) {
-        if ((prop === 'exports' || prop === 'module') && obj === g) return;
+        if ((prop === 'exports' || prop === 'module') && obj === g && typeof desc.value !== 'object') return;
         return _origDefine.apply(this, arguments);
       };
     })();
