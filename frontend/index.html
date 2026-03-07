@@ -3,21 +3,30 @@
 
 <head>
   <script>
-    // Polyfill for Web3 / Biconomy / SIWE dependencies
+    // Universal Polyfills for Web3 / SIWE / Biconomy
     (function() {
-      window.global = window.global || window;
-      window.process = window.process || { env: { NODE_ENV: 'production' } };
+      const g = window;
+      g.global = g;
+      g.process = g.process || { 
+        env: { NODE_ENV: 'production' },
+        version: 'v22.0.0',
+        nextTick: (fn) => setTimeout(fn, 0),
+        browser: true
+      };
       
-      // Better exports/module polyfill to prevent "defineProperty called on non-object"
-      if (typeof window.exports === 'undefined') {
-        window.exports = {};
-      }
-      if (typeof window.module === 'undefined') {
-        window.module = { exports: window.exports };
-      }
+      // Force exports/module to exist globally for legacy CJS interop
+      if (!g.exports) g.exports = {};
+      if (!g.module) g.module = { exports: g.exports };
+      
+      // Patch for libraries that might try to redefine 'exports' on window
+      const _origDefine = Object.defineProperty;
+      Object.defineProperty = function(obj, prop, desc) {
+        if ((prop === 'exports' || prop === 'module') && obj === g) return;
+        return _origDefine.apply(this, arguments);
+      };
     })();
 
-    // Absolute pre-emption of SES/library noise
+    // Mute noise from SES and regional script injectors
     (function () {
       const filter = (args) => {
         const msg = args.map(a => String(a)).join(' ');
@@ -33,10 +42,9 @@
     })();
   </script>
   <meta charset="UTF-8" />
-  <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https://checkout.razorpay.com https://*.google.com https://*.gstatic.com https://*.4everland.app https://infird.com; connect-src 'self' https://*.4everland.app https://*.thegraph.com https://*.polygon.technology https://*.alchemyapi.io https://*.infura.io https://rpc.ankr.com https://*.biconomy.io https://*.particle.network; object-src 'none';">
+  <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https://checkout.razorpay.com https://*.google.com https://*.gstatic.com https://*.4everland.app https://infird.com; connect-src 'self' 'unsafe-inline' 'unsafe-eval' *; object-src 'none';">
   <link rel="icon" type="image/svg+xml" href="/logo.svg" />
   <link rel="manifest" href="/manifest.json" />
-  <!-- CSP should be set via HTTP headers in production, not here -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="theme-color" content="#8b5cf6" />
   <meta name="mobile-web-app-capable" content="yes" />
