@@ -112,7 +112,7 @@ app.use(cors({
         'https://localhost:5176', 'https://localhost:5177',
         'http://localhost:5173', 'http://localhost:5174', 'http://localhost:5175',
         'http://localhost:5176', 'http://localhost:5177',
-        'https://polygon-freelance-marketplace-onf5efcpb.vercel.app',
+        /\.4everland\.app$/, /\.limo$/, /\.link$/, /\.eth\.limo$/, /\.eth\.link$/,
         'https://polylance.codes', 'https://www.polylance.codes', 'https://polylance-zenith.vercel.app'
     ],
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
@@ -167,7 +167,8 @@ function startServer() {
     const io = new Server(httpServer, {
         cors: {
             origin: process.env.FRONTEND_URL ? process.env.FRONTEND_URL.split(',').map(u => u.trim()) : [
-                'https://localhost:5173', 'https://localhost:5174', 'http://localhost:5173', 'http://localhost:5174'
+                'https://localhost:5173', 'https://localhost:5174', 'http://localhost:5173', 'http://localhost:5174',
+                /\.4everland\.app$/, /\.limo$/, /\.link$/
             ],
             methods: ['GET', 'POST'],
             credentials: true
