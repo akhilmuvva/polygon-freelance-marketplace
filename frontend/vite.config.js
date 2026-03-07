@@ -70,34 +70,9 @@ export default defineConfig({
     },
     rollupOptions: {
       output: {
-        manualChunks(id) {
-          if (id.includes('node_modules')) {
-            if (id.includes('@biconomy') || id.includes('viem') || id.includes('wagmi') || id.includes('ethers') || id.includes('siwe')) {
-              return 'vendor-web3';
-            }
-            if (id.includes('three') || id.includes('@react-three')) {
-              return 'vendor-graphics';
-            }
-            if (id.includes('@xmtp')) {
-              return 'vendor-messaging';
-            }
-            if (id.includes('framer-motion') || id.includes('lucide-react') || id.includes('animejs')) {
-              return 'vendor-ui';
-            }
-            if (id.includes('@rainbow-me/rainbowkit')) {
-              return 'vendor-rainbow';
-            }
-            if (id.includes('recharts')) {
-              return 'vendor-charts';
-            }
-            if (id.includes('@apollo/client') || id.includes('graphql')) {
-              return 'vendor-data';
-            }
-            return 'vendor';
-          }
-        }
-      }
-    }
+        manualChunks: undefined, // Let Vite/Rollup decide the most stable chunking strategy
+      },
+    },
   },
   test: {
     globals: true,
