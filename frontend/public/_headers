@@ -1,5 +1,9 @@
 /*
-  Content-Security-Policy: default-src 'self' * data: blob: 'unsafe-inline' 'unsafe-eval'; script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https://checkout.razorpay.com https://*.google.com https://*.gstatic.com https://*.4everland.app https://infird.com; connect-src 'self' *; frame-src 'self' *; img-src 'self' data: blob: *; style-src 'self' 'unsafe-inline' *; font-src 'self' data: *;
+  Content-Security-Policy: default-src 'self' * data: blob: 'unsafe-inline' 'unsafe-eval'; script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: *; connect-src 'self' *; frame-src 'self' *; img-src 'self' data: blob: *; style-src 'self' 'unsafe-inline' *; font-src 'self' data: *;
   X-Frame-Options: SAMEORIGIN
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
+  X-UA-Compatible: IE=edge
+  Permissions-Policy: camera=(self), microphone=(self), geolocation=(self), encrypted-media=(self), fullscreen=(self)
+  X-Permitted-Cross-Origin-Policies: none
+  Access-Control-Allow-Private-Network: true

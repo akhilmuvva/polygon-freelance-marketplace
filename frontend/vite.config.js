@@ -55,7 +55,7 @@ export default defineConfig({
       define: {
         global: 'globalThis',
       },
-      target: 'esnext',
+      target: 'chrome100', // Targeted optimization for Chrome/Edge/Brave
       supported: { 
         'bigint': true 
       },
