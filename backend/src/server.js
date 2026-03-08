@@ -98,7 +98,7 @@ app.use(helmet({
             defaultSrc: ["'self'"],
             scriptSrc: ["'self'", "https://checkout.razorpay.com", "'unsafe-inline'", "'unsafe-eval'", "blob:"],
             frameSrc: ["'self'", "https://api.razorpay.com"],
-            connectSrc: ["'self'", "https://api.razorpay.com", "https://*.render.com", "wss://*.render.com", "https://localhost:3001", "wss://localhost:3001", "https://rpc-amoy.polygon.technology", "https://rpc.ankr.com", "https://polygon-amoy-bor-rpc.publicnode.com", "https://polylance.codes", "https://api.polylance.codes"],
+            connectSrc: ["'self'", "https://api.razorpay.com", "https://*.render.com", "wss://*.render.com", "https://polylance.codes", "https://api.polylance.codes", process.env.BACKEND_URL || "https://localhost:3001", (process.env.BACKEND_URL || "https://localhost:3001").replace('https', 'wss')],
             imgSrc: ["'self'", "data:", "blob:", "https://gateway.pinata.cloud"],
         },
     },
@@ -449,7 +449,9 @@ app.get('/api/jobs/:jobId', async (req, res) => {
             console.log(`[SOVEREIGN] Job #${jobId} missing in DB, checking on-chain...`);
             try {
                 const { CONTRACT_ADDRESS } = await import('./services/syncer.js');
-                const FreelanceEscrowABI = JSON.parse(fs.readFileSync(path.join(__dirname, '../contracts', 'FreelanceEscrow.json'), 'utf8'));
+                // Corrected path for Render/Container deployment
+                const abiPath = path.join(__dirname, 'contracts', 'FreelanceEscrow.json');
+                const FreelanceEscrowABI = JSON.parse(fs.readFileSync(abiPath, 'utf8'));
 
                 const jobData = await publicClient.readContract({
                     address: CONTRACT_ADDRESS,

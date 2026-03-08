@@ -1,0 +1,43 @@
+# Render Blueprint for PolyLance Zenith Backend
+services:
+  - type: web
+    name: polylance-backend
+    env: node
+    plan: starter # or free, but starter is recommended for Web3 syncers
+    region: ohio # Choose closest to your users
+    buildCommand: |
+      cd backend
+      npm install --legacy-peer-deps
+    startCommand: |
+      cd backend
+      npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3001
+      - key: MONGODB_URI
+        sync: false # Set this in the Render Dashboard
+      - key: FRONTEND_URL
+        value: https://polylance.codes,https://www.polylance.codes
+      - key: BACKEND_URL
+        sync: false # Set this to your Render URL (e.g., https://your-app.onrender.com)
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: RPC_URL
+        value: https://rpc-amoy.polygon.technology
+      - key: NETWORK
+        value: amoy
+      - key: RAZORPAY_KEY_ID
+        sync: false
+      - key: RAZORPAY_KEY_SECRET
+        sync: false
+    healthCheckPath: /api/health
+    # Enable WebSockets for the Syncer
+    autoDeploy: true
+
+# If you want Render to host your DB too:
+# databases:
+#   - name: polylance-db
+#     databaseName: polylance
+#     user: zenith
