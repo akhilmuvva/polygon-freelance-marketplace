@@ -16,8 +16,6 @@ services:
         value: production
       - key: PORT
         value: 3001
-      - key: MONGODB_URI
-        sync: false # Set this in the Render Dashboard
       - key: FRONTEND_URL
         value: https://polylance.codes,https://www.polylance.codes
       - key: BACKEND_URL

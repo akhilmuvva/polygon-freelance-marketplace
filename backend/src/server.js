@@ -1,22 +1,15 @@
-import dotenv from 'dotenv';
-// Load environment variables immediately at the absolute top
-dotenv.config();
-
 import express from 'express';
-import mongoose from 'mongoose';
 import cors from 'cors';
-import { verifyMessage, formatEther } from 'viem';
-import { startSyncer } from './services/syncer.js';
+import { verifyMessage, formatEther, createPublicClient, http, parseAbi } from 'viem';
+import { polygonAmoy } from 'viem/chains';
+// Syncer removed: Backend is now Stateless. Indexing is delegated to The Graph.
 import { publicClient, testBlockchainConnection } from './config/blockchain.js';
 import { Server } from 'socket.io';
 import { createServer } from 'http';
 import { createServer as createHttpsServer } from 'https';
 import crypto from 'crypto';
 import paymentRoutes from './routes/paymentRoutes.js';
-import { Profile } from './models/Profile.js';
-import { JobMetadata } from './models/JobMetadata.js';
 import { SiweMessage } from 'siwe';
-import { SyncProgress } from './models/SyncProgress.js';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -37,7 +30,7 @@ function escapeRegex(text) {
 
 function validateEnv() {
     logger.info('--- Environment Diagnostic ---', 'CONFIG');
-    const critical = ['MONGODB_URI'];
+    const critical = []; // No centralized DB required
     const gateway = ['RAZORPAY_KEY_ID', 'RAZORPAY_KEY_SECRET', 'GEMINI_API_KEY'];
 
     // Log presence
@@ -148,16 +141,15 @@ if (process.env.NODE_ENV !== 'production') {
     }
 }
 
-// Database Connection
-mongoose.connect(MONGODB_URI)
-    .then(() => {
-        logger.success('Connected to MongoDB Atlas', 'DB');
-        // Start server only after DB is ready
-        if (process.argv[1] === fileURLToPath(import.meta.url)) {
-            startServer();
-        }
-    })
-    .catch(err => logger.error('MongoDB connection error', 'DB', err));
+// 🚀 SOVEREIGN ARCHITECTURE: No Centralized Database Required
+// Truth is verified On-Chain via Public Client
+const bcClient = createPublicClient({
+    chain: polygonAmoy,
+    transport: http(process.env.RPC_URL || 'https://rpc-amoy.polygon.technology')
+});
+
+// Start Server Automatically
+startServer();
 
 function startServer() {
     const httpServer = process.env.NODE_ENV === 'production' ?
@@ -184,8 +176,8 @@ function startServer() {
 
     httpServer.listen(PORT, '0.0.0.0', () => {
         const mode = process.env.NODE_ENV === 'production' ? 'Production' : (httpsOptions ? 'HTTPS' : 'HTTP');
-        logger.info(`${mode} Server running on port ${PORT}`, 'SERVER');
-        startSyncer(io).catch(e => logger.error('Syncer failed to start', 'SYNC', e));
+        logger.info(`${mode} Sovereign Server running on port ${PORT}`, 'SERVER');
+        logger.info('Decentralized Truth: Blockchain + IPFS Indexers active.', 'SERVER');
     });
 
     const server = httpServer;
@@ -208,10 +200,8 @@ function startServer() {
 
 async function shutdown(server, signal) {
     logger.info(`${signal} received. Closing server...`, 'SHUTDOWN');
-    server.close(async () => {
-        logger.info('Server closed. Disconnecting DB...', 'SHUTDOWN');
-        await mongoose.connection.close(false);
-        logger.success('Database disconnected. Bye!', 'SHUTDOWN');
+    server.close(() => {
+        logger.success('Server closed. Sovereign nodes remain active. Bye!', 'SHUTDOWN');
         process.exit(0);
     });
 }
@@ -220,20 +210,17 @@ async function shutdown(server, signal) {
 app.get('/favicon.ico', (req, res) => res.status(204).end());
 
 // Health Check
-app.get('/api/health', async (req, res) => {
-    try {
-        const latestProgress = await SyncProgress.find().sort({ lastBlock: -1 }).limit(1);
-        const lastSyncedBlock = latestProgress.length > 0 ? latestProgress[0].lastBlock : 0;
+// Ephemeral memory cache for session nonces (DB-Free Auth)
+const sessionNonces = new Map();
 
-        res.json({
-            status: 'ok',
-            uptime: process.uptime(),
-            network: process.env.NETWORK || 'Polygon Amoy',
-            lastSyncedBlock
-        });
-    } catch (error) {
-        res.status(500).json({ status: 'error', message: error.message });
-    }
+// Health Check
+app.get('/api/health', async (req, res) => {
+    res.json({
+        status: 'ok',
+        mode: 'sovereign',
+        uptime: process.uptime(),
+        network: process.env.NETWORK || 'Polygon Amoy'
+    });
 });
 
 // Payment Routes
@@ -242,21 +229,10 @@ app.use('/api/payments', paymentRoutes);
 // Auth Routes
 app.get('/api/auth/nonce/:address', async (req, res) => {
     let { address } = req.params;
-    console.log(`[AUTH] Nonce requested for: ${address}`);
-    const dbAddress = address === 'default' ? '0x0000000000000000000000000000000000000000' : address.toLowerCase();
+    const cleanAddress = address.toLowerCase();
     const nonce = crypto.randomBytes(16).toString('hex');
-    try {
-        await Profile.findOneAndUpdate(
-            { address: dbAddress },
-            { nonce },
-            { upsert: true, new: true }
-        );
-        console.log(`[AUTH] Generated nonce ${nonce} for ${dbAddress}`);
-        res.json({ nonce });
-    } catch (error) {
-        console.error(`[AUTH] Nonce error: ${error.message}`);
-        res.status(500).json({ error: error.message });
-    }
+    sessionNonces.set(cleanAddress, { nonce, timestamp: Date.now() });
+    res.json({ nonce });
 });
 
 app.post('/api/auth/verify', async (req, res) => {
@@ -277,34 +253,19 @@ app.post('/api/auth/verify', async (req, res) => {
             return res.status(401).json({ error: 'Signature verification failed' });
         }
 
-        const fields = siweMessage;
+        // Validate nonce against ephemeral memory cache
+        const session = sessionNonces.get(siweMessage.address.toLowerCase());
 
-        // Validate nonce against database
-        const profile = await Profile.findOne({
-            $or: [
-                { address: fields.address.toLowerCase(), nonce: fields.nonce },
-                { address: '0x0000000000000000000000000000000000000000', nonce: fields.nonce }
-            ]
-        });
-
-        if (!profile) {
-            console.warn('[AUTH] Nonce mismatch or expired:', fields.nonce);
+        if (!session || session.nonce !== siweMessage.nonce) {
+            console.warn('[AUTH] Nonce mismatch or expired');
             return res.status(400).json({ error: 'Invalid or expired nonce' });
         }
 
-        // Clear nonce and return success
-        profile.nonce = null;
-        await profile.save();
+        // Auto-cleanup nonce after verification
+        sessionNonces.delete(siweMessage.address.toLowerCase());
 
-        // Ensure user profile exists
-        await Profile.findOneAndUpdate(
-            { address: fields.address.toLowerCase() },
-            {}, // Just ensure it exists
-            { upsert: true }
-        );
-
-        console.log('[AUTH] Login successful for:', fields.address);
-        res.json({ ok: true, address: fields.address });
+        console.log('[AUTH] Login successful for:', siweMessage.address);
+        res.json({ ok: true, address: siweMessage.address });
     } catch (error) {
         console.error('[AUTH] Verify error:', error);
         res.status(500).json({ error: error.message });
@@ -316,40 +277,21 @@ app.get('/api/profiles/:address', async (req, res) => {
     const { address } = req.params;
     const cleanAddress = address.toLowerCase();
     try {
-        let profile = await Profile.findOne({ address: cleanAddress });
+        console.log(`[SOVEREIGN] Resolving profile: ${cleanAddress}`);
+        const portfolioCID = await bcClient.readContract({
+            address: REPUTATION_ADDRESS,
+            abi: REPUTATION_ABI,
+            functionName: 'portfolioCID',
+            args: [cleanAddress]
+        });
 
-        // DECENTRALIZED FALLBACK: If not in Mongo, check On-Chain
-        if (!profile || !profile.name) {
-            console.log(`[SOVEREIGN] Profile missing in DB, checking on-chain: ${cleanAddress}`);
-            try {
-                const portfolioCID = await publicClient.readContract({
-                    address: REPUTATION_ADDRESS,
-                    abi: REPUTATION_ABI,
-                    functionName: 'portfolioCID',
-                    args: [cleanAddress]
-                });
-
-                if (portfolioCID) {
-                    console.log(`[SOVEREIGN] Found CID on-chain: ${portfolioCID}. Fetching from IPFS...`);
-                    const { getJSONFromIPFS } = await import('./services/ipfs.js');
-                    const ipfsData = await getJSONFromIPFS(portfolioCID);
-
-                    if (ipfsData) {
-                        // Auto-cache to Mongo for search performance
-                        profile = await Profile.findOneAndUpdate(
-                            { address: cleanAddress },
-                            { ...ipfsData, ipfsCID: portfolioCID, isSovereign: true },
-                            { upsert: true, new: true }
-                        );
-                        console.log(`[SOVEREIGN] Profile successfully resolved and cached from IPFS.`);
-                    }
-                }
-            } catch (chainErr) {
-                console.warn(`[SOVEREIGN] Remote resolution failed for ${cleanAddress}: ${chainErr.message}`);
-            }
+        if (portfolioCID) {
+            const { getJSONFromIPFS } = await import('./services/ipfs.js');
+            const ipfsData = await getJSONFromIPFS(portfolioCID);
+            return res.json({ ...ipfsData, address: cleanAddress, isSovereign: true });
         }
-
-        res.json(profile || { address: cleanAddress, isPlaceholder: true });
+        
+        res.json({ address: cleanAddress, isPlaceholder: true });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -387,33 +329,17 @@ app.post('/api/profiles',
                 return res.status(401).json({ error: 'Invalid nonce in message' });
             }
 
-            const isValid = await verifyMessage({
-                address: address,
-                message: message,
-                signature: signature,
-            });
+        const isValid = await verifyMessage({
+            address: address,
+            message: message,
+            signature: signature,
+        });
 
-            console.log(`[AUTH] Signature verification result for ${address}: ${isValid}`);
+        if (!isValid) return res.status(401).json({ error: 'Invalid signature' });
 
-            if (!isValid) {
-                console.warn(`[AUTH] Invalid signature for address ${address}`);
-                return res.status(401).json({ error: 'Invalid signature' });
-            }
-
-            // Update profile and clear nonce
-            const updateFields = { name, bio, skills, avatarIpfsHash, nonce: null };
-            if (ipfsCID) {
-                updateFields.ipfsCID = ipfsCID;
-                updateFields.isSovereign = true;
-            }
-
-            const updatedProfile = await Profile.findOneAndUpdate(
-                { address: address.toLowerCase() },
-                updateFields,
-                { upsert: true, new: true }
-            );
-            console.log(`[AUTH] Profile updated/verified for ${address}`);
-            res.json(updatedProfile);
+        // SOVEREIGN SUCCESS: We return the projected profile data
+        // The user must still propagate this to IPFS/Chain for persistence
+        res.json({ address, name, bio, skills, isSovereign: true, status: 'verified' });
         } catch (error) {
             console.error(`[AUTH] Verification CRITICAL error for ${address}:`, error);
             res.status(500).json({ error: 'Internal server error during verification' });
@@ -421,22 +347,14 @@ app.post('/api/profiles',
     });
 
 app.get('/api/disputes', async (req, res) => {
-    try {
-        const disputes = await JobMetadata.find({ status: 3 }).sort({ updatedAt: -1 });
-        res.json(disputes);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
+    // DISPUTES: Served directly from the Subgraph in a pure P2P setup
+    res.json([]); 
 });
 
 // Job Metadata Routes
 app.get('/api/jobs', async (req, res) => {
-    try {
-        const jobs = await JobMetadata.find().sort({ createdAt: -1 });
-        res.json(jobs);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
+    // JOBS: Resolved via Subgraph in the frontend SovereignService
+    res.json([]);
 });
 
 app.get('/api/jobs/:jobId', async (req, res) => {
@@ -526,24 +444,8 @@ app.post('/api/jobs',
     });
 
 app.get('/api/leaderboard', async (req, res) => {
-    try {
-        const topFreelancers = await Profile.find({ totalEarned: { $gt: 0 } })
-            .sort({ reputationScore: -1 })
-            .limit(10)
-            .select('address name bio skills totalEarned completedJobs reputationScore ratingSum ratingCount');
-
-        const leadersWithRatings = topFreelancers.map(leader => {
-            const avgRating = leader.ratingCount > 0 ? (leader.ratingSum / leader.ratingCount) : 0;
-            return {
-                ...leader.toObject(),
-                avgRating: avgRating
-            };
-        });
-
-        res.json(leadersWithRatings);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
+    // LEADERBOARD: Resolved via Sovereign Reputation Subgraph
+    res.json([]);
 });
 
 app.get('/api/portfolios/:address', async (req, res) => {
