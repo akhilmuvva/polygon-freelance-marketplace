@@ -1,7 +1,7 @@
-import { createPublicClient, http, getContract, parseAbi } from 'viem';
+import { createPublicClient, http, parseAbi } from 'viem';
 import { polygonAmoy } from 'viem/chains';
 import IPFSResolver from '../utils/IPFSResolver';
-import { ApolloClient, InMemoryCache, gql } from '@apollo/client';
+import { ApolloClient, InMemoryCache, gql, HttpLink } from '@apollo/client';
 
 /**
  * SovereignService: The Peer-to-Peer alternative to the centralized backend.
@@ -20,7 +20,9 @@ const publicClient = createPublicClient({
 
 // Apollo Client for Subgraph Indexing
 const apolloClient = new ApolloClient({
-  uri: SUBGRAPH_URL,
+  link: new HttpLink({
+    uri: SUBGRAPH_URL,
+  }),
   cache: new InMemoryCache(),
 });
 
@@ -119,7 +121,7 @@ const SovereignService = {
         return { ...job, ...metadata, isSovereign: true };
       }
       return job;
-    } catch (err) {
+    } catch {
       console.warn('[SOVEREIGN] Single job fallback check...');
       // Direct chain read if Indexer is slow
       return null;
@@ -152,7 +154,7 @@ const SovereignService = {
       }));
 
       return hydratedLeaders;
-    } catch (err) {
+    } catch {
       return [];
     }
   },

@@ -1,5 +1,5 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { Profile } from '../models/Profile.js';
+// Removed obsolete Mongoose Profile model import
 
 // Load Gemini API Key from environment
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);

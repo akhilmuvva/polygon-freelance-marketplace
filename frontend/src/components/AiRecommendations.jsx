@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { api } from '../services/api';
+import api from '../services/api';
 
 const AiRecommendations = ({ address }) => {
     const [jobs, setJobs] = useState([]);

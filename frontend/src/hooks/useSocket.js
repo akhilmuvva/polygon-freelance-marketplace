@@ -3,7 +3,7 @@ import { io } from 'socket.io-client';
 
 const getSocketUrl = () => {
     // Use the same base URL as the API, but strip the /api path
-    const envUrl = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || 'http://localhost:3001';
+    const envUrl = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || '';
     // Socket.io expects HTTP/HTTPS URLs — it handles the WS upgrade internally
     return envUrl.replace(/\/api\/?$/, '');
 };
@@ -15,6 +15,10 @@ export const useSocket = () => {
     const [isConnected, setIsConnected] = useState(false);
 
     useEffect(() => {
+        if (!SOCKET_URL) {
+            console.log('[Socket] Sovereign Mode: No backend URL provided. Socket features disabled.');
+            return;
+        }
         const socketInstance = io(SOCKET_URL, {
             withCredentials: true,
             reconnectionAttempts: 5,

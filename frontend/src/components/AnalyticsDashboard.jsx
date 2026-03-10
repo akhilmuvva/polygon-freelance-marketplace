@@ -7,7 +7,7 @@ import {
     Activity, Users, Briefcase, DollarSign, TrendingUp,
     PieChart as PieIcon, Loader2, Globe
 } from 'lucide-react';
-import { SubgraphService } from '../services/SubgraphService';
+import SubgraphService from '../services/SubgraphService';
 import { useAnimeAnimations } from '../hooks/useAnimeAnimations';
 import { formatEther } from 'viem';
 

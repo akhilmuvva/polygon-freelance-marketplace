@@ -1529,3 +1529,55 @@ nav,
   background-size: 400% 400%;
   animation: mesh 15s ease infinite;
 }
+
+/* ============================================
+   RESPONSIVE OVERRIDES (ZENITH ADAPTIVE)
+   ============================================ */
+@media (max-width: 1024px) {
+    .app-main { margin-left: 0 !important; width: 100% !important; padding-bottom: 72px; }
+    .app-header .menu-toggle { display: flex !important; }
+    .app-header .desktop-only { display: none !important; }
+    .app-sidebar .close-toggle { display: flex !important; }
+    .app-mobile-nav { display: flex !important; }
+    .app-footer { display: none !important; }
+    .app-content { padding: 20px 16px 80px !important; }
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.15); opacity: 0.7; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+.animate-pulse-subtle {
+    animation: pulse 2.5s infinite ease-in-out;
+}
+
+/* Premium Module Loader */
+.module-loader-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 400px;
+    gap: 24px;
+    position: relative;
+}
+
+.loader-glow {
+    position: absolute;
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+    animation: pulse 3s infinite ease-in-out;
+    z-index: 0;
+}
+
+.loader-text {
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    z-index: 1;
+}

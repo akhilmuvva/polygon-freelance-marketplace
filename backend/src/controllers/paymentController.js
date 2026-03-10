@@ -1,7 +1,6 @@
 import Razorpay from "razorpay";
 import crypto from "crypto";
 import { logger } from "../utils/logger.js";
-import { PaymentOrder } from "../models/PaymentOrder.js";
 import { fulfillOnramp } from "../services/paymentService.js";
 
 const getRazorpayInstance = () => {
@@ -11,11 +10,21 @@ const getRazorpayInstance = () => {
     });
 };
 
+// Stateless In-Memory Order Storage (Ephemeral)
+// For a truly decentralized path, we don't store PII in a DB.
+const pendingOrders = new Map();
+
 export const createRazorpayOrder = async (req, res) => {
     try {
-        const { amount, address, customer_details } = req.body;
+        const { amount, address } = req.body;
 
-        // Detect if we are using live keys
+        if (!amount || amount <= 0) {
+            return res.status(400).json({ error: 'Valid amount is required' });
+        }
+        if (!address) {
+            return res.status(400).json({ error: 'Wallet address is required' });
+        }
+
         const isLive = process.env.RAZORPAY_KEY_ID?.startsWith('rzp_live_');
         const isMockMode = !process.env.RAZORPAY_KEY_ID || process.env.RAZORPAY_KEY_ID.includes('replace_me');
 
@@ -28,44 +37,33 @@ export const createRazorpayOrder = async (req, res) => {
                 receipt: `mock_receipt_${Date.now()}`,
             };
 
-            await PaymentOrder.create({
+            pendingOrders.set(mockOrder.id, {
                 orderId: mockOrder.id,
                 address: address.toLowerCase(),
                 amount: amount,
-                gateway: 'RAZORPAY_MOCK',
                 status: 'PENDING',
-                customerDetails: {
-                    id: address.toLowerCase(),
-                    phone: customer_details?.phone || "9999999999",
-                    email: customer_details?.email || "user@polylance.com"
-                }
+                isMock: true
             });
 
             return res.json(mockOrder);
         }
 
         const razorpay = getRazorpayInstance();
-
         const options = {
-            amount: Math.round(amount * 100), // amount in the smallest currency unit (paisa for INR)
+            amount: Math.round(amount * 100),
             currency: "INR",
             receipt: `receipt_${Date.now()}`,
         };
 
         const order = await razorpay.orders.create(options);
 
-        // Store in MongoDB
-        await PaymentOrder.create({
+        // Track in memory
+        pendingOrders.set(order.id, {
             orderId: order.id,
             address: address.toLowerCase(),
             amount: amount,
-            gateway: 'RAZORPAY',
             status: 'PENDING',
-            customerDetails: {
-                id: address.toLowerCase(),
-                phone: customer_details?.phone || "9999999999",
-                email: customer_details?.email || "user@polylance.com"
-            }
+            isMock: false
         });
 
         res.json(order);
@@ -83,32 +81,23 @@ export const verifyRazorpayPayment = async (req, res) => {
             razorpay_signature
         } = req.body;
 
+        const orderData = pendingOrders.get(razorpay_order_id);
+        if (!orderData) {
+            return res.status(404).json({ error: 'Order not found or expired' });
+        }
+
         // Verify Mock
         if (razorpay_order_id?.startsWith('mock_')) {
-            const updatedOrder = await PaymentOrder.findOneAndUpdate(
-                { orderId: razorpay_order_id },
-                { status: 'PAID', paymentId: razorpay_payment_id || 'mock_pay_123' },
-                { new: true }
-            );
-
             logger.success(`MOCK Payment verified: ${razorpay_order_id}`, 'PAYMENT');
 
-            // Trigger on-chain fulfillment (will follow mock logic inside the service if no PK)
             try {
                 const fulfillment = await fulfillOnramp(
-                    updatedOrder.address,
-                    updatedOrder.amount,
+                    orderData.address,
+                    orderData.amount,
                     razorpay_order_id
                 );
 
-                await PaymentOrder.findOneAndUpdate(
-                    { orderId: razorpay_order_id },
-                    {
-                        status: 'FULFILLED',
-                        fulfillmentTx: fulfillment.txHash,
-                        isMock: true
-                    }
-                );
+                pendingOrders.delete(razorpay_order_id); // Clear after fulfillment
 
                 return res.json({
                     status: 'SUCCESS',
@@ -134,31 +123,16 @@ export const verifyRazorpayPayment = async (req, res) => {
         const isAuthentic = expectedSignature === razorpay_signature;
 
         if (isAuthentic) {
-            // Update MongoDB
-            const updatedOrder = await PaymentOrder.findOneAndUpdate(
-                { orderId: razorpay_order_id },
-                { status: 'PAID', paymentId: razorpay_payment_id },
-                { new: true }
-            );
-
             logger.success(`Payment verified successfully: ${razorpay_payment_id}`, 'PAYMENT');
 
-            // Trigger on-chain fulfillment
             try {
                 const fulfillment = await fulfillOnramp(
-                    updatedOrder.address,
-                    updatedOrder.amount,
+                    orderData.address,
+                    orderData.amount,
                     razorpay_order_id
                 );
 
-                await PaymentOrder.findOneAndUpdate(
-                    { orderId: razorpay_order_id },
-                    {
-                        status: 'FULFILLED',
-                        fulfillmentTx: fulfillment.txHash,
-                        isMock: fulfillment.mock || false
-                    }
-                );
+                pendingOrders.delete(razorpay_order_id);
 
                 res.json({
                     status: 'SUCCESS',
@@ -167,7 +141,6 @@ export const verifyRazorpayPayment = async (req, res) => {
                 });
             } catch (fulfillError) {
                 logger.error('Fulfillment Error after payment', 'PAYMENT', fulfillError);
-                // We keep it as PAID but log the error so admin can retry
                 res.json({
                     status: 'SUCCESS',
                     message: 'Payment verified but fulfillment pending',
@@ -185,16 +158,15 @@ export const verifyRazorpayPayment = async (req, res) => {
 };
 
 export const retryFulfillment = async (req, res) => {
+    // In a stateless world without a DB, we can only retry if the order is still in memory.
+    // For a real production app, you might want a persistent cache like Redis, 
+    // but here we favor the "Zero Centralized DB" rule.
     try {
         const { orderId } = req.body;
-        const order = await PaymentOrder.findOne({ orderId });
+        const order = pendingOrders.get(orderId);
 
         if (!order) {
-            return res.status(404).json({ error: 'Order not found' });
-        }
-
-        if (order.status !== 'PAID' && order.status !== 'FAILED') {
-            return res.status(400).json({ error: `Cannot fulfill order in ${order.status} state` });
+            return res.status(404).json({ error: 'Order not found in memory. Retrying from client state is recommended.' });
         }
 
         logger.info(`Manual fulfillment retry triggered for ${orderId}`, 'PAYMENT');
@@ -205,14 +177,7 @@ export const retryFulfillment = async (req, res) => {
             orderId
         );
 
-        await PaymentOrder.findOneAndUpdate(
-            { orderId: orderId },
-            {
-                status: 'FULFILLED',
-                fulfillmentTx: fulfillment.txHash,
-                isMock: fulfillment.mock || false
-            }
-        );
+        pendingOrders.delete(orderId);
 
         res.json({
             status: 'SUCCESS',
@@ -224,3 +189,4 @@ export const retryFulfillment = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+

@@ -4,7 +4,7 @@ import {
   Briefcase, PlusCircle, LayoutDashboard, MessageSquare,
   Trophy, Gavel, Activity, Globe, BarChart3, Menu, X,
   Award, Zap, CreditCard, Shield, ShieldCheck, Mail, User,
-  LogOut, Cpu, Ticket, ChevronDown, Loader2
+  LogOut, Cpu, Ticket, ChevronDown, Loader2, Flame
 } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useAnimeAnimations } from './hooks/useAnimeAnimations';
@@ -17,11 +17,13 @@ const NFTGallery = lazy(() => import('./components/NFTGallery'));
 const Chat = lazy(() => import('./components/Chat'));
 const Leaderboard = lazy(() => import('./components/Leaderboard'));
 const Portfolio = lazy(() => import('./components/Portfolio'));
-const DaoDashboard = lazy(() => import('./components/DaoDashboard'));
+const ZenithGovernance = lazy(() => import('./components/DaoDashboard'));
 const TermsOfService = lazy(() => import('./components/TermsOfService'));
 const PrivacyPolicy = lazy(() => import('./components/PrivacyPolicy'));
-const ArbitrationDashboard = lazy(() => import('./components/ArbitrationDashboard'));
-const ManagerDashboard = lazy(() => import('./components/ManagerDashboard'));
+const ZenithCourt = lazy(() => import('./components/ArbitrationDashboard'));
+const ZenithControl = lazy(() => import('./components/ManagerDashboard'));
+const ZenithStrata = lazy(() => import('./components/YieldManagerDashboard'));
+const ZenithLiquidity = lazy(() => import('./components/InvoiceMarketplace'));
 const CrossChainDashboard = lazy(() => import('./components/CrossChainDashboard'));
 const PrivacyCenter = lazy(() => import('./components/PrivacyCenter'));
 const SBTGallery = lazy(() => import('./components/SBTGallery'));
@@ -238,23 +240,7 @@ const styles = {
   }),
 };
 
-/* ── responsive override via CSS class since we can't do media queries inline ── */
-const responsiveCSS = `
-@media (max-width: 1024px) {
-    .app-main { margin-left: 0 !important; width: 100% !important; padding-bottom: 72px; }
-    .app-header .menu-toggle { display: flex !important; }
-    .app-header .desktop-only { display: none !important; }
-    .app-sidebar .close-toggle { display: flex !important; }
-    .app-mobile-nav { display: flex !important; }
-    .app-footer { display: none !important; }
-    .app-content { padding: 20px 16px 80px !important; }
-}
-@keyframes pulse {
-    0% { transform: scale(1); opacity: 1; }
-    50% { transform: scale(1.2); opacity: 0.7; }
-    100% { transform: scale(1); opacity: 1; }
-}
-`;
+// Responsive overrides moved to index.css
 
 const NAV_CORE = [
   { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard' },
@@ -267,8 +253,10 @@ const NAV_SOCIAL = [
   { id: 'chat', icon: MessageSquare, label: 'Messages' },
   { id: 'leaderboard', icon: Trophy, label: 'Leaderboard' },
   { id: 'governance', icon: Cpu, label: 'Governance' },
-  { id: 'manager', icon: Activity, label: 'Escrow Manager' },
-  { id: 'justice', icon: Gavel, label: 'Disputes' },
+  { id: 'control', icon: Activity, label: 'Zenith Control' },
+  { id: 'court', icon: Gavel, label: 'Zenith Court' },
+  { id: 'liquidity', icon: Flame, label: 'Zenith Liquidity' },
+  { id: 'strata', icon: Zap, label: 'Zenith Strata' },
   { id: 'cross-chain', icon: Globe, label: 'Cross-Chain' },
 ];
 
@@ -456,11 +444,16 @@ function App() {
       case 'messages': return <Chat initialPeerAddress={chatPeerAddress} address={effectiveAddress} />;
       case 'leaderboard': return <Leaderboard onUserClick={setPortfolioAddress} />;
       case 'governance':
-      case 'dao': return <DaoDashboard address={effectiveAddress} />;
+      case 'dao': return <ZenithGovernance address={effectiveAddress} />;
+      case 'court':
       case 'justice':
-      case 'arbitration': return <ArbitrationDashboard address={effectiveAddress} />;
-      case 'manager':
-      case 'yield': return <ManagerDashboard address={effectiveAddress} />;
+      case 'arbitration': return <ZenithCourt address={effectiveAddress} />;
+      case 'control':
+      case 'manager': return <ZenithControl address={effectiveAddress} />;
+      case 'strata':
+      case 'yield': return <ZenithStrata address={effectiveAddress} />;
+      case 'liquidity':
+      case 'marketplace': return <ZenithLiquidity />;
       case 'cross-chain': return <CrossChainDashboard address={effectiveAddress} />;
       case 'analytics': return <AnalyticsDashboard />;
       case 'sbt':
@@ -498,7 +491,6 @@ function App() {
 
   return (
     <>
-      <style>{responsiveCSS}</style>
       <div style={styles.shell}>
         <NotificationManager />
 
@@ -542,9 +534,11 @@ function App() {
             <div style={styles.sectionLabel}>Finance & DAO</div>
             {[
               { id: 'dao', icon: Globe, label: 'DAO Governance' },
-              { id: 'arbitration', icon: Gavel, label: 'Justice Protocol' },
-              { id: 'yield', icon: Activity, label: 'Yield Manager' },
-              { id: 'cross-chain', icon: Zap, label: 'Cross-Chain Bridge' },
+              { id: 'court', icon: Gavel, label: 'Zenith Court' },
+              { id: 'control', icon: Activity, label: 'Zenith Control' },
+              { id: 'liquidity', icon: Flame, label: 'Zenith Liquidity' },
+              { id: 'strata', icon: Zap, label: 'Zenith Strata' },
+              { id: 'cross-chain', icon: Globe, label: 'Cross-Chain Bridge' },
               { id: 'fiat-onramp', icon: CreditCard, label: 'Fiat Gateway' },
             ].map(item => (
               <div key={item.id} className="anime-nav-item"
@@ -664,9 +658,10 @@ function App() {
               ) : (
                 <motion.div key={activeTab + (portfolioAddress || '')} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.25, ease: 'easeOut' }}>
                   <Suspense fallback={
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '400px', gap: 16 }}>
-                      <Loader2 size={40} className="animate-spin" style={{ color: 'var(--accent-light)', opacity: 0.8 }} />
-                      <div style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Loading Module...</div>
+                    <div className="module-loader-container">
+                      <div className="loader-glow" />
+                      <Loader2 size={42} className="animate-spin" style={{ color: 'var(--accent)', zIndex: 1 }} />
+                      <div className="loader-text">Synchronizing Module...</div>
                     </div>
                   }>
                     {renderContent()}

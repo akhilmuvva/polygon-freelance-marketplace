@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../services/api';
 import { Sparkles, TrendingUp, AlertCircle, Zap } from 'lucide-react';
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://localhost:3001/api';
 
 const AiMatchRating = ({ jobId, freelancerAddress }) => {
     const [match, setMatch] = useState(null);
@@ -12,8 +10,8 @@ const AiMatchRating = ({ jobId, freelancerAddress }) => {
     useEffect(() => {
         const fetchMatch = async () => {
             try {
-                const response = await axios.get(`${API_BASE_URL}/match/${jobId}/${freelancerAddress}`);
-                setMatch(response.data);
+                const data = await api.getMatchScore(jobId, freelancerAddress);
+                setMatch(data);
             } catch (err) {
                 console.error('AI Match Fetch Error:', err);
                 setError('AI Match unavailable');

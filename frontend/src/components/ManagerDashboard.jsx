@@ -6,7 +6,7 @@ import {
     LayoutDashboard, ArrowUpRight, Clock, Shield, Gavel, FileUp
 } from 'lucide-react';
 
-import { api } from '../services/api';
+import api from '../services/api';
 import DisputeModal from './DisputeModal';
 import EvidenceModal from './EvidenceModal';
 
@@ -26,7 +26,7 @@ const cardBg = { padding: 24, borderRadius: 14, background: 'rgba(255,255,255,0.
 const dimLabel = { fontSize: '0.62rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--text-tertiary)' };
 const thStyle = { padding: 20, ...dimLabel, textAlign: 'left' };
 
-const ManagerDashboard = () => {
+const ZenithControl = () => {
     const { address } = useAccount();
     const [jobs, setJobs] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -263,4 +263,4 @@ const ManagerDashboard = () => {
     );
 };
 
-export default ManagerDashboard;
+export default ZenithControl;

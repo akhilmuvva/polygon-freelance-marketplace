@@ -20,6 +20,7 @@
     "@google/generative-ai": "^0.24.1",
     "@pushprotocol/restapi": "^0.0.1",
     "axios": "^1.13.5",
+    "compression": "^1.8.1",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "ethers": "^6.16.0",

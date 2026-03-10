@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { SubgraphService } from '../services/SubgraphService';
+import SubgraphService from '../services/SubgraphService';
 import { Trophy, Medal, Award, ExternalLink, User, Star, TrendingUp, Loader2 } from 'lucide-react';
 import { formatEther } from 'viem';
 import { useAnimeAnimations } from '../hooks/useAnimeAnimations';

@@ -471,6 +471,7 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
         if (p.amount == 0) revert LowValue();
         if (bytes(p.ipfsHash).length == 0) revert InvalidStatus();
         if (p.token != address(0) && !tokenWhitelist[p.token]) revert TokenNotWhitelisted();
+        if (p.mAmounts.length == 0 || p.mAmounts.length > MAX_MILESTONES) revert InvalidStatus();
 
         uint256 jobId = ++jobCount;
         
@@ -580,6 +581,8 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
         IYieldManager(yieldManager).deposit(strategy, token, amount);
     }
 
+    uint256 public constant MAX_MILESTONES = 100;
+
     /**
      * @notice Stage-based release of funds.
      * @param jobId The unique ID of the job.
@@ -588,6 +591,8 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
     function releaseMilestone(uint256 jobId, uint256 mId) public whenNotPaused nonReentrant {
         Job storage job = jobs[jobId];
         if (_msgSender() != job.client) revert NotAuthorized();
+        if (job.status != JobStatus.Ongoing && job.status != JobStatus.Accepted) revert InvalidStatus();
+        if (mId >= job.milestoneCount) revert InvalidMilestone();
         _releaseMilestoneInternal(jobId, mId);
     }
 

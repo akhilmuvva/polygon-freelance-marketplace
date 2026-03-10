@@ -1,4 +1,4 @@
-import { SubgraphService } from './SubgraphService';
+import SubgraphService from './SubgraphService';
 import StorageService from './StorageService';
 import resolver from '../utils/IPFSResolver';
 import CeramicService from './CeramicService';

@@ -14,7 +14,7 @@ import { SiweMessage } from 'siwe';
 import { ApolloClient, InMemoryCache, HttpLink } from '@apollo/client';
 import { ApolloProvider } from '@apollo/client/react';
 import { HuddleClient, HuddleProvider } from '@huddle01/react';
-import { api } from './services/api';
+import api from './services/api';
 
 const huddleProjectId = import.meta.env.VITE_HUDDLE_PROJECT_ID;
 const huddleClient = huddleProjectId

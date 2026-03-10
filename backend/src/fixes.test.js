@@ -4,13 +4,16 @@ import request from 'supertest';
 import { app } from './server.js';
 
 // Mock Razorpay
+// Mock Razorpay
 vi.mock('razorpay', () => {
     return {
-        default: vi.fn().mockImplementation(() => ({
-            orders: {
-                create: vi.fn().mockResolvedValue({ id: 'order_mock_123', amount: 50000 })
+        default: class {
+            constructor() {
+                this.orders = {
+                    create: vi.fn().mockResolvedValue({ id: 'order_mock_123', amount: 50000 })
+                };
             }
-        }))
+        }
     };
 });
 

@@ -3,8 +3,8 @@ import { User, Briefcase, MapPin, Link as LinkIcon, Award, ExternalLink, Globe, 
 import { useReadContract } from 'wagmi';
 import { erc20Abi, formatEther } from 'viem';
 import { POLY_TOKEN_ADDRESS, CONTRACT_ADDRESS } from '../constants';
-import { ProfileService } from '../services/ProfileService';
-import { SubgraphService } from '../services/SubgraphService';
+import ProfileService from '../services/ProfileService';
+import SubgraphService from '../services/SubgraphService';
 import JobService from '../services/JobService';
 import Reputation3D from './Reputation3D';
 import { useAnimeAnimations } from '../hooks/useAnimeAnimations';

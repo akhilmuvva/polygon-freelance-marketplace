@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { api } from '../services/api';
+import api from '../services/api';
 import { Loader2, AlertCircle, CreditCard, Zap, ShieldCheck, CheckCircle2, XCircle } from 'lucide-react';
 import { toast } from 'react-toastify';
 

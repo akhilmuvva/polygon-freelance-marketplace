@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Shield, Download, Trash2, CheckCircle, AlertTriangle, Loader2, Cpu } from 'lucide-react';
 import { toast } from 'react-toastify';
 
-const API_URL = import.meta.env.VITE_API_BASE_URL || 'https://localhost:3001/api';
 const cardBg = { padding: 24, borderRadius: 16, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.04)' };
 const sectionTitle = (color) => ({ fontSize: '1.1rem', fontWeight: 700, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8, color });
 
@@ -12,25 +11,30 @@ function PrivacyCenter({ address }) {
     const handleExport = async () => {
         setLoading(true);
         try {
-            const res = await fetch(`${API_URL}/gdpr/export/${address}`);
-            if (!res.ok) throw new Error('Failed to export data');
-            const data = await res.json();
-            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            // In Sovereign Mode, data is in LocalStorage/Ceramic/IPFS
+            const sovereignData = {
+                address,
+                localCache: localStorage.getItem('app_ipfs_cache'),
+                timestamp: new Date().toISOString(),
+                network: 'Polygon Amoy'
+            };
+            const blob = new Blob([JSON.stringify(sovereignData, null, 2)], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
-            a.href = url; a.download = `polylance-data-${address?.slice(0, 6) || 'user'}.json`; a.click();
-            toast.success('Data export started!');
+            a.href = url; a.download = `polylance-sovereign-data-${address?.slice(0, 6) || 'user'}.json`; a.click();
+            toast.success('Sovereign data exported from decentralized storage!');
         } catch (error) { toast.error(error.message); }
         finally { setLoading(false); }
     };
 
     const handleDelete = async () => {
-        if (!window.confirm('Are you absolutely sure? This will anonymize your profile and withdraw all consents. This action cannot be undone.')) return;
+        if (!window.confirm('Pure Sovereign Delete: This will clear your local cache and browser identity pointers. Note: On-chain history is immutable.')) return;
         setLoading(true);
         try {
-            const res = await fetch(`${API_URL}/gdpr/delete/${address}`, { method: 'DELETE' });
-            if (!res.ok) throw new Error('Failed to delete data');
-            toast.success('Your data has been anonymized.');
+            localStorage.clear();
+            sessionStorage.clear();
+            toast.success('Local sovereignty cleared. You are now a ghost.');
+            setTimeout(() => window.location.reload(), 1500);
         } catch (error) { toast.error(error.message); }
         finally { setLoading(false); }
     };

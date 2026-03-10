@@ -1,13 +1,10 @@
-console.log("Starting test file...");
 const { expect } = require("chai");
-console.log("Importing hardhat...");
 const { ethers } = require("hardhat");
-console.log("Hardhat imported.");
 
-describe("Barebones", function () {
+describe("Barebones CJS", function () {
     it("Should have ethers working", async function () {
-        console.log("Ethers version in test:", ethers.version);
         const [owner] = await ethers.getSigners();
+        console.log("Owner address:", owner.address);
         expect(owner.address).to.be.properAddress;
     });
 });

@@ -1,91 +1,54 @@
 import axios from 'axios';
 
-const PINATA_API_KEY = import.meta.env.VITE_PINATA_API_KEY;
-const PINATA_API_SECRET = import.meta.env.VITE_PINATA_API_SECRET;
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://localhost:3001/api';
 const IPFS_GATEWAY = 'https://cloudflare-ipfs.com/ipfs/';
 
 /**
- * StorageService: Handles direct uploads to IPFS via Pinata.
- * This lets us store larger metadata (like gig descriptions) without 
- * paying high gas fees to store text on the blockchain.
+ * StorageService: Handles uploads to IPFS via the Backend.
+ * This prevents Pinata API keys from being leaked in the frontend.
  */
 const StorageService = {
     /**
-     * Uploads JSON metadata directly to Pinata (IPFS)
+     * Uploads JSON metadata via the backend proxy
      * @param {Object} metadata 
      * @returns {Promise<{cid: string, url: string}>}
      */
     async uploadMetadata(metadata) {
-        if (!PINATA_API_KEY || !PINATA_API_SECRET) {
-            throw new Error('Pinata credentials missing. Check .env file.');
+        try {
+            const response = await axios.post(`${API_BASE_URL}/storage/upload-json`, metadata);
+            const cid = response.data.cid;
+            
+            return {
+                cid: cid,
+                url: `${IPFS_GATEWAY}${cid}`
+            };
+        } catch (error) {
+            console.error('[StorageService] Metadata upload failed:', error.response?.data || error.message);
+            throw error;
         }
-
-        const MAX_RETRIES = 2;
-        let lastError;
-
-        for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
-            try {
-                const response = await axios.post(
-                    'https://api.pinata.cloud/pinning/pinJSONToIPFS',
-                    metadata,
-                    {
-                        headers: {
-                            'pinata_api_key': PINATA_API_KEY,
-                            'pinata_secret_api_key': PINATA_API_SECRET
-                        },
-                        timeout: 10000
-                    }
-                );
-
-                console.log(`[StorageService] Metadata anchored to IPFS path: ${response.data.IpfsHash}`);
-                return {
-                    cid: response.data.IpfsHash,
-                    url: `${IPFS_GATEWAY}${response.data.IpfsHash}`
-                };
-            } catch (error) {
-                lastError = error;
-                console.warn(`[StorageService] Upload attempt ${attempt + 1} failed:`, error.message);
-                if (attempt < MAX_RETRIES) await new Promise(r => setTimeout(r, 2000));
-            }
-        }
-
-        console.error('[StorageService] All upload attempts failed.');
-        throw lastError;
     },
 
     /**
-     * Uploads a file directly to Pinata (IPFS)
+     * Uploads a file via the backend proxy
      * @param {File} file 
      * @returns {Promise<{cid: string, url: string}>}
      */
     async uploadFile(file) {
-        if (!PINATA_API_KEY || !PINATA_API_SECRET) {
-            throw new Error('Pinata credentials missing. Check .env file.');
-        }
-
         const formData = new FormData();
         formData.append('file', file);
 
         try {
-            const response = await axios.post(
-                'https://api.pinata.cloud/pinning/pinFileToIPFS',
-                formData,
-                {
-                    maxBodyLength: 'Infinity',
-                    headers: {
-                        'Content-Type': `multipart/form-data; boundary=${formData._boundary}`,
-                        'pinata_api_key': PINATA_API_KEY,
-                        'pinata_secret_api_key': PINATA_API_SECRET
-                    }
-                }
-            );
+            const response = await axios.post(`${API_BASE_URL}/storage/upload-file`, formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            const cid = response.data.cid;
 
             return {
-                cid: response.data.IpfsHash,
-                url: `${IPFS_GATEWAY}${response.data.IpfsHash}`
+                cid: cid,
+                url: `${IPFS_GATEWAY}${cid}`
             };
         } catch (error) {
-            console.error('[StorageService] Direct File upload failed:', error);
+            console.error('[StorageService] File upload failed:', error.response?.data || error.message);
             throw error;
         }
     }

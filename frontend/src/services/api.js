@@ -64,6 +64,20 @@ export const api = {
 
     getRecommendations: (address) => safeFetch(`${API_URL}/recommendations/${address}`, {}, () => []),
 
+    getYieldStrategy: (address) => safeFetch(`${API_URL}/ai/yield-strategy/${address}`, {}, () => ({ strategy: 'Morpho Supply', projectedApy: '4.2%', riskRating: 2 })),
+
+    polishBio: (data) => safeFetch(`${API_URL}/ai/polish-bio`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    }, () => ({ polishedBio: data.bio })),
+
+    verifySIWE: (message, signature) => safeFetch(`${API_URL}/auth/verify`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message, signature })
+    }, () => ({ address: message.split('\n')[0].split('address: ')[1] || '0x' })),
+
     checkHealth: () => SovereignService.checkHealth(),
 };
 

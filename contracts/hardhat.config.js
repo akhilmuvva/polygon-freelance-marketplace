@@ -32,30 +32,6 @@ module.exports = {
             chainId: 80002,
             gasPrice: "auto",
             timeout: 60000
-        },
-        // Polygon Mainnet (ChainID: 137)
-        polygon: {
-            url: process.env.POLYGON_MAINNET_RPC_URL || "https://polygon-rpc.com",
-            accounts: [PRIVATE_KEY],
-            chainId: 137,
-            gasPrice: "auto",
-            timeout: 60000
         }
-    },
-    etherscan: {
-        apiKey: {
-            polygonAmoy: POLYGONSCAN_API_KEY,
-            polygon: POLYGONSCAN_API_KEY,
-        },
-        customChains: [
-            {
-                network: "polygonAmoy",
-                chainId: 80002,
-                urls: {
-                    apiURL: "https://api-amoy.polygonscan.com/api",
-                    browserURL: "https://amoy.polygonscan.com"
-                }
-            }
-        ]
     }
 };

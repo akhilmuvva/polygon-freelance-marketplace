@@ -1,149 +1,127 @@
 import React, { useState } from 'react';
-import { useReadContract, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
-import { parseUnits, formatUnits } from 'viem';
-import { TrendingUp, ArrowDownRight, ArrowUpRight, Info, Loader2, DollarSign } from 'lucide-react';
-import FreelanceEscrowABI from '../contracts/FreelanceEscrow.json';
-import { CONTRACT_ADDRESS, SUPPORTED_TOKENS } from '../constants';
-import { useTransactionToast } from '../hooks/useTransactionToast';
+import { useAccount } from 'wagmi';
+import {
+  TrendingUp, Shield, Zap, ArrowUpRight, Globe, Layers,
+  PieChart, Activity, Lock, RefreshCw, ChevronRight, BarChart3
+} from 'lucide-react';
+import { motion } from 'framer-motion';
 
-const STRATEGIES = [
-    { id: 1, name: 'Aave V3', description: 'Instant liquidity & competitive rates' },
-    { id: 2, name: 'Compound V3', description: 'Institutional grade security' },
-    { id: 3, name: 'Morpho Blue', description: 'Peer-to-peer efficiency & high APY' }
-];
+export default function ZenithStrata() {
+  useAccount();
+  const [activeStrategy, setActiveStrategy] = useState('BALANCED');
 
-function YieldManagerDashboard({ address }) {
-    const [selectedToken, setSelectedToken] = useState(SUPPORTED_TOKENS[1]);
-    const [amount, setAmount] = useState('');
-    const [selectedStrategy, setSelectedStrategy] = useState(1);
+  const protocols = [
+    { name: 'Morpho Blue', chain: 'Polygon', apy: '4.8', risk: 'Low', tvl: '$1.2B', icon: '💎' },
+    { name: 'Aave V3', chain: 'Base', apy: '3.2', risk: 'Min', tvl: '$4.5B', icon: '👻' },
+    { name: 'Aerodrome', chain: 'Base', apy: '18.4', risk: 'Med', tvl: '$640M', icon: '🦋' },
+    { name: 'Lido stMATIC', chain: 'Polygon', apy: '5.1', risk: 'Low', tvl: '$980M', icon: '💧' }
+  ];
 
-    const { data: balance } = useReadContract({
-        address: CONTRACT_ADDRESS, abi: FreelanceEscrowABI.abi,
-        functionName: 'balances', args: [address, selectedToken.address],
-    });
+  const s = {
+    card: { padding: 24, borderRadius: 24, background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border)', height: '100%', position: 'relative', overflow: 'hidden' },
+    label: { fontSize: '0.62rem', fontWeight: 800, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 },
+    badge: (color) => ({ padding: '3px 8px', borderRadius: 6, fontSize: '0.55rem', fontWeight: 900, background: `${color}15`, color: color, textTransform: 'uppercase' })
+  };
 
-    const { data: stakedBalance } = useReadContract({
-        address: CONTRACT_ADDRESS, abi: FreelanceEscrowABI.abi,
-        functionName: 'userStakes', args: [address, selectedToken.address, selectedStrategy],
-    });
-
-    const { data: hash, writeContractAsync, isPending, error } = useWriteContract();
-    const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash });
-    useTransactionToast(hash, isPending, isConfirming, isSuccess, error);
-
-    const handleStake = async () => {
-        if (!amount) return;
-        try {
-            await writeContractAsync({
-                address: CONTRACT_ADDRESS, abi: FreelanceEscrowABI.abi,
-                functionName: 'stakeBalance',
-                args: [selectedToken.address, parseUnits(amount, selectedToken.decimals), selectedStrategy],
-            });
-        } catch (err) { console.error(err); }
-    };
-
-    const handleUnstake = async () => {
-        if (!amount) return;
-        try {
-            await writeContractAsync({
-                address: CONTRACT_ADDRESS, abi: FreelanceEscrowABI.abi,
-                functionName: 'unstakeBalance',
-                args: [selectedToken.address, parseUnits(amount, selectedToken.decimals), selectedStrategy],
-            });
-        } catch (err) { console.error(err); }
-    };
-
-    const busy = isPending || isConfirming;
-
-    return (
+  return (
+    <div style={{ maxWidth: 1200, margin: '0 auto' }}>
+      <header style={{ marginBottom: 40, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
         <div>
-            {/* Header */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <div style={{
-                        width: 36, height: 36, borderRadius: 10,
-                        background: 'linear-gradient(135deg, rgba(52,211,153,0.15), rgba(52,211,153,0.03))',
-                        border: '1px solid rgba(52,211,153,0.15)',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    }}>
-                        <TrendingUp size={18} style={{ color: 'var(--success)' }} />
-                    </div>
-                    <div>
-                        <div style={{ fontSize: '0.6rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-tertiary)' }}>DeFi Yield</div>
-                        <h3 style={{ fontSize: '0.95rem', fontWeight: 800 }}>Earnings Optimizer</h3>
-                    </div>
-                </div>
-                <div style={{ textAlign: 'right' }}>
-                    <div style={{ fontSize: '0.6rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-tertiary)', marginBottom: 2 }}>Staked</div>
-                    <div style={{ fontSize: '1.1rem', fontWeight: 800 }}>
-                        {stakedBalance ? Number(formatUnits(stakedBalance, selectedToken.decimals)).toFixed(2) : '0.00'} {selectedToken.symbol}
-                    </div>
+          <h1 style={{ fontSize: '2.5rem', fontWeight: 900, letterSpacing: '-0.04em', marginBottom: 8 }}>
+            Zenith <span style={{ color: 'var(--success)' }}>Strata</span>
+          </h1>
+          <p style={{ color: 'var(--text-tertiary)', fontSize: '0.85rem', fontWeight: 700, letterSpacing: '0.05em' }}>
+            CROSS-CHAIN ESCROW REBALANCING & YIELD HARVESTING
+          </p>
+        </div>
+        <div style={{ display: 'flex', gap: 12 }}>
+            <div style={{ textAlign: 'right' }}>
+                <div style={s.label}>Treasury Health</div>
+                <div style={{ fontSize: '1.2rem', fontWeight: 900, color: 'var(--success)' }}>OPTIMAL</div>
+            </div>
+            <div style={{ width: 44, height: 44, borderRadius: '50%', border: '2px solid var(--success)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Activity size={20} color="var(--success)" />
+            </div>
+        </div>
+      </header>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 24, marginBottom: 40 }}>
+        {/* Yield Heatmap */}
+        <div style={{ ...s.card, gridColumn: 'span 2' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+                <h3 style={{ fontSize: '1.1rem', fontWeight: 800 }}>Global Yield Heatmap</h3>
+                <div style={{ display: 'flex', gap: 8 }}>
+                    <span style={s.badge('var(--info)')}>Polygon</span>
+                    <span style={s.badge('var(--secondary)')}>Base</span>
+                    <span style={s.badge('var(--accent)')}>Arbitrum</span>
                 </div>
             </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
+                {[
+                    { label: 'Stable', val: '5.2%', trend: '+0.2%' },
+                    { label: 'LRTs', val: '8.4%', trend: '-0.1%' },
+                    { label: 'Dex LPs', val: '24.1%', trend: '+1.4%' },
+                    { label: 'Vaults', val: '12.8%', trend: '+0.5%' }
+                ].map((item, i) => (
+                    <div key={i} style={{ padding: 16, borderRadius: 16, background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border)' }}>
+                        <div style={s.label}>{item.label}</div>
+                        <div style={{ fontSize: '1.4rem', fontWeight: 900 }}>{item.val}</div>
+                        <div style={{ fontSize: '0.62rem', fontWeight: 800, color: item.trend.startsWith('+') ? 'var(--success)' : 'var(--danger)', marginTop: 4 }}>{item.trend} 24h</div>
+                    </div>
+                ))}
+            </div>
+        </div>
 
-            {/* Strategies */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginBottom: 20 }}>
-                {STRATEGIES.map(s => (
-                    <button
-                        key={s.id}
-                        onClick={() => setSelectedStrategy(s.id)}
+        {/* Strategy Control */}
+        <div style={s.card}>
+            <h3 style={{ fontSize: '1.1rem', fontWeight: 800, marginBottom: 20 }}>Auto-Rebalancer</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                {['PEACEFUL', 'BALANCED', 'DEGEN'].map(strat => (
+                    <button key={strat} onClick={() => setActiveStrategy(strat)}
                         style={{
-                            padding: '10px 12px', borderRadius: 10, textAlign: 'left',
-                            background: selectedStrategy === s.id ? 'rgba(52,211,153,0.06)' : 'rgba(255,255,255,0.02)',
-                            border: `1px solid ${selectedStrategy === s.id ? 'rgba(52,211,153,0.25)' : 'var(--border)'}`,
-                            cursor: 'pointer', transition: 'all 0.15s ease', color: '#fff',
-                        }}
-                    >
-                        <div style={{ fontSize: '0.78rem', fontWeight: 700, marginBottom: 3 }}>{s.name}</div>
-                        <div style={{ fontSize: '0.62rem', color: 'var(--text-tertiary)', lineHeight: 1.4 }}>{s.description}</div>
+                            width: '100%', padding: 14, borderRadius: 12, border: '1px solid var(--border)', textAlign: 'left',
+                            background: activeStrategy === strat ? 'rgba(124,92,252,0.1)' : 'transparent',
+                            borderColor: activeStrategy === strat ? 'var(--accent-light)' : 'var(--border)',
+                            color: activeStrategy === strat ? '#fff' : 'var(--text-tertiary)',
+                            cursor: 'pointer', transition: 'all 0.2s ease', fontWeight: 700, fontSize: '0.82rem'
+                        }}>
+                        {strat} {activeStrategy === strat && <Zap size={14} style={{ float: 'right', color: 'var(--accent-light)' }} />}
                     </button>
                 ))}
             </div>
-
-            {/* Input row */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 14 }}>
-                <div>
-                    <label className="form-label">Asset</label>
-                    <select className="form-input" value={selectedToken.symbol}
-                        onChange={(e) => setSelectedToken(SUPPORTED_TOKENS.find(t => t.symbol === e.target.value))}>
-                        {SUPPORTED_TOKENS.filter(t => t.symbol !== 'MATIC').map(t => (
-                            <option key={t.symbol}>{t.symbol}</option>
-                        ))}
-                    </select>
-                </div>
-                <div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-                        <label className="form-label" style={{ marginBottom: 0 }}>Amount</label>
-                        <span style={{ fontSize: '0.6rem', fontWeight: 700, color: 'var(--text-tertiary)' }}>
-                            Avail: {balance ? Number(formatUnits(balance, selectedToken.decimals)).toFixed(2) : 0}
-                        </span>
-                    </div>
-                    <input type="number" step="0.01" placeholder="0.00" className="form-input"
-                        value={amount} onChange={(e) => setAmount(e.target.value)} />
-                </div>
-            </div>
-
-            {/* Action buttons */}
-            <div style={{ display: 'flex', gap: 10 }}>
-                <button onClick={handleStake} disabled={busy || !amount}
-                    className="btn btn-primary" style={{ flex: 1, borderRadius: 10, justifyContent: 'center', opacity: (busy || !amount) ? 0.5 : 1 }}>
-                    {busy ? <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} /> : <ArrowUpRight size={14} />}
-                    Stake
-                </button>
-                <button onClick={handleUnstake} disabled={busy || !amount}
-                    className="btn btn-secondary" style={{ flex: 1, borderRadius: 10, justifyContent: 'center', opacity: (busy || !amount) ? 0.5 : 1 }}>
-                    {busy ? <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} /> : <ArrowDownRight size={14} />}
-                    Unstake
-                </button>
-            </div>
-
-            {/* Info */}
-            <div style={{ marginTop: 14, display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.65rem', color: 'var(--text-tertiary)', opacity: 0.6 }}>
-                <Info size={12} />
-                <span>Yield accrues directly to your contract balance.</span>
+            <div style={{ marginTop: 24, paddingTop: 20, borderTop: '1px solid var(--border)' }}>
+                <div style={s.label}>Projected Annual Gain</div>
+                <div style={{ fontSize: '1.2rem', fontWeight: 900, color: 'var(--accent-light)' }}>+ $1,420.50 USDC</div>
             </div>
         </div>
-    );
-}
+      </div>
 
-export default YieldManagerDashboard;
+      <h3 style={{ ...s.label, marginBottom: 16 }}>Available Yield Strata</h3>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 20 }}>
+        {protocols.map((p, i) => (
+            <motion.div key={i} whileHover={{ y: -5 }} style={s.card}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 20 }}>
+                    <div style={{ width: 40, height: 40, borderRadius: 12, background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem' }}>
+                        {p.icon}
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                        <div style={s.badge(p.risk === 'Low' || p.risk === 'Min' ? 'var(--success)' : 'var(--danger)')}>{p.risk} Risk</div>
+                        <div style={{ fontSize: '0.62rem', fontWeight: 700, color: 'var(--text-tertiary)', marginTop: 4 }}>{p.chain}</div>
+                    </div>
+                </div>
+                <h4 style={{ fontSize: '1.1rem', fontWeight: 800, marginBottom: 2 }}>{p.name}</h4>
+                <p style={{ fontSize: '0.75rem', opacity: 0.5, marginBottom: 20 }}>TVL: {p.tvl}</p>
+
+                <div style={{ padding: 16, borderRadius: 16, background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                        <div style={s.label}>NET APY</div>
+                        <div style={{ fontSize: '1.4rem', fontWeight: 900, color: 'var(--success)' }}>{p.apy}%</div>
+                    </div>
+                    <button className="btn btn-ghost btn-sm" style={{ padding: '0 12px', borderRadius: 8 }}>Details</button>
+                </div>
+            </motion.div>
+        ))}
+      </div>
+    </div>
+  );
+}

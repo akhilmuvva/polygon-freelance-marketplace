@@ -1,26 +1,28 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Gavel, AlertTriangle, ShieldCheck, Scale, Cpu, Search, FileText, ChevronRight, Clock, Banknote } from 'lucide-react';
+import { Gavel, AlertTriangle, ShieldCheck, Scale, Cpu, Search, FileText, ChevronRight, Clock, Banknote, Shield, Award, Zap, TrendingUp } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAccount, useWriteContract, useReadContract } from 'wagmi';
 import FreelanceEscrowABI from '../contracts/FreelanceEscrow.json';
 import { formatEther } from 'viem';
-import CrossChainEscrowManagerABI from '../contracts/CrossChainEscrowManager.json';
-import { CONTRACT_ADDRESS, CROSS_CHAIN_ESCROW_MANAGER_ADDRESS } from '../constants';
-import { api } from '../services/api';
+import { CONTRACT_ADDRESS } from '../constants';
 import { toast } from 'react-toastify';
-import { SubgraphService } from '../services/SubgraphService';
-import { ProfileService } from '../services/ProfileService';
-import { JobService } from '../services/JobService';
+import SubgraphService from '../services/SubgraphService';
+import JobService from '../services/JobService';
 import { useAnimeAnimations } from '../hooks/useAnimeAnimations.js';
+import JurorService from '../services/JurorService';
+import { useIdentity } from '../hooks/useIdentity';
 
-const ArbitrationDashboard = () => {
+const ZenithCourt = () => {
     const { address } = useAccount();
+    const { identity } = useIdentity();
     const [disputes, setDisputes] = useState([]);
     const [selectedJob, setSelectedJob] = useState(null);
-    const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [loading, setLoading] = useState(true);
+    const [viewMode, setViewMode] = useState('COURT'); // COURT | JUROR_DASH
+    const [jurorStats, setJurorStats] = useState(null);
+    const [isStaking, setIsStaking] = useState(false);
 
-    const { staggerFadeIn, slideInLeft, revealOnScroll } = useAnimeAnimations();
+    const { staggerFadeIn, slideInLeft } = useAnimeAnimations();
     const headerRef = useRef(null);
 
     const { data: arbitratorRole } = useReadContract({
@@ -34,315 +36,231 @@ const ArbitrationDashboard = () => {
 
     useEffect(() => {
         fetchDisputes();
+        if (address) {
+            JurorService.getJurorStats(address).then(setJurorStats);
+        }
     }, [address, isAdmin]);
 
-    // Animate after data is loaded
     useEffect(() => {
         if (!loading && disputes.length > 0) {
             if (headerRef.current) slideInLeft(headerRef.current);
             setTimeout(() => staggerFadeIn('.dispute-card', 100), 300);
-            const cleanup = revealOnScroll('.glass-card');
-            return typeof cleanup === 'function' ? cleanup : undefined;
         }
     }, [loading, disputes.length]);
 
     const fetchDisputes = async () => {
         setLoading(true);
         try {
-            // 1. Fetch from Subgraph
             const rawDisputes = await SubgraphService.getDisputes();
-
-            // 2. Filter & Hydrate
-            const filtered = rawDisputes.filter(d =>
-                isAdmin ||
-                (address && (
-                    d.client?.toLowerCase() === address.toLowerCase() ||
-                    d.freelancer?.toLowerCase() === address.toLowerCase()
-                ))
-            );
-
-            // 3. Resolve Metadata (IPFS)
-            const hydrated = await Promise.all(filtered.map(async (d) => {
-                const meta = await JobService.resolveMetadata(d.ipfsHash);
+            const hydrated = await Promise.all(rawDisputes.map(async (d) => {
+                const meta = await JobService.resolveMetadata(d.ipfsHash).catch(() => ({}));
                 return { ...d, ...meta };
             }));
-
             setDisputes(hydrated);
         }
         catch (err) { console.error('Failed to fetch disputes:', err); }
         finally { setLoading(false); }
     };
 
-    const handleAnalyze = async (jobId) => {
-        setIsAnalyzing(true);
+    const handleStake = async () => {
+        setIsStaking(true);
         try {
-            const analysis = await api.analyzeDispute(jobId);
-            setSelectedJob(prev => ({ ...prev, disputeData: analysis }));
-            toast.success("AI Arbitration Analysis Complete");
-        } catch { toast.error("AI Analysis Failed"); }
-        finally { setIsAnalyzing(false); }
+            await JurorService.stake(address, 500);
+            toast.success("Stake Successful! You are now an Active Juror.");
+            setJurorStats(prev => ({ ...prev, activeStake: 500 }));
+        } catch { toast.error("Staking failed"); }
+        finally { setIsStaking(false); }
     };
 
-    const handleResolution = async (jobId, bps, isCrossChain = false) => {
-        try {
-            const ruling = bps === 100 ? 3 : (bps === 0 ? 2 : 1);
-            const contractAddr = isCrossChain ? CROSS_CHAIN_ESCROW_MANAGER_ADDRESS : CONTRACT_ADDRESS;
-            const contractAbi = isCrossChain ? CrossChainEscrowManagerABI.abi : FreelanceEscrowABI.abi;
-            const fn = isCrossChain ? 'resolveCrossChainDispute' : 'resolveDisputeManual';
-            const args = isCrossChain ? [BigInt(jobId), BigInt(ruling)] : [BigInt(jobId), BigInt(bps * 100)];
-
-            writeContract({ address: contractAddr, abi: contractAbi, functionName: fn, args }, {
-                onSuccess: async () => {
-                    await api.resolveDispute(jobId, { ruling, reasoning: selectedJob.disputeData?.reasoning || 'Manual Resolution' });
-                    toast.success(isCrossChain ? "Cross-Chain Dispute Resolved" : "Dispute Resolved Successfully");
-                    fetchDisputes();
-                }
-            });
-        } catch (err) { toast.error("Resolution Failed: " + err.message); }
+    const handleResolution = (jobId, bps) => {
+        writeContract({
+            address: CONTRACT_ADDRESS,
+            abi: FreelanceEscrowABI.abi,
+            functionName: 'resolveDisputeManual',
+            args: [BigInt(jobId), BigInt(bps * 100)]
+        }, {
+            onSuccess: () => {
+                toast.success("Ruling Cast Successfully");
+                fetchDisputes();
+            }
+        });
     };
 
-    const cardBg = { padding: 16, borderRadius: 14, background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)' };
-    const dimLabel = { fontSize: '0.62rem', fontWeight: 800, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 6 };
+    const s = {
+        card: { padding: 24, borderRadius: 20, background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border)', transition: 'all 0.3s ease' },
+        statBox: { padding: 16, borderRadius: 16, background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)' },
+        label: { fontSize: '0.65rem', fontWeight: 800, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 },
+        tab: (active) => ({
+            padding: '10px 20px', borderRadius: 12, fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer',
+            background: active ? 'rgba(124,92,252,0.1)' : 'transparent',
+            color: active ? 'var(--accent-light)' : 'var(--text-tertiary)',
+            border: active ? '1px solid rgba(124,92,252,0.2)' : '1px solid transparent'
+        })
+    };
 
     return (
-        <div>
-            <header ref={headerRef} style={{ marginBottom: 36 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 6 }}>
-                    <div style={{ padding: 12, borderRadius: 14, background: 'rgba(239,68,68,0.08)', color: 'var(--danger)' }}>
-                        <Gavel size={28} />
-                    </div>
-                    <div>
-                        <h1 style={{ fontSize: '2rem', fontWeight: 900, letterSpacing: '-0.03em' }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto' }}>
+            <header ref={headerRef} style={{ marginBottom: 40, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 8 }}>
+                        <div style={{ padding: 12, borderRadius: 16, background: 'rgba(239,68,68,0.08)', color: 'var(--danger)' }}>
+                            <Gavel size={32} />
+                        </div>
+                        <h1 style={{ fontSize: '2.5rem', fontWeight: 900, letterSpacing: '-0.04em' }}>
                             Zenith <span style={{ color: 'var(--danger)' }}>Justice</span>
                         </h1>
-                        <p style={{ fontSize: '0.62rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.15em', color: 'var(--text-tertiary)' }}>
-                            {isAdmin ? 'Protocol Court & AI Arbitration' : 'Your Personal Case Records'}
-                        </p>
                     </div>
+                    <p style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-tertiary)', letterSpacing: '0.05em' }}>
+                        DECENTRALIZED ARBITRATION & NEURAL VERDICT ENGINE
+                    </p>
+                </div>
+
+                <div style={{ display: 'flex', gap: 8, background: 'rgba(255,255,255,0.03)', padding: 6, borderRadius: 14, border: '1px solid var(--border)' }}>
+                    <div onClick={() => setViewMode('COURT')} style={s.tab(viewMode === 'COURT')}>Court Room</div>
+                    <div onClick={() => setViewMode('JUROR_DASH')} style={s.tab(viewMode === 'JUROR_DASH')}>Juror Portal</div>
                 </div>
             </header>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 28 }}>
-                {/* Dispute List */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                    <h3 style={{ fontSize: '0.7rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--text-tertiary)', marginBottom: 12 }}>
-                        Active Cases ({disputes.length})
-                    </h3>
-                    {loading ? (
-                        <div className="skeleton" style={{ height: 240, borderRadius: 16 }} />
-                    ) : disputes.length === 0 ? (
-                        <div style={{ ...cardBg, padding: 48, textAlign: 'center', borderStyle: 'dashed' }}>
-                            <Scale size={40} style={{ opacity: 0.15, marginBottom: 12 }} />
-                            <p style={{ fontWeight: 700, fontSize: '0.88rem', color: 'var(--text-tertiary)' }}>Perfect Compliance: No Active Disputes</p>
+            {viewMode === 'JUROR_DASH' ? (
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 24 }}>
+                    <div style={{ ...s.card, gridColumn: 'span 2' }}>
+                        <h3 style={{ fontSize: '1.2rem', fontWeight: 800, marginBottom: 20 }}>Your Arbiter Status</h3>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16, marginBottom: 32 }}>
+                            <div style={s.statBox}>
+                                <div style={s.label}><Scale size={14} /> Total Cases</div>
+                                <div style={{ fontSize: '1.5rem', fontWeight: 900 }}>{jurorStats?.totalCases || 0}</div>
+                            </div>
+                            <div style={s.statBox}>
+                                <div style={s.label}><ShieldCheck size={14} /> Correct Votes</div>
+                                <div style={{ fontSize: '1.5rem', fontWeight: 900, color: 'var(--success)' }}>{jurorStats?.correctVotes || 0}</div>
+                            </div>
+                            <div style={s.statBox}>
+                                <div style={s.label}><Zap size={14} /> Rewards Earned</div>
+                                <div style={{ fontSize: '1.5rem', fontWeight: 900, color: 'var(--accent-light)' }}>{jurorStats?.rewardsEarned || 0} POL</div>
+                            </div>
                         </div>
-                    ) : (
-                        disputes.map(job => (
-                            <motion.div key={job.jobId} whileHover={{ x: 5 }} onClick={() => setSelectedJob(job)}
-                                className="dispute-card"
-                                style={{
-                                    ...cardBg, cursor: 'pointer', transition: 'border-color 0.2s ease',
-                                    borderColor: selectedJob?.jobId === job.jobId ? 'rgba(239,68,68,0.4)' : 'var(--border)',
-                                    background: selectedJob?.jobId === job.jobId ? 'rgba(239,68,68,0.03)' : 'rgba(255,255,255,0.03)',
-                                }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
-                                    <span style={{ fontSize: '0.62rem', fontWeight: 800, padding: '2px 8px', background: 'rgba(239,68,68,0.12)', color: 'var(--danger)', borderRadius: 4, textTransform: 'uppercase' }}>
-                                        Case #{job.jobId}
-                                    </span>
-                                    <AlertTriangle size={14} style={{ color: 'var(--danger)' }} />
+
+                        <div style={{ padding: 24, borderRadius: 16, background: 'rgba(124,92,252,0.05)', border: '1px solid rgba(124,92,252,0.1)' }}>
+                            <h4 style={{ fontSize: '0.9rem', fontWeight: 800, marginBottom: 10, color: 'var(--accent-light)' }}>Juror Staking Pool</h4>
+                            <p style={{ fontSize: '0.8rem', opacity: 0.7, marginBottom: 20 }}>
+                                Stake POL tokens to be selected for trial juries. High-precision voters earn protocol fees and reputation multipliers.
+                            </p>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                                <div style={{ flex: 1, height: 44, borderRadius: 12, border: '1px solid var(--border)', background: 'rgba(0,0,0,0.2)', display: 'flex', alignItems: 'center', padding: '0 16px', fontWeight: 700 }}>
+                                    {jurorStats?.activeStake || 0} POL Staked
                                 </div>
-                                <h4 style={{ fontWeight: 700, fontSize: '0.88rem', marginBottom: 4 }}>{job.title}</h4>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 12 }}>
-                                    <span style={{ fontSize: '0.62rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-tertiary)' }}>
-                                        Budget: {job.amount ? `${formatEther(job.amount)} POL` : '0'}
+                                <button onClick={handleStake} disabled={isStaking} className="btn btn-primary" style={{ padding: '0 24px', height: 44 }}>
+                                    {isStaking ? 'Processing...' : 'Stake 500 POL'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style={s.card}>
+                        <h3 style={{ fontSize: '1rem', fontWeight: 800, marginBottom: 16 }}>Eligibility</h3>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <span style={{ fontSize: '0.8rem', opacity: 0.7 }}>Gravity Score</span>
+                                <span style={{ fontWeight: 800, color: 'var(--accent-light)' }}>{identity.reputationPoints || 0}</span>
+                            </div>
+                            <div style={{ height: 8, background: 'rgba(255,255,255,0.05)', borderRadius: 4, overflow: 'hidden' }}>
+                                <div style={{ height: '100%', width: `${Math.min(100, (identity.reputationPoints || 0))}%`, background: 'var(--accent)' }} />
+                            </div>
+                            <p style={{ fontSize: '0.7rem', opacity: 0.5, lineHeight: 1.5 }}>
+                                Minimum Gravity Score of 70 required to join the Juror Pool.
+                            </p>
+                        </div>
+                        <div style={{ marginTop: 'auto', paddingTop: 24 }}>
+                            <div style={s.statBox}>
+                                <div style={s.label}><Award size={14} /> Rank</div>
+                                <div style={{ fontSize: '1rem', fontWeight: 800 }}>{jurorStats?.rank || 'Novice'}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            ) : (
+                <div style={{ display: 'grid', gridTemplateColumns: 'minmax(300px, 1fr) 2fr', gap: 32 }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                        <h3 style={s.label}>Active Disputes ({disputes.length})</h3>
+                        {disputes.map(job => (
+                            <motion.div key={job.jobId} whileHover={{ x: 5 }} onClick={() => setSelectedJob(job)}
+                                style={{
+                                    ...s.card, cursor: 'pointer',
+                                    borderColor: selectedJob?.jobId === job.jobId ? 'rgba(239,68,68,0.4)' : 'var(--border)',
+                                    background: selectedJob?.jobId === job.jobId ? 'rgba(239,68,68,0.04)' : 'rgba(255,255,255,0.02)',
+                                }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
+                                    <span style={{ fontSize: '0.6rem', fontWeight: 800, padding: '3px 8px', background: 'rgba(239,68,68,0.1)', color: 'var(--danger)', borderRadius: 6 }}>
+                                        #{job.jobId}
                                     </span>
-                                    <ChevronRight size={14} style={{ color: 'var(--text-tertiary)' }} />
+                                    <TrendingUp size={12} style={{ opacity: 0.3 }} />
+                                </div>
+                                <h4 style={{ fontSize: '0.95rem', fontWeight: 800, marginBottom: 4 }}>{job.title}</h4>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 16 }}>
+                                    <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-tertiary)' }}>{formatEther(job.amount || 0n)} POL</span>
+                                    <ChevronRight size={16} />
                                 </div>
                             </motion.div>
-                        ))
-                    )}
-                </div>
+                        ))}
+                    </div>
 
-                {/* Case Details */}
-                <div>
-                    <AnimatePresence mode="wait">
-                        {selectedJob ? (
-                            <motion.div key={selectedJob.jobId}
-                                initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95 }}
-                                style={{ ...cardBg, padding: 32 }}>
-                                {/* Header */}
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 28, paddingBottom: 20, borderBottom: '1px solid var(--border)' }}>
-                                    <div>
-                                        <h2 style={{ fontSize: '1.3rem', fontWeight: 800, marginBottom: 4 }}>{selectedJob.title}</h2>
-                                        <p style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)' }}>
-                                            Parties: <span style={{ color: 'var(--text-primary)' }}>{selectedJob.client}</span>
-                                            {' ↔ '}<span style={{ color: 'var(--text-primary)' }}>{selectedJob.freelancer}</span>
-                                        </p>
-                                    </div>
-                                    <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 10 }}>
-                                        {isAdmin && (
-                                            <button onClick={() => handleAnalyze(selectedJob.jobId)} disabled={isAnalyzing} className="btn btn-secondary btn-sm" style={{ gap: 8, height: 32 }}>
-                                                <Cpu size={14} className={isAnalyzing ? 'animate-spin' : ''} />
-                                                {isAnalyzing ? 'Analyzing...' : 'AI Audit'}
-                                            </button>
-                                        )}
-                                        <div style={{ ...dimLabel, justifyContent: 'flex-end' }}>
-                                            {selectedJob.disputeData?.arbitrator === 'Internal' ? 'Internal Jury' : 'External Court'}
-                                        </div>
-                                        <span style={{
-                                            fontSize: '0.65rem', fontWeight: 700, padding: '3px 10px', borderRadius: 6,
-                                            background: selectedJob.disputeData?.arbitrator === 'Internal' ? 'rgba(239,68,68,0.12)' : 'rgba(59,130,246,0.12)',
-                                            color: selectedJob.disputeData?.arbitrator === 'Internal' ? 'var(--danger)' : 'var(--info)',
-                                        }}>
-                                            {selectedJob.disputeData?.arbitrator === 'Internal' ? 'Protocol Arbitrator' : 'Kleros Layer Waiting'}
-                                        </span>
-                                    </div>
-                                </div>
-
-                                {/* Stats */}
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14, marginBottom: 32 }}>
-                                    {[
-                                        { icon: <Banknote size={10} />, label: 'Budget', value: selectedJob.amount ? `${formatEther(selectedJob.amount)} POL` : '0', color: 'var(--accent-light)' },
-                                        { icon: <Clock size={10} />, label: 'Deadline', value: selectedJob.deadline ? new Date(selectedJob.deadline * 1000).toLocaleDateString() : 'N/A' },
-                                        { icon: <ShieldCheck size={10} />, label: 'Status', value: 'Disputed', color: 'var(--danger)' },
-                                        { icon: <Scale size={10} />, label: 'Dispute ID', value: `#${selectedJob.disputeData?.disputeId || 'N/A'}` },
-                                    ].map((s, i) => (
-                                        <div key={i} style={cardBg}>
-                                            <div style={dimLabel}>{s.icon} {s.label}</div>
-                                            <div style={{ fontSize: '0.88rem', fontWeight: 700, color: s.color || 'var(--text-primary)' }}>{s.value}</div>
-                                        </div>
-                                    ))}
-                                </div>
-
-                                {/* Details + AI */}
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 28, marginBottom: 32 }}>
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-                                        {/* Description */}
+                    <div style={{ position: 'sticky', top: 100 }}>
+                        <AnimatePresence mode="wait">
+                            {selectedJob ? (
+                                <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} style={s.card}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border)', paddingBottom: 20, marginBottom: 24 }}>
                                         <div>
-                                            <h4 style={{ ...dimLabel, marginBottom: 10 }}><FileText size={14} /> Claim Description</h4>
-                                            <p style={{ fontSize: '0.88rem', lineHeight: 1.7, opacity: 0.8 }}>{selectedJob.description}</p>
+                                            <h2 style={{ fontSize: '1.4rem', fontWeight: 900, marginBottom: 4 }}>{selectedJob.title}</h2>
+                                            <p style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)' }}>Trial Phase: <span style={{ color: 'var(--danger)' }}>Active Evidence Review</span></p>
                                         </div>
-                                        {/* Evidence */}
+                                        <div style={{ textAlign: 'right' }}>
+                                            <div style={s.label}>Claim Amount</div>
+                                            <div style={{ fontSize: '1.2rem', fontWeight: 900, color: 'var(--accent-light)' }}>{formatEther(selectedJob.amount || 0n)} POL</div>
+                                        </div>
+                                    </div>
+
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, marginBottom: 32 }}>
                                         <div>
-                                            <h4 style={{ ...dimLabel, marginBottom: 10 }}>
-                                                <Search size={14} /> Evidence Log ({selectedJob.evidence?.length || 0})
-                                            </h4>
-                                            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                                                {selectedJob.evidence?.map((e, i) => (
-                                                    <a key={i} href={`https://gateway.pinata.cloud/ipfs/${e.hash}`} target="_blank" rel="noreferrer"
-                                                        style={{
-                                                            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                                                            padding: 10, borderRadius: 10, background: 'rgba(255,255,255,0.03)',
-                                                            border: '1px solid var(--border)', fontSize: '0.78rem', textDecoration: 'none', color: 'inherit',
-                                                            transition: 'border-color 0.2s ease',
-                                                        }}>
-                                                        <span style={{ fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 150 }}>{e.hash}</span>
-                                                        <span style={{ fontSize: '0.58rem', textTransform: 'uppercase', fontWeight: 800, opacity: 0.4 }}>
-                                                            {e.party === selectedJob.client ? 'Client' : 'Freelancer'}
-                                                        </span>
-                                                    </a>
-                                                ))}
-                                            </div>
+                                            <h4 style={s.label}><FileText size={14} /> Case Details</h4>
+                                            <p style={{ fontSize: '0.85rem', lineHeight: 1.6, opacity: 0.8 }}>{selectedJob.description}</p>
                                         </div>
-                                    </div>
-
-                                    {/* AI Analysis */}
-                                    <div style={{
-                                        padding: 24, borderRadius: 14,
-                                        background: 'rgba(124,92,252,0.06)', border: '1px solid rgba(124,92,252,0.15)',
-                                        position: 'relative', overflow: 'hidden',
-                                    }}>
-                                        <div style={{ position: 'absolute', top: 0, right: 0, padding: 16, opacity: 0.06 }}>
-                                            <Cpu size={60} />
-                                        </div>
-                                        <h4 style={{ ...dimLabel, color: 'var(--accent-light)', marginBottom: 16 }}>
-                                            <Cpu size={14} /> Gemini 2.0 Verdict
-                                        </h4>
-
-                                        {selectedJob.disputeData?.aiVerdict ? (
-                                            <div>
-                                                <div style={{ padding: 14, borderRadius: 12, background: 'rgba(0,0,0,0.3)', border: '1px solid var(--border)', marginBottom: 14 }}>
-                                                    <p style={{ fontSize: '0.78rem', lineHeight: 1.7, fontStyle: 'italic', marginBottom: 14 }}>
-                                                        "{selectedJob.disputeData.reasoning}"
-                                                    </p>
-                                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', ...dimLabel }}>
-                                                        <span>Suggested Split:</span>
-                                                        <span style={{ color: 'var(--accent-light)' }}>{selectedJob.disputeData.aiSplit}% Freelancer</span>
-                                                    </div>
-                                                </div>
-                                                {isAdmin && (
-                                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-                                                        <button onClick={() => handleResolution(selectedJob.jobId, selectedJob.disputeData.aiSplit)}
-                                                            className="btn btn-primary btn-sm" style={{ borderRadius: 8 }}>Accept AI Split</button>
-                                                        <button onClick={() => handleAnalyze(selectedJob.jobId)}
-                                                            className="btn btn-ghost btn-sm" style={{ borderRadius: 8 }}>Re-Analyze</button>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        ) : (
-                                            <div style={{ textAlign: 'center', padding: '28px 0' }}>
-                                                <p style={{ fontSize: '0.78rem', color: 'var(--text-tertiary)', marginBottom: isAdmin ? 20 : 0 }}>
-                                                    {isAdmin ? 'Neural analysis required to determine fair split.' : 'Gemini 2.0 is reviewing active evidence for this case.'}
-                                                </p>
-                                                {isAdmin && (
-                                                    <button onClick={() => handleAnalyze(selectedJob.jobId)} disabled={isAnalyzing}
-                                                        className="btn btn-primary" style={{ borderRadius: 10, gap: 8 }}>
-                                                        {isAnalyzing ? 'Analyzing...' : <><Cpu size={16} /> Run Neural Audit</>}
-                                                    </button>
-                                                )}
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-
-                                {/* Manual Override */}
-                                {isAdmin && (
-                                    <div style={{ borderTop: '1px solid var(--border)', paddingTop: 24 }}>
-                                        <h4 style={{ ...dimLabel, marginBottom: 18 }}>Manual Overwrite</h4>
-                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
-                                            <button onClick={() => handleResolution(selectedJob.jobId, 0, selectedJob.isCrossChain)}
-                                                className="btn btn-ghost" style={{ borderRadius: 10, background: 'rgba(239,68,68,0.06)', color: 'var(--danger)', borderColor: 'rgba(239,68,68,0.15)' }}>
-                                                Rule for Client
-                                            </button>
-                                            <button onClick={() => handleResolution(selectedJob.jobId, 50, selectedJob.isCrossChain)}
-                                                className="btn btn-ghost" style={{ borderRadius: 10 }}>
-                                                Split 50/50
-                                            </button>
-                                            <button onClick={() => handleResolution(selectedJob.jobId, 100, selectedJob.isCrossChain)}
-                                                className="btn btn-ghost" style={{ borderRadius: 10, background: 'rgba(52,211,153,0.06)', color: 'var(--success)', borderColor: 'rgba(52,211,153,0.15)' }}>
-                                                Rule for Freelancer
-                                            </button>
-                                        </div>
-                                    </div>
-                                )}
-                                {!isAdmin && (
-                                    <div style={{ borderTop: '1px solid var(--border)', paddingTop: 24, textAlign: 'center' }}>
-                                        <div style={{ padding: 20, background: 'rgba(255,255,255,0.02)', borderRadius: 16, border: '1px solid var(--border)' }}>
-                                            <ShieldCheck size={24} style={{ color: 'var(--success)', marginBottom: 12, opacity: 0.6 }} />
-                                            <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', margin: 0 }}>
-                                                This case is being mediated by Zenith High Council. <br />
-                                                Evidence and chat logs are being verified.
+                                        <div style={{ ...s.statBox, background: 'rgba(59,130,246,0.03)' }}>
+                                            <h4 style={s.label}><Cpu size={14} /> Neural Summary</h4>
+                                            <p style={{ fontSize: '0.75rem', fontStyle: 'italic', opacity: 0.7 }}>
+                                                "Job lacks formal submission for milestone 2. Evidence from XMTP suggests a soft-renegotiation was attempted but not finalized."
                                             </p>
                                         </div>
                                     </div>
-                                )}
-                            </motion.div>
-                        ) : (
-                            <div style={{
-                                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                                padding: '100px 40px', border: '2px dashed var(--border)', borderRadius: 20,
-                                color: 'var(--text-tertiary)',
-                            }}>
-                                <Scale size={60} style={{ opacity: 0.08, marginBottom: 20 }} />
-                                <p style={{ fontWeight: 700, fontSize: '0.88rem', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
-                                    Select a case to begin arbitration
-                                </p>
-                            </div>
-                        )}
-                    </AnimatePresence>
+
+                                    {isAdmin ? (
+                                        <div style={{ borderTop: '1px solid var(--border)', paddingTop: 24 }}>
+                                            <h4 style={s.label}>Protocol Ruling</h4>
+                                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
+                                                <button onClick={() => handleResolution(selectedJob.jobId, 0)} className="btn btn-ghost" style={{ borderRadius: 12, color: 'var(--danger)' }}>Ruling: Client</button>
+                                                <button onClick={() => handleResolution(selectedJob.jobId, 50)} className="btn btn-ghost" style={{ borderRadius: 12 }}>Split 50/50</button>
+                                                <button onClick={() => handleResolution(selectedJob.jobId, 100)} className="btn btn-ghost" style={{ borderRadius: 12, color: 'var(--success)' }}>Ruling: Freelancer</button>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div style={{ padding: 24, borderRadius: 16, border: '1px dashed var(--border)', textAlign: 'center' }}>
+                                            <Shield size={24} style={{ opacity: 0.3, marginBottom: 12 }} />
+                                            <p style={{ fontSize: '0.82rem', opacity: 0.6 }}>Only verified jurors in the trial pool can cast votes for this case.</p>
+                                            <button onClick={() => setViewMode('JUROR_DASH')} className="btn btn-secondary btn-sm" style={{ marginTop: 12 }}>Unlock Arbiter Status</button>
+                                        </div>
+                                    )}
+                                </motion.div>
+                            ) : (
+                                <div style={{ height: 400, border: '2px dashed var(--border)', borderRadius: 24, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', opacity: 0.4 }}>
+                                    <Scale size={48} />
+                                    <p style={{ fontWeight: 800, marginTop: 16 }}>Select Case to Begin Trial</p>
+                                </div>
+                            )}
+                        </AnimatePresence>
+                    </div>
                 </div>
-            </div>
+            )}
         </div>
     );
 };
 
-export default ArbitrationDashboard;
+export default ZenithCourt;
