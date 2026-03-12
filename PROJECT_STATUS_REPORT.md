@@ -107,6 +107,7 @@
 2. [x] **Event-Driven Indexing:** Full reliance on The Graph for all frontend data queries.
 3. [x] **E2E Encrypted Chat:** 100% Migration to XMTP for wallet-to-wallet negotiation.
 4. [x] **Fleek/4Everland Deployment:** Frontend hosted permanently on the decentralized web (IPNS).
+5. [x] **Vercel Edge Integration:** Production-ready `vercel.json` with SPA routing and build optimizations.
 
 ---
 
