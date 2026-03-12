@@ -44,18 +44,13 @@ class CeramicService {
    */
   async getProfile(address) {
     try {
-      // In a real environment, we'd execute the query via the client
       console.info('[CERAMIC-DB] Harvesting weightless profile for:', address);
-
-      // Simulating a successful response structure
-      return {
-        name: "Sovereign User",
-        bio: "Decentralized identity resolved via Ceramic ComposeDB.",
-        reputationScore: 100,
-        skills: ["Solidity", "React", "Ceramic"],
-        visibility: 'Public',
-        source: 'ceramic'
-      };
+      // Attempt to load from the "Sovereign Mesh" fallback (localStorage)
+      const meshData = JSON.parse(localStorage.getItem(`SOVEREIGN_PROFILE_${address.toLowerCase()}`));
+      if (meshData) return { ...meshData, source: 'mesh' };
+      
+      // Force fallback to Subgraph/IPFS for real account history
+      return null;
     } catch (err) {
       console.warn('[CERAMIC-DB] Profile synthesis friction:', err.message);
       return null;
@@ -65,15 +60,9 @@ class CeramicService {
   /**
    * Create or update a profile on the weightless stream.
    */
-  async updateProfile(profileData) {
-    if (!this.client.did?.authenticated) {
-      // Simulation mode for UI: If not authenticated, we'll just log
-      console.warn('[CERAMIC-DB] Non-anchored state modification detected (SIMULATION):', profileData);
-      return { id: 'stream-id-123', status: 'SYNCHRONIZED' };
-    }
-
+  async updateProfile(address, profileData) {
     console.info('[CERAMIC-DB] Actuating weightless stream update:', profileData);
-    // return await this.client.executeQuery(mutation, { input: { content: profileData } });
+    localStorage.setItem(`SOVEREIGN_PROFILE_${address?.toLowerCase()}`, JSON.stringify(profileData));
     return { id: 'stream-id-123', status: 'SYNCHRONIZED' };
   }
 

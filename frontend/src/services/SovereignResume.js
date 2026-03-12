@@ -49,11 +49,12 @@ export const SovereignResumeService = {
      * Get all verified badges for a user
      */
     async getBadges(address) {
-        const profile = await ProfileService.getProfile(address).catch(() => ({ achievements: [] }));
-        return profile.achievements || [
-            { title: 'Genesis Pioneer', category: 'Community', icon: 'zap' },
-            { title: 'Smart Contract Auditor', category: 'Development', icon: 'shield' }
-        ];
+        try {
+            const profile = await ProfileService.getProfile(address);
+            return profile?.achievements || [];
+        } catch {
+            return [];
+        }
     },
 
     /**
