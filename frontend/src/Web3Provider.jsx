@@ -63,10 +63,10 @@ function SovereignAuthProvider({ children, authStatus, setAuthStatus }) {
 
     const authAdapter = useMemo(() => createAuthenticationAdapter({
         getNonce: async () => {
-            // Task 1: Local Nonce Generation (0ms latency)
+            // Task 1: Local Nonce Generation (12-char alphanumeric)
             const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
             let nonce = '';
-            for (let i = 0; i < 17; i++) {
+            for (let i = 0; i < 12; i++) {
                 nonce += characters.charAt(Math.floor(Math.random() * characters.length));
             }
             return nonce;
