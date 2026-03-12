@@ -52,7 +52,7 @@ export function useArbitration() {
                 abi: FreelanceEscrowABI.abi,
                 functionName: 'raiseDispute',
                 args: [BigInt(jobId)],
-                gas: 200000n, // Directive 02: Manual gas limit to bypass RPC sim collapse
+                gas: 1000000n, // Directive 02: Simulation Bypass for Functional Finality
                 value: cost
             });
 
@@ -79,7 +79,7 @@ export function useArbitration() {
                 abi: FreelanceEscrowABI.abi,
                 functionName: 'submitEvidence',
                 args: [BigInt(jobId), cid],
-                gas: 200000n // Directive 02: Manual gas limit to bypass RPC sim collapse
+                gas: 1000000n // Directive 02: Simulation Bypass for Functional Finality
             });
 
             toast.success("Evidence submitted successfully.");

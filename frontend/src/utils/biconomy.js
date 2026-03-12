@@ -67,11 +67,14 @@ export async function createBiconomySmartAccount(signer) {
     }
 
     try {
+        console.info('[SECURITY] Actuating Smart Account client for chain:', signer.chain?.id || 'unknown');
         const smartAccount = await createSmartAccountClient({
             signer: signer,
             bundlerUrl: BUNDLER_URL,
             biconomyPaymasterApiKey: PAYMASTER_URL,
-            rpcUrl: 'https://rpc.ankr.com/polygon_amoy'
+            rpcUrl: signer.chain?.id === 80002 
+                ? 'https://rpc-amoy.polygon.technology' 
+                : 'https://polygon-rpc.com'
         });
 
         // Resolve accountAddress — newer SDK versions require getAccountAddress()
@@ -82,7 +85,8 @@ export async function createBiconomySmartAccount(signer) {
         console.log('[SECURITY] Smart Account created:', smartAccount.accountAddress);
         return smartAccount;
     } catch (error) {
-        console.error('[SECURITY] Failed to create Smart Account:', error);
+        console.error('[SECURITY] Failed to create Smart Account. Resonance Error:', error.message);
+        console.error('[SECURITY] Full trace:', error);
         return null;
     }
 }

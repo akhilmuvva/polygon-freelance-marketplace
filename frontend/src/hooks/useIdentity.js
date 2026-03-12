@@ -55,12 +55,13 @@ export function useIdentity(address) {
                     isFollowedByMe: false,
                     isFollowingMe: false,
                     isVerified: true,
-                    reputationPoints: 450
+                    reputationEpochs: 450
                 };
 
                 setIdentity(prev => ({
                     ...prev,
                     lensProfile: mockLensResult,
+                    reputationEpochs: mockLensResult.reputationEpochs, // Expose at top level
                     displayName: mockLensResult.handle, // Lens handle takes precedence
                     isLens: true
                 }));
@@ -73,6 +74,7 @@ export function useIdentity(address) {
 
     return {
         ...identity,
+        reputationEpochs: identity.reputationEpochs ?? 0,
         displayName: identity.lensProfile?.handle || identity.ensName || `${address?.slice(0, 6)}...${address?.slice(-4)}`,
         isVerified: identity.lensProfile?.isVerified || false
     };

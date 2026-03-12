@@ -15,7 +15,7 @@ function Portfolio({ address, onBack, onFiatPay }) {
     const [loading, setLoading] = useState(true);
     const sidebarRef = useRef(null);
     const mainRef = useRef(null);
-    const { slideInLeft, slideInRight, staggerFadeIn } = useAnimeAnimations();
+    const { staggerFadeIn } = useAnimeAnimations();
 
     useEffect(() => {
         if (address) {
@@ -53,13 +53,23 @@ function Portfolio({ address, onBack, onFiatPay }) {
         address: POLY_TOKEN_ADDRESS, abi: erc20Abi, functionName: 'balanceOf', args: [address],
     });
 
+    // Task 1: Type-Safe Mapping & Task 3: Philosophy-aligned naming
+    const skillSet = React.useMemo(() => {
+        const skillsObject = data?.profile?.skills;
+        if (!skillsObject) return [];
+        if (Array.isArray(skillsObject)) return skillsObject;
+        if (typeof skillsObject === 'string') return skillsObject.split(',').map(s => s.trim()).filter(Boolean);
+        return [];
+    }, [data?.profile?.skills]);
+
     // Animate on data load
     useEffect(() => {
         if (!loading && data?.profile?.address) {
-            if (sidebarRef.current) slideInLeft(sidebarRef.current, 40);
-            if (mainRef.current) slideInRight(mainRef.current, 40);
-            setTimeout(() => staggerFadeIn('.portfolio-skill-tag', 50), 400);
-            setTimeout(() => staggerFadeIn('.portfolio-job-card', 80), 500);
+            // Task: Neutralize sliding function near dashboard per plan
+            if (sidebarRef.current) staggerFadeIn(sidebarRef.current, 0);
+            if (mainRef.current) staggerFadeIn(mainRef.current, 0);
+            setTimeout(() => staggerFadeIn('.competency-resonance-badge', 50), 400);
+            setTimeout(() => staggerFadeIn('.artifact-proof-container', 80), 500);
         }
     }, [loading, data]);
 
@@ -68,15 +78,31 @@ function Portfolio({ address, onBack, onFiatPay }) {
         background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border)',
     };
 
+    // Task 2: Suspense and Fallbacks - Premium Skeleton / Weightless State
     if (loading) return (
-        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
-            <div className="skeleton" style={{ height: 28, width: 120, marginBottom: 28 }} />
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 32 }}>
-                <div className="skeleton" style={{ height: 500, borderRadius: 14 }} />
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-                    <div className="skeleton" style={{ height: 60, width: '50%' }} />
-                    <div className="skeleton" style={{ height: 200, borderRadius: 14 }} />
-                    <div className="skeleton" style={{ height: 200, borderRadius: 14 }} />
+        <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 20px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 40, opacity: 0.5 }}>
+                <div className="loader-spin" style={{ width: 16, height: 16, border: '2px solid var(--accent)', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+                <span style={{ fontSize: '0.75rem', fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase' }}>Synchronizing Sovereign Identity...</span>
+            </div>
+            
+            <div style={{ display: 'grid', gridTemplateColumns: 'minmax(300px, 320px) 1fr', gap: 40 }}>
+                <div style={{ ...cardBg, height: 600, position: 'relative', overflow: 'hidden' }}>
+                    <div className="skeleton-shimmer" style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.03), transparent)', animation: 'shimmer 2s infinite' }} />
+                    <div style={{ width: 140, height: 140, borderRadius: '50%', background: 'rgba(255,255,255,0.03)', margin: '0 auto 30px' }} />
+                    <div style={{ height: 24, width: '60%', background: 'rgba(255,255,255,0.03)', margin: '0 auto 10px', borderRadius: 4 }} />
+                    <div style={{ height: 14, width: '40%', background: 'rgba(255,255,255,0.03)', margin: '0 auto 40px', borderRadius: 4 }} />
+                    <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
+                        {[1,2,3].map(i => <div key={i} style={{ height: 24, width: 60, borderRadius: 6, background: 'rgba(255,255,255,0.03)' }} />)}
+                    </div>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 30 }}>
+                    <div style={{ height: 40, width: '40%', background: 'rgba(255,255,255,0.03)', borderRadius: 8 }} />
+                    {[1, 2].map(i => (
+                        <div key={i} style={{ ...cardBg, height: 180, position: 'relative', overflow: 'hidden' }}>
+                            <div className="skeleton-shimmer" style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.03), transparent)', animation: 'shimmer 2s infinite' }} />
+                        </div>
+                    ))}
                 </div>
             </div>
         </div>
@@ -126,14 +152,14 @@ function Portfolio({ address, onBack, onFiatPay }) {
                             </div>
                         )}
 
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, justifyContent: 'center', marginBottom: 18 }}>
-                            {profile.skills?.split(',').map((skill, idx) => (
-                                <span key={idx} className="portfolio-skill-tag" style={{
+                        <div className="competency-resonance-grid" style={{ display: 'flex', flexWrap: 'wrap', gap: 6, justifyContent: 'center', marginBottom: 18 }}>
+                            {skillSet.length > 0 ? skillSet.map((skill, idx) => (
+                                <span key={idx} className="competency-resonance-badge" style={{
                                     fontSize: '0.72rem', fontWeight: 600, padding: '3px 10px', borderRadius: 6,
                                     border: '1px solid var(--accent-border)', color: 'var(--accent)',
                                     background: 'var(--accent-subtle)', opacity: 0,
-                                }}>{skill.trim()}</span>
-                            )) || <span style={{ fontSize: '0.72rem', padding: '3px 10px', borderRadius: 6, background: 'rgba(255,255,255,0.04)', color: 'var(--text-tertiary)' }}>General Creator</span>}
+                                }}>{skill}</span>
+                            )) : <span style={{ fontSize: '0.72rem', padding: '3px 10px', borderRadius: 6, background: 'rgba(255,255,255,0.04)', color: 'var(--text-tertiary)' }}>General Creator</span>}
                         </div>
 
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 14 }}>
@@ -185,7 +211,7 @@ function Portfolio({ address, onBack, onFiatPay }) {
                         </p>
                     </div>
 
-                    <div key={profile.address} className="portfolio-job-card" style={{ ...cardBg, background: 'linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01))', padding: 28, transition: 'all 0.2s', opacity: 0, transform: 'translateY(20px)' }}>
+                    <div key={profile.address} className="artifact-proof-container" style={{ ...cardBg, background: 'linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01))', padding: 28, transition: 'all 0.2s', opacity: 0, transform: 'translateY(20px)' }}>
                         <h3 style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 18, fontSize: '1rem', fontWeight: 700 }}>
                             <Zap size={18} style={{ color: '#22d3ee' }} /> Rewards & Stake
                         </h3>
@@ -244,7 +270,7 @@ function Portfolio({ address, onBack, onFiatPay }) {
                                 </div>
                             ) : (
                                 completedJobs.map((job) => (
-                                    <div key={job.jobId} className="portfolio-job-card"
+                                    <div key={job.jobId} className="artifact-proof-container"
                                         style={{ ...cardBg, display: 'flex', gap: 20, alignItems: 'flex-start', opacity: 0, transform: 'translateY(20px)' }}>
                                         <div style={{ width: 110, height: 110, borderRadius: 14, overflow: 'hidden', flexShrink: 0 }}>
                                             <img

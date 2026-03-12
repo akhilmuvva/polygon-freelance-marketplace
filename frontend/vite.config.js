@@ -15,6 +15,9 @@ export default defineConfig({
       globals: { Buffer: true, global: true, process: true },
     }),
   ],
+  optimizeDeps: {
+    include: ['@xmtp/browser-sdk'],
+  },
   define: {
     'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'production'),
     'global': 'globalThis',

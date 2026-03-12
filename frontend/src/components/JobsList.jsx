@@ -146,7 +146,7 @@ const JobsList = ({ onSelectChat, onFiatPay, gasless, smartAccount: propSmartAcc
             <header ref={headerRef} style={st.header}>
                 <div>
                     <h1 style={st.title}>
-                        Browse <span style={{ color: 'var(--accent-light)', fontStyle: 'italic' }}>Gigs</span>
+                        Find a <span style={{ color: 'var(--accent-light)', fontStyle: 'italic' }}>Job</span>
                     </h1>
                     <p style={st.subtitle}>
                         Find high-value blockchain opportunities and secure your next contract.
@@ -157,7 +157,10 @@ const JobsList = ({ onSelectChat, onFiatPay, gasless, smartAccount: propSmartAcc
                         <RefreshCcw size={16} style={{ animation: (isLoadingJobs || isApiLoading) ? 'spin 2s linear infinite' : 'none' }} />
                         Refresh
                     </button>
-                    <button className="btn btn-primary" style={{ borderRadius: 12, padding: '10px 18px' }}>Post a Job</button>
+                    <button onClick={() => {
+                        // Task: Synchronize with App's tab state mechanism
+                        window.dispatchEvent(new CustomEvent('NAV_TO_CREATE'));
+                    }} className="btn btn-primary" style={{ borderRadius: 12, padding: '10px 18px' }}>Create a Listing</button>
                 </div>
             </header>
 
@@ -267,7 +270,7 @@ const JobCard = ({ job, address, onSelectChat, onFiatPay }) => {
                 abi: FreelanceEscrowABI.abi,
                 functionName: 'actuatePayment',
                 args: [BigInt(job.jobId)],
-                gas: 200000n // Directive 02: Manual gas limit to bypass RPC sim collapse
+                gas: 1000000n // Directive 02: Simulation Bypass for Functional Finality
             });
             hotToast.success('Settlement Intent Broadcasted');
         } catch (err) {

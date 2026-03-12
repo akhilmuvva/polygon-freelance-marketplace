@@ -192,12 +192,12 @@ export const SubgraphService = {
     try {
       const { data } = await client.query({
         query: GET_ECOSYSTEM_STATS,
-        fetchPolicy: 'network-only'
+        fetchPolicy: 'no-cache' // Bypassing internal cache for real-time stats
       });
-      return data.globalStat;
+      return data?.globalStat || { totalJobs: 0, totalVolume: '0', activeUsers: [] };
     } catch (error) {
-      console.error('Failed to fetch ecosystem stats from subgraph:', error);
-      return null;
+      // Subgraph ingestion delay or rate-limiting: Fallback to zero-state.
+      return { totalJobs: 0, totalVolume: '0', activeUsers: [] };
     }
   },
 

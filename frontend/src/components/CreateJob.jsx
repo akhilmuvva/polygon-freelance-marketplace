@@ -62,10 +62,11 @@ function CreateJob({ onJobCreated, gasless, smartAccount }) {
 
     // Anime.js hooks
     const headerRef = React.useRef(null);
-    const { slideInLeft, staggerFadeIn } = useAnimeAnimations();
+    const { staggerFadeIn } = useAnimeAnimations();
 
     React.useEffect(() => {
-        if (headerRef.current) slideInLeft(headerRef.current, 30);
+        // Task: Remove sliding function near dashboard per plan
+        if (headerRef.current) staggerFadeIn(headerRef.current, 0);
         setTimeout(() => staggerFadeIn('.create-job-section', 80), 200);
     }, []);
 
@@ -87,23 +88,28 @@ function CreateJob({ onJobCreated, gasless, smartAccount }) {
         e.preventDefault();
         
         // Safety Verification: Ensure the actor has defined the economic parameters.
-        if (!freelancer || !amount || !title) {
-            hotToast.error('Incomplete Intent: Title, Freelancer, and Budget required.');
+        // Safety Verification: Ensure the actor has defined the economic parameters.
+        if (!amount || !title) {
+            hotToast.error('Incomplete Intent: Title and Budget required.');
             return;
         }
 
-        const rawAmount = parseUnits(amount, selectedToken.decimals);
-        let ipfsHash = '';
+        const isIntentOnly = !freelancer;
+        setIsProcessingGasless(true); // Re-using this as a generic loading state for this operation
 
         try {
-            // Pack job details for IPFS: This creates the "Off-Chain Soul" of the contract.
+            const rawAmount = parseUnits(amount, selectedToken.decimals);
+            let ipfsHash = '';
+
+            // Pack job details: This creates the "Off-Chain Soul" of the contract.
             const metadata = {
                 title,
                 category,
                 client: address,
-                freelancer,
+                freelancer: freelancer || '0x0000000000000000000000000000000000000000',
                 amount,
                 token: selectedToken.symbol,
+                status: isIntentOnly ? 'Pending Intent' : 'Created',
                 milestones: milestones.map(m => ({
                     amount: m.amount,
                     description: m.description
@@ -113,62 +119,84 @@ function CreateJob({ onJobCreated, gasless, smartAccount }) {
             const { cid } = await StorageService.uploadMetadata(metadata);
             ipfsHash = cid;
             console.info('[NETWORK] Sovereign metadata anchored:', ipfsHash);
-        } catch (err) {
-            console.warn('[NETWORK] IPFS sync friction:', err.message);
-            // Non-blocking: We prioritize on-chain finality, though metadata sync is preferred.
-        }
 
-        const deadline = Math.floor(Date.now() / 1000) + (Number(durationDays) * 86400);
+            if (isIntentOnly) {
+                // Step 1: Decentralized Intent Anchoring (Mocking Ceramic)
+                const intents = JSON.parse(localStorage.getItem('SOVEREIGN_INTENTS') || '[]');
+                intents.push({ ...metadata, ipfsHash, createdAt: Date.now() });
+                localStorage.setItem('SOVEREIGN_INTENTS', JSON.stringify(intents));
+                
+                hotToast.success('Job Intent Anchored to Sovereign Mesh');
+                onJobCreated?.();
+                return;
+            }
 
-        const params = {
-            categoryId: 1n,
-            freelancer: freelancer,
-            token: selectedToken.address,
-            amount: rawAmount,
-            ipfsHash,
-            deadline: BigInt(deadline),
-            mAmounts: milestones.filter(m => m.amount).map(m => parseUnits(m.amount, selectedToken.decimals)),
-            mHashes: milestones.filter(m => m.amount).map(m => m.description || ""),
-            mIsUpfront: milestones.filter(m => m.amount).map(() => false),
-            yieldStrategy: yieldStrategy,
-            paymentToken: selectedToken.address,
-            paymentAmount: rawAmount,
-            minAmountOut: 0n
-        };
+            // Step 3: Actuation Logic for Fixed Contracts
+            const deadline = Math.floor(Date.now() / 1000) + (Number(durationDays) * 86400);
+            const params = {
+                categoryId: 1n,
+                freelancer: freelancer,
+                token: selectedToken.address,
+                amount: rawAmount,
+                ipfsHash,
+                deadline: BigInt(deadline),
+                mAmounts: milestones.filter(m => m.amount).map(m => parseUnits(m.amount, selectedToken.decimals)),
+                mHashes: milestones.filter(m => m.amount).map(m => m.description || ""),
+                mIsUpfront: milestones.filter(m => m.amount).map(() => false),
+                yieldStrategy: yieldStrategy,
+                paymentToken: selectedToken.address,
+                paymentAmount: rawAmount,
+                minAmountOut: 0n
+            };
 
-        if (gasless && smartAccount) {
-            setIsProcessingGasless(true);
-            try {
-                // Biconomy Optimization: Actuating a gasless intent via Account Abstraction.
+            if (gasless && smartAccount) {
                 const res = await createJobGasless(smartAccount, CONTRACT_ADDRESS, FreelanceEscrowABI.abi, params);
                 if (res) {
                     hotToast.success('Sovereign Intent Actuated (Gasless)');
                     onJobCreated?.();
                 }
-            } catch (err) { 
-                console.error('[GRAVITY] Gasless actuation failed:', err);
-                hotToast.error('Relayer friction detected. Check session resonance.');
+                return;
             }
-            finally { setIsProcessingGasless(false); }
-            return;
-        }
 
-        // Native Actuation: Direct interaction with the Ethereum Virtual Machine.
-        try {
-            // Directive 02: Force actuation even if simulation suggests failure (due to RPC noise).
             writeContract({
                 address: CONTRACT_ADDRESS, 
                 abi: FreelanceEscrowABI.abi, 
                 functionName: 'createJob',
                 args: [params],
-                gas: 200000n, // Directive 02: Manual gas limit to bypass RPC sim collapse
+                gas: 1000000n, // Directive 02: Simulation Bypass for Functional Finality
                 value: selectedToken.address === '0x0000000000000000000000000000000000000000' ? rawAmount : 0n
             });
         } catch (err) {
-            console.warn('[NETWORK] Native actuation failed during simulation. Forcing secondary intent...', err.message);
-            // Most modern wallets will handle the gas estimation if the RPC simulation fails.
+            console.error('[GRAVITY] Actuation failure:', err);
+            hotToast.error(err.message || 'Actuation friction detected.');
+        } finally {
+            setIsProcessingGasless(false);
         }
     };
+
+    /**
+     * @notice Step 3: The Actuation Logic
+     * Transitions a Pending Intent into a funded Escrow Agreement on Polygon.
+     */
+    const actuateEscrow = async (intent) => {
+        if (!isConnected) return;
+        setFreelancer(intent.freelancer);
+        setAmount(intent.amount);
+        setTitle(intent.title);
+        setCategory(intent.category || 'Development');
+        if (intent.milestones) setMilestones(intent.milestones);
+    };
+
+    React.useEffect(() => {
+        const handlePrefill = (e) => {
+            const data = e.detail;
+            if (data.freelancer) setFreelancer(data.freelancer);
+            if (data.title) setTitle(data.title);
+            if (data.amount) setAmount(data.amount);
+        };
+        window.addEventListener('PREFILL_JOB_DATA', handlePrefill);
+        return () => window.removeEventListener('PREFILL_JOB_DATA', handlePrefill);
+    }, []);
 
     React.useEffect(() => { if (isSuccess) onJobCreated?.(); }, [isSuccess]);
 
@@ -201,9 +229,9 @@ function CreateJob({ onJobCreated, gasless, smartAccount }) {
                             </select>
                         </div>
                         <div>
-                            <label style={st.label}>Freelancer Address</label>
+                            <label style={st.label}>Freelancer Address (Optional for Intents)</label>
                             <input type="text" style={st.input} placeholder="0x..."
-                                value={freelancer} onChange={(e) => setFreelancer(e.target.value)} required />
+                                value={freelancer} onChange={(e) => setFreelancer(e.target.value)} />
                         </div>
                     </div>
                 </div>
@@ -276,7 +304,9 @@ function CreateJob({ onJobCreated, gasless, smartAccount }) {
                 {/* Actions */}
                 <div className="create-job-section" style={{ display: 'flex', gap: 16, justifyContent: 'flex-end', opacity: 0, transform: 'translateY(20px)' }}>
                     <button type="submit" disabled={isPending || isConfirming || isProcessingGasless} className="btn btn-primary" style={{ flex: 1, height: 48, borderRadius: 12, justifyContent: 'center' }}>
-                        {isPending || isConfirming || isProcessingGasless ? <Loader2 size={18} className="animate-spin" /> : <><Send size={18} /> Post Escrow</>}
+                        {isPending || isConfirming || isProcessingGasless ? <Loader2 size={18} className="animate-spin" /> : (
+                            <><Send size={18} /> {freelancer ? 'Initialize Escrow' : 'Post Job Intent'}</>
+                        )}
                     </button>
                 </div>
             </form>

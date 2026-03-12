@@ -45,7 +45,7 @@ const ProofOfWorkModal = ({ isOpen, onClose, jobId, onSubmitted }) => {
                 abi: FreelanceEscrowABI.abi,
                 functionName: 'submitWork',
                 args: [BigInt(jobId), cid],
-                gas: 200000n // Directive 02: Manual gas limit to bypass RPC sim collapse
+                gas: 1000000n // Directive 02: Simulation Bypass for Functional Finality
             });
 
         } catch (err) {

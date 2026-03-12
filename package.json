@@ -8,13 +8,14 @@
     ],
     "private": true,
     "scripts": {
-        "install:all": "npm install --prefix backend --legacy-peer-deps && cd frontend && yarn install --ignore-engines && cd ..",
+        "install:all": "cd contracts && npm install && cd ../frontend && npm install",
         "build": "npm run build --prefix frontend",
         "build:frontend": "npm run build --prefix frontend",
         "build:contracts": "npm run compile --prefix contracts",
-        "start:backend": "npm start --prefix backend",
-        "start:frontend": "npm run dev --prefix frontend",
-        "lint:all": "npm run lint --prefix backend && npm run lint --prefix frontend"
+        "start": "npm run dev --prefix frontend",
+        "dev": "npm run dev --prefix frontend",
+        "test:contracts": "npm test --prefix contracts",
+        "lint:all": "npm run lint --prefix frontend"
     },
     "engines": {
         "node": ">=22.0.0"

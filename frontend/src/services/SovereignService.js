@@ -159,6 +159,16 @@ const SovereignService = {
     }
   },
 
+  async evaluateJobSuitability(address) {
+    try {
+      const jobs = await this.getJobsMetadata();
+      // Simple recommendation: return top 3 newest jobs
+      return jobs.slice(0, 3);
+    } catch {
+      return [];
+    }
+  },
+
   /**
    * Basic SIWE Auth without Backend (Pure Client-Side Auth)
    */

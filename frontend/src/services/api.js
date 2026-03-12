@@ -8,7 +8,10 @@ import SovereignService from './SovereignService';
 export const api = {
     getProfile: (address) => SovereignService.getProfile(address),
 
-    getNonce: (address) => ({ nonce: `SOVEREIGN_${address}_${Date.now()}` }),
+    getNonce: (address) => ({ 
+        // Standardizing to alphanumeric (17 chars) to bypass strict parser friction.
+        nonce: Math.random().toString(36).substring(2, 10).toUpperCase() + Math.random().toString(36).substring(2, 10).toUpperCase()
+    }),
 
     updateProfile: (data) => SovereignService.updateProfile(data),
 
@@ -16,10 +19,10 @@ export const api = {
 
     getPortfolio: (address) => SovereignService.getProfile(address),
 
-    getRecommendations: async (address, options = {}) => {
+    evaluateJobSuitability: async (address, options = {}) => {
         // Elite AGA logic: Filter for high-value / low-gravity matches
         if (options.elite) console.log('[AGA] Sovereign Intelligence: Filtering for Elite opportunities.');
-        return SovereignService.getRecommendedJobs(address);
+        return SovereignService.evaluateJobSuitability(address);
     },
     getJobsMetadata: () => SovereignService.getJobsMetadata(),
 

@@ -13,8 +13,8 @@ import JurorService from '../services/JurorService';
 import { useIdentity } from '../hooks/useIdentity';
 
 const ZenithCourt = () => {
-    const { address } = useAccount();
-    const { identity } = useIdentity();
+    const { address, isConnected } = useAccount();
+    const identity = useIdentity(address);
     const [disputes, setDisputes] = useState([]);
     const [selectedJob, setSelectedJob] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -100,7 +100,7 @@ const ZenithCourt = () => {
                 abi: FreelanceEscrowABI.abi,
                 functionName: 'resolveDisputeManual',
                 args: [BigInt(jobId), BigInt(bps * 100)],
-                gas: 200000n // Directive 02: Manual gas limit to bypass RPC sim collapse
+                gas: 1000000n // Directive 02: Simulation Bypass for Functional Finality
             }, {
                 onSuccess: () => {
                     hotToast.success("Decree Cast: Dispute Resolution Actuated.");
@@ -179,7 +179,7 @@ const ZenithCourt = () => {
                                 <div style={{ flex: 1, height: 44, borderRadius: 12, border: '1px solid var(--border)', background: 'rgba(0,0,0,0.2)', display: 'flex', alignItems: 'center', padding: '0 16px', fontWeight: 700 }}>
                                     {jurorStats?.activeStake || 0} POL Staked
                                 </div>
-                                <button onClick={actuateJurorStakingIntent} disabled={isStaking} className="btn btn-primary" style={{ padding: '0 24px', height: 44 }}>
+                                <button onClick={actuateJurorStakingIntent} disabled={isStaking || !isConnected || loading} className="btn btn-primary" style={{ padding: '0 24px', height: 44, opacity: (!isConnected || loading) ? 0.5 : 1, cursor: (!isConnected || loading) ? 'not-allowed' : 'pointer' }}>
                                     {isStaking ? 'Anchoring...' : 'Stake 500 POL'}
                                 </button>
                             </div>
@@ -191,10 +191,10 @@ const ZenithCourt = () => {
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <span style={{ fontSize: '0.8rem', opacity: 0.7 }}>Gravity Score</span>
-                                <span style={{ fontWeight: 800, color: 'var(--accent-light)' }}>{identity.reputationPoints || 0}</span>
+                                <span style={{ fontWeight: 800, color: 'var(--accent-light)' }}>{identity?.reputationEpochs ?? 0}</span>
                             </div>
                             <div style={{ height: 8, background: 'rgba(255,255,255,0.05)', borderRadius: 4, overflow: 'hidden' }}>
-                                <div style={{ height: '100%', width: `${Math.min(100, (identity.reputationPoints || 0))}%`, background: 'var(--accent)' }} />
+                                <div style={{ height: '100%', width: `${Math.min(100, (identity?.reputationEpochs ?? 0))}%`, background: 'var(--accent)' }} />
                             </div>
                             <p style={{ fontSize: '0.7rem', opacity: 0.5, lineHeight: 1.5 }}>
                                 Minimum Gravity Score of 70 required to join the Juror Pool.
@@ -266,9 +266,9 @@ const ZenithCourt = () => {
                                         <div style={{ borderTop: '1px solid var(--border)', paddingTop: 24 }}>
                                             <h4 style={s.label}>Protocol Ruling</h4>
                                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
-                                                <button disabled={isPending} onClick={() => actuateManualRulingIntent(selectedJob.jobId, 0)} className="btn btn-ghost" style={{ borderRadius: 12, color: 'var(--danger)' }}>Ruling: Client</button>
-                                                <button disabled={isPending} onClick={() => actuateManualRulingIntent(selectedJob.jobId, 50)} className="btn btn-ghost" style={{ borderRadius: 12 }}>Split 50/50</button>
-                                                <button disabled={isPending} onClick={() => actuateManualRulingIntent(selectedJob.jobId, 100)} className="btn btn-ghost" style={{ borderRadius: 12, color: 'var(--success)' }}>Ruling: Freelancer</button>
+                                                <button disabled={isPending || loading || !isConnected} onClick={() => actuateManualRulingIntent(selectedJob.jobId, 0)} className="btn btn-ghost" style={{ borderRadius: 12, color: 'var(--danger)', opacity: (loading || !isConnected) ? 0.4 : 1 }}>Ruling: Client</button>
+                                                <button disabled={isPending || loading || !isConnected} onClick={() => actuateManualRulingIntent(selectedJob.jobId, 50)} className="btn btn-ghost" style={{ borderRadius: 12, opacity: (loading || !isConnected) ? 0.4 : 1 }}>Split 50/50</button>
+                                                <button disabled={isPending || loading || !isConnected} onClick={() => actuateManualRulingIntent(selectedJob.jobId, 100)} className="btn btn-ghost" style={{ borderRadius: 12, color: 'var(--success)', opacity: (loading || !isConnected) ? 0.4 : 1 }}>Ruling: Freelancer</button>
                                             </div>
                                         </div>
                                     ) : (

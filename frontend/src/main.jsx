@@ -1,12 +1,5 @@
-// Directive 03: Sovereign Console Cleanse
-if (window.location.hostname === 'localhost') {
-  const originalWarn = console.warn;
-  console.warn = (...args) => {
-    if (args[0] && typeof args[0] === 'string' && (args[0].includes('SES') || args[0].includes('[SECURITY]') || args[0].includes('[NETWORK]'))) {
-      originalWarn(...args);
-    }
-  };
-}
+import './polyfills';
+// Full Telemetry Mode: All warnings authorized.
 
 // XMTP V3 security environment initialization
 if (typeof window !== 'undefined') {

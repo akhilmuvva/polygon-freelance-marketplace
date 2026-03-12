@@ -12,7 +12,7 @@ const AiRecommendations = ({ address, elite }) => {
             try {
                 // In Alpha, we pass the elite flag to the Sovereign API 
                 // to prioritize high-yield/high-rep matches.
-                const data = await api.getRecommendations(address, { elite });
+                const data = await api.evaluateJobSuitability(address, { elite });
                 setJobs(Array.isArray(data) ? data : []);
             } catch (err) {
                 console.error('Failed to fetch recommendations:', err);

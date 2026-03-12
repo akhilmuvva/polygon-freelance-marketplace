@@ -147,10 +147,12 @@ export const useMultiChain = () => {
 
         try {
             for (const [chainId, chainInfo] of Object.entries(SUPPORTED_CHAINS)) {
-                // Skip non-EVM chains (e.g. Solana) — they can't use ethers JsonRpcProvider
                 if (isNaN(Number(chainId))) continue;
+                
+                // Only fetch for current chain or Amoy to minimize background RPC friction
+                if (Number(chainId) !== chain?.id && Number(chainId) !== 80002) continue;
+
                 try {
-                    // Create provider for each chain
                     const provider = new ethers.JsonRpcProvider(getRpcUrl(Number(chainId)));
                     const balance = await provider.getBalance(address);
                     newBalances[chainId] = {
@@ -158,12 +160,8 @@ export const useMultiChain = () => {
                         chainInfo
                     };
                 } catch (error) {
-                    console.error(`Failed to fetch balance for chain ${chainId}:`, error);
-                    newBalances[chainId] = {
-                        native: '0',
-                        chainInfo,
-                        error: true
-                    };
+                    // Failing silently: RPC noise suppression
+                    newBalances[chainId] = { native: '0', chainInfo, error: true };
                 }
             }
 
@@ -179,12 +177,12 @@ export const useMultiChain = () => {
     const getRpcUrl = (chainId) => {
         const rpcUrls = {
             137: 'https://polygon-rpc.com',
-            1: 'https://eth.llamarpc.com',
+            1: 'https://cloudflare-eth.com',
             8453: 'https://mainnet.base.org',
             42161: 'https://arb1.arbitrum.io/rpc',
-            80002: 'https://rpc.ankr.com/polygon_amoy',
+            80002: 'https://rpc-amoy.polygon.technology',
             11155111: 'https://rpc.sepolia.org',
-            84532: 'https://sepolia.base.org',
+            84532: 'https://sepolia-base.org',
             421614: 'https://sepolia-rollup.arbitrum.io/rpc',
             'solana': 'https://api.mainnet-beta.solana.com',
             'solana-devnet': 'https://api.devnet.solana.com'

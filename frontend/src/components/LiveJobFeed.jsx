@@ -41,9 +41,9 @@ export default function LiveJobFeed() {
                     jobs.map((job) => (
                         <motion.div
                             key={`${job.txHash}-${job.id}`}
-                            initial={{ opacity: 0, x: -10 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: 10 }}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.95 }}
                             style={{
                                 padding: 12, borderRadius: 10,
                                 background: 'rgba(255,255,255,0.02)',

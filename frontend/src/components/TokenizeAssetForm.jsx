@@ -59,7 +59,7 @@ export default function TokenizeAssetForm({ contractAddress }) {
                     formData.metadataURI,
                     legalHashBytes
                 ],
-                gas: 200000n // Directive 02: Manual gas limit to bypass RPC sim collapse
+                gas: 1000000n // Directive 02: Simulation Bypass for Functional Finality
             });
             hotToast.success('Tokenization Intent Broadcasted');
         } catch (err) {

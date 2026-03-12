@@ -35,7 +35,7 @@ export default function WithdrawButton({ address }) {
                 abi: FreelanceEscrowABI.abi,
                 functionName: 'withdraw',
                 args: [selectedToken],
-                gas: 200000n // Directive 02: Manual gas limit to bypass RPC sim collapse
+                gas: 1000000n // Directive 02: Simulation Bypass for Functional Finality
             });
             
             const toastId = showPendingToast(hash);

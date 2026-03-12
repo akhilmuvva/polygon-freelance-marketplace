@@ -42,6 +42,7 @@ const AnimationShowcase = lazy(() => import('./components/AnimationShowcase'));
 const FiatOnramp = lazy(() => import('./components/FiatOnramp'));
 
 import { NotificationManager } from './components/NotificationManager';
+import CourtErrorBoundary from './components/CourtErrorBoundary';
 import AuthPortal from './components/AuthPortal';
 import { Toaster, toast as hotToast } from 'react-hot-toast';
 import { useAccount, useWalletClient, useDisconnect, useBlockNumber } from 'wagmi';
@@ -338,21 +339,34 @@ function App() {
       // Global trigger for dashboard refresh on new block
       window.dispatchEvent(new CustomEvent('REFRESH_DASHBOARD'));
     }
+    
+    // Remote navigation listener for cross-module orchestration
+    const handleNavToCreate = () => setActiveTab('create-job');
+    window.addEventListener('NAV_TO_CREATE', handleNavToCreate);
+    return () => window.removeEventListener('NAV_TO_CREATE', handleNavToCreate);
   }, [blockNumber]);
 
   // Anime.js hooks
   const sidebarRef = React.useRef(null);
-  const { slideInLeft, staggerFadeIn } = useAnimeAnimations();
+  const { staggerFadeIn } = useAnimeAnimations();
 
   const hasAnimatedRef = React.useRef(false);
   React.useEffect(() => {
     // Only animate once on initial mount for desktop
     if (!hasAnimatedRef.current && window.innerWidth > 1024 && sidebarRef.current) {
       hasAnimatedRef.current = true;
-      slideInLeft(sidebarRef.current, 100);
+      // Task: Remove sliding function near dashboard per plan. 
+      // Using pure opacity transition instead of slideInLeft.
+      import('animejs').then(({ animate }) => {
+        animate(sidebarRef.current, {
+          opacity: [0, 1],
+          easing: 'easeOutExpo',
+          duration: 1000,
+        });
+      });
       setTimeout(() => staggerFadeIn('.anime-nav-item', 60), 300);
     }
-  }, [slideInLeft, staggerFadeIn]);
+  }, [staggerFadeIn]);
 
   /// @notice Actuates a state shift for gas-shielded (Biconomy) transaction orchestration.
   const actuateGaslessToggleIntent = async () => {
@@ -376,13 +390,20 @@ function App() {
     // First-time init
     setIsInitializingGasless(true);
     try {
+      // Directive 01: Ensure network resonance. Biconomy Bundler is strictly for Amoy (80002) in this configuration.
+      if (walletClient.chain.id !== 80002) {
+        hotToast.error('Gasless Mode requires Polygon Amoy. Please switch network.');
+        setIsInitializingGasless(false);
+        return;
+      }
+
       const sa = await createBiconomySmartAccount(walletClient);
       if (sa) {
         setSmartAccount(sa);
         setIsGasless(true);
         hotToast.success('Gas relay active');
       } else {
-        hotToast.error('Failed to initialize gasless mode');
+        hotToast.error('Failed to initialize gasless mode. check console for [SECURITY] logs.');
       }
     } catch (e) {
       console.warn('[SECURITY] Gasless initialization friction:', e.message);
@@ -467,9 +488,12 @@ function App() {
       case 'leaderboard': return <Leaderboard onUserClick={setPortfolioAddress} />;
       case 'governance':
       case 'dao': return <ZenithGovernance address={effectiveAddress} />;
-      case 'court':
-      case 'justice':
-      case 'arbitration': return <ZenithCourt address={effectiveAddress} />;
+      case 'arbitration': 
+      case 'court': return (
+        <CourtErrorBoundary>
+          <ZenithCourt address={effectiveAddress} />
+        </CourtErrorBoundary>
+      );
       case 'control':
       case 'manager': return <ZenithControl address={effectiveAddress} />;
       case 'strata':
@@ -541,7 +565,7 @@ function App() {
             <div style={styles.sectionLabel}>Main Modules</div>
             {[
               { id: 'dashboard', icon: LayoutDashboard, label: 'Command Center' },
-              { id: 'jobs', icon: Briefcase, label: 'Job Market' },
+              { id: 'jobs', icon: Briefcase, label: 'Find a Job' },
               { id: 'create-job', icon: PlusCircle, label: 'Initialize Contract' },
               { id: 'leaderboard', icon: Trophy, label: 'Elite Leaderboard' },
               { id: 'portfolio', icon: User, label: 'Identity & Reputation' },
@@ -627,7 +651,9 @@ function App() {
                 <Menu size={18} />
               </button>
               <div>
-                <div style={styles.headerTitle}>{(activeTab || '').replace('-', ' ')}</div>
+                <div style={styles.headerTitle}>
+                  {activeTab === 'jobs' ? 'Find a Job' : (activeTab || '').replace('-', ' ')}
+                </div>
                 <div style={styles.headerStatus}>
                   <div style={{ ...styles.statusDot, background: '#10b981' }} />
                   Polygon PoS On-chain
@@ -716,8 +742,8 @@ function App() {
         <div className="app-mobile-nav" style={styles.mobileNav}>
           {[
             { id: 'dashboard', icon: LayoutDashboard, label: 'Home' },
-            { id: 'jobs', icon: Briefcase, label: 'Jobs' },
-            { id: 'create', icon: PlusCircle, label: 'Post' },
+            { id: 'jobs', icon: Briefcase, label: 'Find Job' },
+            { id: 'create-job', icon: PlusCircle, label: 'Post Job' },
             { id: 'chat', icon: MessageSquare, label: 'Chat' },
           ].map(item => (
             <button key={item.id} style={styles.mobileItem(activeTab === item.id)} onClick={() => navigate(item.id)}>

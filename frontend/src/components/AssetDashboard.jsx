@@ -57,7 +57,7 @@ export default function AssetDashboard({ contractAddress }) {
             parseUnits(milestoneForm.value, 6),
             BigInt(deadlineTimestamp)
           ],
-          gas: 200000n // Directive 02: Manual gas limit to bypass RPC sim collapse
+          gas: 1000000n // Directive 02: Simulation Bypass for Functional Finality
         });
         hotToast.success('Milestone Initialization Intent Broadcasted');
         setMilestoneForm({ description: '', value: '', deadline: '' });
@@ -78,7 +78,7 @@ export default function AssetDashboard({ contractAddress }) {
           abi: AssetTokenizerABI.abi,
           functionName: 'claimRewards',
           args: [BigInt(assetId)],
-          gas: 200000n // Directive 02: Manual gas limit to bypass RPC sim collapse
+          gas: 1000000n // Directive 02: Simulation Bypass for Functional Finality
         });
         hotToast.success('Reward Claim Intent Broadcasted');
     } catch (err) {

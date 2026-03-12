@@ -19,7 +19,8 @@ export const ANTIGRAVITY_RELAY_CONFIG = {
  */
 
 export const getWebsocketTransport = (alchemyId) => {
-    return alchemyId ? `wss://polygon-mainnet.g.alchemy.com/v2/${alchemyId}` : 'wss://rpc.antigravity.network/ws';
+    // Standardizing on public RPC infrastructure as requested
+    return 'wss://polygon-rpc.com/ws'; 
 };
 
 /**

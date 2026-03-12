@@ -6,19 +6,33 @@ import { MessageSquare, Send, User, Loader2, FileText, DollarSign, Clock, CheckC
 import UserLink from './UserLink';
 import { hexToBytes } from 'viem';
 import { useArbitration } from '../hooks/useArbitration';
+import messagingService from '../services/MessagingService';
 
 export default function Chat({ initialPeerAddress }) {
     const { address } = useAccount();
     const { data: walletClient } = useWalletClient();
 
-    const [client, setClient] = useState(null);
+    const [client, setClient] = useState(messagingService.getClient());
     const [isInitializing, setIsInitializing] = useState(false);
+    const [isSyncing, setIsSyncing] = useState(false);
     const [error, setError] = useState(null);
     const [conversations, setConversations] = useState([]);
     const [selectedConversation, setSelectedConversation] = useState(null);
     const [peerAddress, setPeerAddress] = useState(initialPeerAddress || '');
     const [contractContext, setContractContext] = useState(null);
     const [loadingContext, setLoadingContext] = useState(false);
+
+    useEffect(() => {
+        const checkClient = (newClient) => setClient(newClient);
+        messagingService.addListener(checkClient);
+        return () => messagingService.removeListener(checkClient);
+    }, []);
+
+    useEffect(() => {
+        if (client) {
+            client.conversations.list().then(setConversations);
+        }
+    }, [client]);
 
     useEffect(() => {
         if (initialPeerAddress) setPeerAddress(initialPeerAddress);
@@ -61,27 +75,14 @@ export default function Chat({ initialPeerAddress }) {
         setIsInitializing(true);
         setError(null);
         try {
-            const xmtpSigner = {
-                getIdentifier: () => address,
-                getAddress: async () => address,
-                signMessage: async (message) => {
-                    const signature = await walletClient.signMessage({
-                        account: address,
-                        message: typeof message === 'string' ? message : { raw: message },
-                    });
-                    return hexToBytes(signature);
-                },
-            };
-            const xmtp = await Client.create(xmtpSigner, {
-                env: 'production', dbPath: `xmtp-v3-${address.toLowerCase()}`
-            });
-            setClient(xmtp);
-            const convs = await xmtp.conversations.list();
-            setConversations(convs);
+            const xmtpClient = await messagingService.initialize(address, walletClient);
+            setClient(xmtpClient);
         } catch (err) {
-            console.error('[XMTP] CRITICAL Initialization error:', err);
+            console.error('[XMTP] Singleton Initialization error:', err);
             setError(err);
-        } finally { setIsInitializing(false); }
+        } finally {
+            setIsInitializing(false);
+        }
     };
 
     useEffect(() => {
@@ -120,7 +121,10 @@ export default function Chat({ initialPeerAddress }) {
                     disabled={isInitializing || !walletClient}
                     style={{ padding: '14px 36px', borderRadius: 12, fontSize: '0.95rem' }}>
                     {isInitializing
-                        ? <><Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} /> Initializing...</>
+                        ? <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                            <Loader2 size={16} className="animate-spin" /> 
+                            <span>Establishing Sovereign Resonance...</span>
+                          </div>
                         : walletClient ? 'Initialize Secure Channel' : 'Connect Wallet First'
                     }
                 </button>
@@ -129,7 +133,7 @@ export default function Chat({ initialPeerAddress }) {
                         Please connect your wallet in the dashboard to enable messaging.
                     </p>
                 )}
-                {error && <p style={{ color: 'var(--danger)', marginTop: 20 }}>{error.message}</p>}
+                {error && <p style={{ color: 'var(--danger)', marginTop: 20, fontSize: '0.82rem' }}>{error.message}</p>}
             </div>
         );
     }
@@ -198,6 +202,8 @@ export default function Chat({ initialPeerAddress }) {
                         address={address}
                         contractContext={contractContext}
                         loadingContext={loadingContext}
+                        isSyncing={isSyncing}
+                        setIsSyncing={setIsSyncing}
                     />
                 ) : (
                     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--text-tertiary)' }}>
@@ -210,7 +216,7 @@ export default function Chat({ initialPeerAddress }) {
     );
 }
 
-function MessageContainer({ conversation, address, contractContext, loadingContext }) {
+function MessageContainer({ conversation, address, contractContext, loadingContext, isSyncing, setIsSyncing }) {
     const [messages, setMessages] = useState([]);
     const [inputValue, setInputValue] = useState('');
     const [isExporting, setIsExporting] = useState(false);
@@ -241,8 +247,10 @@ function MessageContainer({ conversation, address, contractContext, loadingConte
 
     useEffect(() => {
         const fetchMessages = async () => {
+            setIsSyncing(true);
             try { const msgs = await conversation.messages(); setMessages(msgs); }
             catch (err) { console.error('[XMTP] Error fetching messages:', err); }
+            finally { setIsSyncing(false); }
         };
         fetchMessages();
     }, [conversation]);
@@ -274,6 +282,17 @@ function MessageContainer({ conversation, address, contractContext, loadingConte
     const ctxIcon = (bg) => ({ padding: 8, borderRadius: 10, background: bg });
     const ctxLabel = { fontSize: '0.7rem', color: 'var(--text-tertiary)', fontWeight: 700, textTransform: 'uppercase' };
 
+    const handleGenerateAgreementIntent = () => {
+        // Step 2: Extract recipient address and pre-fill form
+        window.dispatchEvent(new CustomEvent('PREFILL_JOB_DATA', { 
+            detail: { 
+                freelancer: conversation.peerAddress,
+                title: 'Project from Chat' 
+            } 
+        }));
+        window.dispatchEvent(new CustomEvent('NAV_TO_CREATE'));
+    };
+
     return (
         <>
             {/* Header */}
@@ -284,13 +303,26 @@ function MessageContainer({ conversation, address, contractContext, loadingConte
                     </div>
                     <strong><UserLink address={conversation.peerAddress} /></strong>
                 </div>
-                <button onClick={() => window.open(`https://app.huddle01.com/${conversation.topic?.slice(0, 8)}`, '_blank')}
-                    className="btn btn-ghost btn-sm" style={{
-                        borderRadius: 10, gap: 6, color: 'var(--accent-light)',
-                        background: 'rgba(124,92,252,0.06)', borderColor: 'rgba(124,92,252,0.15)',
-                    }}>
-                    <Video size={14} /> Video Interview
-                </button>
+                <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+                    {isSyncing && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.65rem', color: 'var(--accent-light)', marginRight: 12 }}>
+                            <Loader2 size={12} className="animate-spin" /> Syncing with Peer...
+                        </div>
+                    )}
+                    <button onClick={handleGenerateAgreementIntent}
+                        className="btn btn-primary btn-sm" style={{
+                            borderRadius: 10, gap: 6, fontSize: '0.75rem', fontWeight: 800
+                        }}>
+                        <FileText size={14} /> Hire This Freelancer
+                    </button>
+                    <button onClick={() => window.open(`https://app.huddle01.com/${conversation.topic?.slice(0, 8)}`, '_blank')}
+                        className="btn btn-ghost btn-sm" style={{
+                            borderRadius: 10, gap: 6, color: 'var(--accent-light)',
+                            background: 'rgba(124,92,252,0.06)', borderColor: 'rgba(124,92,252,0.15)',
+                        }}>
+                        <Video size={14} /> Video Interview
+                    </button>
+                </div>
             </div>
 
             {/* Contract Context */}
