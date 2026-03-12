@@ -8,7 +8,7 @@ export const IdentityProofService = {
      * Trend: Human-centric AI.
      */
     async verifyHuman(proof) {
-        console.log('[ID-PROOF] Verifying ZK-Personhood via WorldID:', proof);
+        console.info('[SECURITY] Syncing ZK-Personhood telemetry via WorldID:', proof);
         // Simulation: In production, this would call the WorldID /verify endpoint
         return {
             status: 'VERIFIED_HUMAN',
@@ -23,7 +23,7 @@ export const IdentityProofService = {
      * Uses Polygon ID / Aztec principles.
      */
     async proveEarningsTier(address, threshold_usd = 50000) {
-        console.log(`[ID-PROOF] Generating ZK-Earnings Proof for ${address} (Threshold: $${threshold_usd})...`);
+        console.info(`[SECURITY] Actuating ZK-Earnings proof synthesis for ${address} (Threshold: $${threshold_usd})...`);
 
         // Simulation: The user generates a proof locally that their totalEarned > threshold
         // The dApp only sees the "Pass/Fail" result + ZK Proof signature
@@ -39,7 +39,7 @@ export const IdentityProofService = {
      * Gitcoin Passport Integration (Feature D fallback).
      */
     async getPassportScore(address) {
-        console.log('[ID-PROOF] Fetching Gitcoin Passport Score for:', address);
+        console.info('[SECURITY] Harvesting Gitcoin Passport reputation depth for:', address);
         return {
             score: 32.5,
             isSybilResistant: true

@@ -30,6 +30,7 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
     event JobApplied(uint256 indexed jobId, address indexed freelancer, uint256 stake);
     event FreelancerPicked(uint256 indexed jobId, address indexed freelancer);
     event JobAccepted(uint256 indexed jobId, address indexed freelancer);
+    event IntentMatched(uint256 indexed jobId, address indexed client, address indexed freelancer, bytes32 intentHash);
 
     /// @notice Address of the PolyToken (REWARD token)
     address public polyToken;
@@ -80,7 +81,7 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
         arbitrator = admin;
         sbtContract = _sbt;
         entryPoint = _entry;
-        platformFeeBps = 250; // 2.5% default
+        gravityFactor = 250; // 2.5% default Economic Friction
         reputationThreshold = 10; // Default threshold for Elite Veterans
     }
 
@@ -118,7 +119,7 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
      */
     function setPlatformFee(uint256 _bps) external onlyRole(DEFAULT_ADMIN_ROLE) {
         if (_bps > MAX_PLATFORM_FEE_BPS) revert InvalidStatus(); 
-        platformFeeBps = _bps;
+        gravityFactor = _bps;
     }
 
     /**
@@ -143,7 +144,7 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
      */
     function updatePlatformFee(uint256 _bps) external onlyRole(AGENT_ROLE) {
         if (_bps > MAX_PLATFORM_FEE_BPS) revert InvalidStatus();
-        platformFeeBps = _bps;
+        gravityFactor = _bps;
         emit FeeAdjusted(_bps);
     }
 
@@ -191,11 +192,6 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
         privacyShield = _ps;
     }
 
-    /**
-     * @notice Minimum reputation balance required to be considered a 'Supreme Member' (0% fees).
-     */
-    uint256 public reputationThreshold; 
-    
     /**
      * @notice Mapping to manually mark users as 'Supreme Members'.
      */
@@ -627,7 +623,7 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
         if (job.paid) revert AlreadyPaid();
 
         uint256 payout = job.amount - job.totalPaidOut;
-        uint256 fee = (job.amount * platformFeeBps) / BASIS_POINTS_DIVISOR;
+        uint256 fee = (job.amount * gravityFactor) / BASIS_POINTS_DIVISOR;
         
         // Fee cannot exceed the remaining payout (prevents underflow)
         if (fee > payout) fee = payout;
@@ -711,10 +707,11 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
     function void(bool) internal pure {}
 
     /**
-     * @notice Traditional releaseFunds call, effectively completes the job with a default 5-star rating.
+     * @notice Neutralizes economic friction by releasing final funds to a verified actor.
+     *         Effectively completes the job with a default 5-star rating.
      * @param jobId The unique ID of the job.
      */
-    function releaseFunds(uint256 jobId) external {
+    function actuatePayment(uint256 jobId) external {
         completeJob(jobId, 5);
     }
 

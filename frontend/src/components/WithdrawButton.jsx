@@ -20,26 +20,40 @@ export default function WithdrawButton({ address }) {
 
     const { writeContractAsync, isPending } = useWriteContract();
 
-    const handleWithdraw = async () => {
+    /// @notice Actuates a capital withdrawal by neutralizing the accumulated balance into the sovereign's wallet.
+    /// @dev Implements a non-custodial pull pattern. The protocol never pushes funds: users actuate their own liquidity.
+    const actuateWithdrawalIntent = async () => {
+        if (!address) {
+            handleError({ shortMessage: "Sovereign identity required for withdrawal." });
+            return;
+        }
+
         try {
+            // Signal intent to the EVM state via the fallback-resilient transport layer.
             const hash = await writeContractAsync({
                 address: CONTRACT_ADDRESS,
                 abi: FreelanceEscrowABI.abi,
                 functionName: 'withdraw',
                 args: [selectedToken],
+                gas: 200000n // Directive 02: Manual gas limit to bypass RPC sim collapse
             });
+            
             const toastId = showPendingToast(hash);
             setIsConfirming(true);
+            
+            // Wait for network resonance to confirm the state transition.
             const receipt = await client.waitForTransactionReceipt({ hash });
             setIsConfirming(false);
+            
             if (receipt.status === 'success') {
-                updateToastToSuccess(toastId, "Withdrawal Successful!");
+                updateToastToSuccess(toastId, "Liquidity Successfully Neutralized!");
                 refetch();
             } else {
-                updateToastToError(toastId, { shortMessage: "Transaction Reverted" });
+                updateToastToError(toastId, { shortMessage: "Gravity Anchor Detected: Transaction Reverted." });
             }
         } catch (error) {
             setIsConfirming(false);
+            // Handle error through the centralized Antigravity feedback engine.
             handleError(error);
         }
     };
@@ -79,7 +93,7 @@ export default function WithdrawButton({ address }) {
                 </div>
 
                 <button
-                    onClick={handleWithdraw}
+                    onClick={actuateWithdrawalIntent}
                     disabled={!balanceData || balanceData === 0n || isPending || isConfirming}
                     className="btn btn-primary btn-sm"
                     style={{ borderRadius: 10, display: 'flex', alignItems: 'center', gap: 6, opacity: (!balanceData || balanceData === 0n || isPending || isConfirming) ? 0.5 : 1 }}

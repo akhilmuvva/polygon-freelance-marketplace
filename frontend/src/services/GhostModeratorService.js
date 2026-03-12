@@ -11,7 +11,7 @@ export const GhostModeratorService = {
      * @param {Object} proof - ZK-proof data from WorldID or Oasis Sapphire.
      */
     async verifyAndHydrate(address, proof, ens = null) {
-        console.log(`[GHOST] Verifying ZK-Personhood for:`, address);
+        console.info(`[SECURITY] Analyzing ZK-Personhood telemetry for orbit synchronization:`, address);
 
         // 1. Check for Sybil Attack (Same ZK-Identity root, different ENS/Address)
         if (proof && proof.identityRoot) {
@@ -27,7 +27,7 @@ export const GhostModeratorService = {
         const isBot = !isValid || proof.reputation < 0;
 
         if (isBot) {
-            console.warn(`[GHOST] Bot identity detected! Updating Ceramic stream...`);
+            console.warn(`[SECURITY] Artificial intelligence anomaly detected! Triggering shadow-drift...`);
             await this.shadowBan(address, 'BOT_DETECTION_ZK_FAILURE');
             return { verified: false, status: 'SHADOW_BANNED' };
         }
@@ -49,7 +49,7 @@ export const GhostModeratorService = {
 
         // Feature: 3 accounts per root = Sybil Threshold
         if (users.length >= 3) {
-            console.error(`[GHOST] SYBIL THRESHOLD REACHED: Root ${root} is mapping to ${users.length} unique ENS/Addresses.`);
+            console.error(`[SECURITY] SYBIL CRITICALITY: Identity root ${root} breached orbit limit (${users.length} mappings). Integrity compromised.`);
             return true;
         }
         return false;
@@ -79,7 +79,7 @@ export const GhostModeratorService = {
                 isShadowBanned: true,
                 banTimestamp: Date.now()
             });
-            console.log(`[GHOST] Profile for ${address} is now 'Weightless-Hidden' on Ceramic.`);
+            console.log(`[SECURITY] Profile for ${address} is now 'Weightless-Hidden' on Ceramic.`);
         }
     }
 };

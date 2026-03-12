@@ -26,7 +26,7 @@ export const JobService = {
                 version: data.version || '1.0'
             };
         } catch (error) {
-            console.error('JobService error fetching metadata:', error.message);
+            console.warn('[JOB-RESOLVER] IPFS metadata extraction friction:', error.message);
             return null;
         }
     }

@@ -4,19 +4,19 @@ This guide outlines the final "Antigravity" step: Migrating from centralized Ver
 
 ## 🛠️ 1. Environment Requirements
 The PolyLance Zenith ecosystem uses modern ECMAScript features and high-performance libraries.
-*   **Node.js**: `v20.19.0` or higher (LTS).
+*   **Node.js**: `v22.0.0` or higher.
 *   **Package Manager**: `npm` (v10+) or `yarn` (v1.22+).
 *   **Operating System**: Linux/macOS preferred for CI; Windows ARM64 requires the Hardhat Fallback Parser (pre-injected).
 
 ## 🏗️ 2. Decentralized Hosting (IPFS/4EVERLAND)
-The PolyLance Zenith repository is structured as a **High-Performance NPM Workspace**. 
+The PolyLance Zenith repository is structured as a **Sovereign Frontend**. 
 
 ### ⚙️ Universal Setup
-To prepare the entire ecosystem (Root, Backend, and Frontend), install dependencies separately to gracefully handle Web3 peer-dependency strictness on modern Node versions:
+To prepare the ecosystem (100% Peer-to-Peer), install frontend dependencies:
 ```bash
-npm run install:all
+cd frontend && npm install
 ```
-This runs legacy npm resolutions for the backend and uses `yarn --ignore-engines` for the frontend to prevent `ERESOLVE` build errors.
+*(Backend layer has been DECOMMISSIONED during the Genesis Purge)*
 
 ### ☁️ 4EVERLAND Integration
 4EVERLAND provides a "Weightless" cloud experience with global acceleration and support for multiple protocols.

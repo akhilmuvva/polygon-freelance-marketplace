@@ -13,17 +13,17 @@ export const JurorService = {
      * Check if a user is eligible to be a juror
      */
     async checkEligibility(address, karmaBalance) {
-        const score = GravityScoreService.calculateScore({
+        const stats = GravityScoreService.computeFriction({
             averageRating: 5.0, // Placeholder
             totalJobs: 10, // Placeholder
             karmaBalance: karmaBalance || 0
         });
         
         return {
-            isEligible: score.score >= 70,
-            requiredScore: 70,
-            currentScore: score.score,
-            missing: score.score < 70 ? 70 - score.score : 0
+            isEligible: stats.frictionLevel < 50, // Higher friction = less eligibility
+            requiredFriction: 50,
+            currentFriction: stats.frictionLevel,
+            missing: stats.frictionLevel > 50 ? stats.frictionLevel - 50 : 0
         };
     },
 

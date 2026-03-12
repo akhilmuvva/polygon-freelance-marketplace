@@ -136,7 +136,8 @@ const JobsList = ({ onSelectChat, onFiatPay, gasless, smartAccount: propSmartAcc
 
     const isLoading = isLoadingJobs;
 
-    const handleRefresh = () => {
+    /// @notice Actuates a state synchronization refresh from the decentralized subgraph mesh.
+    const actuateRefreshIntent = () => {
         fetchSubgraph();
     };
 
@@ -152,7 +153,7 @@ const JobsList = ({ onSelectChat, onFiatPay, gasless, smartAccount: propSmartAcc
                     </p>
                 </div>
                 <div style={{ display: 'flex', gap: 12 }}>
-                    <button onClick={handleRefresh} style={{ display: 'flex', alignItems: 'center', gap: 8, borderRadius: 12, padding: '10px 16px', background: 'transparent', border: '1px solid var(--border)', color: 'var(--text-primary)', cursor: 'pointer', fontSize: '0.9rem', fontWeight: 600 }}>
+                    <button onClick={actuateRefreshIntent} style={{ display: 'flex', alignItems: 'center', gap: 8, borderRadius: 12, padding: '10px 16px', background: 'transparent', border: '1px solid var(--border)', color: 'var(--text-primary)', cursor: 'pointer', fontSize: '0.9rem', fontWeight: 600 }}>
                         <RefreshCcw size={16} style={{ animation: (isLoadingJobs || isApiLoading) ? 'spin 2s linear infinite' : 'none' }} />
                         Refresh
                     </button>
@@ -223,7 +224,7 @@ const JobCard = ({ job, address, onSelectChat, onFiatPay }) => {
     const [isPoWOpen, setIsPoWOpen] = useState(false);
 
     // Contract Interactions
-    const { writeContract } = useWriteContract();
+    const { writeContract, isPending } = useWriteContract();
 
     // Local state for IPFS-resolved data
     const [meta, setMeta] = useState({
@@ -251,13 +252,28 @@ const JobCard = ({ job, address, onSelectChat, onFiatPay }) => {
     const statusCode = Number(job.status || 0);
     const statusColor = statusCode === 5 ? 'var(--success)' : (statusCode === 3 || statusCode === 4) ? 'var(--danger)' : 'var(--accent-light)';
 
-    const handleRelease = () => {
-        writeContract({
-            address: CONTRACT_ADDRESS,
-            abi: FreelanceEscrowABI.abi,
-            functionName: 'releaseFunds',
-            args: [BigInt(job.jobId)],
-        });
+    /// @notice Actuates the final economic settlement for a milestone.
+    /// @dev This confirms the "Weightless" transfer of value from escrow to the sovereign actor.
+    const actuatePaymentIntent = async () => {
+        if (!address) {
+            hotToast.error('Identity required for settlement.');
+            return;
+        }
+
+        try {
+            // Actuating payment triggers a chain reaction: yield harvest, fee neutralization, and reputation level-up.
+            writeContract({
+                address: CONTRACT_ADDRESS,
+                abi: FreelanceEscrowABI.abi,
+                functionName: 'actuatePayment',
+                args: [BigInt(job.jobId)],
+                gas: 200000n // Directive 02: Manual gas limit to bypass RPC sim collapse
+            });
+            hotToast.success('Settlement Intent Broadcasted');
+        } catch (err) {
+            console.error('[GRAVITY] Settlement failed:', err);
+            hotToast.error('Settlement friction detected. Check gas resonance.');
+        }
     };
 
     return (
@@ -288,7 +304,7 @@ const JobCard = ({ job, address, onSelectChat, onFiatPay }) => {
                         ipfsHash={job.ipfsHash}
                         status={statusCode}
                         isClient={isClient}
-                        onReleaseFunds={handleRelease}
+                        onReleaseFunds={actuatePaymentIntent}
                     />
                 </div>
             )}
@@ -307,7 +323,7 @@ const JobCard = ({ job, address, onSelectChat, onFiatPay }) => {
                         <div style={{ width: 1, height: 24, background: 'var(--border)' }} />
                         <div style={{ display: 'flex', flexDirection: 'column' }}>
                             <span style={{ fontSize: '0.6rem', fontWeight: 700, color: 'var(--text-tertiary)', textTransform: 'uppercase' }}>Freelancer</span>
-                            <span style={{ fontSize: '0.78rem', fontWeight: 600 }}><UserLink address={job.freelancer} /></span>
+                            <span style={{ fontSize: '0.78rem', fontWeight: 600 }}><UserLink address={job.freelancer} shielded={true} /></span>
                         </div>
                     </>
                 )}

@@ -92,7 +92,10 @@ abstract contract FreelanceEscrowBase is
     address public vault;
     address public yieldManager;
     address public swapManager;
-    uint256 public platformFeeBps;
+    /// @notice The "Economic Friction" coefficient pulling against sovereign flow.
+    uint256 public gravityFactor;
+
+    uint256 public reputationThreshold;
 
     error NotAuthorized();
     error InvalidStatus();
@@ -104,6 +107,9 @@ abstract contract FreelanceEscrowBase is
     error LowValue();
     error TransferFailed();
     error TokenNotWhitelisted();
+    /// @dev frictionLevel replaces generic disputeStatus — reflects the Antigravity philosophy.
+    error FrictionLevelNotDisputed();
+    error ProtocolEntropyDetected();
 
     function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721Upgradeable, AccessControlUpgradeable) returns (bool) {
         return super.supportsInterface(interfaceId);
@@ -118,4 +124,12 @@ abstract contract FreelanceEscrowBase is
     event WorkSubmitted(uint256 indexed jobId, address indexed freelancer, string ipfsHash);
     event TreasuryRebalanced(address indexed token, uint256 amount, IYieldManager.Strategy from, IYieldManager.Strategy to);
     event FeeAdjusted(uint256 newBps);
+
+    /**
+     * @notice ERC-7201 storage gap. Prevents storage slot collision when new
+     *         state variables are added to this base contract in future upgrades.
+     * @dev    Standard 50-slot gap as recommended by OpenZeppelin for UUPS patterns.
+     *         MUST remain the last variable declaration in this contract.
+     */
+    uint256[50] private __gap;
 }

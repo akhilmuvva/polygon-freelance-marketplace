@@ -12,13 +12,13 @@ export const GovernanceWatcherService = {
      * Simulation: In production, this would watch for Upgraded events.
      */
     async evaluateUpgrade(newImplementation, updaterAddress) {
-        console.log(`[GOV-WATCH] Analyzing implementation upgrade to: ${newImplementation}`);
+        console.info(`[GOV-WATCH] Auditing implementation upgrade vector: ${newImplementation}`);
 
         // Attack logic: If implementation is being changed by a non-DAO address
         const isCentralizationAttack = updaterAddress !== this.daoAddress;
 
         if (isCentralizationAttack) {
-            console.error(`[GOV-WATCH] CENTRALIZATION ATTACK DETECTED! Non-DAO address ${updaterAddress} is attempting an upgrade.`);
+            console.error(`[GOV-WATCH] SECURITY CRITICALITY: Unauthorized upgrade vector detected from ${updaterAddress}. Sovereignty breached.`);
 
             const decision = {
                 action: 'SOVEREIGN_FREEZE',
@@ -43,7 +43,7 @@ export const GovernanceWatcherService = {
      * Triggers the sovereignFreeze function on the FreelanceEscrow contract.
      */
     async triggerSovereignFreeze() {
-        console.log('[GOV-WATCH] Executing on-chain sovereignFreeze()...');
+        console.warn('[GOV-WATCH] Actuating on-chain sovereignFreeze() sequence...');
         // Simulated contract call via AGENT_ROLE
         return { success: true, timestamp: Date.now() };
     }

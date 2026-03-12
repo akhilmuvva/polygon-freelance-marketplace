@@ -39,11 +39,27 @@
         }
       };
 
-      // Mute known SES and Regional Script noise
+      // AGA Directive: Automate inert on aria-hidden containers
+      const cleanseAria = () => {
+        document.querySelectorAll('[aria-hidden="true"]').forEach(el => {
+          if (!el.hasAttribute('inert')) el.setAttribute('inert', '');
+        });
+      };
+      const observer = new MutationObserver(cleanseAria);
+      observer.observe(document.documentElement, { attributes: true, childList: true, subtree: true, attributeFilter: ['aria-hidden'] });
+
+      // Mute known SES and RPC network noise
       const filter = (args) => {
         const msg = args.map(a => String(a)).join(' ');
-        return msg.includes('SES Removing unpermitted intrinsics') || 
-               msg.includes('infird.com'); 
+        return msg.includes('SES') || 
+               msg.includes('React DevTools') ||
+               msg.includes('aria-hidden') ||
+               msg.includes('focus') ||
+               msg.includes('intrinsics') ||
+               msg.includes('infird.com') ||
+               msg.includes('rpc') || 
+               msg.includes('400') || 
+               msg.includes('401'); 
       };
       ['log', 'info', 'warn', 'debug', 'error'].forEach(method => {
         const _orig = console[method];

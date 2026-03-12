@@ -28,8 +28,7 @@ Instead, please send an email to security@polylance.com (placeholder) with a det
 
 The scope of this policy includes:
 - All smart contracts in the `contracts` directory.
-- The frontend application in the `frontend` directory.
-- The backend API in the `backend` directory.
+- The frontend application in the `frontend` directory (Sovereign P2P Stack).
 
 ### Out of Scope
 

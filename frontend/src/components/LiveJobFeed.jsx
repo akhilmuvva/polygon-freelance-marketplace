@@ -13,6 +13,7 @@ export default function LiveJobFeed() {
         address: CONTRACT_ADDRESS,
         abi: FreelanceEscrowABI.abi,
         eventName: 'JobCreated',
+        poll: true, // Forces stateless eth_getLogs polling, bypassing Alchemy 400 filter failures.
         onLogs(logs) {
             const newJobs = logs.map(log => {
                 const { jobId, client, freelancer, amount, deadline } = log.args;

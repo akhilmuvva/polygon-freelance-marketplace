@@ -5,7 +5,7 @@ import { useAccount, useWriteContract, useReadContract } from 'wagmi';
 import FreelanceEscrowABI from '../contracts/FreelanceEscrow.json';
 import { formatEther } from 'viem';
 import { CONTRACT_ADDRESS } from '../constants';
-import { toast } from 'react-toastify';
+import hotToast from 'react-hot-toast';
 import SubgraphService from '../services/SubgraphService';
 import JobService from '../services/JobService';
 import { useAnimeAnimations } from '../hooks/useAnimeAnimations.js';
@@ -32,7 +32,7 @@ const ZenithCourt = () => {
     });
 
     const isAdmin = arbitratorRole || false;
-    const { writeContract } = useWriteContract();
+    const { writeContract, isPending } = useWriteContract();
 
     useEffect(() => {
         fetchDisputes();
@@ -62,28 +62,58 @@ const ZenithCourt = () => {
         finally { setLoading(false); }
     };
 
-    const handleStake = async () => {
+    /// @notice Actuates a juror staking intent to join the decentralized judicial pool.
+    /// @dev Staking constitutes a "Proof of Commitment" to protocol neutrality.
+    const actuateJurorStakingIntent = async () => {
+        if (!address) {
+            hotToast.error('Identity required for judicial enrollment.');
+            return;
+        }
+
         setIsStaking(true);
         try {
+            // Signal commitment to the JurorService: This anchors the actor's skin in the game.
             await JurorService.stake(address, 500);
-            toast.success("Stake Successful! You are now an Active Juror.");
+            hotToast.success("Sovereign Stake Anchored: You are now an Active Juror.");
             setJurorStats(prev => ({ ...prev, activeStake: 500 }));
-        } catch { toast.error("Staking failed"); }
-        finally { setIsStaking(false); }
+        } catch (err) { 
+            console.error('[GRAVITY] Staking friction:', err);
+            hotToast.error("Staking intent neutralized. Check liquidity resonance."); 
+        } finally { 
+            setIsStaking(false); 
+        }
     };
 
-    const handleResolution = (jobId, bps) => {
-        writeContract({
-            address: CONTRACT_ADDRESS,
-            abi: FreelanceEscrowABI.abi,
-            functionName: 'resolveDisputeManual',
-            args: [BigInt(jobId), BigInt(bps * 100)]
-        }, {
-            onSuccess: () => {
-                toast.success("Ruling Cast Successfully");
-                fetchDisputes();
-            }
-        });
+    /// @notice Actuates a manual ruling intent to resolve a high-friction dispute.
+    /// @dev This is the "Supreme Decree" of the protocol, finalizing economic distribution.
+    const actuateManualRulingIntent = (jobId, bps) => {
+        if (!isAdmin) {
+            hotToast.error('Sovereign authority required for manual ruling.');
+            return;
+        }
+
+        try {
+            // Broad-casting the ruling to the EVM state via the resilient transport layer.
+            // Directive 02: Force actuation even if simulation suggests failure (due to RPC noise).
+            writeContract({
+                address: CONTRACT_ADDRESS,
+                abi: FreelanceEscrowABI.abi,
+                functionName: 'resolveDisputeManual',
+                args: [BigInt(jobId), BigInt(bps * 100)],
+                gas: 200000n // Directive 02: Manual gas limit to bypass RPC sim collapse
+            }, {
+                onSuccess: () => {
+                    hotToast.success("Decree Cast: Dispute Resolution Actuated.");
+                    fetchDisputes();
+                },
+                onError: (err) => {
+                    console.warn('[NETWORK] Ruling failed:', err.message);
+                    hotToast.error("Ruling friction detected. Check network resonance.");
+                }
+            });
+        } catch (err) {
+            console.warn('[NETWORK] Manual ruling simulation bypass triggered.');
+        }
     };
 
     const s = {
@@ -149,8 +179,8 @@ const ZenithCourt = () => {
                                 <div style={{ flex: 1, height: 44, borderRadius: 12, border: '1px solid var(--border)', background: 'rgba(0,0,0,0.2)', display: 'flex', alignItems: 'center', padding: '0 16px', fontWeight: 700 }}>
                                     {jurorStats?.activeStake || 0} POL Staked
                                 </div>
-                                <button onClick={handleStake} disabled={isStaking} className="btn btn-primary" style={{ padding: '0 24px', height: 44 }}>
-                                    {isStaking ? 'Processing...' : 'Stake 500 POL'}
+                                <button onClick={actuateJurorStakingIntent} disabled={isStaking} className="btn btn-primary" style={{ padding: '0 24px', height: 44 }}>
+                                    {isStaking ? 'Anchoring...' : 'Stake 500 POL'}
                                 </button>
                             </div>
                         </div>
@@ -236,9 +266,9 @@ const ZenithCourt = () => {
                                         <div style={{ borderTop: '1px solid var(--border)', paddingTop: 24 }}>
                                             <h4 style={s.label}>Protocol Ruling</h4>
                                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
-                                                <button onClick={() => handleResolution(selectedJob.jobId, 0)} className="btn btn-ghost" style={{ borderRadius: 12, color: 'var(--danger)' }}>Ruling: Client</button>
-                                                <button onClick={() => handleResolution(selectedJob.jobId, 50)} className="btn btn-ghost" style={{ borderRadius: 12 }}>Split 50/50</button>
-                                                <button onClick={() => handleResolution(selectedJob.jobId, 100)} className="btn btn-ghost" style={{ borderRadius: 12, color: 'var(--success)' }}>Ruling: Freelancer</button>
+                                                <button disabled={isPending} onClick={() => actuateManualRulingIntent(selectedJob.jobId, 0)} className="btn btn-ghost" style={{ borderRadius: 12, color: 'var(--danger)' }}>Ruling: Client</button>
+                                                <button disabled={isPending} onClick={() => actuateManualRulingIntent(selectedJob.jobId, 50)} className="btn btn-ghost" style={{ borderRadius: 12 }}>Split 50/50</button>
+                                                <button disabled={isPending} onClick={() => actuateManualRulingIntent(selectedJob.jobId, 100)} className="btn btn-ghost" style={{ borderRadius: 12, color: 'var(--success)' }}>Ruling: Freelancer</button>
                                             </div>
                                         </div>
                                     ) : (

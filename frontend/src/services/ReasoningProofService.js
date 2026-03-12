@@ -21,12 +21,12 @@ export const ReasoningProofService = {
             protocol: 'PolyLance Zenith'
         };
 
-        console.log(`[AGA-AUDIT] Generating Reasoning Proof for ${agent}...`);
+        console.info(`[AGA-AUDIT] Synthesizing reasoning proof for agent: ${agent}...`);
 
         try {
             // Upload to decentralized storage
             const result = await StorageService.uploadMetadata(payload);
-            console.log(`[AGA-AUDIT] Decision proof anchored at: ipfs://${result.cid}`);
+            console.info(`[AGA-AUDIT] Reasoning proof anchored successfully: ipfs://${result.cid}`);
             return result.cid;
         } catch (err) {
             console.error('[AGA-AUDIT] Audit log failed:', err);

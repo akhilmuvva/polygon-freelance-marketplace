@@ -1,6 +1,6 @@
 import { ApolloClient, InMemoryCache, HttpLink, gql } from '@apollo/client';
 
-const SUBGRAPH_URL = import.meta.env.VITE_SUBGRAPH_URL || 'https://api.studio.thegraph.com/query/STUDIO_ID/poly-lance/v0.0.1';
+const SUBGRAPH_URL = import.meta.env.VITE_SUBGRAPH_URL || 'https://api.studio.thegraph.com/query/poly-lance-studio/poly-lance/v0.0.1';
 
 // Robust initialization with explicit HttpLink to avoid "link property" errors
 const client = new ApolloClient({
@@ -128,7 +128,7 @@ export const SubgraphService = {
       });
       return data.jobs;
     } catch (error) {
-      console.error('Failed to fetch jobs from subgraph:', error);
+      console.warn('[SUBGRAPH] Failed to fetch jobs. Resonance check required:', error.message);
       return [];
     }
   },
@@ -138,6 +138,7 @@ export const SubgraphService = {
    */
   getUserStats: async (address) => {
     try {
+      if (!address) return null;
       const { data } = await client.query({
         query: GET_USER_STATS,
         variables: { address: address.toLowerCase() },
@@ -145,7 +146,7 @@ export const SubgraphService = {
       });
       return data;
     } catch (error) {
-      console.error('Failed to fetch user stats from subgraph:', error);
+      console.warn('[SUBGRAPH] User stats telemetry failed:', error.message);
       return null;
     }
   },
@@ -155,6 +156,7 @@ export const SubgraphService = {
    */
   getUserPortfolio: async (address) => {
     try {
+      if (!address) return null;
       const { data } = await client.query({
         query: GET_USER_PORTFOLIO,
         variables: { address: address.toLowerCase() },
@@ -162,7 +164,7 @@ export const SubgraphService = {
       });
       return data;
     } catch (error) {
-      console.error('Failed to fetch user portfolio from subgraph:', error);
+      console.warn('[SUBGRAPH] Portfolio reconstruction failed:', error.message);
       return null;
     }
   },
@@ -178,7 +180,7 @@ export const SubgraphService = {
       });
       return data.freelancers;
     } catch (error) {
-      console.error('Failed to fetch leaderboard from subgraph:', error);
+      console.warn('[SUBGRAPH] Leaderboard sync friction:', error.message);
       return [];
     }
   },

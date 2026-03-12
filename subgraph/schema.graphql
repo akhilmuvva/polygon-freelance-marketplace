@@ -4,6 +4,7 @@ type Freelancer @entity {
   totalJobsReviewed: BigInt!
   averageRating: Int!
   portfolioCID: String
+  tbaAddress: Bytes # ERC-6551 Token Bound Account
   jobs: [Job!]! @derivedFrom(field: "freelancerLookup")
   reviews: [Review!]! @derivedFrom(field: "freelancer")
 }
@@ -98,4 +99,73 @@ type GlobalStat @entity {
 type DisputeMapping @entity {
   id: ID! # disputeId
   jobId: BigInt!
+}
+
+type IntentMatch @entity {
+  id: ID! # jobId
+  client: Bytes!
+  freelancer: Bytes!
+  intentHash: Bytes!
+  timestamp: BigInt!
+}
+
+type YieldDistribution @entity {
+  id: ID! # txHash
+  user: Bytes!
+  amount: BigInt!
+  timestamp: BigInt!
+}
+
+type ProtocolStats @entity {
+  id: ID! # "1"
+  totalYieldGenerated: BigInt!
+  totalValueLocked: BigInt!
+  totalOriginatorFees: BigInt!  # Tracks cumulative 0.5% invoice fees
+  totalSovereignSurplus: BigInt! # Tracks cumulative 20% yield capture
+  totalEliteIntents: BigInt!    # Tracks elite-tier matching events
+}
+
+# Revenue Protocol Alpha: Tracks every tokenized invoice event
+type InvoiceEvent @entity {
+  id: ID!           # txHash-logIndex
+  invoiceId: BigInt!
+  issuer: Bytes!
+  debtor: Bytes!
+  faceValue: BigInt!
+  originatorFee: BigInt!  # 0.5% of face value
+  timestamp: BigInt!
+  status: InvoiceStatus!
+}
+
+enum InvoiceStatus {
+  PENDING
+  VERIFIED
+  FINANCED
+  PAID
+  DEFAULTED
+  DISPUTED
+}
+
+# Routes originator fees & surplus to the DAO treasury
+type ProtocolRevenue @entity {
+  id: ID!            # txHash
+  source: RevenueSource!
+  amount: BigInt!
+  token: Bytes!
+  timestamp: BigInt!
+}
+
+enum RevenueSource {
+  ORIGINATOR_FEE
+  SOVEREIGN_SURPLUS
+  SAFETY_DIVERSION
+}
+
+# Tracks Elite AGA intent activations for Negative-Gravity freelancers
+type EliteIntent @entity {
+  id: ID!
+  freelancer: Bytes!
+  gravityScore: Int!  # Negative score = Elite match lane
+  intentHash: Bytes!
+  timestamp: BigInt!
 }

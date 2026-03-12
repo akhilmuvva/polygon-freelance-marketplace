@@ -60,13 +60,13 @@ export default function ZenithStrata() {
                 {[
                     { label: 'Stable', val: '5.2%', trend: '+0.2%' },
                     { label: 'LRTs', val: '8.4%', trend: '-0.1%' },
-                    { label: 'Dex LPs', val: '24.1%', trend: '+1.4%' },
+                    { label: 'Safety Divergence', val: '5.0%', trend: 'ACTIVE' },
                     { label: 'Vaults', val: '12.8%', trend: '+0.5%' }
                 ].map((item, i) => (
                     <div key={i} style={{ padding: 16, borderRadius: 16, background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border)' }}>
                         <div style={s.label}>{item.label}</div>
-                        <div style={{ fontSize: '1.4rem', fontWeight: 900 }}>{item.val}</div>
-                        <div style={{ fontSize: '0.62rem', fontWeight: 800, color: item.trend.startsWith('+') ? 'var(--success)' : 'var(--danger)', marginTop: 4 }}>{item.trend} 24h</div>
+                        <div style={{ fontSize: '1.4rem', fontWeight: 900, color: item.label === 'Safety Divergence' ? 'var(--cyan)' : '#fff' }}>{item.val}</div>
+                        <div style={{ fontSize: '0.62rem', fontWeight: 800, color: item.trend === 'ACTIVE' ? 'var(--cyan)' : (item.trend.startsWith('+') ? 'var(--success)' : 'var(--danger)'), marginTop: 4 }}>{item.trend} {item.trend === 'ACTIVE' ? 'Failsafe' : '24h'}</div>
                     </div>
                 ))}
             </div>

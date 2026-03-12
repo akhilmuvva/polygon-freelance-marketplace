@@ -42,6 +42,8 @@ dataSources:
           handler: handleRuling
         - event: ReviewSubmitted(indexed uint256,indexed address,indexed address,uint8,string)
           handler: handleReviewSubmitted
+        - event: IntentMatched(indexed uint256,indexed address,indexed address,bytes32)
+          handler: handleIntentMatched
       file: ./src/mapping.ts
   - kind: ethereum
     name: FreelancerReputation
@@ -64,4 +66,47 @@ dataSources:
           handler: handleRatingUpdated
         - event: PortfolioUpdated(indexed address,string)
           handler: handlePortfolioUpdated
+      file: ./src/mapping.ts
+  - kind: ethereum
+    name: YieldManager
+    network: amoy
+    source:
+      address: "0xAD2aF960570bFc0861198A699435b54FC9067890"
+      abi: YieldManager
+      startBlock: 8560000
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - YieldDistribution
+        - ProtocolStats
+      abis:
+        - name: YieldManager
+          file: ./abis/YieldManager.json
+      eventHandlers:
+        - event: YieldDistributed(indexed address,uint256)
+          handler: handleYieldDistributed
+        - event: YieldRebalanced(address,uint256,uint256)
+          handler: handleYieldRebalanced
+      file: ./src/mapping.ts
+  - kind: ethereum
+    name: SovereignRegistry
+    network: amoy
+    source:
+      address: "0x_SOVEREIGN_REGISTRY_ADDRESS_PLACEHOLDER"
+      abi: SovereignRegistry
+      startBlock: 8560000
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - Freelancer
+      abis:
+        - name: SovereignRegistry
+          file: ./abis/SovereignRegistry.json
+      eventHandlers:
+        - event: ERC6551AccountCreated(address,indexed address,bytes32,uint256,indexed address,indexed uint256)
+          handler: handleAccountCreated
       file: ./src/mapping.ts

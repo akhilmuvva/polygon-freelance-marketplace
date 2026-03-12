@@ -36,7 +36,7 @@ class CeramicService {
    */
   async authenticate(did) {
     this.client.setDID(did);
-    console.log('[CERAMIC] Authenticated with DID:', did.id);
+    console.info('[CERAMIC-DB] Identity authenticated on sovereign data layer:', did.id);
   }
 
   /**
@@ -45,7 +45,7 @@ class CeramicService {
   async getProfile(address) {
     try {
       // In a real environment, we'd execute the query via the client
-      console.log('[CERAMIC] Querying profile for:', address);
+      console.info('[CERAMIC-DB] Harvesting weightless profile for:', address);
 
       // Simulating a successful response structure
       return {
@@ -57,7 +57,7 @@ class CeramicService {
         source: 'ceramic'
       };
     } catch (err) {
-      console.error('[CERAMIC] Profile query failed:', err);
+      console.warn('[CERAMIC-DB] Profile synthesis friction:', err.message);
       return null;
     }
   }
@@ -68,11 +68,11 @@ class CeramicService {
   async updateProfile(profileData) {
     if (!this.client.did?.authenticated) {
       // Simulation mode for UI: If not authenticated, we'll just log
-      console.warn('[CERAMIC] Updating weightless stream (SIMULATION):', profileData);
+      console.warn('[CERAMIC-DB] Non-anchored state modification detected (SIMULATION):', profileData);
       return { id: 'stream-id-123', status: 'SYNCHRONIZED' };
     }
 
-    console.log('[CERAMIC] Updating weightless stream with data:', profileData);
+    console.info('[CERAMIC-DB] Actuating weightless stream update:', profileData);
     // return await this.client.executeQuery(mutation, { input: { content: profileData } });
     return { id: 'stream-id-123', status: 'SYNCHRONIZED' };
   }

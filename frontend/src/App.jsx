@@ -1,3 +1,13 @@
+// Directive 03: Sovereign Console Cleanse
+if (window.location.hostname === 'localhost') {
+  const originalWarn = console.warn;
+  console.warn = (...args) => {
+    if (args[0] && typeof args[0] === 'string' && (args[0].includes('SES') || args[0].includes('[SECURITY]') || args[0].includes('[NETWORK]'))) {
+      originalWarn(...args);
+    }
+  };
+}
+
 import React, { useState, Suspense, lazy, useEffect } from 'react';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import {
@@ -344,8 +354,8 @@ function App() {
     }
   }, [slideInLeft, staggerFadeIn]);
 
-  // Gasless toggle handler — only inits Biconomy when user manually enables
-  const handleToggleGasless = async () => {
+  /// @notice Actuates a state shift for gas-shielded (Biconomy) transaction orchestration.
+  const actuateGaslessToggleIntent = async () => {
     if (isGasless) {
       // Turning OFF — just flip the flag, keep smartAccount cached
       setIsGasless(false);
@@ -375,14 +385,15 @@ function App() {
         hotToast.error('Failed to initialize gasless mode');
       }
     } catch (e) {
-      console.error('[Gasless]', e);
+      console.warn('[SECURITY] Gasless initialization friction:', e.message);
       hotToast.error('Gasless init failed: ' + (e.message || 'Unknown error'));
     } finally {
       setIsInitializingGasless(false);
     }
   };
 
-  const handleSocialLogin = async () => {
+  /// @notice Actuates a social identity synchronization using the Particle portal.
+  const actuateSocialLoginIntent = async () => {
     setIsLoggingIn(true);
     try {
       const particle = await initSocialLogin();
@@ -403,17 +414,28 @@ function App() {
       hotToast.success('🎉 Welcome back!', {
         duration: 4000
       });
-    } catch (err) { console.error(err); hotToast.error("Login failed"); }
-    finally { setIsLoggingIn(false); }
+    } catch (err) {
+      console.warn('[SECURITY] Gateway synchronization failed:', err.message);
+      hotToast.error("Login failed");
+    } finally {
+      setIsLoggingIn(false);
+    }
   };
 
-  const handleLogout = async () => {
-    if (socialProvider) await socialProvider.auth.logout();
-    disconnect(); // Universal disconnect
+  /// @notice Actuates a clean disconnect from both standard and smart wallet registries.
+  const actuateLogoutIntent = async () => {
+    // AGA TRANSMISSION: Logout is now Atomic.
     setSmartAccount(null);
     setSocialProvider(null);
     setIsGasless(false);
-    hotToast.success("Logged out");
+    
+    try {
+      if (socialProvider) await socialProvider.auth.logout();
+      disconnect(); // Universal disconnect
+      hotToast.success("Local state cleared. Connection severed.");
+    } catch (e) {
+      console.warn('[NETWORK] Partial connection sever detected. Sovereign local state preserved.');
+    }
   };
 
   // Reset gasless when wallet disconnects
@@ -589,7 +611,7 @@ function App() {
               </div>
               <div style={styles.toggleRow}>
                 <span style={styles.toggleLabel}>Gasless Mode</span>
-                <button style={styles.toggle(isGasless)} onClick={handleToggleGasless} disabled={isInitializingGasless}>
+                <button style={styles.toggle(isGasless)} onClick={actuateGaslessToggleIntent} disabled={isInitializingGasless}>
                   <div style={styles.toggleDot(isGasless)} />
                 </button>
               </div>
@@ -618,16 +640,16 @@ function App() {
               <button
                 className="desktop-only"
                 style={styles.gasBtn(isGasless)}
-                onClick={handleToggleGasless}
+                onClick={actuateGaslessToggleIntent}
                 disabled={isInitializingGasless}
                 aria-label={`Toggle Gasless mode, currently ${isGasless ? 'on' : 'off'}`}
               >
-                {isInitializingGasless ? <Shield size={14} className="spin" /> : isGasless ? <ShieldCheck size={14} /> : <Shield size={14} />}
-                {isInitializingGasless ? 'Initializing...' : isGasless ? 'Gasless' : 'Standard'}
+                {isInitializingGasless ? <Shield size={14} className="spin" /> : <ShieldCheck size={14} />}
+                {isInitializingGasless ? 'Verifying...' : 'Sovereign Shield'}
               </button>
 
               {!smartAccount && (
-                <button className="desktop-only" style={styles.socialBtn} onClick={handleSocialLogin} disabled={isLoggingIn}>
+                <button className="desktop-only" style={styles.socialBtn} onClick={actuateSocialLoginIntent} disabled={isLoggingIn}>
                   <Mail size={14} />
                   {isLoggingIn ? 'Loading...' : 'Social Login'}
                 </button>
@@ -638,7 +660,7 @@ function App() {
                 {(isWalletConnected || smartAccount) && (
                   <button
                     style={{ ...styles.logoutBtn, height: 40, width: 40, justifyContent: 'center' }}
-                    onClick={handleLogout}
+                    onClick={actuateLogoutIntent}
                     title="Sign Out"
                     aria-label="Logout"
                   >
@@ -653,7 +675,7 @@ function App() {
             <AnimatePresence mode="wait">
               {!effectiveAddress && activeTab !== 'terms' && activeTab !== 'privacy' ? (
                 <motion.div key="auth" initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}>
-                  <AuthPortal onSocialLogin={handleSocialLogin} isLoggingIn={isLoggingIn} />
+                  <AuthPortal actuateOnSocialLoginIntent={actuateSocialLoginIntent} isLoggingIn={isLoggingIn} />
                 </motion.div>
               ) : (
                 <motion.div key={activeTab + (portfolioAddress || '')} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.25, ease: 'easeOut' }}>

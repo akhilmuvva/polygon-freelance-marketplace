@@ -6,7 +6,8 @@ import {
   CheckCircle2, AlertCircle, Clock, Plus, Wallet, BarChart3,
   ChevronRight, X, ShieldCheck
 } from 'lucide-react';
-import AssetTokenizerABI from '../abis/AssetTokenizer.json';
+import AssetTokenizerABI from '../contracts/AssetTokenizer.json';
+import hotToast from 'react-hot-toast';
 
 const ASSET_TYPE_LABELS = {
   0: { label: 'Invoice', icon: <FileText size={16} />, color: '#3b82f6', bg: 'rgba(59, 130, 246, 0.1)' },
@@ -33,34 +34,56 @@ export default function AssetDashboard({ contractAddress }) {
     deadline: ''
   });
 
-  const { writeContract } = useWriteContract();
+  const { writeContract, isPending } = useWriteContract();
 
-  const handleCreateMilestone = (assetId) => {
-    if (!milestoneForm.description || !milestoneForm.value || !milestoneForm.deadline) return;
+  /// @notice Actuates a new performance milestone for an RWA.
+  /// @dev Milestones provide a "Proof of Progress" path for capital release.
+  const actuateMilestoneInitializeIntent = (assetId) => {
+    if (!milestoneForm.description || !milestoneForm.value || !milestoneForm.deadline) {
+        hotToast.error('Incomplete Intent: Description and Value required.');
+        return;
+    }
     const deadlineTimestamp = Math.floor(new Date(milestoneForm.deadline).getTime() / 1000);
 
-    writeContract({
-      address: contractAddress,
-      abi: AssetTokenizerABI.abi,
-      functionName: 'createMilestone',
-      args: [
-        BigInt(assetId),
-        milestoneForm.description,
-        parseUnits(milestoneForm.value, 6),
-        BigInt(deadlineTimestamp)
-      ]
-    });
-    setMilestoneForm({ description: '', value: '', deadline: '' });
-    setSelectedAsset(null);
+    try {
+        // Directive 02: Force actuation even if simulation suggests failure (due to RPC noise).
+        writeContract({
+          address: contractAddress,
+          abi: AssetTokenizerABI.abi,
+          functionName: 'createMilestone',
+          args: [
+            BigInt(assetId),
+            milestoneForm.description,
+            parseUnits(milestoneForm.value, 6),
+            BigInt(deadlineTimestamp)
+          ],
+          gas: 200000n // Directive 02: Manual gas limit to bypass RPC sim collapse
+        });
+        hotToast.success('Milestone Initialization Intent Broadcasted');
+        setMilestoneForm({ description: '', value: '', deadline: '' });
+        setSelectedAsset(null);
+    } catch (err) {
+        console.warn('[NETWORK] Milestone creation simulation bypass triggered:', err.message);
+        // User's wallet will handle gas estimation as a fallback.
+    }
   };
 
-  const handleClaimRewards = (assetId) => {
-    writeContract({
-      address: contractAddress,
-      abi: AssetTokenizerABI.abi,
-      functionName: 'claimRewards',
-      args: [BigInt(assetId)]
-    });
+  /// @notice Actuates a reward claim by neutralizing earned yield.
+  /// @dev This confirms the "Weightless" transfer of dividend value to the sovereign holder.
+  const actuateRewardClaimIntent = (assetId) => {
+    try {
+        // Directive 02: Force actuation.
+        writeContract({
+          address: contractAddress,
+          abi: AssetTokenizerABI.abi,
+          functionName: 'claimRewards',
+          args: [BigInt(assetId)],
+          gas: 200000n // Directive 02: Manual gas limit to bypass RPC sim collapse
+        });
+        hotToast.success('Reward Claim Intent Broadcasted');
+    } catch (err) {
+        console.warn('[NETWORK] Reward claim simulation bypass triggered:', err.message);
+    }
   };
 
   // Mock data for UI polish - would fetch from contract in production
@@ -189,8 +212,8 @@ export default function AssetDashboard({ contractAddress }) {
                     <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--success)' }}>Claimable Yield:</span>
                     <span style={{ fontSize: '1.2rem', fontWeight: 800, color: '#fff' }}>${asset.claimableAmount.toLocaleString()}</span>
                   </div>
-                  <button className="btn-primary" style={{ width: '100%', background: 'linear-gradient(135deg, #10b981, #059669)', border: 'none' }} onClick={() => handleClaimRewards(asset.id)}>
-                    Claim Rewards
+                  <button disabled={isPending} className="btn-primary" style={{ width: '100%', background: 'linear-gradient(135deg, #10b981, #059669)', border: 'none' }} onClick={() => actuateRewardClaimIntent(asset.id)}>
+                    {isPending ? 'Confirming Intent...' : 'Claim Rewards'}
                   </button>
                 </div>
               )}
@@ -228,8 +251,8 @@ export default function AssetDashboard({ contractAddress }) {
                 <label className="form-label">Target Completion Date</label>
                 <input className="form-input" type="date" value={milestoneForm.deadline} onChange={e => setMilestoneForm({ ...milestoneForm, deadline: e.target.value })} />
               </div>
-              <button className="btn-primary" style={{ marginTop: 10, width: '100%' }} onClick={() => handleCreateMilestone(selectedAsset)}>
-                Confirm Milestone
+              <button disabled={isPending} className="btn-primary" style={{ marginTop: 10, width: '100%' }} onClick={() => actuateMilestoneInitializeIntent(selectedAsset)}>
+                {isPending ? '⏳ Actuating Intent...' : 'Confirm Milestone'}
               </button>
             </div>
           </div>

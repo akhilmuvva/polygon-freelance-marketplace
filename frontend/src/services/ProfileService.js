@@ -23,7 +23,7 @@ export const ProfileService = {
             // 1. Check weightless Ceramic stream first
             const ceramicProfile = await CeramicService.getProfile(addr);
             if (ceramicProfile) {
-                console.log('[PROFILE] Sovereign weightless source verified:', addr);
+                console.info('[PROFILE] Sovereign weightless source verified for:', addr);
                 return {
                     address: addr,
                     ...ceramicProfile,
@@ -58,7 +58,7 @@ export const ProfileService = {
                 source: 'default'
             };
         } catch (err) {
-            console.error('[PROFILE] Resolver error:', err);
+            console.warn('[PROFILE] Identity resolution friction:', err.message);
             return {
                 address: addr,
                 name: 'Identity Loading...',
@@ -72,7 +72,7 @@ export const ProfileService = {
      * Prepares a profile for weightless upload
      */
     updateSovereignProfile: async (profileData) => {
-        console.log('[PROFILE] Propagating data to Ceramic node...');
+        console.info('[PROFILE] Propagating intent to Ceramic mesh...');
         return await CeramicService.updateProfile(profileData);
     },
 
@@ -80,7 +80,7 @@ export const ProfileService = {
      * Legacy IPFS upload (kept for backward compatibility during migration)
      */
     uploadToIPFS: async (profileData) => {
-        console.log('[PROFILE] Uploading legacy metadata to IPFS...');
+        console.info('[PROFILE] Anchoring legacy metadata to IPFS...');
         const result = await StorageService.uploadMetadata(profileData);
         return result.cid;
     },

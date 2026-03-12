@@ -3,14 +3,16 @@ import { ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import api from '../services/api';
 
-const AiRecommendations = ({ address }) => {
+const AiRecommendations = ({ address, elite }) => {
     const [jobs, setJobs] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchRecommendations = async () => {
             try {
-                const data = await api.getRecommendations(address);
+                // In Alpha, we pass the elite flag to the Sovereign API 
+                // to prioritize high-yield/high-rep matches.
+                const data = await api.getRecommendations(address, { elite });
                 setJobs(Array.isArray(data) ? data : []);
             } catch (err) {
                 console.error('Failed to fetch recommendations:', err);
@@ -19,7 +21,7 @@ const AiRecommendations = ({ address }) => {
             }
         };
         if (address) fetchRecommendations();
-    }, [address]);
+    }, [address, elite]);
 
     if (loading) return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>

@@ -17,14 +17,14 @@ export async function initSocialLogin() {
 
     // Developer Mock Mode
     if (!projectId || !clientKey || !appId) {
-        console.warn('[BICONOMY] Particle credentials missing. Enabling Mock Social Login.');
+        console.warn('[SECURITY] Particle credentials offline. Actuating Mock Social gateway.');
         return {
             auth: {
                 login: async () => {
-                    console.log('[MOCK] Social Login success');
+                    console.log('[SECURITY] Social Login success');
                     return { user: { name: 'Adam Pioneer', email: 'adam@pioneer.com' } };
                 },
-                logout: async () => console.log('[MOCK] Logout'),
+                logout: async () => console.log('[SECURITY] Logout'),
             },
             isMock: true
         };
@@ -43,7 +43,7 @@ export async function initSocialLogin() {
 
         return particle;
     } catch (error) {
-        console.error('[BICONOMY] Social Login init failed:', error);
+        console.error('[SECURITY] Social identity gateway collapse:', error.message);
         return null;
     }
 }
@@ -56,7 +56,7 @@ export async function initSocialLogin() {
 export async function createBiconomySmartAccount(signer) {
     // Mock Account for Developers
     if (signer?.isMock || !PAYMASTER_URL || !BUNDLER_URL) {
-        console.warn('[BICONOMY] Using MOCK Smart Account.');
+        console.warn('[SECURITY] Paymaster/Bundler offline. Actuating MOCK Smart Account resonance.');
         return {
             accountAddress: '0xDE4DbEef88888888888888888888888888888888',
             isMock: true,
@@ -79,10 +79,10 @@ export async function createBiconomySmartAccount(signer) {
             smartAccount.accountAddress = await smartAccount.getAccountAddress();
         }
 
-        console.log('[BICONOMY] Smart Account created:', smartAccount.accountAddress);
+        console.log('[SECURITY] Smart Account created:', smartAccount.accountAddress);
         return smartAccount;
     } catch (error) {
-        console.error('[BICONOMY] Failed to create Smart Account:', error);
+        console.error('[SECURITY] Failed to create Smart Account:', error);
         return null;
     }
 }
@@ -110,10 +110,10 @@ export async function submitWorkGasless(smartAccount, contractAddress, contractA
         const userOpResponse = await smartAccount.sendTransaction(tx);
         const { transactionHash } = await userOpResponse.waitForTxHash();
 
-        console.log('[BICONOMY] Gasless submission successful:', transactionHash);
+        console.log('[NETWORK] Gasless submission successful:', transactionHash);
         return transactionHash;
     } catch (error) {
-        console.error('[BICONOMY] Gasless transaction failed:', error);
+        console.error('[NETWORK] Gasless transaction failed:', error);
         throw error;
     }
 }
@@ -141,10 +141,10 @@ export async function createJobGasless(smartAccount, contractAddress, contractAB
         const userOpResponse = await smartAccount.sendTransaction(tx);
         const { transactionHash } = await userOpResponse.waitForTxHash();
 
-        console.log('[BICONOMY] Gasless job creation successful:', transactionHash);
+        console.log('[NETWORK] Gasless job creation successful:', transactionHash);
         return transactionHash;
     } catch (error) {
-        console.error('[BICONOMY] Gasless job creation failed:', error);
+        console.error('[NETWORK] Gasless job creation failed:', error);
         throw error;
     }
 }

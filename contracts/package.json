@@ -8,8 +8,8 @@
   "description": "Smart contracts for PolyLance Zenith marketplace",
   "main": "hardhat.config.js",
   "scripts": {
-    "test": "npx hardhat test",
-    "compile": "npx hardhat compile",
+    "test": "cross-env NODE_OPTIONS=--openssl-legacy-provider npx hardhat test",
+    "compile": "cross-env NODE_OPTIONS=--openssl-legacy-provider npx hardhat compile",
     "docs": "npx hardhat docgen"
   },
   "devDependencies": {
@@ -29,9 +29,10 @@
     "@types/chai": "^4.3.20",
     "@types/mocha": "^10.0.10",
     "chai": "^4.5.0",
+    "cross-env": "^10.1.0",
     "dotenv": "^17.2.3",
     "ethers": "^6.16.0",
-    "hardhat": "^2.22.10",
+    "hardhat": "2.22.10",
     "hardhat-gas-reporter": "^1.0.10",
     "solidity-coverage": "^0.8.17",
     "ts-node": "^10.9.2",

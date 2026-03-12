@@ -1,0 +1,393 @@
+[dotenv@17.3.1] injecting env (4) from .env -- tip: ΓÜí∩╕Å secrets for agents: https://dotenvx.com/as2
+
+
+  Barebones CJS
+    1) Should have ethers working
+
+  FreelanceEscrow Bug Fixes
+    Insolvency Protection (createJob)
+      2) "before each" hook for "Should revert if milestone sum does not equal total amount"
+
+  Ethers Check
+Ethers type: object
+Ethers keys: [
+  'version',
+  'decodeBytes32String',
+  'encodeBytes32String',
+  'AbiCoder',
+  'ConstructorFragment',
+  'ErrorFragment',
+  'EventFragment',
+  'Fragment',
+  'FallbackFragment',
+  'FunctionFragment',
+  'NamedFragment',
+  'ParamType',
+  'StructFragment',
+  'checkResultErrors',
+  'ErrorDescription',
+  'Indexed',
+  'Interface',
+  'LogDescription',
+  'Result',
+  'TransactionDescription',
+  'Typed',
+  'getAddress',
+  'getIcapAddress',
+  'getCreateAddress',
+  'getCreate2Address',
+  'isAddressable',
+  'isAddress',
+  'resolveAddress',
+  'ZeroAddress',
+  'WeiPerEther',
+  'MaxUint256',
+  'MinInt256',
+  'MaxInt256',
+  'N',
+  'ZeroHash',
+  'EtherSymbol',
+  'MessagePrefix',
+  'BaseContract',
+  'Contract',
+  'ContractFactory',
+  'ContractEventPayload',
+  'ContractTransactionReceipt',
+  'ContractTransactionResponse',
+  'ContractUnknownEventPayload',
+  'EventLog',
+  'UndecodedEventLog',
+  'computeHmac',
+  'randomBytes',
+  'keccak256',
+  'ripemd160',
+  'sha256',
+  'sha512',
+  'pbkdf2',
+  'scrypt',
+  'scryptSync',
+  'lock',
+  'Signature',
+  'SigningKey',
+  'id',
+  'ensNormalize',
+  'isValidName',
+  'namehash',
+  'dnsEncode',
+  'hashAuthorization',
+  'verifyAuthorization',
+  'hashMessage',
+  'verifyMessage',
+  'solidityPacked',
+  'solidityPackedKeccak256',
+  'solidityPackedSha256',
+  'TypedDataEncoder',
+  'verifyTypedData',
+  'getDefaultProvider',
+  'Block',
+  'FeeData',
+  'Log',
+  'TransactionReceipt',
+  'TransactionResponse',
+  'AbstractSigner',
+  'NonceManager',
+  'VoidSigner',
+  'AbstractProvider',
+  'FallbackProvider',
+  'JsonRpcApiProvider',
+  'JsonRpcProvider',
+  'JsonRpcSigner',
+  'BrowserProvider',
+  'AlchemyProvider',
+  'AnkrProvider',
+  'BlockscoutProvider',
+  'ChainstackProvider',
+  'CloudflareProvider',
+  'EtherscanProvider',
+  'InfuraProvider',
+  'InfuraWebSocketProvider',
+  'PocketProvider',
+  'QuickNodeProvider',
+  'IpcSocketProvider',
+  'SocketProvider',
+  'WebSocketProvider',
+  ... 102 more items
+]
+Is getSigners defined? function
+    Γ£ö Should have getSigners
+
+  CrossChain Suite Integration
+    CCIPTokenBridge
+      3) "before each" hook for "Should bridge tokens to another chain"
+
+  Debug HRE keys
+HRE keys: [
+  'config',
+  'hardhatArguments',
+  'tasks',
+  'scopes',
+  'userConfig',
+  'version',
+  'run',
+  'artifacts',
+  'network',
+  '_environmentExtenders',
+  'ethers',
+  'upgrades',
+  'defender'
+]
+HRE.ethers keys: [
+  'version',
+  'decodeBytes32String',
+  'encodeBytes32String',
+  'AbiCoder',
+  'ConstructorFragment',
+  'ErrorFragment',
+  'EventFragment',
+  'Fragment',
+  'FallbackFragment',
+  'FunctionFragment',
+  'NamedFragment',
+  'ParamType',
+  'StructFragment',
+  'checkResultErrors',
+  'ErrorDescription',
+  'Indexed',
+  'Interface',
+  'LogDescription',
+  'Result',
+  'TransactionDescription',
+  'Typed',
+  'getAddress',
+  'getIcapAddress',
+  'getCreateAddress',
+  'getCreate2Address',
+  'isAddressable',
+  'isAddress',
+  'resolveAddress',
+  'ZeroAddress',
+  'WeiPerEther',
+  'MaxUint256',
+  'MinInt256',
+  'MaxInt256',
+  'N',
+  'ZeroHash',
+  'EtherSymbol',
+  'MessagePrefix',
+  'BaseContract',
+  'Contract',
+  'ContractFactory',
+  'ContractEventPayload',
+  'ContractTransactionReceipt',
+  'ContractTransactionResponse',
+  'ContractUnknownEventPayload',
+  'EventLog',
+  'UndecodedEventLog',
+  'computeHmac',
+  'randomBytes',
+  'keccak256',
+  'ripemd160',
+  'sha256',
+  'sha512',
+  'pbkdf2',
+  'scrypt',
+  'scryptSync',
+  'lock',
+  'Signature',
+  'SigningKey',
+  'id',
+  'ensNormalize',
+  'isValidName',
+  'namehash',
+  'dnsEncode',
+  'hashAuthorization',
+  'verifyAuthorization',
+  'hashMessage',
+  'verifyMessage',
+  'solidityPacked',
+  'solidityPackedKeccak256',
+  'solidityPackedSha256',
+  'TypedDataEncoder',
+  'verifyTypedData',
+  'getDefaultProvider',
+  'Block',
+  'FeeData',
+  'Log',
+  'TransactionReceipt',
+  'TransactionResponse',
+  'AbstractSigner',
+  'NonceManager',
+  'VoidSigner',
+  'AbstractProvider',
+  'FallbackProvider',
+  'JsonRpcApiProvider',
+  'JsonRpcProvider',
+  'JsonRpcSigner',
+  'BrowserProvider',
+  'AlchemyProvider',
+  'AnkrProvider',
+  'BlockscoutProvider',
+  'ChainstackProvider',
+  'CloudflareProvider',
+  'EtherscanProvider',
+  'InfuraProvider',
+  'InfuraWebSocketProvider',
+  'PocketProvider',
+  'QuickNodeProvider',
+  'IpcSocketProvider',
+  'SocketProvider',
+  'WebSocketProvider',
+  ... 102 more items
+]
+    Γ£ö Should log hre keys
+
+  FreelanceEscrow Emergency Stop (Circuit Breaker)
+    4) "before each" hook for "Should allow admin to pause and unpause"
+
+  FreelanceEscrow Verification
+    5) "before each" hook for "Should initialize correctly and grant roles"
+
+  FreelanceEscrow Production Features
+    6) "before each" hook for "Should handle pull-based refunds for unselected freelancers"
+
+  FreelanceEscrow - Integration Tests
+    Complete Job Lifecycle - Success Path
+Getting signers...
+      7) "before each" hook for "Should complete full job lifecycle: Create ΓåÆ Apply ΓåÆ Pick ΓåÆ Accept ΓåÆ Submit ΓåÆ Release"
+
+  PolyToken
+    Deployment
+      8) "before each" hook for "Should set the right owner"
+
+  PolyLance Production Suite
+    Full Job Lifecycle (ERC20)
+      9) "before each" hook for "Processes a standard job from creation to completion with SBTs and Reputation"
+
+  FreelanceEscrow - Security Tests
+    Reentrancy Protection
+      10) "before each" hook for "Should prevent reentrancy attacks on releaseFunds"
+
+  Simple Test
+    11) Should get signers
+
+  Zenith Protocol: Deep Compliance & Edge Case Suite
+    DoS Prevention & Scale Limits
+      12) "before each" hook for "Enforces MAX_APPLICATIONS_PER_JOB (50) to prevent gas exhaustion"
+
+  Zenith Edge Cases & Fee Optimization
+    Supreme Level Fees
+      13) "before each" hook for "Qualified users should pay 0% platform fee"
+
+
+  2 passing (2s)
+  13 failing
+
+  1) Barebones CJS
+       Should have ethers working:
+     TypeError: Cannot read properties of undefined (reading 'error')
+      at isErrorResponse (node_modules\hardhat\src\internal\core\providers\http.ts:27:26)
+      at EdrProviderWrapper.request (node_modules\hardhat\src\internal\hardhat-network\provider\provider.ts:421:24)
+      at getSigners (node_modules\@nomicfoundation\hardhat-ethers\src\internal\helpers.ts:46:16)
+      at Context.<anonymous> (test\Barebones.test.js:6:25)
+
+  2) FreelanceEscrow Bug Fixes
+       "before each" hook for "Should revert if milestone sum does not equal total amount":
+     TypeError: Cannot read properties of undefined (reading 'error')
+      at isErrorResponse (node_modules\hardhat\src\internal\core\providers\http.ts:27:26)
+      at EdrProviderWrapper.request (node_modules\hardhat\src\internal\hardhat-network\provider\provider.ts:421:24)
+      at getSigners (node_modules\@nomicfoundation\hardhat-ethers\src\internal\helpers.ts:46:16)
+      at Context.<anonymous> (test\BugFixes.test.js:13:46)
+
+  3) CrossChain Suite Integration
+       "before each" hook for "Should bridge tokens to another chain":
+     TypeError: Cannot read properties of undefined (reading 'error')
+      at isErrorResponse (node_modules\hardhat\src\internal\core\providers\http.ts:27:26)
+      at EdrProviderWrapper.request (node_modules\hardhat\src\internal\hardhat-network\provider\provider.ts:421:24)
+      at getSigners (node_modules\@nomicfoundation\hardhat-ethers\src\internal\helpers.ts:46:16)
+      at Context.<anonymous> (test\CrossChain.test.js:14:54)
+
+  4) FreelanceEscrow Emergency Stop (Circuit Breaker)
+       "before each" hook for "Should allow admin to pause and unpause":
+     TypeError: Cannot read properties of undefined (reading 'error')
+      at isErrorResponse (node_modules\hardhat\src\internal\core\providers\http.ts:27:26)
+      at EdrProviderWrapper.request (node_modules\hardhat\src\internal\hardhat-network\provider\provider.ts:421:24)
+      at getSigners (node_modules\@nomicfoundation\hardhat-ethers\src\internal\helpers.ts:46:16)
+      at Context.<anonymous> (test\EmergencyStop.test.js:9:46)
+
+  5) FreelanceEscrow Verification
+       "before each" hook for "Should initialize correctly and grant roles":
+     TypeError: Cannot read properties of undefined (reading 'error')
+      at isErrorResponse (node_modules\hardhat\src\internal\core\providers\http.ts:27:26)
+      at EdrProviderWrapper.request (node_modules\hardhat\src\internal\hardhat-network\provider\provider.ts:421:24)
+      at getSigners (node_modules\@nomicfoundation\hardhat-ethers\src\internal\helpers.ts:46:16)
+      at Context.<anonymous> (test\FreelanceEscrow.test.js:10:46)
+
+  6) FreelanceEscrow Production Features
+       "before each" hook for "Should handle pull-based refunds for unselected freelancers":
+     TypeError: Cannot read properties of undefined (reading 'error')
+      at isErrorResponse (node_modules\hardhat\src\internal\core\providers\http.ts:27:26)
+      at EdrProviderWrapper.request (node_modules\hardhat\src\internal\hardhat-network\provider\provider.ts:421:24)
+      at getSigners (node_modules\@nomicfoundation\hardhat-ethers\src\internal\helpers.ts:46:16)
+      at Context.<anonymous> (test\FreelanceEscrow_Production.test.js:11:60)
+
+  7) FreelanceEscrow - Integration Tests
+       "before each" hook for "Should complete full job lifecycle: Create ΓåÆ Apply ΓåÆ Pick ΓåÆ Accept ΓåÆ Submit ΓåÆ Release":
+     TypeError: Cannot read properties of undefined (reading 'error')
+      at isErrorResponse (node_modules\hardhat\src\internal\core\providers\http.ts:27:26)
+      at EdrProviderWrapper.request (node_modules\hardhat\src\internal\hardhat-network\provider\provider.ts:421:24)
+      at getSigners (node_modules\@nomicfoundation\hardhat-ethers\src\internal\helpers.ts:46:16)
+      at Context.<anonymous> (test\Integration.test.js:22:97)
+
+  8) PolyToken
+       "before each" hook for "Should set the right owner":
+     TypeError: Cannot read properties of undefined (reading 'error')
+      at isErrorResponse (node_modules\hardhat\src\internal\core\providers\http.ts:27:26)
+      at EdrProviderWrapper.request (node_modules\hardhat\src\internal\hardhat-network\provider\provider.ts:421:24)
+      at getSigners (node_modules\@nomicfoundation\hardhat-ethers\src\internal\helpers.ts:46:16)
+      at getContractFactoryByAbiAndBytecode (node_modules\@nomicfoundation\hardhat-ethers\src\internal\helpers.ts:318:21)
+      at Context.<anonymous> (test\PolyToken.test.js:12:21)
+
+  9) PolyLance Production Suite
+       "before each" hook for "Processes a standard job from creation to completion with SBTs and Reputation":
+     TypeError: Cannot read properties of undefined (reading 'error')
+      at isErrorResponse (node_modules\hardhat\src\internal\core\providers\http.ts:27:26)
+      at EdrProviderWrapper.request (node_modules\hardhat\src\internal\hardhat-network\provider\provider.ts:421:24)
+      at getSigners (node_modules\@nomicfoundation\hardhat-ethers\src\internal\helpers.ts:46:16)
+      at Context.<anonymous> (test\Production.test.js:14:65)
+
+  10) FreelanceEscrow - Security Tests
+       "before each" hook for "Should prevent reentrancy attacks on releaseFunds":
+     TypeError: Cannot read properties of undefined (reading 'error')
+      at isErrorResponse (node_modules\hardhat\src\internal\core\providers\http.ts:27:26)
+      at EdrProviderWrapper.request (node_modules\hardhat\src\internal\hardhat-network\provider\provider.ts:421:24)
+      at getSigners (node_modules\@nomicfoundation\hardhat-ethers\src\internal\helpers.ts:46:16)
+      at deployFixture (test\Security.test.js:21:55)
+      at loadFixture (node_modules\@nomicfoundation\hardhat-network-helpers\src\loadFixture.ts:59:18)
+      at Context.<anonymous> (test\Security.test.js:56:25)
+
+  11) Simple Test
+       Should get signers:
+     TypeError: Cannot read properties of undefined (reading 'error')
+      at isErrorResponse (node_modules\hardhat\src\internal\core\providers\http.ts:27:26)
+      at EdrProviderWrapper.request (node_modules\hardhat\src\internal\hardhat-network\provider\provider.ts:421:24)
+      at getSigners (node_modules\@nomicfoundation\hardhat-ethers\src\internal\helpers.ts:46:16)
+      at Context.<anonymous> (test\Simple.test.js:6:25)
+
+  12) Zenith Protocol: Deep Compliance & Edge Case Suite
+       "before each" hook for "Enforces MAX_APPLICATIONS_PER_JOB (50) to prevent gas exhaustion":
+     TypeError: Cannot read properties of undefined (reading 'error')
+      at isErrorResponse (node_modules\hardhat\src\internal\core\providers\http.ts:27:26)
+      at EdrProviderWrapper.request (node_modules\hardhat\src\internal\hardhat-network\provider\provider.ts:421:24)
+      at getSigners (node_modules\@nomicfoundation\hardhat-ethers\src\internal\helpers.ts:46:16)
+      at Context.<anonymous> (test\Zenith_Compliance.test.js:13:25)
+
+  13) Zenith Edge Cases & Fee Optimization
+       "before each" hook for "Qualified users should pay 0% platform fee":
+     TypeError: Cannot read properties of undefined (reading 'error')
+      at isErrorResponse (node_modules\hardhat\src\internal\core\providers\http.ts:27:26)
+      at EdrProviderWrapper.request (node_modules\hardhat\src\internal\hardhat-network\provider\provider.ts:421:24)
+      at getSigners (node_modules\@nomicfoundation\hardhat-ethers\src\internal\helpers.ts:46:16)
+      at Context.<anonymous> (test\Zenith_EdgeCases.test.js:11:53)
+
+
+

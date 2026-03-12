@@ -33,7 +33,7 @@ const SovereignService = {
   async getProfile(address) {
     try {
       if (!address) return null;
-      console.log(`[SOVEREIGN] Resolving profile for ${address}...`);
+      console.info(`[SOVEREIGN] Reconstructing identity mesh for ${address}...`);
       
       const portfolioCID = await publicClient.readContract({
         address: REPUTATION_ADDRESS,
@@ -87,7 +87,7 @@ const SovereignService = {
 
       return hydratedJobs;
     } catch (err) {
-      console.error('[SOVEREIGN] Subgraph query failed:', err.message);
+      console.warn('[SOVEREIGN] Subgraph synchronization friction:', err.message);
       return [];
     }
   },
@@ -122,7 +122,7 @@ const SovereignService = {
       }
       return job;
     } catch {
-      console.warn('[SOVEREIGN] Single job fallback check...');
+      console.warn('[SOVEREIGN] High gravity detected: Triggering cross-chain fallback for job retrieval...');
       // Direct chain read if Indexer is slow
       return null;
     }

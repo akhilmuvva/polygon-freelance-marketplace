@@ -27,7 +27,7 @@ export function NotificationManager() {
                 // const user = await PushAPI.initialize(signer, { env: 'staging' });
                 // const stream = await user.initStream([CONSTANTS.STREAM.NOTIF]);
                 // stream.on(CONSTANTS.STREAM.NOTIF, (data) => { toast.info(data.message); });
-                console.log('[PUSH] Initializing sovereign notification stream for:', address);
+                console.info('[SECURITY] Initializing sovereign notification stream for:', address);
             } catch (err) {
                 console.warn('[PUSH] Subscription inhibited:', err.message);
             }
@@ -40,6 +40,7 @@ export function NotificationManager() {
         address: CONTRACT_ADDRESS,
         abi: FreelanceEscrowABI.abi,
         eventName: 'JobCreated',
+        poll: true,
         onLogs(logs) {
             logs.forEach((log) => {
                 const { jobId, client, freelancer } = log.args;
@@ -59,6 +60,7 @@ export function NotificationManager() {
         address: CONTRACT_ADDRESS,
         abi: FreelanceEscrowABI.abi,
         eventName: 'JobAccepted',
+        poll: true,
         onLogs(logs) {
             logs.forEach((log) => {
                 const { jobId } = log.args;
@@ -75,6 +77,7 @@ export function NotificationManager() {
         address: CONTRACT_ADDRESS,
         abi: FreelanceEscrowABI.abi,
         eventName: 'WorkSubmitted',
+        poll: true,
         onLogs(logs) {
             logs.forEach((log) => {
                 const { jobId } = log.args;
@@ -91,6 +94,7 @@ export function NotificationManager() {
         address: CONTRACT_ADDRESS,
         abi: FreelanceEscrowABI.abi,
         eventName: 'FundsReleased',
+        poll: true,
         onLogs(logs) {
             logs.forEach((log) => {
                 const { jobId, freelancer } = log.args;
@@ -112,6 +116,7 @@ export function NotificationManager() {
         address: CONTRACT_ADDRESS,
         abi: FreelanceEscrowABI.abi,
         eventName: 'JobDisputed',
+        poll: true,
         onLogs(logs) {
             logs.forEach((log) => {
                 const { jobId } = log.args;

@@ -16,15 +16,17 @@ const ProofOfWorkModal = ({ isOpen, onClose, jobId, onSubmitted }) => {
     const { data: hash, writeContract, isPending } = useWriteContract();
     const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash });
 
-    const handleSubmit = async () => {
+    /// @notice Actuates a verifiable proof submission by anchoring work-evidence to a sovereign CID.
+    /// @dev This constitutes "Work-Done" signal in the protocol, clearing the path for milestone actuation.
+    const actuateProofSubmissionIntent = async () => {
         if (!title.trim() || !description.trim()) {
-            toast.warn("Please provide a title and description for your Proof of Work.");
+            toast.warn("Verifiable Intent Incomplete: Title and Summary required.");
             return;
         }
 
         setIsUploading(true);
         try {
-            // 1. Pack PoW Metadata
+            // 1. Pack PoW Metadata: Capturing the "Proof of Effort" for the immutable record.
             const powMetadata = {
                 title,
                 description,
@@ -34,20 +36,21 @@ const ProofOfWorkModal = ({ isOpen, onClose, jobId, onSubmitted }) => {
                 version: '1.0'
             };
 
-            // 2. Upload to IPFS
+            // 2. Upload to IPFS: Anchoring the evidence outside the reach of centralized friction.
             const { cid } = await StorageService.uploadMetadata(powMetadata);
 
-            // 3. Submit to Blockchain
+            // 3. Submit to Blockchain: Notifying the EVM state via the resilient transport layer.
             writeContract({
                 address: CONTRACT_ADDRESS,
                 abi: FreelanceEscrowABI.abi,
                 functionName: 'submitWork',
                 args: [BigInt(jobId), cid],
+                gas: 200000n // Directive 02: Manual gas limit to bypass RPC sim collapse
             });
 
         } catch (err) {
-            console.error('[PoW] Submission failed:', err);
-            toast.error("Failed to upload proof to IPFS.");
+            console.error('[GRAVITY] PoW Submission failed:', err);
+            toast.error("Evidence synchronization neutralized. Check network health.");
         } finally {
             setIsUploading(false);
         }
@@ -135,7 +138,7 @@ const ProofOfWorkModal = ({ isOpen, onClose, jobId, onSubmitted }) => {
                     <footer style={styles.footer}>
                         <button onClick={onClose} style={styles.btnCancel}>Discard</button>
                         <button
-                            onClick={handleSubmit}
+                            onClick={actuateProofSubmissionIntent}
                             disabled={isUploading || isPending || isConfirming}
                             className="btn btn-primary"
                             style={styles.btnSubmit}

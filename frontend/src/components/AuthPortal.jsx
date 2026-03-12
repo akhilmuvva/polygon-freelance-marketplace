@@ -122,7 +122,7 @@ const st = {
     },
 };
 
-const AuthPortal = ({ onSocialLogin, isLoggingIn }) => {
+const AuthPortal = ({ actuateOnSocialLoginIntent, isLoggingIn }) => {
     const { openConnectModal } = useConnectModal();
 
     return (
@@ -185,7 +185,7 @@ const AuthPortal = ({ onSocialLogin, isLoggingIn }) => {
                                 <motion.button
                                     whileHover={{ scale: 1.01, y: -2 }}
                                     whileTap={{ scale: 0.99 }}
-                                    onClick={onSocialLogin}
+                                    onClick={actuateOnSocialLoginIntent}
                                     disabled={isLoggingIn}
                                     aria-label="Login with Google, Email, or X"
                                     aria-busy={isLoggingIn}
@@ -193,7 +193,7 @@ const AuthPortal = ({ onSocialLogin, isLoggingIn }) => {
                                     onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(124,92,252,0.45)'; e.currentTarget.style.background = 'rgba(124,92,252,0.08)'; }}
                                     onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(124,92,252,0.15)'; e.currentTarget.style.background = 'rgba(255,255,255,0.03)'; }}
                                 >
-                                    <div style={st.authBtnIcon('purple')} aria-hidden="true">
+                                    <div style={st.authBtnIcon('purple')}>
                                         {isLoggingIn
                                             ? <div className="loading-spinner" role="status" style={{ width: 22, height: 22, border: '2px solid rgba(255,255,255,0.1)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }}>
                                                 <span style={{ position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', border: 0 }}>Loading...</span>
@@ -219,7 +219,7 @@ const AuthPortal = ({ onSocialLogin, isLoggingIn }) => {
                                     onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(236,72,153,0.45)'; e.currentTarget.style.background = 'rgba(236,72,153,0.08)'; }}
                                     onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(236,72,153,0.15)'; e.currentTarget.style.background = 'rgba(255,255,255,0.03)'; }}
                                 >
-                                    <div style={st.authBtnIcon('pink')} aria-hidden="true">
+                                    <div style={st.authBtnIcon('pink')}>
                                         <Wallet size={20} style={{ color: 'var(--secondary)' }} />
                                     </div>
                                     <div>
