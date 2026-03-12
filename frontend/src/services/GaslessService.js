@@ -19,8 +19,9 @@ export const ANTIGRAVITY_RELAY_CONFIG = {
  */
 
 export const getWebsocketTransport = (alchemyId) => {
-    // Standardizing on public RPC infrastructure as requested
-    return 'wss://polygon-rpc.com/ws'; 
+    // Standardizing on sovereign fallback or Amoy for the current protocol phase
+    const isAmoy = import.meta.env.VITE_APP_ENV !== 'production' || window.location.hostname.includes('amoy');
+    return isAmoy ? 'wss://rpc-amoy.polygon.technology/ws' : 'wss://polygon-rpc.com/ws'; 
 };
 
 /**

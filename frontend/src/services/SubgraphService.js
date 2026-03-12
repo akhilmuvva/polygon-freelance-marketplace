@@ -115,6 +115,18 @@ export const GET_DISPUTES = gql`
   }
 `;
 
+export const GET_PROTOCOL_STATS = gql`
+  query GetProtocolStats {
+    protocolStats(id: "1") {
+      totalYieldGenerated
+      totalValueLocked
+      totalOriginatorFees
+      totalSovereignSurplus
+      totalEliteIntents
+    }
+  }
+`;
+
 export const SubgraphService = {
   /**
    * Fetches a list of recent jobs
@@ -198,6 +210,28 @@ export const SubgraphService = {
     } catch (error) {
       // Subgraph ingestion delay or rate-limiting: Fallback to zero-state.
       return { totalJobs: 0, totalVolume: '0', activeUsers: [] };
+    }
+  },
+
+  /**
+   * Gets protocol-wide financial stats (Treasury, Fees, Surplus)
+   */
+  getProtocolStats: async () => {
+    try {
+      const { data } = await client.query({
+        query: GET_PROTOCOL_STATS,
+        fetchPolicy: 'network-only'
+      });
+      return data?.protocolStats || {
+        totalYieldGenerated: '0',
+        totalValueLocked: '0',
+        totalOriginatorFees: '0',
+        totalSovereignSurplus: '0',
+        totalEliteIntents: '0'
+      };
+    } catch (error) {
+      console.warn('[SUBGRAPH] Protocol stats resonance failure:', error.message);
+      return null;
     }
   },
 

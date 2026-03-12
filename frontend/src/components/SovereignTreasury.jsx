@@ -42,15 +42,36 @@ const s = {
 };
 
 const SovereignTreasury = () => {
-    // Mocking treasury data for Revenue Protocol Alpha
-    // In production, this would query the YieldRebalanced events from The Graph
-    const treasuryData = {
-        totalSurplus: '4.25 ETH',
-        safetyReserve: '1.12 ETH',
-        originatorFees: '0.58 ETH',
-        yieldDistributed: '12.4 ETH',
-        growthRate: '+15.4%'
+    const { data: stats, isLoading } = useQuery({
+        queryKey: ['protocolStats'],
+        queryFn: () => SubgraphService.getProtocolStats(),
+        refetchInterval: 30000,
+    });
+
+    // Formatting with 1e18 precision for Ether-like values
+    const formatWeight = (val) => {
+        if (!val) return '0.00';
+        const num = parseFloat(val) / 1e18;
+        return num.toFixed(4);
     };
+
+    const treasuryData = {
+        totalSurplus: `${formatWeight(stats?.totalSovereignSurplus)} MATIC`,
+        safetyReserve: `${formatWeight(stats?.totalYieldGenerated ? (BigInt(stats.totalYieldGenerated) * 5n / 100n).toString() : '0')} MATIC`,
+        originatorFees: `${formatWeight(stats?.totalOriginatorFees)} MATIC`,
+        yieldDistributed: `${formatWeight(stats?.totalYieldGenerated)} MATIC`,
+        growthRate: stats ? '+2.4%' : 'IDLE' // Growth rate tracking would require a time-series query
+    };
+
+    if (isLoading) {
+        return (
+            <div style={s.container}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 100 }}>
+                    <Zap size={24} className="animate-pulse" color="var(--accent)" />
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div style={s.container}>
@@ -73,8 +94,8 @@ const SovereignTreasury = () => {
                     <div style={s.value}>{treasuryData.originatorFees}</div>
                 </div>
                 <div style={s.statBox}>
-                    <div style={s.label}>Growth (MoM)</div>
-                    <div style={{ ...s.value, color: 'var(--success)' }}>{treasuryData.growthRate}</div>
+                    <div style={s.label}>Elite Intents</div>
+                    <div style={{ ...s.value, color: 'var(--accent-light)' }}>{stats?.totalEliteIntents || 0}</div>
                 </div>
             </div>
 
