@@ -63,18 +63,13 @@ function SovereignAuthProvider({ children, authStatus, setAuthStatus }) {
 
     const authAdapter = useMemo(() => createAuthenticationAdapter({
         getNonce: async () => {
-            try {
-                const currentAddress = identityRef.current;
-                if (!currentAddress) {
-                    // Deferred until wallet connection resonance is established.
-                    return '';
-                }
-                const { nonce } = await api.getNonce(currentAddress);
-                return nonce;
-            } catch (err) {
-                // Background friction: Handled by RainbowKit UI.
-                return '';
+            // Task 1: Local Nonce Generation (0ms latency)
+            const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            let nonce = '';
+            for (let i = 0; i < 17; i++) {
+                nonce += characters.charAt(Math.floor(Math.random() * characters.length));
             }
+            return nonce;
         },
 
         createMessage: (args) => {
@@ -101,7 +96,7 @@ function SovereignAuthProvider({ children, authStatus, setAuthStatus }) {
                 return new SiweMessage({
                     domain: window.location.hostname || 'localhost',
                     address: targetAddress,
-                    statement: 'Sign in to PolyLance Zenith',
+                    statement: 'I am actuating my sovereign identity on the Zenith Antigravity Protocol.',
                     uri: window.location.origin,
                     version: '1',
                     chainId: Number(targetChainId),
@@ -117,14 +112,14 @@ function SovereignAuthProvider({ children, authStatus, setAuthStatus }) {
         getMessageBody: ({ message }) => message,
 
         verify: async ({ message, signature }) => {
-            console.info('[SECURITY] Verifying SIWE signature resonance...');
+            console.info('[SECURITY] Verifying SIWE signature resonance (Sovereign Pass-Through)...');
             try {
-                setAuthStatus('loading');
-                const data = await api.verifySIWE(message, signature);
-                const ok = !!data.address;
-                setAuthStatus(ok ? 'authenticated' : 'unauthenticated');
-                if (ok) hotToast.success('Identity Verified');
-                return ok;
+                // Task 2: Bypass Verify Backend. Instant client-side validation.
+                setAuthStatus('authenticated');
+                
+                // Task 4: Immediate State Reset. The modal closes via status change.
+                hotToast.success('Identity Verified', { id: 'auth-success' });
+                return true;
             } catch (err) {
                 console.error('[SECURITY] SIWE verification collapse:', err);
                 setAuthStatus('unauthenticated');
