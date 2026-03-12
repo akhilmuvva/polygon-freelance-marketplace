@@ -11,7 +11,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host --port 5174",
-    "build": "npx cross-env NODE_OPTIONS=--max-old-space-size=4096 vite build",
+    "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest run"

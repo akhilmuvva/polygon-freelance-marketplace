@@ -2,8 +2,7 @@
   "version": 2,
   "framework": "vite",
   "buildCommand": "npm run build",
-  "outputDirectory": "frontend/dist",
-  "installCommand": "npm install && npm install --prefix frontend",
+  "outputDirectory": "dist",
   "cleanUrls": true,
   "trailingSlash": false,
   "rewrites": [
@@ -11,9 +10,5 @@
       "source": "/(.*)",
       "destination": "/index.html"
     }
-  ],
-  "env": {
-    "NODE_VERSION": "22",
-    "NODE_OPTIONS": "--max-old-space-size=4096"
-  }
+  ]
 }
