@@ -27,23 +27,36 @@ const Dashboard = ({ address: propAddress }) => {
     const { calculateGravity } = useSovereignLogic();
     const { staggerFadeIn, countUp } = useAnimeAnimations();
     
+    // Directive: Hydration Orbit Stabilization
+    const [isHydrated, setIsHydrated] = useState(false);
+    
     // State
     const [selectedProof, setSelectedProof] = useState(null);
     const [isProofModalOpen, setIsProofModalOpen] = useState(false);
     const [surplus, setSurplus] = useState(0);
     const [tbaInfo, setTbaInfo] = useState(null);
     const [activeEscrows, setActiveEscrows] = useState([]);
+    const [gravityStats, setGravityStats] = useState({
+        frictionLevel: 50,
+        orbitCategory: 'Resolving Resonance...',
+        equilibriumAdjustment: '0%'
+    });
+
+    useEffect(() => {
+        setIsHydrated(true);
+    }, []);
     
     // Queries
     const { data: pData } = useQuery({
         queryKey: ['profile', address],
         queryFn: () => ProfileService.getProfile(address),
-        enabled: !!address
+        enabled: isHydrated && !!address
     });
 
     const { data: aData } = useQuery({
         queryKey: ['ecosystem-stats'],
-        queryFn: () => SubgraphService.getEcosystemStats()
+        queryFn: () => SubgraphService.getEcosystemStats(),
+        enabled: isHydrated
     });
 
     // Real-time Surplus Simulator
@@ -54,7 +67,7 @@ const Dashboard = ({ address: propAddress }) => {
 
     // TBA and Active Escrow Logic
     useEffect(() => {
-        if (address) {
+        if (isHydrated && address) {
             DemoProtocol.getTBAVisualProof(address).then(setTbaInfo);
             
             // Subgraph integration: Fetch real jobs for the connected address
@@ -68,7 +81,7 @@ const Dashboard = ({ address: propAddress }) => {
                     setActiveEscrows(active.map(j => ({
                         id: j.jobId,
                         title: `Contract #${j.jobId}`,
-                        status: ['Created', 'Accepted', 'Ongoing', 'Disputed', 'Arbitration'][Number(j.status)] || 'Active',
+                        status: ['Created', 'Accepted', 'Ongoing', 'Disputed', 'Arbitration', 'Completed', 'Cancelled'][Number(j.status)] || 'Active',
                         progress: Number(j.status) === 0 ? 0 : Number(j.status) === 1 ? 25 : 50,
                         budget: formatEther(BigInt(j.amount || 0))
                     })));
@@ -77,18 +90,25 @@ const Dashboard = ({ address: propAddress }) => {
                 }
             }).catch(() => setActiveEscrows([]));
         }
-    }, [address]);
+    }, [isHydrated, address]);
 
-    // Derived Stats
-    const gravityStats = useMemo(() => calculateGravity({
-        averageRating: pData?.averageRating || 0,
-        totalJobs: aData?.totalJobs || 0,
-        karmaBalance: pData?.reputationScore || 0
-    }), [pData, aData, calculateGravity]);
+    // Derived Stats (Moved to useEffect to authorize Hydrate orbit completion)
+    useEffect(() => {
+        if (isHydrated) {
+            const stats = calculateGravity({
+                averageRating: pData?.averageRating || 0,
+                totalJobs: aData?.totalJobs || 0,
+                karmaBalance: pData?.reputationScore || 0
+            });
+            setGravityStats(stats);
+        }
+    }, [isHydrated, pData, aData, calculateGravity]);
 
     useEffect(() => {
-        staggerFadeIn('.bento-tile', 60);
-    }, [staggerFadeIn]);
+        if (isHydrated) {
+            staggerFadeIn('.bento-tile', 60);
+        }
+    }, [isHydrated, staggerFadeIn]);
 
     const handleViewProof = (escrow) => {
         setSelectedProof({
@@ -107,7 +127,7 @@ const Dashboard = ({ address: propAddress }) => {
         setIsProofModalOpen(true);
     };
 
-    if (!isConnected) return null; // Shell handles this
+    if (!isHydrated || !isConnected) return null; // Shell handles non-connection state
 
     return (
         <div className="space-y-6 pt-4 pb-12">
