@@ -240,16 +240,16 @@ export default function AssetDashboard({ contractAddress }) {
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
               <div className="input-group-glass">
-                <label className="form-label">Description</label>
-                <input className="form-input" placeholder="e.g. Q1 Revenue Target" value={milestoneForm.description} onChange={e => setMilestoneForm({ ...milestoneForm, description: e.target.value })} />
+                <label htmlFor="milestone-desc" className="form-label">Description</label>
+                <input id="milestone-desc" name="description" className="form-input" placeholder="e.g. Q1 Revenue Target" value={milestoneForm.description} onChange={e => setMilestoneForm({ ...milestoneForm, description: e.target.value })} />
               </div>
               <div className="input-group-glass">
-                <label className="form-label">Release Value (USDC)</label>
-                <input className="form-input" type="number" placeholder="25000" value={milestoneForm.value} onChange={e => setMilestoneForm({ ...milestoneForm, value: e.target.value })} />
+                <label htmlFor="milestone-value" className="form-label">Release Value (USDC)</label>
+                <input id="milestone-value" name="value" className="form-input" type="number" placeholder="25000" value={milestoneForm.value} onChange={e => setMilestoneForm({ ...milestoneForm, value: e.target.value })} />
               </div>
               <div className="input-group-glass">
-                <label className="form-label">Target Completion Date</label>
-                <input className="form-input" type="date" value={milestoneForm.deadline} onChange={e => setMilestoneForm({ ...milestoneForm, deadline: e.target.value })} />
+                <label htmlFor="milestone-date" className="form-label">Target Completion Date</label>
+                <input id="milestone-date" name="deadline" className="form-input" type="date" value={milestoneForm.deadline} onChange={e => setMilestoneForm({ ...milestoneForm, deadline: e.target.value })} />
               </div>
               <button disabled={isPending} className="btn-primary" style={{ marginTop: 10, width: '100%' }} onClick={() => actuateMilestoneInitializeIntent(selectedAsset)}>
                 {isPending ? '⏳ Actuating Intent...' : 'Confirm Milestone'}

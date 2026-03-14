@@ -197,11 +197,13 @@ const FiatOnramp = ({ address, recipientAddress: propRecipient }) => {
                 </header>
 
                 <div style={{ marginBottom: 20 }}>
-                    <label style={{ fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)', letterSpacing: '0.05em' }}>
+                    <label htmlFor="onramp-recipient" style={{ fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)', letterSpacing: '0.05em' }}>
                         Asset Recipient (Polygon Address)
                     </label>
                     <div style={{ position: 'relative' }}>
                         <input
+                            id="onramp-recipient"
+                            name="recipientAddress"
                             style={{ ...s.input, fontSize: '0.85rem', color: '#a78bfa' }}
                             type="text"
                             value={recipientAddress}
@@ -217,10 +219,12 @@ const FiatOnramp = ({ address, recipientAddress: propRecipient }) => {
                 </div>
 
                 <div style={{ marginBottom: 24 }}>
-                    <label style={{ fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)', letterSpacing: '0.05em' }}>
+                    <label htmlFor="onramp-amount" style={{ fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)', letterSpacing: '0.05em' }}>
                         Amount (INR)
                     </label>
                     <input
+                        id="onramp-amount"
+                        name="amount"
                         style={s.input}
                         type="number"
                         value={amount}

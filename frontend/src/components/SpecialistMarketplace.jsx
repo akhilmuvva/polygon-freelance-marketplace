@@ -303,8 +303,8 @@ const SpecialistMarketplace = () => {
                     {/* Filters */}
                     <div className="filters">
                         <div className="filter-group">
-                            <label>Proficiency Level:</label>
-                            <select value={filterLevel} onChange={(e) => setFilterLevel(e.target.value)}>
+                            <label htmlFor="market-proficiency">Proficiency Level:</label>
+                            <select id="market-proficiency" name="proficiency" value={filterLevel} onChange={(e) => setFilterLevel(e.target.value)}>
                                 <option value="all">All Levels</option>
                                 {proficiencyLevels.map(level => (
                                     <option key={level.id} value={level.id}>
@@ -315,8 +315,8 @@ const SpecialistMarketplace = () => {
                         </div>
 
                         <div className="filter-group">
-                            <label>Sort By:</label>
-                            <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+                            <label htmlFor="market-sort">Sort By:</label>
+                            <select id="market-sort" name="sortBy" value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
                                 <option value="rating">Highest Rating</option>
                                 <option value="projects">Most Projects</option>
                                 <option value="earnings">Top Earners</option>
