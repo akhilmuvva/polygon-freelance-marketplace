@@ -366,7 +366,17 @@ function App() {
       await particle.auth.login();
       const { ParticleProvider } = await import("@biconomy/particle-auth");
       const provider = new ParticleProvider(particle.auth);
-      const wc = createWalletClient({ chain: polygonAmoy, transport: custom(provider) });
+      
+      // Directive 08: Identity Anchoring
+      // Viem requires an explicit account to be consumed by the Biconomy Smart Account client.
+      const [address] = await provider.request({ method: 'eth_accounts' });
+      
+      const wc = createWalletClient({ 
+        account: address,
+        chain: polygonAmoy, 
+        transport: custom(provider) 
+      });
+      
       if (particle.isMock) wc.isMock = true;
       const sa = await createBiconomySmartAccount(wc);
       if (!sa) throw new Error('Smart account creation failed');

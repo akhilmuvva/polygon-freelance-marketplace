@@ -75,6 +75,17 @@ export async function createBiconomySmartAccount(signer) {
     }
 
     try {
+        // Directive 08: Identity Pre-flight
+        // Ensure the signer has an associated account (required for Biconomy and Viem resonance).
+        if (!signer.account && typeof signer.getAddresses === 'function') {
+            const [address] = await signer.getAddresses();
+            if (address) signer.account = address;
+        }
+
+        if (!signer.account) {
+            throw new Error('Signer missing account identity node.');
+        }
+
         console.info('[SECURITY] Actuating Smart Account client for chain:', signer.chain?.id || 'unknown');
         const smartAccount = await createSmartAccountClient({
             signer: signer,
