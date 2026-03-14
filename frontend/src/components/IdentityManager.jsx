@@ -186,8 +186,10 @@ const IdentityManager = ({ address }) => {
                                 {/* Form */}
                                 <div style={s.card}>
                                     <div style={{ marginBottom: 24 }}>
-                                        <label style={s.label}>Legal Persona</label>
+                                        <label htmlFor="profile-name" style={s.label}>Legal Persona</label>
                                         <input 
+                                            id="profile-name"
+                                            name="name"
                                             type="text" 
                                             value={profile.name}
                                             onChange={(e) => setProfile(prev => ({ ...prev, name: e.target.value }))}
@@ -197,8 +199,10 @@ const IdentityManager = ({ address }) => {
                                         />
                                     </div>
                                     <div style={{ marginBottom: 24 }}>
-                                        <label style={s.label}>Sovereign Manifesto (Bio)</label>
+                                        <label htmlFor="profile-bio" style={s.label}>Sovereign Manifesto (Bio)</label>
                                         <textarea 
+                                            id="profile-bio"
+                                            name="bio"
                                             value={profile.bio}
                                             onChange={(e) => setProfile(prev => ({ ...prev, bio: e.target.value }))}
                                             placeholder="Describe your expertise..."
@@ -208,8 +212,10 @@ const IdentityManager = ({ address }) => {
                                         />
                                     </div>
                                     <div style={{ marginBottom: 32 }}>
-                                        <label style={s.label}>Neural Nodes (Skills)</label>
+                                        <label htmlFor="profile-skills" style={s.label}>Neural Nodes (Skills)</label>
                                         <input 
+                                            id="profile-skills"
+                                            name="skills"
                                             type="text" 
                                             value={profile.skills}
                                             onChange={(e) => setProfile(prev => ({ ...prev, skills: e.target.value }))}

@@ -76,8 +76,10 @@ export default function TokenizeAssetForm({ contractAddress }) {
             <form onSubmit={actuateTokenizationIntent}>
                 {/* Asset Type */}
                 <div className="form-group">
-                    <label>Asset Type</label>
+                    <label htmlFor="asset-type">Asset Type</label>
                     <select
+                        id="asset-type"
+                        name="assetType"
                         value={formData.assetType}
                         onChange={(e) => setFormData({ ...formData, assetType: parseInt(e.target.value) })}
                         required
@@ -92,8 +94,10 @@ export default function TokenizeAssetForm({ contractAddress }) {
 
                 {/* Total Value */}
                 <div className="form-group">
-                    <label>Total Value (USDC)</label>
+                    <label htmlFor="asset-total-value">Total Value (USDC)</label>
                     <input
+                        id="asset-total-value"
+                        name="totalValue"
                         type="number"
                         step="0.01"
                         placeholder="e.g., 50000"
@@ -106,8 +110,10 @@ export default function TokenizeAssetForm({ contractAddress }) {
 
                 {/* Total Supply */}
                 <div className="form-group">
-                    <label>Fractional Tokens</label>
+                    <label htmlFor="asset-total-supply">Fractional Tokens</label>
                     <input
+                        id="asset-total-supply"
+                        name="totalSupply"
                         type="number"
                         placeholder="e.g., 10000"
                         value={formData.totalSupply}
@@ -119,8 +125,10 @@ export default function TokenizeAssetForm({ contractAddress }) {
 
                 {/* Maturity Period */}
                 <div className="form-group">
-                    <label>Maturity Period (Months)</label>
+                    <label htmlFor="asset-maturity">Maturity Period (Months)</label>
                     <input
+                        id="asset-maturity"
+                        name="maturityMonths"
                         type="number"
                         min="1"
                         max="60"
@@ -133,8 +141,10 @@ export default function TokenizeAssetForm({ contractAddress }) {
 
                 {/* Metadata URI */}
                 <div className="form-group">
-                    <label>Documentation (IPFS)</label>
+                    <label htmlFor="asset-metadata">Documentation (IPFS)</label>
                     <input
+                        id="asset-metadata"
+                        name="metadataURI"
                         type="text"
                         placeholder="ipfs://Qm..."
                         value={formData.metadataURI}
@@ -146,8 +156,10 @@ export default function TokenizeAssetForm({ contractAddress }) {
 
                 {/* Legal Hash */}
                 <div className="form-group">
-                    <label>Legal Agreement Hash (Optional)</label>
+                    <label htmlFor="asset-legal-hash">Legal Agreement Hash (Optional)</label>
                     <input
+                        id="asset-legal-hash"
+                        name="legalHash"
                         type="text"
                         placeholder="0x..."
                         value={formData.legalHash}

@@ -158,8 +158,17 @@ export default function Chat({ initialPeerAddress }) {
                             } catch (err) { alert('Error starting conversation: ' + err.message); }
                         }
                     }}>
-                    <input type="text" className="form-input" placeholder="0x..." style={{ fontSize: '0.85rem' }}
-                        value={peerAddress} onChange={(e) => setPeerAddress(e.target.value)} />
+                    <label htmlFor="peer-address-input" style={{ display: 'none' }}>Peer Address</label>
+                    <input 
+                        id="peer-address-input"
+                        name="peerAddress"
+                        type="text" 
+                        className="form-input" 
+                        placeholder="0x..." 
+                        style={{ fontSize: '0.85rem' }}
+                        value={peerAddress} 
+                        onChange={(e) => setPeerAddress(e.target.value)} 
+                    />
                     <button type="submit" className="btn btn-primary" style={{ borderRadius: 10, padding: '8px 12px' }}>
                         <PlusCircle size={18} />
                     </button>
@@ -400,9 +409,17 @@ function MessageContainer({ conversation, address, contractContext, loadingConte
 
             {/* Input */}
             <form onSubmit={handleSend} style={{ padding: 14, display: 'flex', gap: 10, borderTop: '1px solid var(--border)' }}>
-                <input type="text" className="form-input" placeholder="Type a message..."
+                <label htmlFor="chat-message-input" style={{ display: 'none' }}>Message</label>
+                <input 
+                    id="chat-message-input"
+                    name="message"
+                    type="text" 
+                    className="form-input" 
+                    placeholder="Type a message..."
                     style={{ flex: 1, borderRadius: 20 }}
-                    value={inputValue} onChange={(e) => setInputValue(e.target.value)} />
+                    value={inputValue} 
+                    onChange={(e) => setInputValue(e.target.value)} 
+                />
                 <button type="submit" className="btn btn-primary"
                     style={{ borderRadius: '50%', width: 42, height: 42, padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <Send size={16} />

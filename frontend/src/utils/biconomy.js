@@ -33,7 +33,15 @@ export async function initSocialLogin() {
     try {
         const { ParticleAuthModule } = await import("@biconomy/particle-auth");
 
-        const particle = new ParticleAuthModule.ParticleAuth({
+        // Directive: SDK Polymorphism Resilience
+        // The constructor name varies between SDK versions (ParticleAuth vs ParticleNetwork).
+        const ParticleConstructor = ParticleAuthModule.ParticleAuth || ParticleAuthModule.ParticleNetwork || ParticleAuthModule;
+        
+        if (typeof ParticleConstructor !== 'function') {
+            throw new Error('Sovereign Auth Component not found in transport layer.');
+        }
+
+        const particle = new ParticleConstructor({
             projectId,
             clientKey,
             appId,
