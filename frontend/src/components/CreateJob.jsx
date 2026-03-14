@@ -121,16 +121,9 @@ function CreateJob({ onJobCreated, gasless, smartAccount }) {
             ipfsHash = cid;
             console.info('[NETWORK] Sovereign metadata anchored:', ipfsHash);
 
-            if (isIntentOnly) {
-                // Step 1: Decentralized Intent Anchoring (Mocking Ceramic)
-                const intents = JSON.parse(localStorage.getItem('SOVEREIGN_INTENTS') || '[]');
-                intents.push({ ...metadata, ipfsHash, createdAt: Date.now() });
-                localStorage.setItem('SOVEREIGN_INTENTS', JSON.stringify(intents));
-                
-                hotToast.success('Job Intent Anchored to Sovereign Mesh');
-                onJobCreated?.();
-                return;
-            }
+            // Removed decentralized intent anchoring. All jobs, including open intents, 
+            // are now actuated directly via the Escrow Smart Contract to ensure immediate 
+            // economic resonance and allow freelancer applications.
 
             // Step 3: Actuation Logic for Fixed Contracts
             const deadline = Math.floor(Date.now() / 1000) + (Number(durationDays) * 86400);
