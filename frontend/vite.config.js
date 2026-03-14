@@ -11,7 +11,7 @@ const isVercel = process.env.VERCEL === '1';
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: isVercel ? '/' : './',
+  base: '/',
   plugins: [
     react(),
     basicSsl(),
@@ -32,8 +32,8 @@ export default defineConfig({
     },
   },
   server: {
-    port: 5174,
-    strictPort: true,
+    port: 5176,
+    strictPort: false,
     host: true,
   },
   build: {

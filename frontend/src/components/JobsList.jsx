@@ -286,7 +286,7 @@ const JobCard = ({ job, address, onSelectChat, onFiatPay }) => {
     /// @dev This confirms the "Weightless" transfer of value from escrow to the sovereign actor.
     const actuatePaymentIntent = async () => {
         if (!address) {
-            hotToast.error('Identity required for settlement.');
+            toast.error('Identity required for settlement.');
             return;
         }
 
@@ -299,7 +299,7 @@ const JobCard = ({ job, address, onSelectChat, onFiatPay }) => {
                 args: [BigInt(job.jobId)],
                 gas: 1000000n // Directive 02: Simulation Bypass for Functional Finality
             });
-            hotToast.success('Settlement Intent Broadcasted');
+            toast.success('Settlement Intent Broadcasted');
         } catch (err) {
             console.error('[GRAVITY] Settlement failed:', err);
             toast.error('Settlement friction detected. Check gas resonance.');
@@ -335,7 +335,14 @@ const JobCard = ({ job, address, onSelectChat, onFiatPay }) => {
         }
 
         try {
-            const amountBigInt = BigInt(job.amount || '0');
+            // Harmonic Resolution: Handle both subgraph BigInts and local intent floats.
+            let amountBigInt;
+            if (job.isIntent) {
+                amountBigInt = parseUnits(job.amount || '0', tokenInfo.decimals);
+            } else {
+                amountBigInt = BigInt(job.amount || '0');
+            }
+            
             const stake = (amountBigInt * 5n) / 100n; // 5% capacity stake required by Escrow
             const isNative = !job.token || job.token === '0x0000000000000000000000000000000000000000';
 
