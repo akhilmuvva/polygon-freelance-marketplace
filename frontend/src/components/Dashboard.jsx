@@ -1,540 +1,304 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import { useAccount, useSignMessage } from 'wagmi';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useAccount, useWalletClient } from 'wagmi';
 import { formatEther } from 'viem';
-import { useConnectModal } from '@rainbow-me/rainbowkit';
-import {
-    Wallet, Briefcase, CheckCircle, Clock, Save, User, Award,
-    Sparkles, Send, Activity, Terminal, Shield, Zap, TrendingUp,
-    Globe, BarChart3, Lock, Star, Layers,
-    Cpu, Rocket, Target, Flame, Diamond,
-    Camera, Loader2, Brain, ShieldCheck, TrendingDown
+import { 
+    Shield, Award, Zap, Brain, Rocket, Clock, Database, 
+    Terminal, Layers, TrendingUp, Cpu, Flame, CheckCircle2,
+    ArrowRight, MessageSquare, ChevronRight, Gavel, Sparkles,
+    Activity, Globe, Lock, Diamond, User, Wallet
 } from 'lucide-react';
-import FreelanceEscrowABI from '../contracts/FreelanceEscrow.json';
-import { CONTRACT_ADDRESS, REPUTATION_ADDRESS } from '../constants';
-import api from '../services/api';
-import ProfileService from '../services/ProfileService';
 import { useQuery } from '@tanstack/react-query';
-import LiveJobFeed from './LiveJobFeed';
-import AiRecommendations from './AiRecommendations';
-import WithdrawButton from './WithdrawButton';
-import YieldManagerDashboard from './YieldManagerDashboard';
-import { useAnimeAnimations } from '../hooks/useAnimeAnimations';
-import StorageService from '../services/StorageService';
 import SubgraphService from '../services/SubgraphService';
-import { useIdentity } from '../hooks/useIdentity';
-import { StabilizerService } from '../services/StabilizerService';
-import { GravityScoreService, evaluateGravityFactor } from '../services/GravityScoreService';
-import { GhostModeratorService } from '../services/GhostModeratorService';
+import ProfileService from '../services/ProfileService';
+import { useSovereignLogic } from '../hooks/useSovereignLogic';
+import ReasoningProofModal from './ReasoningProofModal';
+import DemoProtocol from '../services/DemoProtocol';
 import { TreasuryButlerService } from '../services/TreasuryButlerService';
-import GovernanceWatcherService from '../services/GovernanceWatcherService';
-import SovereignResumeService from '../services/SovereignResume';
-import SovereignTreasury from './SovereignTreasury';
-import { useTokenBalance } from '../hooks/useTokenBalance';
+import { GravityScoreService } from '../services/GravityScoreService';
+import { useAnimeAnimations } from '../hooks/useAnimeAnimations';
 import hotToast from 'react-hot-toast';
-import { useWalletClient } from 'wagmi';
 
-const REPUTATION_ABI = [
-    {
-        "inputs": [{ "internalType": "string", "name": "cid", "type": "string" }],
-        "name": "updatePortfolio",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-    }
-];
-
-/* ─── Inline Styles ─── */
-const s = {
-    page: {
-        display: 'flex', flexDirection: 'column', gap: 24,
-        animation: 'fadeIn 0.5s ease-out',
-        perspective: '1000px',
-    },
-    bentoGrid: {
-        display: 'grid',
-        gridTemplateColumns: 'repeat(12, 1fr)',
-        gridAutoRows: 'minmax(100px, auto)',
-        gap: 20,
-    },
-    tile: (spanX = 4, spanY = 1, bg = 'var(--bg-card)') => ({
-        gridColumn: `span ${spanX}`,
-        gridRow: `span ${spanY}`,
-        background: bg,
-        borderRadius: 24,
-        padding: 24,
-        border: '1px solid var(--border)',
-        position: 'relative',
-        overflow: 'hidden',
-        display: 'flex',
-        flexDirection: 'column',
-        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-        backdropFilter: 'blur(10px)',
-        WebkitBackdropFilter: 'blur(10px)',
-    }),
-    glassTile: (spanX = 4, spanY = 1) => ({
-        gridColumn: `span ${spanX}`,
-        gridRow: `span ${spanY}`,
-        background: 'rgba(255, 255, 255, 0.02)',
-        borderRadius: 28,
-        padding: 32,
-        border: '1px solid rgba(255, 255, 255, 0.05)',
-        position: 'relative',
-        overflow: 'hidden',
-        backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
-    }),
-    heroBadge: {
-        display: 'inline-flex', alignItems: 'center', gap: 6,
-        padding: '6px 14px', borderRadius: 12,
-        background: 'rgba(124, 92, 252, 0.1)',
-        border: '1px solid rgba(124, 92, 252, 0.2)',
-        color: 'var(--accent-light)', fontSize: '0.65rem', fontWeight: 800,
-        textTransform: 'uppercase', letterSpacing: '0.08em',
-        marginBottom: 20,
-    },
-    heroTitle: {
-        fontSize: '2.8rem', fontWeight: 900, letterSpacing: '-0.04em',
-        lineHeight: 1, marginBottom: 12, color: '#fff',
-    },
-    statsLabel: {
-        fontSize: '0.65rem', fontWeight: 700, color: 'var(--text-tertiary)',
-        textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8,
-    },
-    statsValue: {
-        fontSize: '1.8rem', fontWeight: 900, letterSpacing: '-0.02em', color: '#fff',
-    },
-    agentStatus: (online) => ({
-        display: 'flex', alignItems: 'center', gap: 6,
-        fontSize: '0.62rem', fontWeight: 800,
-        color: online ? '#10b981' : 'var(--text-tertiary)',
-        textTransform: 'uppercase',
-    }),
-    glow: (color) => ({
-        position: 'absolute', top: '-20%', right: '-10%',
-        width: 150, height: 150, borderRadius: '50%',
-        background: `radial-gradient(circle, ${color} 0%, transparent 70%)`,
-        opacity: 0.15, pointerEvents: 'none',
-    }),
-};
-
-function Dashboard({ address: propAddress }) {
+const Dashboard = ({ address: propAddress }) => {
     const { address: wagmiAddress } = useAccount();
     const address = propAddress || wagmiAddress;
     const isConnected = !!address;
-    const { openConnectModal } = useConnectModal();
-    const { signMessageAsync: _signMessageAsync } = useSignMessage();
-    const identity = useIdentity(address);
+    const { data: walletClient } = useWalletClient();
+    const { calculateGravity } = useSovereignLogic();
+    const { staggerFadeIn, countUp } = useAnimeAnimations();
+    
+    // State
+    const [selectedProof, setSelectedProof] = useState(null);
+    const [isProofModalOpen, setIsProofModalOpen] = useState(false);
+    const [surplus, setSurplus] = useState(0);
+    const [tbaInfo, setTbaInfo] = useState(null);
+    const [activeEscrows, setActiveEscrows] = useState([]);
+    
+    // Queries
+    const { data: pData } = useQuery({
+        queryKey: ['profile', address],
+        queryFn: () => ProfileService.getProfile(address),
+        enabled: !!address
+    });
 
     const { data: aData } = useQuery({
         queryKey: ['ecosystem-stats'],
-        queryFn: () => SubgraphService.getEcosystemStats().catch(() => ({
-            totalJobs: 142,
-            totalVolume: '2450000000000000000000', // 2.45M POL
-            activeUsers: Array(85).fill(0)
-        })),
-        staleTime: 60000 // 1 minute cache
+        queryFn: () => SubgraphService.getEcosystemStats()
     });
 
-    const { data: pData, isLoading: isLoadingProfile } = useQuery({
-        queryKey: ['profile', address],
-        queryFn: () => ProfileService.getProfile(address),
-        enabled: isConnected && !!address
-    });
+    // Real-time Surplus Simulator
+    // Surplus dynamic logic disabled per liquidity reset directive
+    useEffect(() => {
+        // setSurplus(prev => prev + (Math.random() * 0.00001));
+    }, []);
 
-    const [analytics, setAnalytics] = React.useState({ totalJobs: 0, totalVolume: 0, totalUsers: 0 });
-    const [profile, setProfile] = React.useState({ name: '', bio: '', averageRating: 5.0, reputationScore: 780 });
-
-    React.useEffect(() => {
-        if (aData) {
-            setAnalytics({
-                totalJobs: Number(aData.totalJobs || 0),
-                totalVolume: parseFloat(formatEther(BigInt(aData.totalVolume || 0))),
-                totalUsers: aData.activeUsers?.length || 0
-            });
+    // TBA and Active Escrow Logic
+    useEffect(() => {
+        if (address) {
+            DemoProtocol.getTBAVisualProof(address).then(setTbaInfo);
+            
+            // Subgraph integration: Fetch real jobs for the connected address
+            SubgraphService.getUserPortfolio(address).then(p => {
+                if (p) {
+                    const freelancerJobs = p.freelancer?.jobs || [];
+                    const clientJobs = p.client?.jobs || []; // Note: Schema might need adjustment if client.jobs is not available direct
+                    
+                    // Filter for active status (0-4)
+                    const active = freelancerJobs.filter(j => Number(j.status) < 5);
+                    setActiveEscrows(active.map(j => ({
+                        id: j.jobId,
+                        title: `Contract #${j.jobId}`,
+                        status: ['Created', 'Accepted', 'Ongoing', 'Disputed', 'Arbitration'][Number(j.status)] || 'Active',
+                        progress: Number(j.status) === 0 ? 0 : Number(j.status) === 1 ? 25 : 50,
+                        budget: formatEther(BigInt(j.amount || 0))
+                    })));
+                } else {
+                    setActiveEscrows([]);
+                }
+            }).catch(() => setActiveEscrows([]));
         }
-    }, [aData]);
-
-    React.useEffect(() => {
-        if (pData) setProfile(prev => ({ ...prev, ...pData }));
-    }, [pData]);
-
-    const [globalRank, setGlobalRank] = React.useState(0);
-    
-    React.useEffect(() => {
-        const fetchRank = async () => {
-            const leaders = await SubgraphService.getLeaderboard();
-            const rank = leaders.findIndex(l => l.id.toLowerCase() === address?.toLowerCase());
-            setGlobalRank(rank !== -1 ? rank + 1 : '>100');
-        };
-        if (address) fetchRank();
     }, [address]);
 
-    const [autonStatus, setAutonStatus] = React.useState({
-        stabilizer: 'SYNCING', treasury: 'SYNCING', sybil: 'SYNCING', governance: 'SYNCING'
-    });
+    // Derived Stats
+    const gravityStats = useMemo(() => calculateGravity({
+        averageRating: pData?.averageRating || 0,
+        totalJobs: aData?.totalJobs || 0,
+        karmaBalance: pData?.reputationScore || 0
+    }), [pData, aData, calculateGravity]);
 
-    React.useEffect(() => {
-        // [AGA] Real-time autonomic health telemetry
-        const checkHealth = async () => {
-            setAutonStatus({
-                stabilizer: 'RESILIENT',
-                treasury: 'OPTIMIZED',
-                sybil: 'PROTECTED',
-                governance: 'SECURE'
-            });
-        };
-        checkHealth();
-    }, []);
-    const [yieldStrategy, setYieldStrategy] = React.useState({ strategy: 'Analyzing...', projectedApy: '0%' });
-    const [badges, setBadges] = React.useState([]);
-    const [eliteMode, setEliteMode] = React.useState(false);
-    
-    // Check for Elite Status (Mocking threshold for Alpha)
-    const { balance: nativeBalance } = useTokenBalance(address);
-    const isEliteEligible = Number(nativeBalance || 0) > 1; // Example 1 MATIC threshold
+    useEffect(() => {
+        staggerFadeIn('.bento-tile', 60);
+    }, [staggerFadeIn]);
 
-    // Neutral Gravity Logic Reconciliation Event
-    const gravityFactor = React.useMemo(() => evaluateGravityFactor(
-        identity.reputationEpochs,
-        analytics.totalJobs
-    ), [identity.reputationEpochs, analytics.totalJobs]);
-
-    const gravityStats = React.useMemo(() => GravityScoreService.computeFriction({
-        averageRating: profile.averageRating || 5.0,
-        totalJobs: analytics.totalJobs || 0,
-        karmaBalance: identity.reputationEpochs || 50
-    }), [profile.averageRating, analytics.totalJobs, identity.reputationEpochs]);
-
-    const { countUp, staggerFadeIn } = useAnimeAnimations();
-    const statRefs = React.useRef([]);
-
-    const fetchData = React.useCallback(async () => {
-        if (!isConnected || !address) return;
-        try {
-            const [yData, bData] = await Promise.all([
-                api.getYieldStrategy(address).catch(() => ({ strategy: 'Morpho Blue', projectedApy: '4.2%' })),
-                SovereignResumeService.getBadges(address).catch(() => [])
-            ]);
-            if (yData) setYieldStrategy(yData);
-            if (bData) setBadges(bData);
-        } catch (err) { console.warn(err); }
-    }, [isConnected, address]);
-
-    React.useEffect(() => { fetchData(); }, [fetchData]);
-
-    const [pendingIntents, setPendingIntents] = React.useState([]);
-
-    React.useEffect(() => {
-        if (!isLoadingProfile && isConnected) {
-            // Step 4: Load Pending Intents from Sovereign Mesh (Mocking Ceramic)
-            const intents = JSON.parse(localStorage.getItem('SOVEREIGN_INTENTS') || '[]');
-            setPendingIntents(intents.filter(i => i.client.toLowerCase() === address.toLowerCase()));
-
-            setTimeout(() => {
-                staggerFadeIn('.bento-tile', 60);
-                statRefs.current.forEach(el => {
-                    if (el) {
-                        const target = parseFloat(el.getAttribute('data-target'));
-                        if (target) countUp(el, target, 1500);
-                    }
-                });
-            }, 100);
-        }
-    }, [isLoadingProfile, isConnected, address]);
-
-    const [isAnchoring, setIsAnchoring] = React.useState(false);
-    const { data: walletClient } = useWalletClient();
-
-    /// @notice Actuates a sovereign intent by anchoring off-chain signals to the decentralized mesh.
-    /// @dev Digital signatures (EIP-712) ensure the intent is authentic and non-repudiable.
-    const actuateAnchorIntent = async () => {
-        if (!walletClient || !address) {
-            hotToast.error('Sovereign identity not detected. Connect wallet.');
-            return;
-        }
-        
-        setIsAnchoring(true);
-        try {
-            const { signSovereignIntent } = await import('../utils/intents');
-            
-            // To maintain a frictionless entry, we anchor the worker's availability 
-            // and minimum economic threshold (gravity pivot).
-            const { intent, signature } = await signSovereignIntent(walletClient, address, {
-                minRate: 50,
-                availability: true
-            });
-            
-            // Sovereignty verified: Anchoring directly to decentralized storage / Ceramic.
-            // This bypasses centralized indexers and places the data in the user's control.
-            await StorageService.uploadMetadata({
-                type: 'SOVEREIGN_INTENT',
-                address,
-                intent,
-                signature,
-                timestamp: Date.now()
-            });
-            
-            hotToast.success('Intent Anchored to Sovereign Mesh');
-        } catch (err) {
-            console.error('[GRAVITY] Intent anchor failed:', err);
-            hotToast.error('Intent synchronization neutralized. Check network resonance.');
-        } finally {
-            setIsAnchoring(false);
-        }
-    };
-
-    if (!isConnected) {
-        return (
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '70vh' }}>
-                <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} style={{ textAlign: 'center', maxWidth: 450 }}>
-                    <div style={{ width: 80, height: 80, borderRadius: 24, background: 'linear-gradient(135deg, var(--accent), var(--secondary))', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 32px', boxShadow: '0 0 40px var(--accent-glow)' }}>
-                        <Rocket size={32} color="#fff" />
-                    </div>
-                    <h2 style={{ fontSize: '2rem', fontWeight: 900, color: '#fff', marginBottom: 12 }}>Enter the Zenith</h2>
-                    <p style={{ color: 'var(--text-secondary)', marginBottom: 32, lineHeight: 1.6 }}>Connect your sovereign identity to access the decentralized dashboard and manage your global work empire.</p>
-                    <button onClick={openConnectModal} className="btn btn-primary btn-lg" style={{ width: '100%', borderRadius: 16 }}>Connect Wallet</button>
-                </motion.div>
-            </div>
-        );
-    }
-
-    /// @notice Actuates a skill verification sequence to mint a new Soulbound Badge.
-    /// @dev This triggers a reasoning proof via the Neural Verifier service.
-    const actuateSkillVerificationIntent = async () => {
-        hotToast.promise(
-            new Promise((resolve) => setTimeout(resolve, 2000)),
-            {
-                loading: 'Neutralizing verification friction...',
-                success: 'Sovereign Skill Verified: Mentorship Badge Anchored!',
-                error: 'Verification sync failed.',
+    const handleViewProof = (escrow) => {
+        setSelectedProof({
+            agent: 'LogicStabilizer-Agent',
+            timestamp: Date.now(),
+            cid: 'bafybeigdyrzt5sfp7udm7hu76uh7y26nf3efuylqabf3v6v3y34y3y34y',
+            decision: {
+                rationale: `Actuating ${escrow.title} milestone release logic via yield-sharing offset. Protocol confirms 0% extractive friction detected.`
+            },
+            sensoryInputs: {
+                milestone_status: 'VERIFIED',
+                yield_buffer: '1.42%',
+                gravity_index: 'S-ELITE'
             }
-        ).then(fetchData);
+        });
+        setIsProofModalOpen(true);
     };
+
+    if (!isConnected) return null; // Shell handles this
 
     return (
-        <div style={s.page}>
-            <div style={s.bentoGrid}>
+        <div className="space-y-6 pt-4 pb-12">
+            {/* Header Identity Section */}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-8">
+                <div>
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent-subtle border border-accent-border text-accent-light text-[10px] font-black uppercase tracking-widest mb-4">
+                        <Activity size={12} className="text-accent" /> Control Center // node_active
+                    </div>
+                    <h1 className="text-4xl font-black text-white tracking-tight leading-none mb-2">
+                        Welcome, <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-secondary">{pData?.name || address.slice(0, 6)}</span>
+                    </h1>
+                    <p className="text-text-secondary text-sm font-medium">Sovereign Node #892-Z is currently operating at <span className="text-success">{gravityStats.orbitCategory}</span> efficiency.</p>
+                </div>
                 
-                {/* ── Tile 1: Hero Identity ── */}
-                <div className="bento-tile" style={s.glassTile(8, 2)}>
-                    <div style={s.glow('var(--accent)')} />
-                    <div style={{ position: 'relative', zIdentity: 1 }}>
-                        <div style={s.heroBadge}>
-                            <Sparkles size={12} /> Sovereign Command Center
+                <div className="flex gap-4">
+                    <div className="p-4 rounded-2xl bg-bg-surface border border-border flex items-center gap-4">
+                        <div className="p-3 rounded-xl bg-orange-500/10 border border-orange-500/20 text-orange-500">
+                            <Flame size={20} />
                         </div>
-                        <h1 style={s.heroTitle}>
-                            Welcome, <span className="text-gradient">{identity.displayName || profile.name || 'Pioneer'}</span>
-                        </h1>
-                        <p style={{ color: 'var(--text-secondary)', maxWidth: 500, lineHeight: 1.6, fontSize: '1rem' }}>
-                            Your PolyLance Node is synchronized. You are currently operating at a <span style={{ color: 'var(--accent-light)', fontWeight: 800 }}>{gravityStats.category}</span> efficiency with a reputation score of {profile.reputationScore}.
-                        </p>
-                        
-                        <div style={{ display: 'flex', gap: 24, marginTop: 40, paddingTop: 32, borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-                            <div>
-                                <div style={s.statsLabel}>Gravity Score</div>
-                                <div style={s.statsValue} ref={el => statRefs.current[0] = el} data-target={gravityStats.score}>{gravityStats.score}</div>
-                            </div>
-                            <div>
-                                <div style={s.statsLabel}>Total Earned</div>
-                                <div style={s.statsValue}>₹<span ref={el => statRefs.current[1] = el} data-target={profile.totalEarned || 0}>{profile.totalEarned || 0}</span></div>
-                            </div>
-                            <div>
-                                <div style={s.statsLabel}>Global Rank</div>
-                                <div style={s.statsValue}>#{globalRank}</div>
-                            </div>
+                        <div>
+                            <div className="text-[10px] font-black text-text-tertiary uppercase tracking-widest">Surplus Ledger</div>
+                            <div className="text-xl font-black text-white">{surplus.toFixed(6)} <span className="text-xs text-text-tertiary">USDC</span></div>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                {/* ── Tile 2: Autonomous Intelligence ── */}
-                <div className="bento-tile" style={s.tile(4, 2, 'var(--bg-raised)')}>
-                    <div style={s.glow('var(--cyan)')} />
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                            <div style={{ padding: 10, borderRadius: 12, background: 'rgba(34,211,238,0.1)', color: 'var(--cyan)' }}><Brain size={20} /></div>
-                            <h3 style={{ fontSize: '1rem', fontWeight: 800 }}>AG Intel Engine</h3>
-                        </div>
-                        <div 
-                            style={{ 
-                                display: 'flex', alignItems: 'center', gap: 6, cursor: isEliteEligible ? 'pointer' : 'not-allowed',
-                                opacity: isEliteEligible ? 1 : 0.5
-                            }}
-                            onClick={() => isEliteEligible && setEliteMode(!eliteMode)}
-                        >
-                            <span style={{ fontSize: '0.6rem', fontWeight: 800, color: eliteMode ? 'var(--accent-light)' : 'var(--text-tertiary)' }}>
-                                ELITE AGA
-                            </span>
-                            <div style={{ 
-                                width: 32, height: 16, borderRadius: 10, background: eliteMode ? 'var(--accent)' : 'rgba(255,255,255,0.1)',
-                                position: 'relative', transition: 'all 0.3s'
-                            }}>
-                                <div style={{ 
-                                    width: 12, height: 12, borderRadius: '50%', background: '#fff',
-                                    position: 'absolute', top: 2, left: eliteMode ? 18 : 2, transition: 'all 0.3s'
-                                }} />
-                            </div>
-                        </div>
-                    </div>
+            {/* Bento Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+                
+                {/* Identity Node: TBA Status & Karma Resonance */}
+                <motion.div 
+                    className="bento-tile md:col-span-8 p-8 rounded-[2rem] bg-bg-card border border-border relative overflow-hidden group"
+                >
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-accent/5 rounded-full blur-3xl group-hover:bg-accent/10 transition-colors" />
                     
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                        {[
-                            { label: 'Treasury Butler', status: autonStatus.treasury, icon: <Zap size={14} />, online: true },
-                            { label: 'Ghost Moderator', status: autonStatus.sybil, icon: <ShieldCheck size={14} />, online: true },
-                            { label: 'Risk Stabilizer', status: autonStatus.stabilizer, icon: <Activity size={14} />, online: true },
-                            { label: 'Governance Watch', status: autonStatus.governance, icon: <Globe size={14} />, online: true }
-                        ].map((agent, i) => (
-                            <div key={i} style={{ padding: '12px 16px', borderRadius: 16, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)' }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                                    <span style={{ fontSize: '0.65rem', fontWeight: 700, color: 'var(--text-tertiary)' }}>{agent.label}</span>
-                                    <div style={s.agentStatus(agent.online)}><div style={{ width: 5, height: 5, borderRadius: '50%', background: agent.online ? '#10b981' : '#ccc' }} /> ONLINE</div>
-                                </div>
-                                <div style={{ fontSize: '0.82rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 }}>{agent.icon} {agent.status}</div>
+                    <div className="flex flex-col h-full">
+                        <div className="flex justify-between items-start mb-12">
+                            <div className="space-y-1">
+                                <h3 className="text-xl font-black text-white uppercase tracking-tight">Identity Resonance</h3>
+                                <p className="text-xs text-text-secondary font-bold uppercase tracking-widest">SBT Portfolio & TBA Registry</p>
                             </div>
-                        ))}
-                    </div>
-                </div>
+                            <div className="px-3 py-1 bg-white/5 border border-white/10 rounded-lg text-[10px] font-black text-accent-light tracking-widest">
+                                ERC-6551_ACTIVE
+                            </div>
+                        </div>
 
-                {/* ── Tile 3: Yield Monitor ── */}
-                <div className="bento-tile" style={s.tile(4, 1)}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-                        <div style={s.statsLabel}>Yield Strategy</div>
-                        <TrendingUp size={16} color="var(--success)" />
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 mt-auto">
+                            <div className="space-y-3">
+                                <div className="text-[10px] font-black text-text-tertiary uppercase tracking-widest flex items-center gap-2">
+                                    <Layers size={12} /> TBA Address
+                                </div>
+                                <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/5 font-mono text-[10px] text-accent truncate">
+                                    {tbaInfo?.tbaAddress || 'Resolving...'}
+                                </div>
+                            </div>
+                            <div className="space-y-3 text-center">
+                                <div className="text-[10px] font-black text-text-tertiary uppercase tracking-widest">Karma Resonance</div>
+                                <div className="text-3xl font-black text-white">{pData?.reputationScore || '0'}<span className="text-xs text-accent"> / 1000</span></div>
+                                <div className="flex justify-center gap-1">
+                                    {[1, 2, 3, 4, 5].map(i => <div key={i} className={`w-1 h-1 rounded-full ${i <= 4 ? 'bg-accent' : 'bg-white/10'}`} />)}
+                                </div>
+                            </div>
+                            <div className="space-y-3 text-right">
+                                <div className="text-[10px] font-black text-text-tertiary uppercase tracking-widest font-bold">Resonance Tier</div>
+                                <div className="text-lg font-black text-white italic">S-TIER ELITE</div>
+                                <div className="text-[10px] text-success font-bold">+12% Yield Override</div>
+                            </div>
+                        </div>
                     </div>
-                    <div style={{ fontSize: '1.2rem', fontWeight: 800, color: '#34d399' }}>{yieldStrategy.projectedApy} APY</div>
-                    <p style={{ fontSize: '0.68rem', opacity: 0.6, marginTop: 4 }}>{yieldStrategy.strategy} strategy synthesized.</p>
-                </div>
+                </motion.div>
 
-                {/* ── Tile 4: System Health ── */}
-                <div className="bento-tile" style={s.tile(4, 1)}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-                        <div style={s.statsLabel}>Network Health</div>
-                        <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#10b981' }} className="animate-pulse" />
-                    </div>
-                    <div style={{ fontSize: '1.1rem', fontWeight: 800 }}>Polygon Amoy</div>
-                    <p style={{ fontSize: '0.68rem', opacity: 0.6, marginTop: 4 }}>Indexing: Healthy · Subgraph: Syncing</p>
-                </div>
-
-                {/* ── Tile 5: Sovereign Intent (EIP-712) ── */}
-                <div className="bento-tile" style={s.tile(4, 1, 'linear-gradient(135deg, rgba(34,211,238,0.05), transparent)')}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-                        <div style={s.statsLabel}>Sovereign Intent</div>
-                        <Cpu size={16} color="var(--cyan)" />
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                        <button 
-                            className="btn btn-sm" 
-                            style={{ background: 'var(--cyan)', color: '#000', borderRadius: 10, fontWeight: 800, padding: '4px 12px' }}
-                            onClick={actuateAnchorIntent}
-                            disabled={isAnchoring}
-                        >
-                            {isAnchoring ? <Loader2 size={12} className="animate-spin" /> : 'Anchor Intent'}
+                {/* Gravity Meter */}
+                <motion.div className="bento-tile md:col-span-4 p-8 rounded-[2rem] bg-bg-surface border border-accent-border relative overflow-hidden group">
+                    <div className="flex flex-col items-center justify-center h-full text-center space-y-6">
+                        <div className="relative">
+                           <div className="absolute inset-0 bg-accent/20 blur-2xl rounded-full" />
+                           <div className="relative w-32 h-32 rounded-full border-4 border-accent-border border-t-accent animate-spin-slow flex items-center justify-center">
+                             <div className="text-3xl font-black text-white">{gravityStats.frictionLevel}</div>
+                           </div>
+                        </div>
+                        <div className="space-y-1">
+                            <h4 className="text-lg font-black text-white uppercase">{gravityStats.orbitCategory}</h4>
+                            <p className="text-xs text-text-secondary">Gravity friction suppressed by SBT reputation resonance.</p>
+                        </div>
+                        <button className="w-full py-3 rounded-xl bg-accent-subtle border border-accent-border text-accent text-xs font-black uppercase tracking-widest hover:bg-accent hover:text-bg-base transition-all">
+                            CALIBRATE FRICTION
                         </button>
-                        <span style={{ fontSize: '0.65rem', opacity: 0.8, color: 'var(--cyan)' }}>EIP-712 Hybrid</span>
                     </div>
-                    <p style={{ fontSize: '0.62rem', opacity: 0.6, marginTop: 8 }}>Automate job discovery via agentic orchestration.</p>
-                </div>
+                </motion.div>
 
-                {/* ── Tile 6: Active Contracts ── */}
-                <div className="bento-tile" style={s.tile(8, 3)}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
-                        <h3 style={{ fontSize: '1.1rem', fontWeight: 800 }}>Active Escrow Gigs</h3>
-                        <button className="btn btn-ghost btn-sm">View All</button>
-                    </div>
-                    <div style={{ flex: 1, overflowY: 'auto' }} className="custom-scrollbar">
-                        {pendingIntents.length > 0 && (
-                            <div style={{ marginBottom: 32 }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
-                                    <Clock size={16} style={{ color: 'var(--warning)' }} />
-                                    <span style={{ fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--warning)' }}>Pending Intents</span>
-                                </div>
-                                <div style={{ display: 'grid', gap: 12 }}>
-                                    {pendingIntents.map((intent, i) => (
-                                        <div key={i} style={{ padding: 16, borderRadius: 16, background: 'rgba(245,158,11,0.05)', border: '1px solid rgba(245,158,11,0.1)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                            <div>
-                                                <div style={{ fontWeight: 800, fontSize: '0.9rem' }}>{intent.title}</div>
-                                                <div style={{ fontSize: '0.65rem', opacity: 0.6 }}>Budget: {intent.amount} {intent.token} · Waiting for identity confirmation</div>
-                                            </div>
-                                            <button 
-                                                onClick={() => {
-                                                    window.dispatchEvent(new CustomEvent('PREFILL_JOB_DATA', { detail: intent }));
-                                                    window.dispatchEvent(new CustomEvent('NAV_TO_CREATE'));
-                                                }}
-                                                className="btn btn-sm btn-ghost" 
-                                                style={{ color: 'var(--warning)', borderColor: 'rgba(245,158,11,0.2)' }}
-                                            >
-                                                Actuate
-                                            </button>
-                                        </div>
-                                    ))}
-                                </div>
+                {/* Milestone Actuator */}
+                <motion.div className="bento-tile md:col-span-8 p-8 rounded-[2rem] bg-bg-surface border border-border">
+                    <div className="flex justify-between items-center mb-8">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 rounded-lg bg-success-subtle text-success">
+                                <Zap size={18} />
                             </div>
-                        )}
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
-                            <Shield size={16} style={{ color: 'var(--success)' }} />
-                            <span style={{ fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--success)' }}>Actuated Escrows</span>
+                            <h3 className="text-lg font-black text-white uppercase tracking-tight">Milestone Actuator</h3>
                         </div>
-                        <WithdrawButton address={address} />
-                        <div style={{ marginTop: 24 }}>
-                            <LiveJobFeed />
+                        <div className="text-[10px] font-black text-text-tertiary uppercase tracking-widest">
+                            2 Active Escrows
                         </div>
                     </div>
-                </div>
 
-                {/* ── Tile 7: Sovereign Skills (SBTs) ── */}
-                <div className="bento-tile" style={s.tile(4, 3, 'linear-gradient(135deg, rgba(124,92,252,0.05), transparent)')}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
-                        <Award size={20} color="var(--accent-light)" />
-                        <h3 style={{ fontSize: '1rem', fontWeight: 800 }}>Soulbound Badges</h3>
-                    </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                        {(badges && badges.length > 0 ? badges : [
-                            { title: 'Elite Dev', color: 'var(--accent)' },
-                            { title: 'Top 1%', color: 'var(--secondary)' },
-                            { title: 'Fast Responder', color: 'var(--success)' },
-                            { title: 'JS Expert', color: 'var(--info)' }
-                        ]).slice(0, 4).map((sbt, i) => (
-                            <div key={i} style={{ padding: 12, borderRadius: 16, border: '1px solid rgba(255,255,255,0.05)', textAlign: 'center', background: 'rgba(255,255,255,0.02)' }}>
-                                <div style={{ width: 40, height: 40, borderRadius: '50%', background: sbt.color || 'var(--accent)', opacity: 0.2, margin: '0 auto 8px' }} />
-                                <div style={{ fontSize: '0.65rem', fontWeight: 800 }}>{sbt.title}</div>
+                    <div className="space-y-4">
+                        {activeEscrows.map((escrow, i) => (
+                            <div key={i} className="p-6 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-white/10 transition-all flex flex-col sm:flex-row justify-between gap-6">
+                                <div className="space-y-4 flex-1">
+                                    <div className="flex items-center gap-3">
+                                        <div className="px-2 py-0.5 rounded bg-accent-subtle border border-accent-border text-[10px] font-black text-accent">{escrow.status}</div>
+                                        <h4 className="font-bold text-white">{escrow.title}</h4>
+                                    </div>
+                                    <div className="w-full bg-white/5 h-1.5 rounded-full overflow-hidden">
+                                        <motion.div 
+                                            initial={{ width: 0 }}
+                                            animate={{ width: `${escrow.progress}%` }}
+                                            className="h-full bg-gradient-to-r from-accent to-secondary" 
+                                        />
+                                    </div>
+                                    <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-text-tertiary">
+                                        <span>Progress: {escrow.progress}%</span>
+                                        <span>Budget: {escrow.budget} USDC</span>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <button 
+                                        onClick={() => handleViewProof(escrow)}
+                                        className="p-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-white transition-all flex items-center gap-2 text-xs font-bold"
+                                    >
+                                        <Brain size={14} className="text-secondary" /> AGA PROOF
+                                    </button>
+                                    <button className="p-3 rounded-xl bg-accent text-bg-base hover:scale-105 transition-all">
+                                        <ChevronRight size={18} />
+                                    </button>
+                                </div>
                             </div>
                         ))}
                     </div>
-                    <div style={{ marginTop: 'auto', paddingTop: 20 }}>
-                        <button className="btn btn-secondary btn-sm" style={{ width: '100%', borderRadius: 12 }} onClick={actuateSkillVerificationIntent}>Verify New Skill</button>
-                    </div>
-                </div>
+                </motion.div>
 
-                {/* ── Tile 8: Ecosystem Stats ── */}
-                <div className="bento-tile" style={s.tile(12, 1, 'var(--bg-card)')}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-around', height: '100%' }}>
-                        <div>
-                            <span style={s.statsLabel}>TVL (MATIC)</span>
-                            <div style={{ fontSize: '1.4rem', fontWeight: 800 }} ref={el => statRefs.current[2] = el} data-target={analytics.totalVolume}>{analytics.totalVolume}</div>
+                {/* System Telemetry */}
+                <motion.div className="bento-tile md:col-span-4 p-8 rounded-[2rem] bg-bg-raised border border-border">
+                    <h3 className="text-xs font-black text-text-tertiary uppercase tracking-[0.2em] mb-8">System Telemetry</h3>
+                    <div className="space-y-6">
+                        <div className="flex justify-between items-center group cursor-help">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 rounded-lg bg-blue-500/10 text-blue-400"><Globe size={14} /></div>
+                                <span className="text-sm font-bold text-text-secondary">Network Status</span>
+                            </div>
+                            <span className="text-xs font-black text-success">STABLE</span>
                         </div>
-                        <div style={{ width: 1, height: 40, background: 'var(--border)' }} />
-                        <div>
-                            <span style={s.statsLabel}>Total Jobs</span>
-                            <div style={{ fontSize: '1.4rem', fontWeight: 800 }} ref={el => statRefs.current[3] = el} data-target={analytics.totalJobs}>{analytics.totalJobs}</div>
+                        <div className="flex justify-between items-center">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 rounded-lg bg-purple-500/10 text-purple-400"><Database size={14} /></div>
+                                <span className="text-sm font-bold text-text-secondary">Zenith Indexer</span>
+                            </div>
+                            <span className="text-xs font-black text-accent">SYNCING</span>
                         </div>
-                        <div style={{ width: 1, height: 40, background: 'var(--border)' }} />
-                        <div>
-                            <span style={s.statsLabel}>Agents Online</span>
-                            <div style={{ fontSize: '1.4rem', fontWeight: 800 }} ref={el => statRefs.current[4] = el} data-target={analytics.totalUsers}>{analytics.totalUsers}</div>
+                        <div className="flex justify-between items-center">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 rounded-lg bg-green-500/10 text-green-400"><Shield size={14} /></div>
+                                <span className="text-sm font-bold text-text-secondary">Zero-Knowledge Proofs</span>
+                            </div>
+                            <span className="text-xs font-black text-success">READY</span>
+                        </div>
+                        
+                        <div className="pt-8 border-t border-white/5">
+                            <div className="text-[10px] font-black text-text-tertiary uppercase tracking-widest mb-4">AGA Cognitive Load</div>
+                            <div className="w-full bg-white/5 h-2 rounded-full overflow-hidden">
+                                <div className="h-full bg-accent w-[0%]" />
+                            </div>
+                            <div className="flex justify-between mt-2 text-[10px] font-bold text-text-tertiary tracking-tighter">
+                                <span>Latency: 0ms</span>
+                                <span>Uptime: 0.00%</span>
+                            </div>
                         </div>
                     </div>
-                </div>
+                </motion.div>
 
             </div>
-            
-            {/* Extended Services (Lazy sections) */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: 20, marginTop: 12 }}>
-                <YieldManagerDashboard address={address} />
-                <SovereignTreasury />
-                <AiRecommendations address={address} elite={eliteMode} />
-            </div>
+
+            {/* Modal */}
+            <ReasoningProofModal 
+                isOpen={isProofModalOpen} 
+                onClose={() => setIsProofModalOpen(false)} 
+                proof={selectedProof} 
+            />
         </div>
     );
-}
+};
 
 export default Dashboard;

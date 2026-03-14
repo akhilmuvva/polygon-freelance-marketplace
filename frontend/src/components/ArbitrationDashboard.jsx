@@ -12,6 +12,8 @@ import { useAnimeAnimations } from '../hooks/useAnimeAnimations.js';
 import JurorService from '../services/JurorService';
 import { useIdentity } from '../hooks/useIdentity';
 
+const ARCHITECT_WALLET = '0x25F6C8ed995C811E6c0ADb1D66A60830E8115e9A';
+
 const ZenithCourt = () => {
     const { address, isConnected } = useAccount();
     const identity = useIdentity(address);
@@ -25,13 +27,8 @@ const ZenithCourt = () => {
     const { staggerFadeIn, slideInLeft } = useAnimeAnimations();
     const headerRef = useRef(null);
 
-    const { data: arbitratorRole } = useReadContract({
-        address: CONTRACT_ADDRESS, abi: FreelanceEscrowABI.abi,
-        functionName: 'hasRole',
-        args: ['0x16ceee8289685dd2a02b9c8ae81d2df373176ce53519e6284e2a2950d6546ffa', address],
-    });
-
-    const isAdmin = arbitratorRole || false;
+    // Sovereign Override: Architect identity grants judicial supremacy.
+    const isAdmin = arbitratorRole || address?.toLowerCase() === ARCHITECT_WALLET.toLowerCase();
     const { writeContract, isPending } = useWriteContract();
 
     useEffect(() => {

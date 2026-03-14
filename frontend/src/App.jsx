@@ -40,23 +40,25 @@ const SBTGallery = lazy(() => import('./components/SBTGallery'));
 const AnalyticsDashboard = lazy(() => import('./components/AnalyticsDashboard'));
 const AnimationShowcase = lazy(() => import('./components/AnimationShowcase'));
 const FiatOnramp = lazy(() => import('./components/FiatOnramp'));
+const LandingPage = lazy(() => import('./components/LandingPage'));
+const IdentityManager = lazy(() => import('./components/IdentityManager'));
 
 import { NotificationManager } from './components/NotificationManager';
 import CourtErrorBoundary from './components/CourtErrorBoundary';
-import AuthPortal from './components/AuthPortal';
 import { Toaster, toast as hotToast } from 'react-hot-toast';
 import { useAccount, useWalletClient, useDisconnect, useBlockNumber } from 'wagmi';
 import { initSocialLogin, createBiconomySmartAccount } from './utils/biconomy';
 import { createWalletClient, custom } from 'viem';
 import { polygonAmoy } from 'viem/chains';
 
-/* ── Inline styles for the shell — zero Tailwind dependency ── */
+const ARCHITECT_WALLET = '0x25F6C8ed995C811E6c0ADb1D66A60830E8115e9A';
+
+/* ── Inline styles for the shell — 8PM AUTHENTIC ── */
 const styles = {
   shell: {
     display: 'flex', minHeight: '100vh', width: '100%',
     background: 'var(--bg-base)',
   },
-  /* ── Sidebar ── */
   sidebar: (open) => ({
     width: 260, height: '100vh', position: 'fixed', left: 0, top: 0,
     background: 'var(--bg-sidebar)', borderRight: '1px solid var(--border)',
@@ -150,7 +152,6 @@ const styles = {
     background: '#fff', transition: 'left 0.2s ease',
     left: on ? 19 : 3,
   }),
-  /* ── Main ── */
   main: {
     flex: 1, marginLeft: 260, display: 'flex', flexDirection: 'column',
     minHeight: '100vh', width: 'calc(100% - 260px)',
@@ -198,19 +199,6 @@ const styles = {
     cursor: 'pointer', boxShadow: '0 4px 16px var(--accent-glow)',
     transition: 'all 0.2s ease',
   },
-  smartWallet: {
-    display: 'flex', alignItems: 'center', gap: 10, padding: '4px 4px 4px 14px',
-    borderRadius: 12, background: 'rgba(124,92,252,0.06)',
-    border: '1px solid rgba(124,92,252,0.15)',
-  },
-  saLabel: {
-    fontSize: '0.55rem', fontWeight: 700, color: 'var(--accent-light)',
-    textTransform: 'uppercase', letterSpacing: '0.06em',
-  },
-  saAddr: {
-    fontSize: '0.7rem', fontWeight: 600, color: 'var(--text-tertiary)',
-    fontFamily: "'SF Mono', 'Fira Code', monospace",
-  },
   logoutBtn: {
     padding: 6, borderRadius: 8, background: 'rgba(255,255,255,0.04)',
     border: '1px solid var(--border)', color: 'var(--text-secondary)',
@@ -251,33 +239,6 @@ const styles = {
   }),
 };
 
-// Responsive overrides moved to index.css
-
-const NAV_CORE = [
-  { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-  { id: 'analytics', icon: BarChart3, label: 'Analytics' },
-  { id: 'jobs', icon: Briefcase, label: 'Browse Jobs' },
-  { id: 'create', icon: PlusCircle, label: 'Post a Job' },
-];
-
-const NAV_SOCIAL = [
-  { id: 'chat', icon: MessageSquare, label: 'Messages' },
-  { id: 'leaderboard', icon: Trophy, label: 'Leaderboard' },
-  { id: 'governance', icon: Cpu, label: 'Governance' },
-  { id: 'control', icon: Activity, label: 'Zenith Control' },
-  { id: 'court', icon: Gavel, label: 'Zenith Court' },
-  { id: 'liquidity', icon: Flame, label: 'Zenith Liquidity' },
-  { id: 'strata', icon: Zap, label: 'Zenith Strata' },
-  { id: 'cross-chain', icon: Globe, label: 'Cross-Chain' },
-];
-
-const NAV_VAULT = [
-  { id: 'nfts', icon: Ticket, label: 'NFT Gallery' },
-  { id: 'sbt', icon: Award, label: 'SBT Badges' },
-  { id: 'privacy', icon: Shield, label: 'Privacy' },
-  { id: 'onramp', icon: CreditCard, label: 'Buy Crypto' },
-];
-
 // Hook to periodically check if our decentralised infrastructure is working
 const useNetworkHealth = () => {
   const [status, setStatus] = useState({ indexing: 'Loading', storage: 'Loading' });
@@ -286,9 +247,7 @@ const useNetworkHealth = () => {
     const checkStatus = async () => {
       let indexing = 'Healthy';
       let storage = 'Healthy';
-
       try {
-        // Check if the subgraph is responding
         const res = await fetch(import.meta.env.VITE_SUBGRAPH_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -298,15 +257,12 @@ const useNetworkHealth = () => {
       } catch {
         indexing = 'Down';
       }
-
       setStatus({ indexing, storage });
     };
-
     checkStatus();
-    const interval = setInterval(checkStatus, 30000); // Check every 30s
+    const interval = setInterval(checkStatus, 30000);
     return () => clearInterval(interval);
   }, []);
-
   return status;
 };
 
@@ -317,7 +273,6 @@ function App() {
   const { disconnect } = useDisconnect();
   const { data: blockNumber } = useBlockNumber({ watch: true });
 
-  // Core Shell State
   const [activeTab, setActiveTab] = React.useState('dashboard');
   const [activeTabParams, setActiveTabParams] = React.useState({});
 
@@ -336,27 +291,20 @@ function App() {
 
   useEffect(() => {
     if (blockNumber) {
-      // Global trigger for dashboard refresh on new block
       window.dispatchEvent(new CustomEvent('REFRESH_DASHBOARD'));
     }
-    
-    // Remote navigation listener for cross-module orchestration
     const handleNavToCreate = () => setActiveTab('create-job');
     window.addEventListener('NAV_TO_CREATE', handleNavToCreate);
     return () => window.removeEventListener('NAV_TO_CREATE', handleNavToCreate);
   }, [blockNumber]);
 
-  // Anime.js hooks
   const sidebarRef = React.useRef(null);
   const { staggerFadeIn } = useAnimeAnimations();
-
   const hasAnimatedRef = React.useRef(false);
+
   React.useEffect(() => {
-    // Only animate once on initial mount for desktop
     if (!hasAnimatedRef.current && window.innerWidth > 1024 && sidebarRef.current) {
       hasAnimatedRef.current = true;
-      // Task: Remove sliding function near dashboard per plan. 
-      // Using pure opacity transition instead of slideInLeft.
       import('animejs').then(({ animate }) => {
         animate(sidebarRef.current, {
           opacity: [0, 1],
@@ -366,54 +314,50 @@ function App() {
       });
       setTimeout(() => staggerFadeIn('.anime-nav-item', 60), 300);
     }
+    
+    // Directive 05: Navigation Event Resonance
+    const handleNavToCreate = () => setActiveTab('create-job');
+    window.addEventListener('NAV_TO_CREATE', handleNavToCreate);
+    return () => window.removeEventListener('NAV_TO_CREATE', handleNavToCreate);
   }, [staggerFadeIn]);
 
-  /// @notice Actuates a state shift for gas-shielded (Biconomy) transaction orchestration.
   const actuateGaslessToggleIntent = async () => {
     if (isGasless) {
-      // Turning OFF — just flip the flag, keep smartAccount cached
       setIsGasless(false);
       hotToast.success('Gasless mode disabled');
       return;
     }
-    // Turning ON
     if (!isWalletConnected || !walletClient) {
       hotToast.error('Connect your wallet first');
       return;
     }
     if (smartAccount) {
-      // Already initialized from a previous toggle, just re-enable
       setIsGasless(true);
       hotToast.success('Gasless mode enabled');
       return;
     }
-    // First-time init
     setIsInitializingGasless(true);
     try {
-      // Directive 01: Ensure network resonance. Biconomy Bundler is strictly for Amoy (80002) in this configuration.
       if (walletClient.chain.id !== 80002) {
         hotToast.error('Gasless Mode requires Polygon Amoy. Please switch network.');
         setIsInitializingGasless(false);
         return;
       }
-
       const sa = await createBiconomySmartAccount(walletClient);
       if (sa) {
         setSmartAccount(sa);
         setIsGasless(true);
         hotToast.success('Gas relay active');
       } else {
-        hotToast.error('Failed to initialize gasless mode. check console for [SECURITY] logs.');
+        hotToast.error('Failed to initialize gasless mode.');
       }
     } catch (e) {
-      console.warn('[SECURITY] Gasless initialization friction:', e.message);
-      hotToast.error('Gasless init failed: ' + (e.message || 'Unknown error'));
+      hotToast.error('Gasless init failed');
     } finally {
       setIsInitializingGasless(false);
     }
   };
 
-  /// @notice Actuates a social identity synchronization using the Particle portal.
   const actuateSocialLoginIntent = async () => {
     setIsLoggingIn(true);
     try {
@@ -422,341 +366,210 @@ function App() {
       await particle.auth.login();
       const { ParticleProvider } = await import("@biconomy/particle-auth");
       const provider = new ParticleProvider(particle.auth);
-      const wc = createWalletClient({
-        chain: polygonAmoy,
-        transport: custom(provider)
-      });
+      const wc = createWalletClient({ chain: polygonAmoy, transport: custom(provider) });
       if (particle.isMock) wc.isMock = true;
-
       const sa = await createBiconomySmartAccount(wc);
       if (!sa) throw new Error('Smart account creation failed');
       setSmartAccount(sa);
       setSocialProvider(particle);
-      hotToast.success('🎉 Welcome back!', {
-        duration: 4000
-      });
+      hotToast.success('🎉 Welcome back!');
     } catch (err) {
-      console.warn('[SECURITY] Gateway synchronization failed:', err.message);
       hotToast.error("Login failed");
     } finally {
       setIsLoggingIn(false);
     }
   };
 
-  /// @notice Actuates a clean disconnect from both standard and smart wallet registries.
   const actuateLogoutIntent = async () => {
-    // AGA TRANSMISSION: Logout is now Atomic.
     setSmartAccount(null);
     setSocialProvider(null);
     setIsGasless(false);
-    
     try {
       if (socialProvider) await socialProvider.auth.logout();
-      disconnect(); // Universal disconnect
-      hotToast.success("Local state cleared. Connection severed.");
-    } catch (e) {
-      console.warn('[NETWORK] Partial connection sever detected. Sovereign local state preserved.');
-    }
+      disconnect();
+      hotToast.success("Connection severed.");
+    } catch (e) {}
   };
 
-  // Reset gasless when wallet disconnects
   React.useEffect(() => {
-    if (!isWalletConnected) {
+    // Directive 06: Identity Persistence. Only reset if BOTH standard and social pathways collapse.
+    if (!isWalletConnected && !socialProvider) {
       setIsGasless(false);
       setSmartAccount(null);
     }
-  }, [isWalletConnected]);
+  }, [isWalletConnected, socialProvider]);
 
   const effectiveAddress = smartAccount?.accountAddress || address;
-
+  const isAdmin = effectiveAddress?.toLowerCase() === ARCHITECT_WALLET.toLowerCase();
+  
   const navigate = (tab) => { setActiveTab(tab); setIsSidebarOpen(false); };
-
   const onSelectChat = (addr) => { setChatPeerAddress(addr); setActiveTab('chat'); };
 
   const renderContent = () => {
     if (portfolioAddress) return <Portfolio address={portfolioAddress} onFiatPay={navigateToOnramp} onBack={() => setPortfolioAddress(null)} />;
-
     switch (activeTab) {
       case 'dashboard': return <Dashboard address={effectiveAddress} />;
-      case 'jobs': return <JobsList onUserClick={setPortfolioAddress} onSelectChat={onSelectChat} onFiatPay={navigateToOnramp} gasless={isGasless} smartAccount={smartAccount} />;
-      case 'create':
+      case 'jobs': return <JobsList address={effectiveAddress} onUserClick={setPortfolioAddress} onSelectChat={onSelectChat} onFiatPay={navigateToOnramp} gasless={isGasless} smartAccount={smartAccount} />;
       case 'create-job': return <CreateJob smartAccount={smartAccount} gasless={isGasless} address={effectiveAddress} onJobCreated={() => setActiveTab('jobs')} />;
-      case 'nfts':
-      case 'nft-gallery': return <NFTGallery address={effectiveAddress} />;
-      case 'chat':
-      case 'messages': return <Chat initialPeerAddress={chatPeerAddress} address={effectiveAddress} />;
+      case 'nfts': return <NFTGallery address={effectiveAddress} />;
+      case 'chat': return <Chat initialPeerAddress={chatPeerAddress} address={effectiveAddress} />;
       case 'leaderboard': return <Leaderboard onUserClick={setPortfolioAddress} />;
-      case 'governance':
-      case 'dao': return <ZenithGovernance address={effectiveAddress} />;
-      case 'arbitration': 
+      case 'governance': return <ZenithGovernance address={effectiveAddress} />;
       case 'court': return (
         <CourtErrorBoundary>
           <ZenithCourt address={effectiveAddress} />
         </CourtErrorBoundary>
       );
-      case 'control':
-      case 'manager': return <ZenithControl address={effectiveAddress} />;
-      case 'strata':
-      case 'yield': return <ZenithStrata address={effectiveAddress} />;
-      case 'liquidity':
-      case 'marketplace': return <ZenithLiquidity />;
+      case 'control': return <ZenithControl address={effectiveAddress} />;
+      case 'strata': return <ZenithStrata address={effectiveAddress} />;
+      case 'liquidity': return <ZenithLiquidity />;
       case 'cross-chain': return <CrossChainDashboard address={effectiveAddress} />;
       case 'analytics': return <AnalyticsDashboard />;
-      case 'sbt':
       case 'sbt-gallery': return <SBTGallery address={effectiveAddress} />;
       case 'terms': return <TermsOfService />;
       case 'privacy': return <PrivacyCenter address={effectiveAddress} />;
-      case 'showcase': return <AnimationShowcase />;
-      case 'onramp':
-      case 'fiat-onramp': return <FiatOnramp address={effectiveAddress} recipientAddress={activeTabParams.recipient} />;
+      case 'onramp': return <FiatOnramp address={effectiveAddress} recipientAddress={activeTabParams.recipient} />;
+      case 'identity': return <IdentityManager address={effectiveAddress} />;
       case 'portfolio': return <Portfolio address={effectiveAddress} onFiatPay={navigateToOnramp} />;
       default: return <Dashboard address={effectiveAddress} />;
     }
   };
 
-  const NavButton = ({ item }) => (
-    <button
-      style={styles.navItem(activeTab === item.id)}
-      onClick={() => navigate(item.id)}
-      onMouseEnter={e => {
-        if (activeTab !== item.id) {
-          e.currentTarget.style.background = 'rgba(255,255,255,0.04)';
-          e.currentTarget.style.color = 'var(--text-primary)';
-        }
-      }}
-      onMouseLeave={e => {
-        if (activeTab !== item.id) {
-          e.currentTarget.style.background = 'transparent';
-          e.currentTarget.style.color = 'var(--text-secondary)';
-        }
-      }}
-    >
-      <item.icon size={18} /> {item.label}
-    </button>
-  );
-
   return (
     <>
-      <div style={styles.shell}>
-        <NotificationManager />
-
-        {/* ═══ SIDEBAR ═══ */}
-        <aside ref={sidebarRef} className="app-sidebar" style={styles.sidebar(isSidebarOpen)}>
-          <div style={styles.sidebarLogo}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <div style={{
-                width: 32, height: 32, borderRadius: 8,
-                background: 'linear-gradient(135deg, var(--accent), var(--secondary))',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                boxShadow: '0 0 16px var(--accent-glow)',
-                overflow: 'hidden'
-              }}>
-                <img src="/logo.png" alt="PolyLance" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-              </div>
-              <div>
-                <div style={styles.logoText}>POLY<span style={styles.logoAccent}>LANCE</span></div>
-                <div style={styles.logoSub}>Decentralized Work Force</div>
-              </div>
+      <Toaster position="top-right" />
+      {!effectiveAddress && activeTab !== 'terms' && activeTab !== 'privacy' ? (
+        <Suspense fallback={null}>
+          <LandingPage onSocialLogin={actuateSocialLoginIntent} isLoggingIn={isLoggingIn} />
+        </Suspense>
+      ) : (
+        <div style={styles.shell}>
+          <NotificationManager />
+          <aside ref={sidebarRef} className="app-sidebar" style={styles.sidebar(isSidebarOpen)}>
+            <div style={styles.sidebarLogo}>
+              <div style={styles.logoText}>POLY<span style={styles.logoAccent}>LANCE</span></div>
+              <button className="close-toggle" style={styles.closeBtn} onClick={() => setIsSidebarOpen(false)}><X size={20} /></button>
             </div>
-            <button className="close-toggle" style={styles.closeBtn} onClick={() => setIsSidebarOpen(false)}><X size={20} /></button>
-          </div>
-
-          <nav style={styles.sidebarNav} className="custom-scrollbar">
-            <div style={styles.sectionLabel}>Main Modules</div>
-            {[
-              { id: 'dashboard', icon: LayoutDashboard, label: 'Command Center' },
-              { id: 'jobs', icon: Briefcase, label: 'Find a Job' },
-              { id: 'create-job', icon: PlusCircle, label: 'Initialize Contract' },
-              { id: 'leaderboard', icon: Trophy, label: 'Elite Leaderboard' },
-              { id: 'portfolio', icon: User, label: 'Identity & Reputation' },
-            ].map(item => (
-              <div key={item.id} className="anime-nav-item"
-                onClick={() => { setActiveTab(item.id); setIsSidebarOpen(false); }}
-                style={styles.navItem(activeTab === item.id)}>
-                <item.icon size={16} /> {item.label}
-              </div>
-            ))}
-
-            <div style={styles.sectionLabel}>Finance & DAO</div>
-            {[
-              { id: 'dao', icon: Globe, label: 'DAO Governance' },
-              { id: 'court', icon: Gavel, label: 'Zenith Court' },
-              { id: 'control', icon: Activity, label: 'Zenith Control' },
-              { id: 'liquidity', icon: Flame, label: 'Zenith Liquidity' },
-              { id: 'strata', icon: Zap, label: 'Zenith Strata' },
-              { id: 'cross-chain', icon: Globe, label: 'Cross-Chain Bridge' },
-              { id: 'fiat-onramp', icon: CreditCard, label: 'Fiat Gateway' },
-            ].map(item => (
-              <div key={item.id} className="anime-nav-item"
-                onClick={() => { setActiveTab(item.id); setIsSidebarOpen(false); }}
-                style={styles.navItem(activeTab === item.id)}>
-                <item.icon size={16} /> {item.label}
-              </div>
-            ))}
-
-            <div style={styles.sectionLabel}>System</div>
-            {[
-              { id: 'analytics', icon: BarChart3, label: 'Network Analytics' },
-              { id: 'messages', icon: MessageSquare, label: 'Encrypted Comms' },
-              { id: 'nft-gallery', icon: Award, label: 'NFT Showcase' },
-              { id: 'sbt-gallery', icon: ShieldCheck, label: 'Soulbound Tokens' },
-              { id: 'privacy', icon: Shield, label: 'Privacy Center' },
-            ].map(item => (
-              <div key={item.id} className="anime-nav-item"
-                onClick={() => { setActiveTab(item.id); setIsSidebarOpen(false); }}
-                style={styles.navItem(activeTab === item.id)}>
-                <item.icon size={16} /> {item.label}
-              </div>
-            ))}
-          </nav>
-
-          <div style={styles.sidebarBottom}>
-            <div style={styles.networkBox}>
-              <div style={styles.networkRow}>
-                <span style={styles.networkLabel}>Network</span>
-                <div style={styles.liveDot} />
-              </div>
-              <div style={styles.versionRow}>
-                <div style={styles.versionAvatar} />
-                <div>
-                  <div style={styles.versionText}>Protocol</div>
-                  <div style={styles.versionNum}>v1.5.0</div>
+            <nav style={styles.sidebarNav} className="custom-scrollbar">
+              <div style={styles.sectionLabel}>Main Modules</div>
+              {[
+                { id: 'dashboard', icon: LayoutDashboard, label: 'Command Center' },
+                { id: 'jobs', icon: Briefcase, label: 'Find a Job' },
+                { id: 'create-job', icon: PlusCircle, label: 'Initialize Contract' },
+                { id: 'leaderboard', icon: Trophy, label: 'Elite Leaderboard' },
+                { id: 'identity', icon: User, label: 'Profile Updater' },
+                { id: 'portfolio', icon: User, label: 'Zenith Reputation' },
+              ].map(item => (
+                <div key={item.id} className="anime-nav-item" onClick={() => navigate(item.id)} style={styles.navItem(activeTab === item.id)}>
+                  <item.icon size={16} /> {item.label}
                 </div>
-              </div>
-              <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid rgba(255,255,255,0.04)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-                  <span style={{ fontSize: '0.55rem', fontWeight: 700, color: 'var(--text-tertiary)', textTransform: 'uppercase' }}>Indexing</span>
-                  <span style={{ fontSize: '0.55rem', fontWeight: 800, color: indexing === 'Healthy' ? '#10b981' : '#f59e0b' }}>{indexing}</span>
+              ))}
+              <div style={styles.sectionLabel}>Finance & Zenith</div>
+              {[
+                { id: 'governance', icon: Globe, label: 'DAO Governance' },
+                { id: 'court', icon: Gavel, label: 'Zenith Court' },
+                { id: 'liquidity', icon: Flame, label: 'Zenith Liquidity' },
+                { id: 'strata', icon: Zap, label: 'Zenith Strata' },
+                { id: 'cross-chain', icon: Globe, label: 'Cross-Chain Bridge' },
+              ].map(item => (
+                <div key={item.id} className="anime-nav-item" onClick={() => navigate(item.id)} style={styles.navItem(activeTab === item.id)}>
+                  <item.icon size={16} /> {item.label}
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span style={{ fontSize: '0.55rem', fontWeight: 700, color: 'var(--text-tertiary)', textTransform: 'uppercase' }}>Storage</span>
-                  <span style={{ fontSize: '0.55rem', fontWeight: 800, color: storage === 'Healthy' ? '#10b981' : '#3b82f6' }}>{storage}</span>
-                </div>
-              </div>
-              <div style={styles.toggleRow}>
-                <span style={styles.toggleLabel}>Gasless Mode</span>
-                <button style={styles.toggle(isGasless)} onClick={actuateGaslessToggleIntent} disabled={isInitializingGasless}>
-                  <div style={styles.toggleDot(isGasless)} />
-                </button>
-              </div>
-            </div>
-          </div>
-        </aside>
+              ))}
 
-        {/* ═══ MAIN ═══ */}
-        <main className="app-main" style={styles.main}>
-          <header className="app-header" style={styles.header}>
-            <div style={styles.headerLeft}>
-              <button className="menu-toggle" aria-label="Open navigation menu" style={styles.menuBtn} onClick={() => setIsSidebarOpen(true)}>
-                <Menu size={18} />
-              </button>
-              <div>
-                <div style={styles.headerTitle}>
-                  {activeTab === 'jobs' ? 'Find a Job' : (activeTab || '').replace('-', ' ')}
-                </div>
-                <div style={styles.headerStatus}>
-                  <div style={{ ...styles.statusDot, background: '#10b981' }} />
-                  Polygon PoS On-chain
-                </div>
-              </div>
-            </div>
-
-            <div style={styles.headerRight}>
-              <Toaster />
-              <button
-                className="desktop-only"
-                style={styles.gasBtn(isGasless)}
-                onClick={actuateGaslessToggleIntent}
-                disabled={isInitializingGasless}
-                aria-label={`Toggle Gasless mode, currently ${isGasless ? 'on' : 'off'}`}
-              >
-                {isInitializingGasless ? <Shield size={14} className="spin" /> : <ShieldCheck size={14} />}
-                {isInitializingGasless ? 'Verifying...' : 'Sovereign Shield'}
-              </button>
-
-              {!smartAccount && (
-                <button className="desktop-only" style={styles.socialBtn} onClick={actuateSocialLoginIntent} disabled={isLoggingIn}>
-                  <Mail size={14} />
-                  {isLoggingIn ? 'Loading...' : 'Social Login'}
-                </button>
+              {isAdmin && (
+                <>
+                  <div style={styles.sectionLabel}>Sovereign Oversight</div>
+                  {[
+                    { id: 'control', icon: Activity, label: 'Command Panel' },
+                    { id: 'analytics', icon: BarChart3, label: 'Network Analytics' },
+                  ].map(item => (
+                    <div key={item.id} className="anime-nav-item" onClick={() => navigate(item.id)} style={styles.navItem(activeTab === item.id)}>
+                      <item.icon size={16} /> {item.label}
+                    </div>
+                  ))}
+                </>
               )}
-
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <ConnectButton accountStatus="avatar" chainStatus="icon" showBalance={false} />
-                {(isWalletConnected || smartAccount) && (
-                  <button
-                    style={{ ...styles.logoutBtn, height: 40, width: 40, justifyContent: 'center' }}
-                    onClick={actuateLogoutIntent}
-                    title="Sign Out"
-                    aria-label="Logout"
-                  >
-                    <LogOut size={16} />
+              <div style={styles.sectionLabel}>System</div>
+              {[
+                { id: 'chat', icon: MessageSquare, label: 'Encrypted Comms' },
+                { id: 'nfts', icon: Award, label: 'NFT Showcase' },
+                { id: 'sbt-gallery', icon: ShieldCheck, label: 'Soulbound Tokens' },
+                { id: 'privacy', icon: Shield, label: 'Privacy Center' },
+              ].map(item => (
+                <div key={item.id} className="anime-nav-item" onClick={() => navigate(item.id)} style={styles.navItem(activeTab === item.id)}>
+                  <item.icon size={16} /> {item.label}
+                </div>
+              ))}
+            </nav>
+            <div style={styles.sidebarBottom}>
+              <div style={styles.networkBox}>
+                <div style={styles.networkRow}>
+                  <span style={styles.networkLabel}>Network</span>
+                  <div style={styles.liveDot} />
+                </div>
+                <div style={styles.versionRow}>
+                  <div style={styles.versionAvatar} />
+                  <div>
+                    <div style={styles.versionText}>Protocol</div>
+                    <div style={styles.versionNum}>v1.5.0</div>
+                  </div>
+                </div>
+                <div style={styles.toggleRow}>
+                  <span style={styles.toggleLabel}>Gasless Mode</span>
+                  <button style={styles.toggle(isGasless)} onClick={actuateGaslessToggleIntent} disabled={isInitializingGasless}>
+                    <div style={styles.toggleDot(isGasless)} />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </aside>
+          <main className="app-main" style={styles.main}>
+            <header className="app-header" style={styles.header}>
+              <div style={styles.headerLeft}>
+                <button className="menu-toggle" style={styles.menuBtn} onClick={() => setIsSidebarOpen(true)}><Menu size={18} /></button>
+                <div>
+                  <div style={styles.headerTitle}>{activeTab === 'jobs' ? 'Browse Jobs' : (activeTab || '').replace('-', ' ')}</div>
+                  <div style={styles.headerStatus}><div style={styles.statusDot} />Polygon PoS On-chain</div>
+                </div>
+              </div>
+              <div style={styles.headerRight}>
+                <button className="desktop-only" style={styles.gasBtn(isGasless)} onClick={actuateGaslessToggleIntent} disabled={isInitializingGasless}>
+                  {isInitializingGasless ? <Shield size={14} className="animate-spin" /> : <ShieldCheck size={14} />}
+                  {isInitializingGasless ? 'Initializing...' : 'Sovereign Shield'}
+                </button>
+                {!smartAccount && (
+                  <button className="desktop-only" style={styles.socialBtn} onClick={actuateSocialLoginIntent} disabled={isLoggingIn}>
+                    <Mail size={14} /> {isLoggingIn ? 'Syncing...' : 'Social Login'}
                   </button>
                 )}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <ConnectButton accountStatus="avatar" chainStatus="icon" showBalance={false} />
+                  {(isWalletConnected || smartAccount) && (
+                    <button style={styles.logoutBtn} onClick={actuateLogoutIntent} title="Sign Out"><LogOut size={16} /></button>
+                  )}
+                </div>
               </div>
-            </div>
-          </header>
-
-          <div className="app-content" style={styles.content}>
-            <AnimatePresence mode="wait">
-              {!effectiveAddress && activeTab !== 'terms' && activeTab !== 'privacy' ? (
-                <motion.div key="auth" initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}>
-                  <AuthPortal actuateOnSocialLoginIntent={actuateSocialLoginIntent} isLoggingIn={isLoggingIn} />
-                </motion.div>
-              ) : (
+            </header>
+            <div className="app-content" style={styles.content}>
+              <AnimatePresence mode="wait">
                 <motion.div key={activeTab + (portfolioAddress || '')} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.25, ease: 'easeOut' }}>
-                  <Suspense fallback={
-                    <div className="module-loader-container">
-                      <div className="loader-glow" />
-                      <Loader2 size={42} className="animate-spin" style={{ color: 'var(--accent)', zIndex: 1 }} />
-                      <div className="loader-text">Synchronizing Module...</div>
-                    </div>
-                  }>
+                  <Suspense fallback={<div className="module-loader-container"><Loader2 size={42} className="animate-spin" /></div>}>
                     {renderContent()}
                   </Suspense>
                 </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-
-          <footer className="app-footer" style={styles.footer}>
-            <div style={styles.footerLinks}>
-              <button style={styles.footerLink} onClick={() => setActiveTab('terms')}>Terms</button>
-              <button style={styles.footerLink} onClick={() => setActiveTab('privacy')}>Privacy</button>
+              </AnimatePresence>
             </div>
-            <p style={styles.footerCopy}>© 2026 PolyLance. All rights reserved.</p>
-          </footer>
-        </main>
-
-        {/* ═══ MOBILE OVERLAY ═══ */}
-        <AnimatePresence>
-          {isSidebarOpen && (
-            <motion.div
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              style={styles.overlay} onClick={() => setIsSidebarOpen(false)}
-            />
-          )}
-        </AnimatePresence>
-
-        {/* ═══ MOBILE NAV ═══ */}
-        <div className="app-mobile-nav" style={styles.mobileNav}>
-          {[
-            { id: 'dashboard', icon: LayoutDashboard, label: 'Home' },
-            { id: 'jobs', icon: Briefcase, label: 'Find Job' },
-            { id: 'create-job', icon: PlusCircle, label: 'Post Job' },
-            { id: 'chat', icon: MessageSquare, label: 'Chat' },
-          ].map(item => (
-            <button key={item.id} style={styles.mobileItem(activeTab === item.id)} onClick={() => navigate(item.id)}>
-              <item.icon size={20} />
-              <span>{item.label}</span>
-            </button>
-          ))}
-          <button style={styles.mobileItem(false)} onClick={() => setIsSidebarOpen(true)}>
-            <Menu size={20} />
-            <span>More</span>
-          </button>
+            <footer className="app-footer" style={styles.footer}>
+              <div style={styles.footerLinks}>
+                <button style={styles.footerLink} onClick={() => setActiveTab('terms')}>Terms</button>
+                <button style={styles.footerLink} onClick={() => setActiveTab('privacy')}>Privacy</button>
+              </div>
+              <p style={styles.footerCopy}>© 2026 PolyLance. All rights reserved.</p>
+            </footer>
+          </main>
         </div>
-      </div>
+      )}
     </>
   );
 }

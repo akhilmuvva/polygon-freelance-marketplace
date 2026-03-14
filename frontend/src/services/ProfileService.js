@@ -71,9 +71,9 @@ export const ProfileService = {
     /**
      * Prepares a profile for weightless upload
      */
-    updateSovereignProfile: async (profileData) => {
-        console.info('[PROFILE] Propagating intent to Ceramic mesh...');
-        return await CeramicService.updateProfile(profileData);
+    updateSovereignProfile: async (address, profileData) => {
+        console.info('[PROFILE] Propagating intent to Ceramic mesh for:', address);
+        return await CeramicService.updateProfile(address, profileData);
     },
 
     /**

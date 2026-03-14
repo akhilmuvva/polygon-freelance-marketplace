@@ -1,4 +1,6 @@
+@import "tailwindcss";
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap');
+
 
 /* ============================================
    POLYLANCE — Premium Design System
@@ -133,11 +135,22 @@ h6 {
   line-height: 1.2;
 }
 
+.glass-card {
+  background: rgba(24, 24, 27, 0.6);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 0 40px -10px rgba(139, 92, 246, 0.15);
+}
+
 .text-gradient {
-  background: linear-gradient(135deg, var(--accent-bright) 0%, var(--accent) 50%, var(--pink) 100%);
-  -webkit-background-clip: text;
   background-clip: text;
-  -webkit-text-fill-color: transparent;
+  -webkit-background-clip: text;
+  color: transparent;
+  background-image: linear-gradient(to right, #FFFFFF, #FFFFFF, #00F5FF);
+}
+
+.neon-purple {
+  box-shadow: 0 0 20px rgba(139, 92, 246, 0.4);
 }
 
 .gradient-text {
@@ -1580,4 +1593,21 @@ nav,
     text-transform: uppercase;
     letter-spacing: 0.2em;
     z-index: 1;
+}
+
+/* ============================================
+   SOVEREIGN HUD ANIMATIONS
+   ============================================ */
+@keyframes scanlineMove {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100vh); }
+}
+
+@keyframes hudPulse {
+  0%, 100% { box-shadow: 0 0 10px rgba(45, 212, 191, 0.1); }
+  50% { box-shadow: 0 0 25px rgba(45, 212, 191, 0.3); }
+}
+
+.hud-pulse {
+  animation: hudPulse 2s infinite ease-in-out;
 }

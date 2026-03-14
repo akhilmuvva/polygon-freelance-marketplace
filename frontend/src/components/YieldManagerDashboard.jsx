@@ -11,10 +11,10 @@ export default function ZenithStrata() {
   const [activeStrategy, setActiveStrategy] = useState('BALANCED');
 
   const protocols = [
-    { name: 'Morpho Blue', chain: 'Polygon', apy: '4.8', risk: 'Low', tvl: '$1.2B', icon: '💎' },
-    { name: 'Aave V3', chain: 'Base', apy: '3.2', risk: 'Min', tvl: '$4.5B', icon: '👻' },
-    { name: 'Aerodrome', chain: 'Base', apy: '18.4', risk: 'Med', tvl: '$640M', icon: '🦋' },
-    { name: 'Lido stMATIC', chain: 'Polygon', apy: '5.1', risk: 'Low', tvl: '$980M', icon: '💧' }
+    { name: 'Morpho Blue', chain: 'Polygon', apy: '0', risk: 'Low', tvl: '$0', icon: '💎' },
+    { name: 'Aave V3', chain: 'Base', apy: '0', risk: 'Min', tvl: '$0', icon: '👻' },
+    { name: 'Aerodrome', chain: 'Base', apy: '0', risk: 'Med', tvl: '$0', icon: '🦋' },
+    { name: 'Lido stMATIC', chain: 'Polygon', apy: '0', risk: 'Low', tvl: '$0', icon: '💧' }
   ];
 
   const s = {
@@ -58,10 +58,10 @@ export default function ZenithStrata() {
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
                 {[
-                    { label: 'Stable', val: '5.2%', trend: '+0.2%' },
-                    { label: 'LRTs', val: '8.4%', trend: '-0.1%' },
-                    { label: 'Safety Divergence', val: '5.0%', trend: 'ACTIVE' },
-                    { label: 'Vaults', val: '12.8%', trend: '+0.5%' }
+                    { label: 'Stable', val: '0%', trend: '0%' },
+                    { label: 'LRTs', val: '0%', trend: '0%' },
+                    { label: 'Safety Divergence', val: '0%', trend: 'ACTIVE' },
+                    { label: 'Vaults', val: '0%', trend: '0%' }
                 ].map((item, i) => (
                     <div key={i} style={{ padding: 16, borderRadius: 16, background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border)' }}>
                         <div style={s.label}>{item.label}</div>
@@ -91,7 +91,7 @@ export default function ZenithStrata() {
             </div>
             <div style={{ marginTop: 24, paddingTop: 20, borderTop: '1px solid var(--border)' }}>
                 <div style={s.label}>Projected Annual Gain</div>
-                <div style={{ fontSize: '1.2rem', fontWeight: 900, color: 'var(--accent-light)' }}>+ $1,420.50 USDC</div>
+                <div style={{ fontSize: '1.2rem', fontWeight: 900, color: 'var(--accent-light)' }}>+ $0.00 USDC</div>
             </div>
         </div>
       </div>

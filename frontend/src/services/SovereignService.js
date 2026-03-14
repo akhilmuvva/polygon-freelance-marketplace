@@ -1,4 +1,4 @@
-import { createPublicClient, http, parseAbi } from 'viem';
+import { createPublicClient, http, parseAbi, fallback } from 'viem';
 import { polygonAmoy } from 'viem/chains';
 import IPFSResolver from '../utils/IPFSResolver';
 import { ApolloClient, InMemoryCache, gql, HttpLink } from '@apollo/client';
@@ -12,10 +12,15 @@ const SUBGRAPH_URL = import.meta.env.VITE_SUBGRAPH_URL || 'https://api.studio.th
 const ESCROW_ADDRESS = import.meta.env.VITE_FREELANCE_ESCROW_ADDRESS || '0x5Ff3E1223B5c37f1C18CC279dfC9C181bF22BEf9';
 const REPUTATION_ADDRESS = import.meta.env.VITE_FREELANCER_REPUTATION_ADDRESS || '0x6976ED34702D29e8605C4b57752a61FeAaC14eeF';
 
-// Minimal Viem Client for Public Data
+// Minimal Viem Client for Public Data - High Resilience Fallback
 const publicClient = createPublicClient({
   chain: polygonAmoy,
-  transport: http(import.meta.env.VITE_POLYGON_AMOY_RPC || 'https://rpc-amoy.polygon.technology')
+  transport: fallback([
+    http('https://polygon-amoy-bor-rpc.publicnode.com'),
+    http('https://rpc-amoy.polygon.technology'),
+    http('https://polygon-amoy.drpc.org'),
+    http('https://rpc.ankr.com/polygon_amoy')
+  ], { rank: true })
 });
 
 // Apollo Client for Subgraph Indexing

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useEnsName, useEnsAvatar } from 'wagmi';
 import { normalize } from 'viem/ens';
+import ProfileService from '../services/ProfileService';
 
 /**
  * Hook to resolve Ethereum addresses to ENS names, avatars, and Lens profiles.
@@ -38,44 +39,56 @@ export function useIdentity(address) {
     }, [address, ensName, ensAvatar]);
 
     /**
-     * Resolve Lens Protocol profile and verification status.
-     * This connects the economic identity to the social graph.
+     * Resolve Lens Protocol profile and sovereign reputation.
+     * This connects the economic identity to the social and weightless data meshes.
      */
-    useEffect(() => {
-        const fetchLens = async () => {
-            if (!address) return;
-            try {
-                // In a production Antigravity app, we'd use the Lens API:
-                // https://api-v2.lens.dev/
-                console.log('[LENS] Resolving social graph for:', address);
-
-                // Simulating Lens resolution response for the prototype
-                const mockLensResult = {
-                    handle: 'poly-pioneer.lens',
-                    isFollowedByMe: false,
-                    isFollowingMe: false,
-                    isVerified: true,
-                    reputationEpochs: 450
-                };
-
+    const fetchSovereignIdentity = async () => {
+        if (!address) return;
+        try {
+            // Task 1: Resolve Sovereign Profile (Ceramic/Mesh)
+            const profile = await ProfileService.getProfile(address);
+            if (profile && profile.name) {
                 setIdentity(prev => ({
                     ...prev,
-                    lensProfile: mockLensResult,
-                    reputationEpochs: mockLensResult.reputationEpochs, // Expose at top level
-                    displayName: mockLensResult.handle, // Lens handle takes precedence
-                    isLens: true
+                    displayName: profile.name,
+                    isSovereign: true
                 }));
-            } catch (e) {
-                console.warn('[LENS] Profile resolution failed', e);
+            }
+
+            // Task 2: Resolve social graph (Lens Simulation)
+            const mockLensResult = {
+                handle: 'poly-pioneer.lens',
+                isVerified: true,
+                reputationEpochs: 450
+            };
+
+            setIdentity(prev => ({
+                ...prev,
+                lensProfile: mockLensResult,
+                reputationEpochs: mockLensResult.reputationEpochs,
+            }));
+        } catch (e) {
+            console.warn('[IDENTITY] Resonance failure', e);
+        }
+    };
+
+    useEffect(() => {
+        fetchSovereignIdentity();
+        
+        // Listen for real-time identity resonance
+        const handleUpdate = (e) => {
+            if (e.detail?.toLowerCase() === address?.toLowerCase()) {
+                fetchSovereignIdentity();
             }
         };
-        fetchLens();
+        window.addEventListener('IDENTITY_UPDATED', handleUpdate);
+        return () => window.removeEventListener('IDENTITY_UPDATED', handleUpdate);
     }, [address]);
 
     return {
         ...identity,
         reputationEpochs: identity.reputationEpochs ?? 0,
-        displayName: identity.lensProfile?.handle || identity.ensName || `${address?.slice(0, 6)}...${address?.slice(-4)}`,
+        displayName: identity.displayName || identity.lensProfile?.handle || identity.ensName || (address ? `${address.slice(0, 6)}...${address.slice(-4)}` : ''),
         isVerified: identity.lensProfile?.isVerified || false
     };
 }

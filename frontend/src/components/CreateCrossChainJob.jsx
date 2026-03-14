@@ -87,10 +87,15 @@ const CreateCrossChainJob = ({ onClose, onSuccess }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!signer) {
-            toast.error('Please connect your wallet');
+        if (!formData.amount || isNaN(formData.amount) || Number(formData.amount) <= 0) {
+            toast.error('Please enter a valid allocation amount');
             return;
         }
+        if (!formData.title) {
+            toast.error('Please enter a mission title');
+            return;
+        }
+
         setLoading(true);
         try {
             // Logic remains same as original but with cleaner state handling
@@ -107,21 +112,27 @@ const CreateCrossChainJob = ({ onClose, onSuccess }) => {
                     ipfsHash,
                     formData.category,
                     formData.deadline ? Math.floor(new Date(formData.deadline).getTime() / 1000) : 0,
-                    formData.milestones.map(m => m.description),
-                    formData.milestones.map(m => ethers.parseUnits(m.amount || '0', 6)),
-                    formData.milestones.map(m => m.isUpfront)
+                    formData.milestones.map(m => m.description || ''),
+                    formData.milestones.map(m => {
+                        const amt = String(m.amount || '0').trim();
+                        return ethers.parseUnits(amt === '' || isNaN(amt) ? '0' : amt, 6);
+                    }),
+                    formData.milestones.map(m => !!m.isUpfront)
                 ]
             );
 
             const destinationChainInfo = chains.find(c => c.id.toString() === formData.destinationChain.toString());
             const destinationSelector = destinationChainInfo?.ccipSelector;
             const tokenAddress = '0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359'; // Simplified for demo
-            const totalFee = estimatedFee ? ethers.parseUnits(estimatedFee.nativeFee.toString(), 18) : ethers.parseEther('0.01');
+            
+            // Native Fee Resilience: Ensuring the routing fee is never malformed
+            const feeValue = String(estimatedFee?.nativeFee || '0.01').trim();
+            const totalFee = ethers.parseUnits(isNaN(feeValue) ? '0.01' : feeValue, 18);
 
             const tx = await escrowManager.createCrossChainJob(
                 destinationSelector,
                 formData.freelancer || ethers.ZeroAddress,
-                ethers.parseUnits(formData.amount, 6),
+                ethers.parseUnits(String(formData.amount || '0').trim(), 6),
                 tokenAddress,
                 encodedJobData,
                 { value: totalFee }

@@ -22,6 +22,7 @@ export const JobService = {
                 description: data.description || data.bio || (data.milestones?.[0]?.description) || 'No description found in IPFS.',
                 category: data.category || 'General',
                 skills: data.skills || [],
+                milestones: data.milestones || [],
                 type: data.type || 'Standard',
                 version: data.version || '1.0'
             };

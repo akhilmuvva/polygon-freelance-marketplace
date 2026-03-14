@@ -8,6 +8,7 @@ import { CONTRACT_ADDRESS, SUPPORTED_TOKENS } from '../constants';
 import StorageService from '../services/StorageService';
 import { useTransactionToast } from '../hooks/useTransactionToast';
 import { useAnimeAnimations } from '../hooks/useAnimeAnimations';
+import hotToast from 'react-hot-toast';
 
 const st = {
     page: { maxWidth: 800, margin: '0 auto' },

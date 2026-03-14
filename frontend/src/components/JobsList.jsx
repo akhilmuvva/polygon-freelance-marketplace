@@ -5,17 +5,19 @@ import React, { useState, useEffect, useRef } from 'react';
 // import axios from 'axios';
 import { useAnimeAnimations } from '../hooks/useAnimeAnimations';
 import { createBiconomySmartAccount } from '../utils/biconomy';
-import { RefreshCcw, Search, Filter, ChevronDown, Briefcase, Calendar, DollarSign, ArrowRight, ArrowUpDown, MessageSquare, CreditCard, Rocket } from 'lucide-react';
+import { RefreshCcw, Search, Filter, ChevronDown, Briefcase, Calendar, DollarSign, ArrowRight, ArrowUpDown, MessageSquare, CreditCard, Rocket, Zap } from 'lucide-react';
 import { formatUnits } from 'viem';
 import { SUPPORTED_TOKENS, CONTRACT_ADDRESS } from '../constants';
 import UserLink from './UserLink';
 import AiMatchRating from './AiMatchRating';
 import { motion } from 'framer-motion';
+import { toast } from 'react-hot-toast';
 import JobService from '../services/JobService';
 import SubgraphService from '../services/SubgraphService';
 import FreelanceEscrowABI from '../contracts/FreelanceEscrow.json';
 import ProofOfWorkModal from './ProofOfWorkModal';
 import ProofOfWorkBadge from './ProofOfWorkBadge';
+import JobDetailsModal from './JobDetailsModal';
 
 const GET_JOBS = gql`
     query GetJobs {
@@ -93,10 +95,19 @@ const JobsList = ({ onSelectChat, onFiatPay, gasless, smartAccount: propSmartAcc
     }, [gasless, walletClient, smartAccount, propSmartAccount]);
 
     const filteredJobs = React.useMemo(() => {
-        let res = [...jobs];
+        // Merge Subgraph jobs with local intents from the Sovereign Mesh
+        const localIntents = JSON.parse(localStorage.getItem('SOVEREIGN_INTENTS') || '[]')
+            .map(intent => ({
+                ...intent,
+                jobId: 'INTENT-' + (intent.ipfsHash ? intent.ipfsHash.slice(-6).toUpperCase() : Math.random().toString(36).substring(7).toUpperCase()),
+                status: '0', // Native status for un-actuated intent
+                isIntent: true
+            }));
+
+        let res = [...jobs, ...localIntents];
 
         if (filter !== 'All Categories') {
-            res = res.filter(j => j.categoryId === filter);
+            res = res.filter(j => (j.categoryId?.toString() === filter || j.category === filter));
         }
 
         if (statusFilter !== 'All') {
@@ -106,8 +117,8 @@ const JobsList = ({ onSelectChat, onFiatPay, gasless, smartAccount: propSmartAcc
         if (searchQuery) {
             const q = searchQuery.toLowerCase();
             res = res.filter(j =>
-                j.jobId.toString().includes(q) ||
-                j.client.toLowerCase().includes(q) ||
+                (j.jobId && j.jobId.toString().toLowerCase().includes(q)) ||
+                (j.client && j.client.toLowerCase().includes(q)) ||
                 (j.title && j.title.toLowerCase().includes(q))
             );
         }
@@ -120,11 +131,22 @@ const JobsList = ({ onSelectChat, onFiatPay, gasless, smartAccount: propSmartAcc
         }
 
         if (sortBy === 'Newest') {
-            res = res.sort((a, b) => b.jobId - a.jobId);
+            res = res.sort((a, b) => {
+                if (a.isIntent && !b.isIntent) return -1;
+                if (!a.isIntent && b.isIntent) return 1;
+                // Safe numeric comparison for IDs
+                const idA = parseInt(a.jobId?.toString().replace(/\D/g, '')) || 0;
+                const idB = parseInt(b.jobId?.toString().replace(/\D/g, '')) || 0;
+                return idB - idA;
+            });
         } else if (sortBy === 'Budget: High to Low') {
-            res = res.sort((a, b) => Number(b.amount) - Number(a.amount));
+            res = res.sort((a, b) => {
+                const valA = a.isIntent ? parseFloat(a.amount || 0) : Number(formatUnits(BigInt(a.amount || 0), 6));
+                const valB = b.isIntent ? parseFloat(b.amount || 0) : Number(formatUnits(BigInt(b.amount || 0), 6));
+                return valB - valA;
+            });
         } else if (sortBy === 'Deadline') {
-            res = res.sort((a, b) => Number(a.deadline) - Number(b.deadline));
+            res = res.sort((a, b) => Number(a.deadline || 0) - Number(b.deadline || 0));
         }
 
         return res;
@@ -223,8 +245,13 @@ const JobsList = ({ onSelectChat, onFiatPay, gasless, smartAccount: propSmartAcc
 
 
 const JobCard = ({ job, address, onSelectChat, onFiatPay }) => {
-    const tokenInfo = SUPPORTED_TOKENS.find(t => t.address?.toLowerCase() === job.token?.toLowerCase()) || SUPPORTED_TOKENS[0];
+    // Resilience Logic: Resolve token info by Address OR Symbol (for local intents)
+    const tokenInfo = SUPPORTED_TOKENS.find(t => 
+        (t.address?.toLowerCase() === job.token?.toLowerCase()) || 
+        (t.symbol?.toUpperCase() === job.token?.toUpperCase())
+    ) || SUPPORTED_TOKENS[0];
     const [isPoWOpen, setIsPoWOpen] = useState(false);
+    const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
     // Contract Interactions
     const { writeContract, isPending } = useWriteContract();
@@ -275,7 +302,51 @@ const JobCard = ({ job, address, onSelectChat, onFiatPay }) => {
             hotToast.success('Settlement Intent Broadcasted');
         } catch (err) {
             console.error('[GRAVITY] Settlement failed:', err);
-            hotToast.error('Settlement friction detected. Check gas resonance.');
+            toast.error('Settlement friction detected. Check gas resonance.');
+        }
+    };
+
+    /// @notice Actuates the sovereign commitment to a contract.
+    /// @dev This constitutes the "Proof of Intent" where a freelancer joins the escrow loop.
+    const actuateAcceptanceIntent = async () => {
+        if (typeof job.jobId === 'string' && job.jobId.startsWith('INTENT-')) {
+            toast.error('This is a local intent. It must be finalized on-chain by the client before it can be accepted.');
+            return;
+        }
+        try {
+            writeContract({
+                address: CONTRACT_ADDRESS,
+                abi: FreelanceEscrowABI.abi,
+                functionName: 'acceptJob',
+                args: [BigInt(job.jobId)],
+                gas: 1000000n
+            });
+            toast.success('Acceptance Intent Broadcasted');
+        } catch (err) {
+            console.error('[GRAVITY] Acceptance failed:', err);
+            toast.error('Acceptance friction detected.');
+        }
+    };
+
+    /// @notice Actuates a sovereign application intent for a contract.
+    /// @dev This constitutes the "Proof of Interest" where a freelancer applies for a gig.
+    const actuateApplyIntent = async () => {
+        if (typeof job.jobId === 'string' && job.jobId.startsWith('INTENT-')) {
+            toast.error('This is a local intent. It must be finalized on-chain by the client before you can apply.');
+            return;
+        }
+        try {
+            writeContract({
+                address: CONTRACT_ADDRESS,
+                abi: FreelanceEscrowABI.abi,
+                functionName: 'applyForJob',
+                args: [BigInt(job.jobId)],
+                gas: 1000000n
+            });
+            toast.success('Application Intent Broadcasted');
+        } catch (err) {
+            console.error('[GRAVITY] Application failed:', err);
+            toast.error('Application friction detected.');
         }
     };
 
@@ -294,7 +365,11 @@ const JobCard = ({ job, address, onSelectChat, onFiatPay }) => {
                     {meta.category} • {['Created', 'Accepted', 'Ongoing', 'Disputed', 'Arbitration', 'Completed', 'Cancelled'][statusCode]}
                 </div>
                 <div style={{ fontSize: '1.2rem', fontWeight: 900, color: '#fff' }}>
-                    {formatUnits(BigInt(job.amount || '0'), tokenInfo.decimals)} <span style={{ fontSize: '0.8rem', fontWeight: 500, color: 'var(--text-tertiary)' }}>{tokenInfo.symbol}</span>
+                    {job.isIntent ? (
+                        parseFloat(job.amount || 0).toLocaleString()
+                    ) : (
+                        formatUnits(BigInt(job.amount || '0'), tokenInfo.decimals)
+                    )} <span style={{ fontSize: '0.8rem', fontWeight: 500, color: 'var(--text-tertiary)' }}>{tokenInfo.symbol}</span>
                 </div>
             </div>
 
@@ -342,8 +417,17 @@ const JobCard = ({ job, address, onSelectChat, onFiatPay }) => {
                     <button onClick={() => setIsPoWOpen(true)} className="btn btn-primary" style={{ flex: 1, height: 40, borderRadius: 10, fontSize: '0.8rem', background: 'linear-gradient(135deg, #10b981, #059669)', color: '#fff' }}>
                         <Rocket size={15} /> Submit Proof
                     </button>
+                ) : (statusCode === 0 || isNaN(statusCode)) ? (
+                    <div style={{ display: 'flex', gap: 8, flex: 1 }}>
+                        <button onClick={actuateApplyIntent} className="btn btn-primary" style={{ flex: 1, height: 40, borderRadius: 10, fontSize: '0.8rem', background: 'linear-gradient(135deg, #10b981, #3b82f6)', color: '#fff' }}>
+                            <Rocket size={14} /> Apply
+                        </button>
+                        <button onClick={actuateAcceptanceIntent} className="btn btn-secondary" style={{ flex: 1, height: 40, borderRadius: 10, fontSize: '0.8rem', border: '1px solid var(--accent-light)', color: 'var(--accent-light)' }}>
+                            <Zap size={14} /> Accept
+                        </button>
+                    </div>
                 ) : (
-                    <button className="btn btn-primary" style={{ flex: 1, height: 40, borderRadius: 10, fontSize: '0.8rem', fontWeight: 700 }}>View Details</button>
+                    <button onClick={() => setIsDetailsOpen(true)} className="btn btn-primary" style={{ flex: 1, height: 40, borderRadius: 10, fontSize: '0.8rem', fontWeight: 700 }}>View Details</button>
                 )}
 
                 {onFiatPay && (
@@ -356,10 +440,19 @@ const JobCard = ({ job, address, onSelectChat, onFiatPay }) => {
                 </button>
             </div>
 
-            <ProofOfWorkModal
-                isOpen={isPoWOpen}
-                onClose={() => setIsPoWOpen(false)}
-                jobId={job.jobId}
+            <ProofOfWorkModal isOpen={isPoWOpen} onClose={() => setIsPoWOpen(false)} jobId={job.jobId} />
+            <JobDetailsModal 
+                isOpen={isDetailsOpen} 
+                onClose={() => setIsDetailsOpen(false)} 
+                job={job} 
+                meta={meta} 
+                tokenInfo={tokenInfo}
+                onSelectChat={onSelectChat}
+                onFiatPay={onFiatPay}
+                onAccept={actuateAcceptanceIntent}
+                onApply={actuateApplyIntent}
+                isEligibleToApply={statusCode === 0 || isNaN(statusCode)}
+                isEligibleToAccept={statusCode === 0 || isNaN(statusCode)}
             />
 
             {address && (

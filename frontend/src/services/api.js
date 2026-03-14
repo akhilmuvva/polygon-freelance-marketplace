@@ -1,5 +1,6 @@
 import SovereignService from './SovereignService';
 import SubgraphService from './SubgraphService';
+import ProfileService from './ProfileService';
 
 /**
  * Sovereign API: Genesis Purge Result.
@@ -14,7 +15,7 @@ export const api = {
         nonce: Math.random().toString(36).substring(2, 10).toUpperCase() + Math.random().toString(36).substring(2, 10).toUpperCase()
     }),
 
-    updateProfile: (data) => SovereignService.updateProfile(data),
+    updateProfile: (address, data) => ProfileService.updateSovereignProfile(address, data),
 
     getLeaderboard: () => SovereignService.getLeaderboard(),
 

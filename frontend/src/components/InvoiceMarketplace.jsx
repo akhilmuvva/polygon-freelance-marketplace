@@ -8,6 +8,8 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAnimeAnimations } from '../hooks/useAnimeAnimations';
+import SubgraphService from '../services/SubgraphService';
+import toast from 'react-hot-toast';
 
 const INVOICE_STATUS = {
   0: { label: 'Pending', color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.1)', icon: <Clock size={14} /> },
@@ -17,14 +19,21 @@ const INVOICE_STATUS = {
 };
 
 export default function ZenithLiquidity() {
-  useAccount();
+  const { address } = useAccount();
   useAnimeAnimations();
+  const [stats, setStats] = React.useState(null);
 
-  const invoices = [
-    { id: 'ZN-8801', debtor: 'AWS Cloud Services', value: 12500, due: 45, status: 1, rating: 98, yield: 12.5 },
-    { id: 'ZN-9214', debtor: 'DeepMind Labs', value: 45000, due: 60, status: 1, rating: 95, yield: 14.2 },
-    { id: 'ZN-1102', debtor: 'SpaceX Logistics', value: 8500, due: 15, status: 1, rating: 99, yield: 8.8 }
-  ];
+  React.useEffect(() => {
+    const fetchStats = async () => {
+      const data = await SubgraphService.getProtocolStats();
+      setStats(data);
+    };
+    fetchStats();
+  }, []);
+
+  const handleAction = (msg) => toast.success(msg);
+
+  const invoices = [];
 
   const s = {
     card: { padding: 24, borderRadius: 24, background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border)', transition: 'all 0.3s ease' },
@@ -41,7 +50,7 @@ export default function ZenithLiquidity() {
           </h1>
           <p style={{ color: 'var(--text-tertiary)', fontSize: '0.9rem', fontWeight: 600 }}>INSTANT RWA FINANCING & YIELD OPTIMIZATION</p>
         </div>
-        <button className="btn btn-primary" style={{ gap: 8, height: 48, borderRadius: 16 }}>
+        <button className="btn btn-primary" style={{ gap: 8, height: 48, borderRadius: 16 }} onClick={() => handleAction("Initializing RWA Minting Sequence...")}>
           <Plus size={18} /> Issue New Liquid NFT
         </button>
       </header>
@@ -49,10 +58,10 @@ export default function ZenithLiquidity() {
       {/* Hero Stats */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 20, marginBottom: 40 }}>
         {[
-          { label: 'Market Liquidity', value: '$2.4M', icon: <Flame size={16} />, color: 'var(--danger)' },
-          { label: 'Active Invoices', value: '142', icon: <FileText size={16} />, color: 'var(--info)' },
-          { label: 'Average APR', value: '14.5%', icon: <TrendingUp size={16} />, color: 'var(--success)' },
-          { label: 'Default Rate', value: '0.04%', icon: <Shield size={16} />, color: 'var(--secondary)' }
+          { label: 'Market Liquidity', value: `$${Number(stats?.totalValueLocked || 0).toLocaleString()}`, icon: <Flame size={16} />, color: 'var(--danger)' },
+          { label: 'Elite Intents', value: stats?.totalEliteIntents || '0', icon: <FileText size={16} />, color: 'var(--info)' },
+          { label: 'Sovereign Surplus', value: `$${Number(stats?.totalSovereignSurplus || 0).toLocaleString()}`, icon: <TrendingUp size={16} />, color: 'var(--success)' },
+          { label: 'Yield Generated', value: `$${Number(stats?.totalYieldGenerated || 0).toLocaleString()}`, icon: <Shield size={16} />, color: 'var(--secondary)' }
         ].map((stat, i) => (
           <div key={i} style={s.card}>
             <div style={s.label}>{stat.icon} {stat.label}</div>
@@ -69,12 +78,12 @@ export default function ZenithLiquidity() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               <div style={{ padding: 16, borderRadius: 16, background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)' }}>
                 <div style={s.label}>Expected Cashflow (30d)</div>
-                <div style={{ fontSize: '1.4rem', fontWeight: 900, color: 'var(--success)' }}>$12,450.00</div>
+                <div style={{ fontSize: '1.4rem', fontWeight: 900, color: 'var(--success)' }}>$0.00</div>
               </div>
               <p style={{ fontSize: '0.78rem', opacity: 0.6, lineHeight: 1.5 }}>
-                Your verified invoices are ready for discounting. Liquidity providers are offering a **12.4% avg APR** for your profile.
+                Your verified invoices are ready for discounting. Liquidity providers are offering a **0% avg APR** for your profile.
               </p>
-              <button className="btn btn-secondary" style={{ width: '100%', borderRadius: 12 }}>View Cashflow Forecast</button>
+              <button className="btn btn-secondary" style={{ width: '100%', borderRadius: 12 }} onClick={() => handleAction("Analyzing Yield Horizons...")}>View Cashflow Forecast</button>
             </div>
           </div>
 
@@ -82,7 +91,7 @@ export default function ZenithLiquidity() {
             <h3 style={{ fontSize: '1rem', fontWeight: 800, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
               <Zap size={18} color="var(--accent-light)" /> Trust Index
             </h3>
-            <div style={{ fontSize: '2.4rem', fontWeight: 900, color: 'var(--accent-light)', marginBottom: 4 }}>98.2</div>
+            <div style={{ fontSize: '2.4rem', fontWeight: 900, color: 'var(--accent-light)', marginBottom: 4 }}>0.0</div>
             <div style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', opacity: 0.5 }}>PLATINUM TIER DEBTOR SCORE</div>
           </div>
         </div>

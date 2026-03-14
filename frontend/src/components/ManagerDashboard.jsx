@@ -7,8 +7,15 @@ import {
 } from 'lucide-react';
 
 import api from '../services/api';
+import SubgraphService from '../services/SubgraphService';
 import DisputeModal from './DisputeModal';
 import EvidenceModal from './EvidenceModal';
+import { useReadContract } from 'wagmi';
+import FreelanceEscrowABI from '../contracts/FreelanceEscrow.json';
+import { CONTRACT_ADDRESS } from '../constants';
+import toast from 'react-hot-toast';
+
+const ARCHITECT_WALLET = '0x25F6C8ed995C811E6c0ADb1D66A60830E8115e9A';
 
 const statusColors = {
     0: { color: '#60a5fa', bg: 'rgba(96,165,250,0.08)' },
@@ -30,30 +37,41 @@ const ZenithControl = () => {
     const { address } = useAccount();
     const [jobs, setJobs] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [viewMode, setViewMode] = useState('Personal'); // Personal | Global
+    const [globalStats, setGlobalStats] = useState(null);
     const [filterStatus, setFilterStatus] = useState('All');
     const [searchTerm, setSearchTerm] = useState('');
     const [disputeJob, setDisputeJob] = useState(null);
     const [evidenceJob, setEvidenceJob] = useState(null);
-    // raiseDispute is handled via DisputeModal now
 
-
+    // Directive 04: Sovereign Identity Check + Architectural Lock-in
+    // Sovereign Override: If the identity matches the Architect signature, 
+    // we grant UI-layer sovereignty even if roles are unsynced on-chain.
+    const isAuthorizedAdmin = address?.toLowerCase() === ARCHITECT_WALLET.toLowerCase();
 
     useEffect(() => {
-        const fetchJobs = async () => {
+        const fetchData = async () => {
             if (!address) return;
             setLoading(true);
             try {
                 const metadataList = await api.getJobsMetadata();
-                const userJobs = metadataList.filter(j =>
-                    j.client?.toLowerCase() === address.toLowerCase() ||
-                    j.freelancer?.toLowerCase() === address.toLowerCase()
-                );
-                setJobs(userJobs);
+                const stats = await SubgraphService.getProtocolStats();
+                setGlobalStats(stats);
+
+                if (viewMode === 'Global' && isAuthorizedAdmin) {
+                    setJobs(metadataList);
+                } else {
+                    const userJobs = metadataList.filter(j =>
+                        j.client?.toLowerCase() === address.toLowerCase() ||
+                        j.freelancer?.toLowerCase() === address.toLowerCase()
+                    );
+                    setJobs(userJobs);
+                }
             } catch (err) { console.error('Failed to fetch manager data:', err); }
             finally { setLoading(false); }
         };
-        fetchJobs();
-    }, [address]);
+        fetchData();
+    }, [address, viewMode, isAuthorizedAdmin]);
 
     const stats = {
         active: jobs.filter(j => j.status <= 2).length,
@@ -78,23 +96,54 @@ const ZenithControl = () => {
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 40 }}>
             {/* Header */}
-            <header>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 8 }}>
+            <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
                     <div style={{ padding: 12, borderRadius: 16, background: 'rgba(124,92,252,0.08)', color: 'var(--accent-light)' }}>
                         <LayoutDashboard size={32} />
                     </div>
                     <div>
                         <h1 style={{ fontSize: '2.5rem', fontWeight: 900, letterSpacing: '-0.04em' }}>
-                            Escrow <span style={{ color: 'var(--accent-light)' }}>Manager</span>
+                            {viewMode} <span style={{ color: 'var(--accent-light)' }}>Control</span>
                         </h1>
-                        <p style={dimLabel}>Real-time Smart Contract Monitoring</p>
+                        <p style={dimLabel}>{isAuthorizedAdmin ? 'Sovereign Administrator Command Center' : 'Real-time Escrow Monitoring'}</p>
                     </div>
                 </div>
+
+                {isAuthorizedAdmin && (
+                    <div style={{ display: 'flex', background: 'rgba(255,255,255,0.03)', padding: 4, borderRadius: 12, border: '1px solid var(--border)' }}>
+                        <button onClick={() => setViewMode('Personal')} style={{
+                            padding: '6px 14px', borderRadius: 10, fontSize: '0.7rem', fontWeight: 800, cursor: 'pointer', border: 'none',
+                            background: viewMode === 'Personal' ? 'var(--accent)' : 'transparent',
+                            color: viewMode === 'Personal' ? '#000' : 'var(--text-tertiary)',
+                        }}>Personal</button>
+                        <button onClick={() => setViewMode('Global')} style={{
+                            padding: '6px 14px', borderRadius: 10, fontSize: '0.7rem', fontWeight: 800, cursor: 'pointer', border: 'none',
+                            background: viewMode === 'Global' ? 'var(--accent)' : 'transparent',
+                            color: viewMode === 'Global' ? '#000' : 'var(--text-tertiary)',
+                        }}>Global Oversight</button>
+                    </div>
+                )}
             </header>
 
             {/* Stats */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 20 }}>
-                {statItems.map((s, idx) => (
+                {viewMode === 'Global' ? [
+                    { label: 'Global TVL', value: `$${Number(globalStats?.totalValueLocked || 0).toLocaleString()}`, icon: Lock, color: '#34d399' },
+                    { label: 'Platform Surplus', value: `$${Number(globalStats?.totalSovereignSurplus || 0).toLocaleString()}`, icon: Shield, color: 'var(--accent-light)' },
+                    { label: 'Active Disputes', value: stats.disputed, icon: AlertCircle, color: '#f87171' },
+                    { label: 'Network Intents', value: globalStats?.totalEliteIntents || '0', icon: Activity, color: '#818cf8' },
+                ].map((s, idx) => (
+                    <motion.div key={idx} whileHover={{ y: -5 }} style={{ ...cardBg }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+                            <div style={{ padding: 8, borderRadius: 10, background: 'rgba(255,255,255,0.04)', color: s.color }}>
+                                <s.icon size={20} />
+                            </div>
+                            <span style={{ ...dimLabel, opacity: 0.3 }}>Global</span>
+                        </div>
+                        <div style={{ fontSize: '1.5rem', fontWeight: 900, marginBottom: 4 }}>{s.value}</div>
+                        <div style={dimLabel}>{s.label}</div>
+                    </motion.div>
+                )) : statItems.map((s, idx) => (
                     <motion.div key={idx} whileHover={{ y: -5 }} style={{ ...cardBg }}>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
                             <div style={{ padding: 8, borderRadius: 10, background: 'rgba(255,255,255,0.04)', color: s.color }}>

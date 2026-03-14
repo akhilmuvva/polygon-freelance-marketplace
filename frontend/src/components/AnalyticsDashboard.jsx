@@ -35,12 +35,12 @@ export default function AnalyticsDashboard() {
                     totalVolume: parseFloat(formatEther(BigInt(stats.totalVolume))),
                     totalUsers: stats.activeUsers?.length || 0,
                     tvl: parseFloat(formatEther(BigInt(stats.totalVolume))), // TVL approximation
-                    avgReputation: 85, // Static for now until Subgraph tracks global avg
+                    avgReputation: 0, // Static for now until Subgraph tracks global avg
                     trends: [], // Graph requires custom query for trends
                     categoryDistribution: [
-                        { name: 'Solidity', value: 45 },
-                        { name: 'UI/UX', value: 25 },
-                        { name: 'Marketing', value: 30 }
+                        { name: 'Solidity', value: 0 },
+                        { name: 'UI/UX', value: 0 },
+                        { name: 'Marketing', value: 0 }
                     ]
                 });
             }
