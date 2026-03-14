@@ -254,7 +254,7 @@ const JobCard = ({ job, address, onSelectChat, onFiatPay }) => {
     const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
     // Contract Interactions
-    const { writeContract, isPending } = useWriteContract();
+    const { writeContract, writeContractAsync, isPending } = useWriteContract();
 
     // Local state for IPFS-resolved data
     const [meta, setMeta] = useState({
@@ -328,25 +328,40 @@ const JobCard = ({ job, address, onSelectChat, onFiatPay }) => {
         }
     };
 
-    /// @notice Actuates a sovereign application intent for a contract.
-    /// @dev This constitutes the "Proof of Interest" where a freelancer applies for a gig.
     const actuateApplyIntent = async () => {
         if (typeof job.jobId === 'string' && job.jobId.startsWith('INTENT-')) {
             toast.error('This is a local intent. It must be finalized on-chain by the client before you can apply.');
             return;
         }
+
         try {
+            const amountBigInt = BigInt(job.amount || '0');
+            const stake = (amountBigInt * 5n) / 100n; // 5% capacity stake required by Escrow
+            const isNative = !job.token || job.token === '0x0000000000000000000000000000000000000000';
+
+            if (!isNative && stake > 0n) {
+                toast.loading('Authorizing escrow lock...', { id: 'applyReq' });
+                await writeContractAsync({
+                    address: job.token,
+                    abi: [{ type: 'function', name: 'approve', inputs: [{ name: 'spender', type: 'address' }, { name: 'amount', type: 'uint256' }], outputs: [{ type: 'bool' }] }],
+                    functionName: 'approve',
+                    args: [CONTRACT_ADDRESS, stake]
+                });
+                toast.success('Escrow lock authorized.', { id: 'applyReq' });
+            }
+
             writeContract({
                 address: CONTRACT_ADDRESS,
                 abi: FreelanceEscrowABI.abi,
                 functionName: 'applyForJob',
                 args: [BigInt(job.jobId)],
+                value: isNative ? stake : 0n,
                 gas: 1000000n
             });
-            toast.success('Application Intent Broadcasted');
+            toast.success('Funds locked & application broadcasted.', { id: 'applyReq' });
         } catch (err) {
             console.error('[GRAVITY] Application failed:', err);
-            toast.error('Application friction detected.');
+            toast.error('Application friction detected.', { id: 'applyReq' });
         }
     };
 
