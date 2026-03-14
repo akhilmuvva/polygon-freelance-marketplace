@@ -209,22 +209,22 @@ function CreateJob({ onJobCreated, gasless, smartAccount }) {
                 {/* 1. Job Basics */}
                 <div className="card create-job-section" style={{ ...st.card, opacity: 0, transform: 'translateY(20px)' }}>
                     <div style={st.inputWrap}>
-                        <label style={st.label}>Project Title</label>
-                        <input type="text" style={st.input} placeholder="e.g. DEX Interface Design"
+                        <label htmlFor="job-title" style={st.label}>Project Title</label>
+                        <input id="job-title" name="job-title" type="text" style={st.input} placeholder="e.g. DEX Interface Design"
                             value={title} onChange={(e) => setTitle(e.target.value)} required />
                     </div>
 
                     <div style={{ ...st.row('1fr 1fr'), marginBottom: 20 }}>
                         <div>
-                            <label style={st.label}>Category</label>
-                            <select style={st.select} value={category} onChange={(e) => setCategory(e.target.value)}>
+                            <label htmlFor="job-category" style={st.label}>Category</label>
+                            <select id="job-category" name="job-category" style={st.select} value={category} onChange={(e) => setCategory(e.target.value)}>
                                 <option>Development</option><option>Design</option>
                                 <option>Marketing</option><option>Writing</option>
                             </select>
                         </div>
                         <div>
-                            <label style={st.label}>Freelancer Address (Optional for Intents)</label>
-                            <input type="text" style={st.input} placeholder="0x..."
+                            <label htmlFor="freelancer-address" style={st.label}>Freelancer Address (Optional for Intents)</label>
+                            <input id="freelancer-address" name="freelancer-address" type="text" style={st.input} placeholder="0x..."
                                 value={freelancer} onChange={(e) => setFreelancer(e.target.value)} />
                         </div>
                     </div>
@@ -235,20 +235,20 @@ function CreateJob({ onJobCreated, gasless, smartAccount }) {
                     <div style={{ padding: 20, borderRadius: 14, background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border)', marginBottom: 24 }}>
                         <div style={{ ...st.row('2fr 1fr 1fr'), gap: 16 }}>
                             <div>
-                                <label style={st.label}>Budget</label>
-                                <input type="number" step="0.01" style={st.input} placeholder="0.00"
+                                <label htmlFor="job-budget" style={st.label}>Budget</label>
+                                <input id="job-budget" name="job-budget" type="number" step="0.01" style={st.input} placeholder="0.00"
                                     value={amount} onChange={(e) => setAmount(e.target.value)} required />
                             </div>
                             <div>
-                                <label style={st.label}>Asset</label>
-                                <select style={st.select} value={selectedToken.symbol}
+                                <label htmlFor="job-asset" style={st.label}>Asset</label>
+                                <select id="job-asset" name="job-asset" style={st.select} value={selectedToken.symbol}
                                     onChange={(e) => setSelectedToken(SUPPORTED_TOKENS.find(t => t.symbol === e.target.value) || SUPPORTED_TOKENS[0])}>
                                     {SUPPORTED_TOKENS.map(t => <option key={t.symbol}>{t.symbol}</option>)}
                                 </select>
                             </div>
                             <div>
-                                <label style={st.label}>Duration (days)</label>
-                                <input type="number" style={st.input} placeholder="7"
+                                <label htmlFor="job-duration" style={st.label}>Duration (days)</label>
+                                <input id="job-duration" name="job-duration" type="number" style={st.input} placeholder="7"
                                     value={durationDays} onChange={(e) => setDurationDays(e.target.value)} required />
                             </div>
                         </div>
@@ -263,7 +263,8 @@ function CreateJob({ onJobCreated, gasless, smartAccount }) {
                             <span style={{ ...st.sectionLabel, color: 'var(--success)' }}>Yield Strategy</span>
                         </div>
                         <div style={st.row('1fr 1fr')}>
-                            <select style={st.select} value={yieldStrategy} onChange={(e) => setYieldStrategy(Number(e.target.value))}>
+                            <label htmlFor="yield-strategy" style={{ display: 'none' }}>Yield Strategy</label>
+                            <select id="yield-strategy" name="yield-strategy" style={st.select} value={yieldStrategy} onChange={(e) => setYieldStrategy(Number(e.target.value))}>
                                 <option value={0}>Standard (No Yield)</option>
                                 <option value={1}>Aave V3 (MATIC Optimizer)</option>
                                 <option value={2}>Compound (USDC Yield)</option>

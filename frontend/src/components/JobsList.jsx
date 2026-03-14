@@ -189,21 +189,24 @@ const JobsList = ({ onSelectChat, onFiatPay, gasless, smartAccount: propSmartAcc
             <div style={st.filterBar}>
                 <div style={{ position: 'relative' }}>
                     <Search size={18} style={st.inputIcon} />
-                    <input type="text" placeholder="Search projects or AI match..." style={st.input}
-                        value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
+                    <label htmlFor="search-jobs" style={{ display: 'none' }}>Search Projects</label>
+                    <input id="search-jobs" name="search-jobs" type="text" placeholder="Search projects or AI match..." style={st.input}
+                        value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} aria-label="Search jobs" />
                     {isAiLoading && <div style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)' }}><RefreshCcw size={14} style={{ animation: 'spin 1.5s linear infinite' }} /></div>}
                 </div>
 
                 <div style={{ position: 'relative' }}>
                     <Filter size={16} style={st.inputIcon} />
-                    <select style={st.select} value={filter} onChange={(e) => setFilter(e.target.value)}>
+                    <label htmlFor="category-filter" style={{ display: 'none' }}>Filter by Category</label>
+                    <select id="category-filter" name="category-filter" style={st.select} value={filter} onChange={(e) => setFilter(e.target.value)} aria-label="Category filter">
                         <option>All Categories</option><option>Development</option><option>Design</option><option>Marketing</option>
                     </select>
                 </div>
 
                 <div style={{ position: 'relative' }}>
                     <ArrowUpDown size={16} style={st.inputIcon} />
-                    <select style={st.select} value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+                    <label htmlFor="sort-jobs" style={{ display: 'none' }}>Sort Projects</label>
+                    <select id="sort-jobs" name="sort-jobs" style={st.select} value={sortBy} onChange={(e) => setSortBy(e.target.value)} aria-label="Sort jobs">
                         <option>Newest</option><option>Budget: High to Low</option><option>Deadline</option>
                     </select>
                 </div>
