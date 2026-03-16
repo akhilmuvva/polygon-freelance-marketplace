@@ -21,16 +21,31 @@ function SBTGallery({ address: propAddress }) {
     useEffect(() => { if (address) fetchTokens(); }, [address]);
 
     const fetchTokens = async () => {
+        if (!address) return;
         setLoading(true);
         try {
-            const mockTokens = [
-                { id: 1, type: 'Completion', title: 'Smart Contract Auditor', category: 'Development', rating: 5, date: '2026-02-10', txHash: '0x123...' },
-                { id: 2, type: 'Reputation', title: 'Top 10% Contributor', category: 'Core Protocol', rating: 5, date: '2026-02-12', txHash: '0x456...' },
+            const stats = await SubgraphService.getUserStats(address);
+            const completedJobs = [
+                ...(stats?.freelancer?.jobs || []),
+                ...(stats?.client?.activeEscrows?.filter(e => e.status === 'COMPLETED') || [])
             ];
-            await new Promise(r => setTimeout(r, 1000));
-            setTokens(mockTokens);
-        } catch (error) { console.error("Failed to fetch SBTs:", error); }
-        finally { setLoading(false); }
+            
+            const realTokens = completedJobs.map((job, idx) => ({
+                id: job.id,
+                type: 'Completion',
+                title: job.ipfsHash ? `Project ${job.id.slice(0, 8)}` : 'Sovereign Contribution',
+                category: Number(job.categoryId) === 0 ? 'Fullstack' : 'Technical Service',
+                rating: Number(job.rating || 5),
+                date: new Date(Number(job.createdAt || 0) * 1000).toISOString().split('T')[0],
+                txHash: job.id
+            }));
+            
+            setTokens(realTokens);
+        } catch (error) { 
+            console.error("Failed to fetch SBTs:", error); 
+        } finally { 
+            setLoading(false); 
+        }
     };
 
     return (

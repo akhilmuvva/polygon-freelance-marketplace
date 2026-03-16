@@ -2,70 +2,10 @@
 <html lang="en">
 
 <head>
-  <script>
-    /**
-     * SOVEREIGN ENVIRONMENT SHIELD (SES)
-     * Robust global sanitization for Web3/P2P Marketplaces
-     */
-    (function() {
-      const g = window;
-      g.global = g;
-      g.process = g.process || { 
-        env: { NODE_ENV: 'production' },
-        version: 'v22.0.0',
-        nextTick: (fn) => setTimeout(fn, 0),
-        browser: true
-      };
 
-      // Force high-stability object targets for legacy CJS modules
-      if (typeof g.exports === 'undefined') g.exports = {};
-      if (typeof g.module === 'undefined') g.module = { exports: g.exports };
-      
-      // Placeholder Buffer to prevent race condition crashes
-      if (!g.Buffer) {
-        g.Buffer = { isBuffer: () => false, from: () => [], alloc: () => [], concat: () => [] };
-      }
-
-      // 🛡️ CRITICAL FIX: Safe-sink for invalid Object.defineProperty calls
-      const _origDefine = Object.defineProperty;
-      Object.defineProperty = function(obj, prop, desc) {
-        try {
-          if (!obj || (typeof obj !== 'object' && typeof obj !== 'function')) {
-            return obj; // Silently absorb calls on non-objects
-          }
-          return _origDefine.apply(this, arguments);
-        } catch (e) {
-          return obj; // Resilience against "cannot redefine" errors
-        }
-      };
-
-      // AGA Directive: Automate inert on aria-hidden containers
-      const cleanseAria = () => {
-        document.querySelectorAll('[aria-hidden="true"]').forEach(el => {
-          if (!el.hasAttribute('inert')) el.setAttribute('inert', '');
-        });
-      };
-      const observer = new MutationObserver(cleanseAria);
-      observer.observe(document.documentElement, { attributes: true, childList: true, subtree: true, attributeFilter: ['aria-hidden'] });
-
-      // Directive 03: THE CONSOLE CLEANSE (Sovereign Telemetry Purge)
-      (function() {
-        const _origError = console.error;
-        const _origWarn = console.warn;
-        const killNoise = (args) => {
-          const msg = args.map(a => String(a)).join(' ').toLowerCase();
-          return msg.includes('401') || msg.includes('429') || msg.includes('rpc') || 
-                 msg.includes('llamarpc') || msg.includes('blastapi') || msg.includes('infura') ||
-                 msg.includes('dns') || msg.includes('unauthorized');
-        };
-        console.error = function(...args) { if (!killNoise(args)) _origError.apply(console, args); };
-        console.warn = function(...args) { if (!killNoise(args)) _origWarn.apply(console, args); };
-      })();
-    })();
-  </script>
   <meta charset="UTF-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self' *; script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: *; connect-src 'self' * https: wss:; style-src 'self' 'unsafe-inline' *; font-src 'self' data: *; img-src 'self' data: blob: *; frame-src 'self' *;">
+
   <link rel="icon" type="image/svg+xml" href="/logo.svg" />
   <link rel="manifest" href="/manifest.json" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
@@ -73,6 +13,17 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <script>
+    try {
+      if (window.trustedTypes && window.trustedTypes.createPolicy) {
+        window.trustedTypes.createPolicy('default', {
+          createHTML: (s) => s,
+          createScriptURL: (s) => s,
+          createScript: (s) => s,
+        });
+      }
+    } catch (e) { /* policy already registered or unsupported */ }
+  </script>
   <title>PolyLance | Zenith</title>
 </head>
 

@@ -30,7 +30,11 @@ export default function Chat({ initialPeerAddress }) {
 
     useEffect(() => {
         if (client) {
-            client.conversations.list().then(setConversations);
+            // XMTP V3: sync conversations first before listing
+            client.conversations.sync()
+                .then(() => client.conversations.list())
+                .then(setConversations)
+                .catch(err => console.warn('[XMTP] Sync error:', err));
         }
     }, [client]);
 
@@ -76,9 +80,9 @@ export default function Chat({ initialPeerAddress }) {
         setError(null);
         try {
             const xmtpClient = await messagingService.initialize(address, walletClient);
-            setClient(xmtpClient);
+            if (xmtpClient) setClient(xmtpClient);
         } catch (err) {
-            console.error('[XMTP] Singleton Initialization error:', err);
+            console.error('[XMTP] Initialization failure:', err);
             setError(err);
         } finally {
             setIsInitializing(false);
@@ -89,15 +93,23 @@ export default function Chat({ initialPeerAddress }) {
         if (!client) return;
         let isCancelled = false;
         const streamConvs = async () => {
-            const stream = await client.conversations.stream();
-            for await (const conv of stream) {
-                if (isCancelled) break;
-                setConversations(prev => prev.some(p => p.topic === conv.topic) ? prev : [conv, ...prev]);
+            try {
+                const stream = await client.conversations.stream();
+                for await (const conv of stream) {
+                    if (isCancelled) break;
+                    setConversations(prev => prev.some(p => p.id === conv.id) ? prev : [conv, ...prev]);
+                }
+            } catch (err) {
+                if (!isCancelled) console.warn('[XMTP] Conversation stream ended:', err.message);
             }
         };
         streamConvs();
         return () => { isCancelled = true; };
     }, [client]);
+
+    // Show secure context warning on HTTP (non-localhost)
+    const isLocal = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+    const needsHttps = typeof window !== 'undefined' && !window.isSecureContext && !isLocal;
 
     if (!client) {
         return (
@@ -117,8 +129,13 @@ export default function Chat({ initialPeerAddress }) {
                 <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', maxWidth: 400, margin: '0 auto 32px', lineHeight: 1.6 }}>
                     PolyLance uses XMTP V3 for secure, end-to-end encrypted messaging between partners.
                 </p>
+                {needsHttps && (
+                    <div style={{ padding: '12px 16px', borderRadius: 10, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', marginBottom: 20, fontSize: '0.82rem', color: '#f87171' }}>
+                        ⚠️ XMTP requires a secure connection. Please access the app over <strong>https://</strong>.
+                    </div>
+                )}
                 <button onClick={handleInitialize} className="btn btn-primary"
-                    disabled={isInitializing || !walletClient}
+                    disabled={isInitializing || !walletClient || needsHttps}
                     style={{ padding: '14px 36px', borderRadius: 12, fontSize: '0.95rem' }}>
                     {isInitializing
                         ? <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -152,7 +169,18 @@ export default function Chat({ initialPeerAddress }) {
                         e.preventDefault();
                         if (peerAddress && client) {
                             try {
-                                const conversation = await client.conversations.newConversation(peerAddress);
+                                // V3: check if address can receive XMTP messages
+                                const canMsg = await Client.canMessage(
+                                    [{ identifier: peerAddress.toLowerCase(), identifierKind: 'Ethereum' }],
+                                    { env: 'production' }
+                                );
+                                const canReceive = canMsg.get(peerAddress.toLowerCase());
+                                if (!canReceive) {
+                                    alert('This address has not activated XMTP. They need to initialize messaging first.');
+                                    return;
+                                }
+                                // V3: use newDm instead of newConversation
+                                const conversation = await client.conversations.newDm(peerAddress);
                                 setSelectedConversation(conversation);
                                 setPeerAddress('');
                             } catch (err) { alert('Error starting conversation: ' + err.message); }
@@ -179,23 +207,30 @@ export default function Chat({ initialPeerAddress }) {
                             No message history.
                         </p>
                     ) : (
-                        conversations.map((conv, i) => (
-                            <motion.div key={conv.topic}
-                                initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}
-                                transition={{ delay: i * 0.05 }}
-                                onClick={() => setSelectedConversation(conv)}
-                                style={{
-                                    padding: 14, borderRadius: 12, cursor: 'pointer',
-                                    border: '1px solid',
-                                    borderColor: selectedConversation?.topic === conv.topic ? 'var(--accent-light)' : 'transparent',
-                                    background: selectedConversation?.topic === conv.topic ? 'rgba(124,92,252,0.06)' : 'rgba(255,255,255,0.03)',
-                                    transition: 'all 0.2s ease',
-                                }}>
-                                <div style={{ fontSize: '0.82rem', fontWeight: 800 }}>
-                                    {conv.peerAddress?.slice(0, 8)}...{conv.peerAddress?.slice(-6)}
-                                </div>
-                            </motion.div>
-                        ))
+                        conversations.map((conv, i) => {
+                            // XMTP V3: DMs expose peerInboxId; get address from members
+                            const peerAddr = conv.peerAddress
+                                || conv.members?.find(m => m.inboxId !== client?.inboxId)?.addresses?.[0]
+                                || 'Unknown';
+                            const convId = conv.id || conv.topic;
+                            return (
+                                <motion.div key={convId}
+                                    initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}
+                                    transition={{ delay: i * 0.05 }}
+                                    onClick={() => setSelectedConversation(conv)}
+                                    style={{
+                                        padding: 14, borderRadius: 12, cursor: 'pointer',
+                                        border: '1px solid',
+                                        borderColor: selectedConversation?.id === convId ? 'var(--accent-light)' : 'transparent',
+                                        background: selectedConversation?.id === convId ? 'rgba(124,92,252,0.06)' : 'rgba(255,255,255,0.03)',
+                                        transition: 'all 0.2s ease',
+                                    }}>
+                                    <div style={{ fontSize: '0.82rem', fontWeight: 800 }}>
+                                        {peerAddr.slice(0, 8)}...{peerAddr.slice(-6)}
+                                    </div>
+                                </motion.div>
+                            );
+                        })
                     )}
                 </div>
             </div>
@@ -278,6 +313,14 @@ function MessageContainer({ conversation, address, contractContext, loadingConte
     }, [conversation]);
 
     useEffect(() => { scrollToBottom(); }, [messages]);
+
+    // V3: sender is identified by inboxId, not address
+    const getSenderAddress = (msg) => msg.senderAddress || msg.senderInboxId || '';
+    const getMsgTime = (msg) => {
+        // V3 uses sentAtNs (nanoseconds BigInt), fallback to sentAt
+        if (msg.sentAtNs) return new Date(Number(msg.sentAtNs) / 1_000_000);
+        return msg.sentAt ? new Date(msg.sentAt) : new Date();
+    };
 
     const handleSend = async (e) => {
         e.preventDefault();
@@ -382,7 +425,9 @@ function MessageContainer({ conversation, address, contractContext, loadingConte
             {/* Messages */}
             <div style={{ flex: 1, overflowY: 'auto', padding: 20, display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {messages.map((msg) => {
-                    const isMe = msg.senderAddress?.toLowerCase() === address?.toLowerCase();
+                    const sender = getSenderAddress(msg);
+                    const isMe = sender?.toLowerCase() === address?.toLowerCase()
+                        || (client?.inboxId && sender === client.inboxId);
                     return (
                         <motion.div key={msg.id}
                             initial={{ opacity: 0, y: 10, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -398,7 +443,7 @@ function MessageContainer({ conversation, address, contractContext, loadingConte
                             }}>
                             <div style={{ wordBreak: 'break-word', lineHeight: 1.5, fontWeight: 500 }}>{msg.content}</div>
                             <div style={{ fontSize: '0.62rem', opacity: 0.6, marginTop: 5, textAlign: isMe ? 'right' : 'left', fontWeight: 700 }}>
-                                {new Date(msg.sentAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                {getMsgTime(msg).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                 {isMe && ' · Sent'}
                             </div>
                         </motion.div>

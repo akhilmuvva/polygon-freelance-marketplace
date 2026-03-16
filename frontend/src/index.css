@@ -21,13 +21,13 @@
   --text-tertiary: #475569;
   --text-inverse: #010204;
 
-  /* Zenith Emerald Palette (The Signature) */
-  --accent: #2dd4bf;
-  --accent-light: #5eead4;
-  --accent-bright: #99f6e4;
-  --accent-subtle: rgba(45, 212, 191, 0.06);
-  --accent-border: rgba(45, 212, 191, 0.2);
-  --accent-glow: rgba(45, 212, 191, 0.25);
+  /* Zenith Neon Cyan Palette (The Signature) */
+  --accent: #00f5d4;
+  --accent-light: #00f5d4;
+  --accent-bright: #a7fff3;
+  --accent-subtle: rgba(0, 245, 212, 0.08);
+  --accent-border: rgba(0, 245, 212, 0.25);
+  --accent-glow: rgba(0, 245, 212, 0.35);
 
   --secondary: #6366f1;
   /* Electric Indigo */
@@ -136,10 +136,10 @@ h6 {
 }
 
 .glass-card {
-  background: rgba(24, 24, 27, 0.6);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 0 40px -10px rgba(139, 92, 246, 0.15);
+  background: rgba(10, 11, 14, 0.8);
+  backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 20px 50px -10px rgba(0, 245, 212, 0.1);
 }
 
 .text-gradient {

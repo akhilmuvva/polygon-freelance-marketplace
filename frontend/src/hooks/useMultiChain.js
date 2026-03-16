@@ -176,7 +176,7 @@ export const useMultiChain = () => {
     // Get RPC URL for a chain
     const getRpcUrl = (chainId) => {
         const rpcUrls = {
-            137: 'https://polygon-rpc.com',
+            137: 'https://polygon-bor-rpc.publicnode.com', // Using publicnode as more reliable fallback for 137
             1: 'https://cloudflare-eth.com',
             8453: 'https://mainnet.base.org',
             42161: 'https://arb1.arbitrum.io/rpc',

@@ -49,17 +49,18 @@ const st = {
     actions: { display: 'flex', gap: 12, marginTop: 28 },
 };
 
-function CreateJob({ onJobCreated, gasless, smartAccount }) {
-    const [freelancer, setFreelancer] = useState('');
-    const [amount, setAmount] = useState('');
-    const [title, setTitle] = useState('');
-    const [category, setCategory] = useState('Development');
+function CreateJob({ onJobCreated, gasless, smartAccount, freelancer: initialFreelancer, amount: initialAmount, title: initialTitle, category: initialCategory }) {
+    const [freelancer, setFreelancer] = useState(initialFreelancer || '');
+    const [amount, setAmount] = useState(initialAmount || '');
+    const [title, setTitle] = useState(initialTitle || '');
+    const [category, setCategory] = useState(initialCategory || 'Development');
     const [selectedToken, setSelectedToken] = useState(SUPPORTED_TOKENS[0]);
     const [yieldStrategy, setYieldStrategy] = useState(0);
     const [milestones, setMilestones] = useState([{ amount: '', description: '' }]);
     const [durationDays, setDurationDays] = useState('7');
     const [isProcessingGasless, setIsProcessingGasless] = useState(false);
     const { address } = useAccount();
+    const isConnected = !!address;
 
     // Anime.js hooks
     const headerRef = React.useRef(null);
@@ -88,14 +89,17 @@ function CreateJob({ onJobCreated, gasless, smartAccount }) {
     const actuateEscrowIntent = async (e) => {
         e.preventDefault();
         
-        // Safety Verification: Ensure the actor has defined the economic parameters.
+        if (!address) {
+            hotToast.error('Connect your wallet first to post a job.');
+            return;
+        }
+
         // Safety Verification: Ensure the actor has defined the economic parameters.
         if (!amount || !title) {
             hotToast.error('Incomplete Intent: Title and Budget required.');
             return;
         }
 
-        const isIntentOnly = !freelancer;
         setIsProcessingGasless(true); // Re-using this as a generic loading state for this operation
 
         try {
@@ -110,7 +114,7 @@ function CreateJob({ onJobCreated, gasless, smartAccount }) {
                 freelancer: freelancer || '0x0000000000000000000000000000000000000000',
                 amount,
                 token: selectedToken.symbol,
-                status: isIntentOnly ? 'Pending Intent' : 'Created',
+                status: freelancer ? 'Created' : 'Pending Intent',
                 milestones: milestones.map(m => ({
                     amount: m.amount,
                     description: m.description
@@ -121,15 +125,16 @@ function CreateJob({ onJobCreated, gasless, smartAccount }) {
             ipfsHash = cid;
             console.info('[NETWORK] Sovereign metadata anchored:', ipfsHash);
 
-            // Removed decentralized intent anchoring. All jobs, including open intents, 
-            // are now actuated directly via the Escrow Smart Contract to ensure immediate 
-            // economic resonance and allow freelancer applications.
+            // Resolve freelancer address — always pass a valid address to the contract
+            const resolvedFreelancer = (freelancer && freelancer.startsWith('0x') && freelancer.length === 42)
+                ? freelancer
+                : '0x0000000000000000000000000000000000000000';
 
             // Step 3: Actuation Logic for Fixed Contracts
             const deadline = Math.floor(Date.now() / 1000) + (Number(durationDays) * 86400);
             const params = {
                 categoryId: 1n,
-                freelancer: freelancer,
+                freelancer: resolvedFreelancer,
                 token: selectedToken.address,
                 amount: rawAmount,
                 ipfsHash,
@@ -206,6 +211,16 @@ function CreateJob({ onJobCreated, gasless, smartAccount }) {
             </div>
 
             <form onSubmit={actuateEscrowIntent} style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+                {/* Wallet Connection Warning */}
+                {!isConnected && (
+                    <div style={{ padding: '14px 20px', borderRadius: 12, background: 'rgba(239, 68, 68, 0.08)', border: '1px solid rgba(239, 68, 68, 0.25)', display: 'flex', alignItems: 'center', gap: 10 }}>
+                        <span style={{ fontSize: '1.2rem' }}>⚠️</span>
+                        <div>
+                            <div style={{ color: '#f87171', fontWeight: 700, fontSize: '0.85rem' }}>Wallet Not Connected</div>
+                            <div style={{ color: 'var(--text-secondary)', fontSize: '0.78rem' }}>Connect your wallet using the button in the top-right corner to post a job.</div>
+                        </div>
+                    </div>
+                )}
                 {/* 1. Job Basics */}
                 <div className="card create-job-section" style={{ ...st.card, opacity: 0, transform: 'translateY(20px)' }}>
                     <div style={st.inputWrap}>
@@ -298,7 +313,7 @@ function CreateJob({ onJobCreated, gasless, smartAccount }) {
 
                 {/* Actions */}
                 <div className="create-job-section" style={{ display: 'flex', gap: 16, justifyContent: 'flex-end', opacity: 0, transform: 'translateY(20px)' }}>
-                    <button type="submit" disabled={isPending || isConfirming || isProcessingGasless} className="btn btn-primary" style={{ flex: 1, height: 48, borderRadius: 12, justifyContent: 'center' }}>
+                    <button type="submit" disabled={!isConnected || isPending || isConfirming || isProcessingGasless} className="btn btn-primary" style={{ flex: 1, height: 48, borderRadius: 12, justifyContent: 'center', opacity: !isConnected ? 0.5 : 1 }}>
                         {isPending || isConfirming || isProcessingGasless ? <Loader2 size={18} className="animate-spin" /> : (
                             <><Send size={18} /> {freelancer ? 'Initialize Escrow' : 'Post Job Intent'}</>
                         )}

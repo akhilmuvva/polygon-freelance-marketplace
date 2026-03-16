@@ -9,6 +9,7 @@ import { animate, stagger, createTimeline } from 'animejs';
 export const useAnimeAnimations = () => {
     // Stagger fade-in animation for lists
     const staggerFadeIn = useCallback((selector, delay = 35) => {
+        if (typeof selector === 'string' && !document.querySelector(selector)) return;
         animate(selector, {
             opacity: [0, 1],
             translateY: [8, 0],
@@ -20,6 +21,7 @@ export const useAnimeAnimations = () => {
 
     // Pulse animation for attention-grabbing elements
     const pulse = useCallback((selector, scale = 1.05) => {
+        if (typeof selector === 'string' && !document.querySelector(selector)) return;
         animate(selector, {
             scale: [1, scale, 1],
             easing: 'easeInOutQuad',
@@ -40,6 +42,7 @@ export const useAnimeAnimations = () => {
 
     // Slide in from left
     const slideInLeft = useCallback((selector, distance = 25) => {
+        if (typeof selector === 'string' && !document.querySelector(selector)) return;
         animate(selector, {
             translateX: [-distance, 0],
             opacity: [0, 1],
@@ -50,6 +53,7 @@ export const useAnimeAnimations = () => {
 
     // Slide in from right
     const slideInRight = useCallback((selector, distance = 30) => {
+        if (typeof selector === 'string' && !document.querySelector(selector)) return;
         animate(selector, {
             translateX: [distance, 0],
             opacity: [0, 1],
@@ -60,6 +64,7 @@ export const useAnimeAnimations = () => {
 
     // Scale in animation
     const scaleIn = useCallback((selector) => {
+        if (typeof selector === 'string' && !document.querySelector(selector)) return;
         animate(selector, {
             scale: [0.9, 1],
             opacity: [0, 1],

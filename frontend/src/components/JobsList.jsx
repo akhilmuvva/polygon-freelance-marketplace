@@ -438,22 +438,23 @@ const JobCard = ({ job, address, onSelectChat, onFiatPay }) => {
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 'auto' }}>
-                {isFreelancer && statusCode === 2 ? (
-                    <button onClick={() => setIsPoWOpen(true)} className="btn btn-primary" style={{ flex: 1, height: 40, borderRadius: 10, fontSize: '0.8rem', background: 'linear-gradient(135deg, #10b981, #059669)', color: '#fff' }}>
-                        <Rocket size={15} /> Submit Proof
-                    </button>
-                ) : (statusCode === 0 || isNaN(statusCode)) ? (
-                    <div style={{ display: 'flex', gap: 8, flex: 1 }}>
+                <div style={{ display: 'flex', gap: 8, flex: 1 }}>
+                    {statusCode === 0 && !isClient && (
                         <button onClick={actuateApplyIntent} className="btn btn-primary" style={{ flex: 1, height: 40, borderRadius: 10, fontSize: '0.8rem', background: 'linear-gradient(135deg, #10b981, #3b82f6)', color: '#fff' }}>
                             <Rocket size={14} /> Apply
                         </button>
-                        <button onClick={actuateAcceptanceIntent} className="btn btn-secondary" style={{ flex: 1, height: 40, borderRadius: 10, fontSize: '0.8rem', border: '1px solid var(--accent-light)', color: 'var(--accent-light)' }}>
-                            <Zap size={14} /> Accept
+                    )}
+                    {statusCode === 1 && isFreelancer && (
+                        <button onClick={actuateAcceptanceIntent} className="btn btn-primary" style={{ flex: 1, height: 40, borderRadius: 10, fontSize: '0.8rem', background: 'var(--accent-light)', color: '#fff' }}>
+                            <Zap size={14} /> Accept Job
                         </button>
-                    </div>
-                ) : (
-                    <button onClick={() => setIsDetailsOpen(true)} className="btn btn-primary" style={{ flex: 1, height: 40, borderRadius: 10, fontSize: '0.8rem', fontWeight: 700 }}>View Details</button>
-                )}
+                    )}
+                    {(isClient || (statusCode !== 0 && statusCode !== 1) || (!isFreelancer && statusCode === 1)) && (
+                        <button onClick={() => setIsDetailsOpen(true)} className="btn btn-primary" style={{ flex: 1, height: 40, borderRadius: 10, fontSize: '0.8rem', fontWeight: 700 }}>
+                            View Details
+                        </button>
+                    )}
+                </div>
 
                 {onFiatPay && (
                     <button onClick={() => onFiatPay(job.freelancer || job.client)} className="btn btn-secondary" style={{ height: 40, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '0 12px' }}>
@@ -476,8 +477,24 @@ const JobCard = ({ job, address, onSelectChat, onFiatPay }) => {
                 onFiatPay={onFiatPay}
                 onAccept={actuateAcceptanceIntent}
                 onApply={actuateApplyIntent}
-                isEligibleToApply={statusCode === 0 || isNaN(statusCode)}
-                isEligibleToAccept={statusCode === 0 || isNaN(statusCode)}
+                onPickFreelancer={(f) => {
+                    const id = job.jobId;
+                    if (!id || isNaN(id)) {
+                        toast.error('Cannot hire for a pending or local job intent.');
+                        return;
+                    }
+                    writeContract({
+                        address: CONTRACT_ADDRESS,
+                        abi: FreelanceEscrowABI.abi,
+                        functionName: 'pickFreelancer',
+                        args: [BigInt(id), f],
+                        gas: 1000000n
+                    });
+                    toast.success('Freelancer Assigned. Awaiting their acceptance.');
+                }}
+                address={address}
+                isEligibleToApply={statusCode === 0 && !isClient}
+                isEligibleToAccept={statusCode === 1 && isFreelancer}
             />
 
             {address && (

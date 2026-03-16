@@ -1,12 +1,4 @@
-// Directive 03: Sovereign Console Cleanse
-if (window.location.hostname === 'localhost') {
-  const originalWarn = console.warn;
-  console.warn = (...args) => {
-    if (args[0] && typeof args[0] === 'string' && (args[0].includes('SES') || args[0].includes('[SECURITY]') || args[0].includes('[NETWORK]'))) {
-      originalWarn(...args);
-    }
-  };
-}
+
 
 import React, { useState, Suspense, lazy, useEffect } from 'react';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
@@ -20,7 +12,8 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useAnimeAnimations } from './hooks/useAnimeAnimations';
 
 // Lazy load heavy components
-const Dashboard = lazy(() => import('./components/Dashboard'));
+const Dashboard = lazy(() => import('./components/Dashboard.jsx'));
+const SpecialistMarketplace = lazy(() => import('./components/SpecialistMarketplace.jsx'));
 const CreateJob = lazy(() => import('./components/CreateJob'));
 const JobsList = lazy(() => import('./components/JobsList'));
 const NFTGallery = lazy(() => import('./components/NFTGallery'));
@@ -74,9 +67,10 @@ const styles = {
     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
   },
   logoText: {
-    fontSize: '1.15rem', fontWeight: 900, letterSpacing: '-0.03em', color: '#fff',
+    fontSize: '1.25rem', fontWeight: 900, letterSpacing: '-0.04em', color: '#fff',
+    textTransform: 'uppercase'
   },
-  logoAccent: { color: 'var(--accent-light)' },
+  logoAccent: { color: '#00f5d4', textShadow: '0 0 20px rgba(0,245,212,0.4)' },
   logoSub: {
     fontSize: '0.55rem', fontWeight: 700, textTransform: 'uppercase',
     letterSpacing: '0.12em', color: 'var(--text-tertiary)', marginTop: 1,
@@ -92,14 +86,14 @@ const styles = {
     color: 'var(--text-tertiary)', opacity: 0.6, marginTop: 12, marginBottom: 4,
   },
   navItem: (active) => ({
-    display: 'flex', alignItems: 'center', gap: 10, width: '100%',
-    padding: '9px 14px', borderRadius: 10, border: '1px solid transparent',
-    background: active ? 'rgba(124, 92, 252, 0.08)' : 'transparent',
-    borderColor: active ? 'rgba(124, 92, 252, 0.18)' : 'transparent',
-    color: active ? 'var(--accent-light)' : 'var(--text-secondary)',
-    fontSize: '0.82rem', fontWeight: active ? 700 : 600,
-    cursor: 'pointer', transition: 'all 0.15s ease',
-    textAlign: 'left', marginBottom: 2,
+    display: 'flex', alignItems: 'center', gap: 12, width: '100%',
+    padding: '12px 18px', borderRadius: 12, border: '1px solid transparent',
+    background: active ? 'rgba(0, 245, 212, 0.04)' : 'transparent',
+    borderColor: active ? 'rgba(0, 245, 212, 0.15)' : 'transparent',
+    color: active ? '#00f5d4' : 'rgba(255,255,255,0.4)',
+    fontSize: '0.88rem', fontWeight: active ? 800 : 700,
+    cursor: 'pointer', transition: 'all 0.2s ease',
+    textAlign: 'left', marginBottom: 4,
   }),
   sidebarBottom: {
     padding: '12px 14px 16px', borderTop: '1px solid var(--border)',
@@ -205,7 +199,7 @@ const styles = {
     cursor: 'pointer', display: 'flex', alignItems: 'center',
   },
   content: {
-    flex: 1, padding: '28px 32px 48px', maxWidth: 1280, width: '100%',
+    flex: 1, padding: '28px 32px 48px', maxWidth: 1800, width: '100%', margin: '0 auto',
   },
   footer: {
     padding: '14px 32px', borderTop: '1px solid var(--border)',
@@ -267,14 +261,19 @@ const useNetworkHealth = () => {
 };
 
 function App() {
-  const { indexing, storage } = useNetworkHealth();
-  const { address, isConnected: isWalletConnected } = useAccount();
+  useNetworkHealth(); // Runs background health checks; result used only in future telemetry
+  const { address, isConnected: isWalletConnected, isReconnecting } = useAccount();
   const { data: walletClient } = useWalletClient();
   const { disconnect } = useDisconnect();
   const { data: blockNumber } = useBlockNumber({ watch: true });
 
+  const [isHydrated, setIsHydrated] = React.useState(false);
   const [activeTab, setActiveTab] = React.useState('dashboard');
   const [activeTabParams, setActiveTabParams] = React.useState({});
+
+  React.useEffect(() => {
+    setIsHydrated(true);
+  }, []);
 
   const navigateToOnramp = (recipient = null) => {
     setActiveTabParams({ recipient });
@@ -293,7 +292,10 @@ function App() {
     if (blockNumber) {
       window.dispatchEvent(new CustomEvent('REFRESH_DASHBOARD'));
     }
-    const handleNavToCreate = () => setActiveTab('create-job');
+    const handleNavToCreate = (e) => {
+      if (e.detail) setActiveTabParams(e.detail);
+      setActiveTab('create-job');
+    };
     window.addEventListener('NAV_TO_CREATE', handleNavToCreate);
     return () => window.removeEventListener('NAV_TO_CREATE', handleNavToCreate);
   }, [blockNumber]);
@@ -398,7 +400,7 @@ function App() {
       if (socialProvider) await socialProvider.auth.logout();
       disconnect();
       hotToast.success("Connection severed.");
-    } catch (e) {}
+    } catch (e) { console.warn('[AUTH] Logout had minor issue:', e?.message); }
   };
 
   React.useEffect(() => {
@@ -420,7 +422,7 @@ function App() {
     switch (activeTab) {
       case 'dashboard': return <Dashboard address={effectiveAddress} />;
       case 'jobs': return <JobsList address={effectiveAddress} onUserClick={setPortfolioAddress} onSelectChat={onSelectChat} onFiatPay={navigateToOnramp} gasless={isGasless} smartAccount={smartAccount} />;
-      case 'create-job': return <CreateJob smartAccount={smartAccount} gasless={isGasless} address={effectiveAddress} onJobCreated={() => setActiveTab('jobs')} />;
+      case 'create-job': return <CreateJob {...activeTabParams} smartAccount={smartAccount} gasless={isGasless} address={effectiveAddress} onJobCreated={() => { setActiveTab('jobs'); setActiveTabParams({}); }} />;
       case 'nfts': return <NFTGallery address={effectiveAddress} />;
       case 'chat': return <Chat initialPeerAddress={chatPeerAddress} address={effectiveAddress} />;
       case 'leaderboard': return <Leaderboard onUserClick={setPortfolioAddress} />;
@@ -441,14 +443,17 @@ function App() {
       case 'onramp': return <FiatOnramp address={effectiveAddress} recipientAddress={activeTabParams.recipient} />;
       case 'identity': return <IdentityManager address={effectiveAddress} />;
       case 'portfolio': return <Portfolio address={effectiveAddress} onFiatPay={navigateToOnramp} />;
+      case 'specialists': return <SpecialistMarketplace onRegister={() => setActiveTab('identity')} />;
       default: return <Dashboard address={effectiveAddress} />;
     }
   };
 
+  if (!isHydrated) return null;
+
   return (
     <>
       <Toaster position="top-right" />
-      {!effectiveAddress && activeTab !== 'terms' && activeTab !== 'privacy' ? (
+      {(!effectiveAddress || isReconnecting) && activeTab !== 'terms' && activeTab !== 'privacy' ? (
         <Suspense fallback={null}>
           <LandingPage onSocialLogin={actuateSocialLoginIntent} isLoggingIn={isLoggingIn} />
         </Suspense>
@@ -465,25 +470,25 @@ function App() {
               {[
                 { id: 'dashboard', icon: LayoutDashboard, label: 'Command Center' },
                 { id: 'jobs', icon: Briefcase, label: 'Find a Job' },
+                { id: 'specialists', icon: User, label: 'Expert Network' },
                 { id: 'create-job', icon: PlusCircle, label: 'Initialize Contract' },
                 { id: 'leaderboard', icon: Trophy, label: 'Elite Leaderboard' },
                 { id: 'identity', icon: User, label: 'Profile Updater' },
                 { id: 'portfolio', icon: User, label: 'Zenith Reputation' },
               ].map(item => (
                 <div key={item.id} className="anime-nav-item" onClick={() => navigate(item.id)} style={styles.navItem(activeTab === item.id)}>
-                  <item.icon size={16} /> {item.label}
+                  <item.icon size={16} color={activeTab === item.id ? '#00f5d4' : 'rgba(255,255,255,0.4)'} /> {item.label}
                 </div>
               ))}
+              
               <div style={styles.sectionLabel}>Finance & Zenith</div>
               {[
-                { id: 'governance', icon: Globe, label: 'DAO Governance' },
-                { id: 'court', icon: Gavel, label: 'Zenith Court' },
-                { id: 'liquidity', icon: Flame, label: 'Zenith Liquidity' },
-                { id: 'strata', icon: Zap, label: 'Zenith Strata' },
-                { id: 'cross-chain', icon: Globe, label: 'Cross-Chain Bridge' },
+                  { id: 'governance', icon: Globe, label: 'DAO Governance' },
+                  { id: 'court', icon: Gavel, label: 'Zenith Court' },
+                  { id: 'liquidity', icon: Flame, label: 'Zenith Liquidity' },
               ].map(item => (
                 <div key={item.id} className="anime-nav-item" onClick={() => navigate(item.id)} style={styles.navItem(activeTab === item.id)}>
-                  <item.icon size={16} /> {item.label}
+                  <item.icon size={16} color={activeTab === item.id ? '#00f5d4' : 'rgba(255,255,255,0.4)'} /> {item.label}
                 </div>
               ))}
 
@@ -503,26 +508,25 @@ function App() {
               <div style={styles.sectionLabel}>System</div>
               {[
                 { id: 'chat', icon: MessageSquare, label: 'Encrypted Comms' },
-                { id: 'nfts', icon: Award, label: 'NFT Showcase' },
                 { id: 'sbt-gallery', icon: ShieldCheck, label: 'Soulbound Tokens' },
                 { id: 'privacy', icon: Shield, label: 'Privacy Center' },
               ].map(item => (
                 <div key={item.id} className="anime-nav-item" onClick={() => navigate(item.id)} style={styles.navItem(activeTab === item.id)}>
-                  <item.icon size={16} /> {item.label}
+                  <item.icon size={16} color={activeTab === item.id ? '#00f5d4' : 'rgba(255,255,255,0.4)'} /> {item.label}
                 </div>
               ))}
             </nav>
             <div style={styles.sidebarBottom}>
               <div style={styles.networkBox}>
                 <div style={styles.networkRow}>
-                  <span style={styles.networkLabel}>Network</span>
+                  <span style={styles.networkLabel}>Network Stats</span>
                   <div style={styles.liveDot} />
                 </div>
                 <div style={styles.versionRow}>
-                  <div style={styles.versionAvatar} />
+                  <div style={{ ...styles.versionAvatar, background: 'linear-gradient(135deg, #00f5d4, #6366f1)', boxShadow: '0 0 15px rgba(0,245,212,0.3)' }} />
                   <div>
                     <div style={styles.versionText}>Protocol</div>
-                    <div style={styles.versionNum}>v1.5.0</div>
+                    <div style={styles.versionNum}>v1.5.0-Z</div>
                   </div>
                 </div>
                 <div style={styles.toggleRow}>
@@ -539,17 +543,47 @@ function App() {
               <div style={styles.headerLeft}>
                 <button className="menu-toggle" style={styles.menuBtn} onClick={() => setIsSidebarOpen(true)}><Menu size={18} /></button>
                 <div>
-                  <div style={styles.headerTitle}>{activeTab === 'jobs' ? 'Browse Jobs' : (activeTab || '').replace('-', ' ')}</div>
-                  <div style={styles.headerStatus}><div style={styles.statusDot} />Polygon PoS On-chain</div>
+                  <div style={{ ...styles.headerTitle, textTransform: 'uppercase', letterSpacing: '0.1em' }}>{activeTab === 'dashboard' ? 'Command Center' : (activeTab || '').replace('-', ' ')}</div>
+                  <div style={styles.headerStatus}><div style={styles.statusDot} />Polygon PoS On-Chain</div>
                 </div>
               </div>
               <div style={styles.headerRight}>
-                <button className="desktop-only" style={styles.gasBtn(isGasless)} onClick={actuateGaslessToggleIntent} disabled={isInitializingGasless}>
-                  {isInitializingGasless ? <Shield size={14} className="animate-spin" /> : <ShieldCheck size={14} />}
+                <button className="desktop-only" 
+                  style={{ 
+                    ...styles.gasBtn(isGasless), 
+                    background: 'rgba(255,255,255,0.03)', 
+                    color: isGasless ? '#00f5d4' : 'rgba(255,255,255,0.4)',
+                    border: '1px solid rgba(255,255,255,0.08)',
+                    borderRadius: '12px',
+                    padding: '8px 16px',
+                    fontSize: '11px',
+                    fontWeight: 800,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.1em'
+                  }} 
+                  onClick={actuateGaslessToggleIntent} 
+                  disabled={isInitializingGasless}
+                >
+                  {isInitializingGasless ? <Shield size={14} className="animate-spin" /> : <ShieldCheck size={14} style={{ color: isGasless ? '#00f5d4' : 'inherit' }} />}
                   {isInitializingGasless ? 'Initializing...' : 'Sovereign Shield'}
                 </button>
                 {!smartAccount && (
-                  <button className="desktop-only" style={styles.socialBtn} onClick={actuateSocialLoginIntent} disabled={isLoggingIn}>
+                  <button className="desktop-only" 
+                    style={{ 
+                        ...styles.socialBtn, 
+                        background: 'linear-gradient(135deg, #00f5d4, #06b6d4)', 
+                        color: '#000',
+                        border: 'none',
+                        borderRadius: '12px',
+                        padding: '8px 16px',
+                        fontSize: '11px',
+                        fontWeight: 900,
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.05em'
+                    }} 
+                    onClick={actuateSocialLoginIntent} 
+                    disabled={isLoggingIn}
+                  >
                     <Mail size={14} /> {isLoggingIn ? 'Syncing...' : 'Social Login'}
                   </button>
                 )}

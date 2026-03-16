@@ -30,16 +30,16 @@ const huddleClient = huddleProjectId
 import messagingService from './services/MessagingService';
 
 function ConnectionLogger({ children }) {
-    const { address, isConnected } = useAccount();
+    const { address, isConnected, status } = useAccount();
 
     useEffect(() => {
-        if (isConnected) {
+        if (isConnected && address) {
             console.info(`[SECURITY] Sovereign identity synchronized: ${address}`);
-        } else {
+        } else if (status === 'disconnected') {
             // Task 3: Signer Validation. Revert to IDLE on disconnect.
             messagingService.disconnect();
         }
-    }, [isConnected, address]);
+    }, [isConnected, address, status]);
 
     return children;
 }
@@ -91,7 +91,7 @@ function SovereignAuthProvider({ children, authStatus, setAuthStatus }) {
 
         getMessageBody: ({ message }) => message,
 
-        verify: async ({ message, signature }) => {
+        verify: async ({ message: _message, signature: _signature }) => {
             console.log("%c[SECURITY] Identity Handshake Success.", "color: #10b981");
             try {
                 // Task 2: Bypass Verify Backend. Instant client-side resonance.
@@ -143,58 +143,18 @@ export function Web3Provider({ children }) {
             [polygonAmoy.id]: fallback([
                 http('https://polygon-amoy-bor-rpc.publicnode.com'),
                 http('https://rpc-amoy.polygon.technology'),
-                http('https://rpc.ankr.com/polygon_amoy')
-            ], { rank: true }),
+                http('https://rpc.ankr.com/polygon_amoy'),
+            ]),
             [polygon.id]: fallback([
-                http('https://rpc.ankr.com/polygon'),
                 http('https://polygon-bor-rpc.publicnode.com'),
-                http('https://1rpc.io/matic')
-            ], { rank: true }),
+                http('https://rpc.ankr.com/polygon'),
+            ]),
         },
         pollingInterval: 30_000, 
         ssr: false,
     }), [projectId]);
 
-    // Directive 03: Sovereign Telemetry Purge
-    // Intercepting and neutralizing the '401', '429', and 'CORS/Network' noise from public RPC friction.
-    useEffect(() => {
-        const originalError = console.error;
-        const originalWarn = console.warn;
 
-        const noiseFilter = (...args) => {
-            const message = args.map(arg => {
-                if (typeof arg === 'string') return arg;
-                if (arg instanceof Error) return arg.message;
-                try { return JSON.stringify(arg); } catch { return String(arg); }
-            }).join(' ').toLowerCase();
-
-            const noise = [
-                '401', '403', '429', 'unauthorized', 'forbidden', 'too many requests', 
-                'cors', 'access-control-allow-origin', 'preflight', 
-                'err_name_not_resolved', 'err_failed', 'failed to fetch',
-                'load failed', 'websocket connection', 'blastapi', 'publicnode',
-                'polygon-rpc.com', 'json-rpc', 'rpc-amoy', 'llamarpc', 'drpc', 'ankr'
-            ];
-            
-            if (noise.some(term => message.includes(term))) {
-                return;
-            }
-            return true;
-        };
-
-        console.error = (...args) => {
-            if (noiseFilter(...args)) originalError(...args);
-        };
-        
-        console.warn = (...args) => {
-            if (noiseFilter(...args)) originalWarn(...args);
-        };
-
-        return () => { 
-            console.error = originalError; 
-            console.warn = originalWarn;
-        };
-    }, []);
 
     return (
         <WagmiProvider config={config} reconnectOnMount={true}>
@@ -207,6 +167,7 @@ export function Web3Provider({ children }) {
                             borderRadius: 'medium',
                             overlayBlur: 'small',
                         })}>
+
                             {huddleClient ? (
                                 <HuddleProvider client={huddleClient}>
                                     <ConnectionLogger>
@@ -225,3 +186,5 @@ export function Web3Provider({ children }) {
         </WagmiProvider>
     );
 }
+
+

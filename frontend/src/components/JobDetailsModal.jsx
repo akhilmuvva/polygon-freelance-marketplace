@@ -3,18 +3,47 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
     X, Briefcase, Calendar, DollarSign, Target, User, 
     Shield, ArrowRight, MessageSquare, ExternalLink,
-    Clock, Cpu, Zap, CreditCard, Rocket
+    Clock, Cpu, Zap, CreditCard, Rocket, Loader2
 } from 'lucide-react';
 import UserLink from './UserLink';
 import { formatUnits } from 'viem';
 import { SUPPORTED_TOKENS } from '../constants';
 
-const JobDetailsModal = ({ isOpen, onClose, job, meta, tokenInfo, onSelectChat, onFiatPay, onAccept, onApply, isEligibleToAccept, isEligibleToApply }) => {
+import { useReadContract } from 'wagmi';
+import FreelanceEscrowABI from '../contracts/FreelanceEscrow.json';
+import { CONTRACT_ADDRESS } from '../constants';
+import toast from 'react-hot-toast';
+
+const JobDetailsModal = ({ 
+    isOpen, onClose, job, meta, tokenInfo, onSelectChat, onFiatPay, onAccept, onApply, onPickFreelancer,
+    isEligibleToAccept, isEligibleToApply, address 
+}) => {
+    const [directFreelancer, setDirectFreelancer] = useState('');
+    
+    const isValidJobId = job?.jobId && !job.isIntent && !isNaN(job.jobId);
+    
+    // Fetch Applicants from the Sovereign Escrow Mesh
+    const { data: applicants, isLoading: isLoadingApps } = useReadContract({
+        address: CONTRACT_ADDRESS,
+        abi: FreelanceEscrowABI.abi,
+        functionName: 'getJobApplications',
+        args: isValidJobId ? [BigInt(job.jobId)] : undefined,
+        query: {
+            enabled: !!isOpen && isValidJobId,
+        }
+    });
+
     if (!isOpen || !job) return null;
 
+    const isClient = address?.toLowerCase() === job.client?.toLowerCase();
     const statusCode = Number(job.status || 0);
     const statusLabels = ['Created', 'Accepted', 'Ongoing', 'Disputed', 'Arbitration', 'Completed', 'Cancelled'];
     const statusColor = statusCode === 5 ? '#10b981' : (statusCode === 3 || statusCode === 4) ? '#f87171' : '#7c5cfc';
+
+    const handlePick = (f) => {
+        if (!f) return;
+        onPickFreelancer(f);
+    };
 
     return (
         <AnimatePresence>
@@ -31,7 +60,7 @@ const JobDetailsModal = ({ isOpen, onClose, job, meta, tokenInfo, onSelectChat, 
                         <div style={styles.headerTitleWrap}>
                             <div style={{ ...styles.statusBadge, background: `${statusColor}15`, color: statusColor }}>
                                 <Briefcase size={12} />
-                                {statusLabels[statusCode]}
+                                {statusLabels[statusCode] || 'Open Intent'}
                             </div>
                             <h2 style={styles.title}>{meta.title}</h2>
                             <p style={styles.jobId}>Job ID: {job.jobId}</p>
@@ -77,6 +106,65 @@ const JobDetailsModal = ({ isOpen, onClose, job, meta, tokenInfo, onSelectChat, 
                             </div>
                         </section>
 
+                        {/* Applicant Management (Sovereign Context) */}
+                        {isClient && statusCode === 0 && (
+                            <section style={styles.section}>
+                                <h3 style={styles.sectionTitle}>Manage Applicants</h3>
+                                <div style={styles.applicantsBox}>
+                                    {isLoadingApps ? (
+                                        <div style={{ padding: 20, textAlign: 'center' }}><Loader2 size={24} className="animate-spin" /></div>
+                                    ) : (applicants && applicants.length > 0) ? (
+                                        <div style={styles.applicantList}>
+                                            {applicants.map((app, idx) => (
+                                                <div key={idx} style={styles.applicantRow}>
+                                                    <div style={{ flex: 1 }}>
+                                                        <UserLink address={app.freelancer} />
+                                                        <div style={{ fontSize: '0.7rem', color: 'var(--text-tertiary)', marginTop: 2 }}>
+                                                            Stake: {formatUnits(app.stake, tokenInfo.decimals)} {tokenInfo.symbol}
+                                                        </div>
+                                                    </div>
+                                                    <div style={{ display: 'flex', gap: 8 }}>
+                                                        <button onClick={() => onSelectChat(app.freelancer)} style={styles.rowBtnSec} title="Contact">
+                                                            <MessageSquare size={14} />
+                                                        </button>
+                                                        <button onClick={() => handlePick(app.freelancer)} className="btn btn-primary" style={styles.rowBtn}>
+                                                            Hire
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <div style={{ textAlign: 'center', padding: '16px 0', color: 'var(--text-tertiary)', fontSize: '0.85rem' }}>
+                                            No applicants yet. Share this job to find specialists!
+                                        </div>
+                                    )}
+
+                                    <div style={{ marginTop: 16, borderTop: '1px solid var(--border)', paddingTop: 16 }}>
+                                        <div style={{ ...styles.summaryLabel, marginBottom: 8 }}>Assign Directly (Offline Agreement)</div>
+                                        <div style={{ display: 'flex', gap: 10 }}>
+                                            <input 
+                                                type="text" 
+                                                placeholder="0x... (Freelancer Wallet Address)" 
+                                                className="form-input"
+                                                style={{ flex: 1, fontSize: '0.85rem' }}
+                                                value={directFreelancer}
+                                                onChange={(e) => setDirectFreelancer(e.target.value)}
+                                            />
+                                            <button 
+                                                onClick={() => handlePick(directFreelancer)}
+                                                className="btn btn-secondary"
+                                                disabled={!directFreelancer || directFreelancer.length < 42}
+                                                style={{ height: 40, whiteSpace: 'nowrap' }}
+                                            >
+                                                Assign
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </section>
+                        )}
+
                         {/* Milestones */}
                         {meta.milestones && meta.milestones.length > 0 && (
                             <section style={styles.section}>
@@ -116,7 +204,7 @@ const JobDetailsModal = ({ isOpen, onClose, job, meta, tokenInfo, onSelectChat, 
                                     {job.freelancer && job.freelancer !== '0x0000000000000000000000000000000000000000' ? (
                                         <UserLink address={job.freelancer} style={styles.idLink} />
                                     ) : (
-                                        <div style={styles.waitingText}>Awaiting Acceptance</div>
+                                        <div style={styles.waitingText}>Awaiting Selection</div>
                                     )}
                                 </div>
                             </div>
@@ -131,25 +219,32 @@ const JobDetailsModal = ({ isOpen, onClose, job, meta, tokenInfo, onSelectChat, 
 
                     {/* Footer Actions */}
                     <footer style={styles.footer}>
-                        <button onClick={() => onSelectChat(job.client)} style={styles.btnSecondary}>
-                            <MessageSquare size={16} /> Contact Client
-                        </button>
+                        {!isClient && (
+                            <button onClick={() => onSelectChat(job.client)} style={styles.btnSecondary}>
+                                <MessageSquare size={16} /> Contact Client
+                            </button>
+                        )}
+                        {isClient && job.freelancer && job.freelancer !== '0x00...0' && (
+                            <button onClick={() => onSelectChat(job.freelancer)} style={styles.btnSecondary}>
+                                <MessageSquare size={16} /> Chat with Freelancer
+                            </button>
+                        )}
                         {onFiatPay && (
                             <button onClick={() => onFiatPay(job.freelancer || job.client)} style={styles.btnSecondary}>
                                 <CreditCard size={16} /> Fiat Pay
                             </button>
                         )}
-                        <button onClick={onClose} className="btn btn-primary" style={styles.btnMain}>
-                            Close Details
+                        <button onClick={onClose} className="btn btn-secondary" style={styles.btnMain}>
+                            Close
                         </button>
-                        {isEligibleToApply && (
+                        {isEligibleToApply && !isClient && (
                             <button onClick={() => { onApply(); onClose(); }} className="btn btn-primary" style={{ ...styles.btnMain, background: 'linear-gradient(135deg, #10b981, #3b82f6)' }}>
                                 <Rocket size={16} /> Apply for Job
                             </button>
                         )}
-                        {isEligibleToAccept && (
+                        {isEligibleToAccept && !isClient && job.freelancer?.toLowerCase() === address?.toLowerCase() && (
                             <button onClick={() => { onAccept(); onClose(); }} className="btn btn-secondary" style={{ ...styles.btnSecondary, borderColor: 'var(--accent-light)', color: 'var(--accent-light)' }}>
-                                <Zap size={16} /> Accept
+                                <Zap size={16} /> Accept & Start
                             </button>
                         )}
                     </footer>
@@ -249,7 +344,20 @@ const styles = {
         background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border)',
         color: 'var(--text-primary)', fontSize: '0.85rem', fontWeight: 700, cursor: 'pointer'
     },
-    btnMain: { padding: '10px 24px', borderRadius: 12, fontSize: '0.85rem', fontWeight: 800, height: 'auto' }
+    btnMain: { padding: '10px 24px', borderRadius: 12, fontSize: '0.85rem', fontWeight: 800, height: 'auto' },
+    applicantsBox: {
+        padding: 20, borderRadius: 16, background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border)'
+    },
+    applicantList: { display: 'flex', flexDirection: 'column', gap: 12 },
+    applicantRow: {
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '12px 14px', borderRadius: 12, background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border)'
+    },
+    rowBtn: { padding: '6px 14px', borderRadius: 8, fontSize: '0.72rem', fontWeight: 800, height: 'auto' },
+    rowBtnSec: {
+        padding: 8, borderRadius: 8, background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)',
+        color: 'var(--text-secondary)', cursor: 'pointer', display: 'flex', alignItems: 'center'
+    }
 };
 
 export default JobDetailsModal;

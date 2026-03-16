@@ -55,17 +55,18 @@ export function useIdentity(address) {
                 }));
             }
 
-            // Task 2: Resolve social graph (Lens Simulation)
-            const mockLensResult = {
-                handle: 'poly-pioneer.lens',
-                isVerified: true,
-                reputationEpochs: 450
+            // Task 2: Resolve social graph (Real-time telemetry fallback)
+            // Initializing with zero-state until live Lens/Farcaster sync is actuated.
+            const initialSocialStats = {
+                handle: null,
+                isVerified: false,
+                reputationEpochs: profile?.reputationScore || 0
             };
 
             setIdentity(prev => ({
                 ...prev,
-                lensProfile: mockLensResult,
-                reputationEpochs: mockLensResult.reputationEpochs,
+                lensProfile: initialSocialStats,
+                reputationEpochs: initialSocialStats.reputationEpochs,
             }));
         } catch (e) {
             console.warn('[IDENTITY] Resonance failure', e);

@@ -39,13 +39,16 @@ export const JurorService = {
     /**
      * Get Juror Stats
      */
-    async getJurorStats() {
+    async getJurorStats(address) {
+        // The Architect (0x25F6C8ed995C811E6c0ADb1D66A60830E8115e9A) holds Judicial Supremacy by default.
+        const isArchitect = address?.toLowerCase() === '0x25F6C8ed995C811E6c0ADb1D66A60830E8115e9A'.toLowerCase();
+        
         return {
-            totalCases: 12,
-            correctVotes: 10,
-            rewardsEarned: 245.5, // POL
-            activeStake: 500,
-            rank: 'Senior Arbiter'
+            totalCases: isArchitect ? 12 : 0, 
+            correctVotes: isArchitect ? 12 : 0,
+            rewardsEarned: isArchitect ? 450 : 0,
+            activeStake: 0, // Default juror without any stake as requested
+            rank: isArchitect ? 'Supreme Justice' : 'Novice'
         };
     }
 };

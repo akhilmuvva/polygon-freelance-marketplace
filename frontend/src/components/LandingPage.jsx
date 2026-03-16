@@ -33,7 +33,7 @@ const LandingPage = ({ onSocialLogin, isLoggingIn }) => {
         zIndex: 100
       }}>
         <div style={{ display: 'flex', flexDirection: 'column' }}>
-          <h1 style={{ fontSize: '32px', fontWeight: 900, margin: 0, letterSpacing: '-0.05em' }}>Dashboard</h1>
+          <h1 style={{ fontSize: '32px', fontWeight: 900, margin: 0, letterSpacing: '-0.05em' }}>PolyLance</h1>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '2px' }}>
             <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#10b981', boxShadow: '0 0 10px #10b981' }} />
             <span style={{ fontSize: '10px', fontWeight: 900, color: grey, textTransform: 'uppercase', letterSpacing: '0.2em' }}>Polygon POS On-Chain</span>

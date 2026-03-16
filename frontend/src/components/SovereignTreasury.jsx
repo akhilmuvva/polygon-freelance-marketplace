@@ -60,7 +60,9 @@ const SovereignTreasury = () => {
         safetyReserve: `${formatWeight(stats?.totalYieldGenerated ? (BigInt(stats.totalYieldGenerated) * 5n / 100n).toString() : '0')} MATIC`,
         originatorFees: `${formatWeight(stats?.totalOriginatorFees)} MATIC`,
         yieldDistributed: `${formatWeight(stats?.totalYieldGenerated)} MATIC`,
-        growthRate: stats ? '+2.4%' : 'IDLE' // Growth rate tracking would require a time-series query
+        growthRate: stats?.totalVolume && BigInt(stats.totalVolume) > 0n 
+            ? `${(Number(BigInt(stats.totalYieldGenerated || 0) * 10000n / BigInt(stats.totalVolume)) / 100).toFixed(2)}% Yield` 
+            : 'STABLE'
     };
 
     if (isLoading) {

@@ -28,20 +28,45 @@ export default function AnalyticsDashboard() {
     useEffect(() => { fetchAnalytics(); }, []);
     const fetchAnalytics = async () => {
         try {
-            const stats = await SubgraphService.getEcosystemStats();
+            const [stats, leaderboard, allJobs] = await Promise.all([
+                SubgraphService.getEcosystemStats(),
+                SubgraphService.getLeaderboard(),
+                SubgraphService.getJobs(50)
+            ]);
+
             if (stats) {
+                // Compute category distribution from latest jobs
+                const categoryNames = ['Fullstack', 'Frontend', 'Backend', 'UI/UX', 'Marketing', 'Legal'];
+                const distributionMap = {};
+                allJobs.forEach(j => {
+                    const catId = Number(j.categoryId || 0);
+                    const name = categoryNames[catId] || 'Others';
+                    distributionMap[name] = (distributionMap[name] || 0) + 1;
+                });
+                const categoryDistribution = Object.entries(distributionMap).map(([name, value]) => ({ name, value }));
+
+                // Compute growth trends (group by day)
+                const trendsMap = {};
+                allJobs.forEach(j => {
+                    const day = new Date(Number(j.createdAt || 0) * 1000).toISOString().split('T')[0];
+                    trendsMap[day] = (trendsMap[day] || 0) + 1;
+                });
+                const trends = Object.entries(trendsMap)
+                    .map(([date, count]) => ({ date, count }))
+                    .sort((a, b) => a.date.localeCompare(b.date));
+
+                // Compute average reputation
+                const totalRep = leaderboard?.reduce((acc, curr) => acc + (Number(curr.reputationScore) || 0), 0) || 0;
+                const avgRep = leaderboard?.length ? totalRep / leaderboard.length : 0;
+
                 setData({
                     totalJobs: Number(stats.totalJobs),
                     totalVolume: parseFloat(formatEther(BigInt(stats.totalVolume))),
                     totalUsers: stats.activeUsers?.length || 0,
-                    tvl: parseFloat(formatEther(BigInt(stats.totalVolume))), // TVL approximation
-                    avgReputation: 0, // Static for now until Subgraph tracks global avg
-                    trends: [], // Graph requires custom query for trends
-                    categoryDistribution: [
-                        { name: 'Solidity', value: 0 },
-                        { name: 'UI/UX', value: 0 },
-                        { name: 'Marketing', value: 0 }
-                    ]
+                    tvl: parseFloat(formatEther(BigInt(stats.totalVolume))),
+                    avgReputation: avgRep,
+                    trends: trends.length > 0 ? trends : [{ date: new Date().toISOString(), count: 0 }],
+                    categoryDistribution: categoryDistribution.length > 0 ? categoryDistribution : [{ name: 'Stable', value: 1 }]
                 });
             }
         } catch (err) {
@@ -191,7 +216,7 @@ export default function AnalyticsDashboard() {
                         </div>
                         <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: 1.6, fontWeight: 500 }}>
                             The network is currently processing <span style={{ color: 'var(--accent-light)', fontWeight: 700 }}>{data.totalJobs} live contracts</span> with a total ecosystem volume of <span style={{ color: '#10b981', fontWeight: 700 }}>{data.totalVolume.toFixed(2)} MATIC</span>.
-                            Node synchronization is maintaining a professional reputation threshold of <span style={{ color: '#60a5fa', fontWeight: 700 }}>{data.avgReputation.toFixed(1)}%</span> across all registered entities.
+                            Node synchronization is maintaining an average reputation score of <span style={{ color: '#60a5fa', fontWeight: 700 }}>{data.avgReputation.toFixed(0)} points</span> across the Elite Leaderboard.
                         </p>
                     </div>
                 </div>

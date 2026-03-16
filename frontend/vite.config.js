@@ -1,20 +1,18 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { nodePolyfills } from 'vite-plugin-node-polyfills'
-import basicSsl from '@vitejs/plugin-basic-ssl'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
-const isVercel = process.env.VERCEL === '1';
-
 // https://vite.dev/config/
+// NOTE: localhost is a 'potentially trustworthy origin' per W3C spec,
+// so window.isSecureContext === true even on plain HTTP — XMTP works fine.
 export default defineConfig({
   base: '/',
   plugins: [
     react(),
-    basicSsl(),
     nodePolyfills({
       globals: { Buffer: true, global: true, process: true },
     }),
@@ -22,19 +20,26 @@ export default defineConfig({
   optimizeDeps: {
     include: ['@xmtp/browser-sdk'],
   },
+  /*
   define: {
     'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'production'),
     'global': 'globalThis',
   },
+  */
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
     },
   },
   server: {
-    port: 5176,
+    port: 5174,
     strictPort: false,
     host: true,
+    hmr: {
+      protocol: 'ws',
+      host: 'localhost',
+      port: 5174,
+    },
   },
   build: {
     target: 'esnext',

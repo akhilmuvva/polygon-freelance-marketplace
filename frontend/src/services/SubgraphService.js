@@ -138,7 +138,7 @@ export const SubgraphService = {
         variables: { first, skip },
         fetchPolicy: 'network-only'
       });
-      return data.jobs;
+      return data?.jobs || [];
     } catch (error) {
       console.warn('[SUBGRAPH] Failed to fetch jobs. Resonance check required:', error.message);
       return [];
@@ -190,7 +190,7 @@ export const SubgraphService = {
         query: GET_LEADERBOARD,
         fetchPolicy: 'network-only'
       });
-      return data.freelancers;
+      return data?.freelancers || [];
     } catch (error) {
       console.warn('[SUBGRAPH] Leaderboard sync friction:', error.message);
       return [];
@@ -231,7 +231,13 @@ export const SubgraphService = {
       };
     } catch (error) {
       console.warn('[SUBGRAPH] Protocol stats resonance failure:', error.message);
-      return null;
+      return {
+        totalYieldGenerated: '0',
+        totalValueLocked: '0',
+        totalOriginatorFees: '0',
+        totalSovereignSurplus: '0',
+        totalEliteIntents: '0'
+      };
     }
   },
 
@@ -244,7 +250,7 @@ export const SubgraphService = {
         query: GET_DISPUTES,
         fetchPolicy: 'network-only'
       });
-      return data.jobs;
+      return data?.jobs || [];
     } catch (error) {
       console.error('Failed to fetch disputes from subgraph:', error);
       return [];

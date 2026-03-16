@@ -58,13 +58,21 @@ const IdentityManager = ({ address }) => {
         const fetchProfile = async () => {
             setIsLoading(true);
             try {
-                const data = await ProfileService.getProfile(address);
+                const [data, stats] = await Promise.all([
+                    ProfileService.getProfile(address),
+                    SubgraphService.getUserStats(address)
+                ]);
+                
                 if (data) {
-                    setProfile({
+                    setProfile(prev => ({
+                        ...prev,
                         name: data.name || '',
                         bio: data.bio || '',
-                        skills: Array.isArray(data.skills) ? data.skills.join(', ') : (data.skills || '')
-                    });
+                        skills: Array.isArray(data.skills) ? data.skills.join(', ') : (data.skills || ''),
+                        reputationScore: stats?.freelancer?.reputationScore || data.reputationScore || 0,
+                        totalEarned: stats?.freelancer?.totalEarned || data.totalEarned || 0,
+                        totalJobs: stats?.freelancer?.jobsCompleted || stats?.client?.activeEscrows || 0
+                    }));
                 }
             } catch (err) {
                 console.error('[IDENTITY] Initialization failed:', err);
@@ -110,13 +118,11 @@ const IdentityManager = ({ address }) => {
                 let score = 0;
                 const text = (job.ipfsHash + (job.title || '')).toLowerCase();
                 skills.forEach(skill => {
-                    if (text.includes(skill)) score += 25;
+                    if (text.includes(skill)) score += 33;
                 });
-                // Randomness for "AI feel"
-                score += Math.floor(Math.random() * 15);
                 if (score > 100) score = 100;
                 return { ...job, matchScore: score };
-            }).sort((a, b) => b.matchScore - a.matchScore).filter(m => m.matchScore > 10);
+            }).sort((a, b) => b.matchScore - a.matchScore).filter(m => m.matchScore > 0);
 
             setMatches(scoredMatches);
             setTimeout(() => {
@@ -263,9 +269,9 @@ const IdentityManager = ({ address }) => {
                                         
                                         <div style={{ marginTop: 'auto', width: '100%', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, paddingTop: 24, borderTop: '1px solid var(--border)' }}>
                                             {[
-                                                { label: 'Tasks', value: '0' },
-                                                { label: 'Reputation', value: '780' },
-                                                { label: 'Earnings', value: '0.0' }
+                                                { label: 'Activity', value: profile.totalJobs || '0' },
+                                                { label: 'Reputation', value: profile.reputationScore || '0' },
+                                                { label: 'Earned', value: parseFloat(formatEther(BigInt(profile.totalEarned || '0'))).toFixed(1) }
                                             ].map((stat, i) => (
                                                 <div key={i}>
                                                     <div style={{ fontSize: '1.2rem', fontWeight: 900, color: '#fff' }}>{stat.value}</div>

@@ -28,7 +28,7 @@ const ZenithCourt = () => {
     const headerRef = useRef(null);
 
     // Sovereign Override: Architect identity grants judicial supremacy.
-    const isAdmin = arbitratorRole || address?.toLowerCase() === ARCHITECT_WALLET.toLowerCase();
+    const isAdmin = address?.toLowerCase() === ARCHITECT_WALLET.toLowerCase();
     const { writeContract, isPending } = useWriteContract();
 
     useEffect(() => {
@@ -126,7 +126,7 @@ const ZenithCourt = () => {
     };
 
     return (
-        <div style={{ maxWidth: 1200, margin: '0 auto' }}>
+        <div style={{ maxWidth: 1600, margin: '0 auto', padding: '0 40px' }}>
             <header ref={headerRef} style={{ marginBottom: 40, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
                 <div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 8 }}>
@@ -174,11 +174,17 @@ const ZenithCourt = () => {
                             </p>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
                                 <div style={{ flex: 1, height: 44, borderRadius: 12, border: '1px solid var(--border)', background: 'rgba(0,0,0,0.2)', display: 'flex', alignItems: 'center', padding: '0 16px', fontWeight: 700 }}>
-                                    {jurorStats?.activeStake || 0} POL Staked
+                                    {isAdmin ? "IMMUTABLE" : `${jurorStats?.activeStake || 0} POL`} Staked
                                 </div>
-                                <button onClick={actuateJurorStakingIntent} disabled={isStaking || !isConnected || loading} className="btn btn-primary" style={{ padding: '0 24px', height: 44, opacity: (!isConnected || loading) ? 0.5 : 1, cursor: (!isConnected || loading) ? 'not-allowed' : 'pointer' }}>
-                                    {isStaking ? 'Anchoring...' : 'Stake 500 POL'}
-                                </button>
+                                {isAdmin ? (
+                                    <div style={{ padding: '0 24px', height: 44, borderRadius: 12, background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.2)', color: '#10b981', display: 'flex', alignItems: 'center', fontWeight: 800, fontSize: '0.75rem', letterSpacing: '0.05em' }}>
+                                        JUDICIAL SUPREMACY ACTIVE
+                                    </div>
+                                ) : (
+                                    <button onClick={actuateJurorStakingIntent} disabled={isStaking || !isConnected || loading} className="btn btn-primary" style={{ padding: '0 24px', height: 44, opacity: (!isConnected || loading) ? 0.5 : 1, cursor: (!isConnected || loading) ? 'not-allowed' : 'pointer' }}>
+                                        {isStaking ? 'Anchoring...' : 'Stake 500 POL'}
+                                    </button>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -254,7 +260,7 @@ const ZenithCourt = () => {
                                         <div style={{ ...s.statBox, background: 'rgba(59,130,246,0.03)' }}>
                                             <h4 style={s.label}><Cpu size={14} /> Neural Summary</h4>
                                             <p style={{ fontSize: '0.75rem', fontStyle: 'italic', opacity: 0.7 }}>
-                                                "Job lacks formal submission for milestone 2. Evidence from XMTP suggests a soft-renegotiation was attempted but not finalized."
+                                                {selectedJob.aiSummary || "Neural analysis pending... Waiting for on-chain evidence synchronization."}
                                             </p>
                                         </div>
                                     </div>

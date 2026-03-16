@@ -26,10 +26,10 @@ export const DemoProtocol = {
     getYieldSharingStats() {
         return {
             source: 'Morpho Blue / Aave V3',
-            totalInterestGenerated: '1,420 MATIC',
+            totalInterestGenerated: '0.00 MATIC',
             safetyModuleDiversion: '15%',
-            userFeeOffset: '100%',
-            status: 'HYPER_LIQUID'
+            userFeeOffset: '0%',
+            status: 'IDLE'
         };
     },
 
@@ -39,12 +39,9 @@ export const DemoProtocol = {
     async getTBAVisualProof(freelancerAddress) {
         // This represents a query to the SovereignRegistry.sol
         return {
-            sbtId: '0x...889',
-            tbaAddress: '0x_6551_WALLET_ADDRESS',
-            assetsHeld: [
-                { type: 'MATIC', amount: '250' },
-                { type: 'IP-NFT', name: 'Zenith-Engine-v1' }
-            ],
+            sbtId: 'Not Minted',
+            tbaAddress: 'unassigned',
+            assetsHeld: [],
             owner: freelancerAddress,
             logic: 'SovereignPortfolio'
         };
