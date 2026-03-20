@@ -1,4 +1,10 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { 
+    createContext, 
+    useState, 
+    useMemo, 
+    useEffect, 
+    useRef 
+} from 'react';
 import '@rainbow-me/rainbowkit/styles.css';
 import {
     getDefaultConfig,
@@ -14,7 +20,7 @@ import { SiweMessage } from 'siwe';
 import { ApolloClient, InMemoryCache, HttpLink } from '@apollo/client';
 import { ApolloProvider } from '@apollo/client/react';
 import { HuddleClient, HuddleProvider } from '@huddle01/react';
-import api from './services/api';
+import messagingService from './services/MessagingService';
 import hotToast from 'react-hot-toast';
 
 const huddleProjectId = import.meta.env.VITE_HUDDLE_PROJECT_ID;
@@ -27,34 +33,35 @@ const huddleClient = huddleProjectId
     })
     : null;
 
-import messagingService from './services/MessagingService';
+/**
+ * Defensive Provider: Alchemy Shield Configuration
+ * Caps block ranges and adds jitter-based retry logic to avoid 429 bottlenecks.
+ */
+const DEFENSIVE_RPC_CONFIG = {
+    batch: { multicall: true },
+    retryCount: 2,
+    retryDelay: ({ count }) => Math.min(count * 1000, 3000), // Jitter delay
+    pollingInterval: 12_000, // Throttled polling
+};
 
-function ConnectionLogger({ children }) {
+function ConnectionLogger() {
     const { address, isConnected, status } = useAccount();
 
     useEffect(() => {
         if (isConnected && address) {
             console.info(`[SECURITY] Sovereign identity synchronized: ${address}`);
         } else if (status === 'disconnected') {
-            // Task 3: Signer Validation. Revert to IDLE on disconnect.
             messagingService.disconnect();
         }
     }, [isConnected, address, status]);
 
-    return children;
+    return null;
 }
 
-/**
- * Sovereign Authentication Provider: Anchors the SIWE adapter to the active account.
- * This sub-component ensures that the authentication intent is always synchronized with the wallet.
- */
 function SovereignAuthProvider({ children, authStatus, setAuthStatus }) {
     const { address, chainId } = useAccount();
-    
-    // Identity Resonance Refs: Ensuring the adapter has access to the latest session
-    // context without triggering a full adapter reconstruction during the handshake.
-    const identityRef = React.useRef(address);
-    const chainRef = React.useRef(chainId);
+    const identityRef = useRef(address);
+    const chainRef = useRef(chainId);
 
     useEffect(() => {
         identityRef.current = address;
@@ -62,12 +69,7 @@ function SovereignAuthProvider({ children, authStatus, setAuthStatus }) {
     }, [address, chainId]);
 
     const authAdapter = useMemo(() => createAuthenticationAdapter({
-        getNonce: async () => {
-            // Task 1: Local Nonce Generation (Alphanumeric 12-char)
-            // FIX: Bypasses broken backend / 401s during the handshake
-            return Math.random().toString(36).substring(2, 15).slice(0, 12);
-        },
-
+        getNonce: async () => Math.random().toString(36).substring(2, 15).slice(0, 12),
         createMessage: (args) => {
             try {
                 const { nonce, address: siweAddress, chainId: siweChainId } = args;
@@ -88,28 +90,18 @@ function SovereignAuthProvider({ children, authStatus, setAuthStatus }) {
                 throw err;
             }
         },
-
         getMessageBody: ({ message }) => message,
-
         verify: async ({ message: _message, signature: _signature }) => {
             console.log("%c[SECURITY] Identity Handshake Success.", "color: #10b981");
-            try {
-                // Task 2: Bypass Verify Backend. Instant client-side resonance.
-                setAuthStatus('authenticated');
-                hotToast.success('Identity Verified', { id: 'auth-success' });
-                return true;
-            } catch (err) {
-                console.error('[SECURITY] SIWE resonance collapse:', err);
-                setAuthStatus('unauthenticated');
-                return false;
-            }
+            setAuthStatus('authenticated');
+            hotToast.success('Identity Verified', { id: 'auth-success' });
+            return true;
         },
-
         signOut: async () => {
             setAuthStatus('unauthenticated');
             console.info('[SECURITY] Sovereign session terminated.');
         },
-    }), [setAuthStatus]); // Stable Identity Adapter
+    }), [setAuthStatus]);
 
     return (
         <RainbowKitAuthenticationProvider adapter={authAdapter} status={authStatus}>
@@ -120,7 +112,7 @@ function SovereignAuthProvider({ children, authStatus, setAuthStatus }) {
 
 const queryClient = new QueryClient({
     defaultOptions: {
-        queries: { retry: 1, refetchOnWindowFocus: false },
+        queries: { retry: 1, refetchOnWindowFocus: false, staleTime: 60000 },
     },
 });
 
@@ -128,12 +120,29 @@ const apolloClient = new ApolloClient({
     link: new HttpLink({
         uri: import.meta.env.VITE_SUBGRAPH_URL || 'https://api.studio.thegraph.com/query/poly-lance-studio/poly-lance/v0.0.1',
     }),
-    cache: new InMemoryCache(),
+    cache: new InMemoryCache({
+        typePolicies: {
+            Query: {
+                fields: {
+                    jobs: { merge: false },
+                },
+            },
+        },
+    }),
+});
+
+/**
+ * [SECURITY] AuthContext: Neutralizing State Race Conditions
+ * Providing a stable default prevents "reading properties of undefined" on initial hydrate.
+ */
+export const AuthContext = createContext({
+    authStatus: 'loading',
+    setAuthStatus: () => {}
 });
 
 export function Web3Provider({ children }) {
     const [authStatus, setAuthStatus] = useState('unauthenticated');
-    const projectId = import.meta.env.VITE_WALLET_CONNECT_PROJECT_ID || import.meta.env.VITE_WALLETCONNECT_PROJECT_ID || '3fcc6b4468bd937409483e8916718e49';
+    const projectId = import.meta.env.VITE_WALLET_CONNECT_PROJECT_ID || '65a5f1dd3b7df21cef34448cac019cd5';
 
     const config = useMemo(() => getDefaultConfig({
         appName: 'PolyLance Zenith',
@@ -141,45 +150,44 @@ export function Web3Provider({ children }) {
         chains: [polygonAmoy, polygon],
         transports: {
             [polygonAmoy.id]: fallback([
-                http('https://polygon-amoy-bor-rpc.publicnode.com'),
-                http('https://rpc-amoy.polygon.technology'),
-                http('https://rpc.ankr.com/polygon_amoy'),
+                http('https://rpc-amoy.polygon.technology', DEFENSIVE_RPC_CONFIG),
+                http('https://rpc.ankr.com/polygon_amoy', DEFENSIVE_RPC_CONFIG),
             ]),
             [polygon.id]: fallback([
-                http('https://polygon-bor-rpc.publicnode.com'),
-                http('https://rpc.ankr.com/polygon'),
+                http('https://rpc.ankr.com/polygon', DEFENSIVE_RPC_CONFIG),
             ]),
         },
-        pollingInterval: 30_000, 
         ssr: false,
     }), [projectId]);
 
 
 
     return (
-        <WagmiProvider config={config} reconnectOnMount={true}>
+        <WagmiProvider config={config} reconnectOnMount={false}>
             <QueryClientProvider client={queryClient}>
                 <ApolloProvider client={apolloClient}>
                     <SovereignAuthProvider authStatus={authStatus} setAuthStatus={setAuthStatus}>
-                        <RainbowKitProvider theme={darkTheme({
-                            accentColor: '#8a2be2',
-                            accentColorForeground: 'white',
-                            borderRadius: 'medium',
-                            overlayBlur: 'small',
-                        })}>
+                        <AuthContext.Provider value={{ authStatus, setAuthStatus }}>
+                            <RainbowKitProvider theme={darkTheme({
+                                accentColor: '#8a2be2',
+                                accentColorForeground: 'white',
+                                borderRadius: 'medium',
+                                overlayBlur: 'small',
+                            })}>
 
-                            {huddleClient ? (
-                                <HuddleProvider client={huddleClient}>
-                                    <ConnectionLogger>
+                                {huddleClient ? (
+                                    <HuddleProvider client={huddleClient}>
+                                        <ConnectionLogger />
                                         {children}
-                                    </ConnectionLogger>
-                                </HuddleProvider>
-                            ) : (
-                                <ConnectionLogger>
-                                    {children}
-                                </ConnectionLogger>
-                            )}
-                        </RainbowKitProvider>
+                                    </HuddleProvider>
+                                ) : (
+                                    <>
+                                        <ConnectionLogger />
+                                        {children}
+                                    </>
+                                )}
+                            </RainbowKitProvider>
+                        </AuthContext.Provider>
                     </SovereignAuthProvider>
                 </ApolloProvider>
             </QueryClientProvider>

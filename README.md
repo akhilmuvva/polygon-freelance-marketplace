@@ -8,7 +8,13 @@ We do not govern; we *Actuate*. We do not tax; we harvest *Surplus*.
 
 > **Architect's Philosophy:** "A decentralized market shouldn't just be cheaper—it should be *weightless*. By integrating the Antigravity OS, we've replaced centralized rent-seeking with autonomous money markets. Zenith captures yield friction from idle escrow and routes it to the Sovereign Treasury. The result? A 0% fee equilibrium for early adopters."
 
-## 🧱 Core Sovereign Primitives
+> **Architect's Philosophy:** "A decentralized market shouldn't just be cheaper—it should be *weightless*. By integrating the Antigravity OS, we've replaced centralized rent-seeking with autonomous money markets. Zenith captures yield friction from idle escrow and routes it to the Sovereign Treasury. The result? A 0% fee equilibrium for early adopters."
+
+## 💠 Polygon Native Alignment (POL & AggLayer)
+PolyLance Zenith is engineered for the **Polygon 2.0** vision:
+- **POL Gravitational Boost**: Strategic utility for the **POL** token; users staking POL receive a **1.5x reputation multiplier**.
+- **Privado ID (Polygon ID)**: Zero-Knowledge personhood verification via Privado ID to ensure a sybil-resistant, compliant talent mesh.
+- **AggLayer Interoperability**: Utilizing the **Polygon Unified Bridge** architecture for seamless invoice financing liquidity across the AggLayer.
 
 ### 1. Sovereign Invoice NFTs (RWA)
 Labor is tokenized natively as an ERC-721 Invoice.

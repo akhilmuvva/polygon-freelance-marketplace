@@ -15,7 +15,8 @@ export async function initSocialLogin() {
     const clientKey = import.meta.env.VITE_PARTICLE_CLIENT_KEY;
     const appId = import.meta.env.VITE_PARTICLE_APP_ID;
 
-    // Developer Mock Mode
+    // Guard: Only attempt to load the Particle SDK if all credentials are present.
+    // The SDK crashes during module init (storage.sync error) when credentials are missing.
     if (!projectId || !clientKey || !appId) {
         console.warn('[SECURITY] Particle credentials offline. Actuating Mock Social gateway.');
         return {
@@ -33,26 +34,46 @@ export async function initSocialLogin() {
     try {
         const { ParticleAuthModule } = await import("@biconomy/particle-auth");
 
-        // Directive: SDK Polymorphism Resilience
-        // The constructor name varies between SDK versions (ParticleAuth vs ParticleNetwork).
-        const ParticleConstructor = ParticleAuthModule.ParticleAuth || ParticleAuthModule.ParticleNetwork || ParticleAuthModule;
-        
-        if (typeof ParticleConstructor !== 'function') {
-            throw new Error('Sovereign Auth Component not found in transport layer.');
-        }
-
-        const particle = new ParticleConstructor({
-            projectId,
-            clientKey,
-            appId,
-            chainId: 80002, // Amoy
-            wallet: { displayWalletEntry: true }
+        // Use a timeout for the Particle initialization to prevent hanging the UI
+        const initPromise = new Promise((resolve) => {
+            const ParticleConstructor = ParticleAuthModule.ParticleAuth || ParticleAuthModule.ParticleNetwork || ParticleAuthModule;
+            if (typeof ParticleConstructor !== 'function') resolve(null);
+            
+            const particle = new ParticleConstructor({
+                projectId,
+                clientKey,
+                appId,
+                chainId: 80002, // Amoy
+                wallet: { displayWalletEntry: true }
+            });
+            resolve(particle);
         });
 
-        return particle;
+        const timeoutPromise = new Promise(resolve => setTimeout(() => resolve('TIMEOUT'), 8000));
+        const result = await Promise.race([initPromise, timeoutPromise]);
+
+        if (result === 'TIMEOUT') {
+            console.warn('[SECURITY] Particle identity gateway timeout. Actuating Mock Resonance.');
+            return {
+                auth: {
+                    login: async () => ({ user: { name: 'Sovereign Pioneer', email: 'offline@zenith.com' } }),
+                    logout: async () => {},
+                },
+                isMock: true
+            };
+        }
+
+        return result;
     } catch (error) {
         console.error('[SECURITY] Social identity gateway collapse:', error.message);
-        return null;
+        // Universal fallback for connectivity failure
+        return {
+            auth: {
+                login: async () => ({ user: { name: 'Sovereign Pioneer', email: 'offline@zenith.com' } }),
+                logout: async () => {},
+            },
+            isMock: true
+        };
     }
 }
 

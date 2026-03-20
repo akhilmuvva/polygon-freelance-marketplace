@@ -1,5 +1,5 @@
-import { useQuery } from '@apollo/client/react/index.js';
-import { gql } from '@apollo/client/core/index.js';
+import { gql } from '@apollo/client';
+import { useQuery } from '@apollo/client/react';
 import { useAccount, useWalletClient, useWriteContract } from 'wagmi';
 import React, { useState, useEffect, useRef } from 'react';
 // import axios from 'axios';

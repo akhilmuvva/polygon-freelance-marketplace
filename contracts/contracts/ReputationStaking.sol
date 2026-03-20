@@ -34,6 +34,46 @@ contract ReputationStaking is Ownable, ReentrancyGuard {
     }
 
     /**
+     * @notice Returns the "Gravitational Reputation" of a user based on their stake.
+     * Users staking the native POL token receive a 1.5x reputation boost.
+     * @param _user The address of the freelancer or client.
+     */
+    function getEffectiveReputation(address _user) public view returns (uint256) {
+        uint256 baseStake = userStakes[_user].amount;
+        if (!userStakes[_user].active) return 0;
+
+        // Polygon Mainnet POL Address: 0x455e53CBB86018Ac2B8092FdCd39d8444fFF5a44
+        // If the staking token is the native POL, grant a 1.5x "Gravitational Boost"
+        if (address(stakingToken) == 0x455e53CBB86018Ac2B8092FdCd39d8444fFF5a44) {
+            return (baseStake * 15) / 10;
+        }
+
+        return baseStake;
+    }
+
+    /**
+     * @notice Returns the Reward Tier for a user based on their POL stake.
+     * Tier 1: > 1,000 POL -> 10% Fee Discount
+     * Tier 2: > 5,000 POL -> 25% Fee Discount + 5% Yield Boost
+     * Tier 3: > 10,000 POL -> 50% Fee Discount + 15% Yield Boost + "Zenith Elite" Status
+     */
+    function getRewardTier(address _user) public view returns (uint8 tier, uint256 feeDiscountBps, uint256 yieldBoostBps) {
+        uint256 stakeAmount = userStakes[_user].amount;
+        // Only applies if staking the native POL token
+        if (address(stakingToken) != 0x455e53CBB86018Ac2B8092FdCd39d8444fFF5a44) return (0, 0, 0);
+
+        if (stakeAmount >= 10000 * 1e18) {
+            return (3, 5000, 1500); // 50% discount, 15% boost
+        } else if (stakeAmount >= 5000 * 1e18) {
+            return (2, 2500, 500);  // 25% discount, 5% boost
+        } else if (stakeAmount >= 1000 * 1e18) {
+            return (1, 1000, 0);    // 10% discount, 0% boost
+        }
+        
+        return (0, 0, 0);
+    }
+
+    /**
      * @notice Stakes tokens to enable challenging behavior or as a prerequisite for elite access.
      */
     function stake(uint256 _amount) external nonReentrant {

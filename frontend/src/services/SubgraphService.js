@@ -10,6 +10,32 @@ const client = new ApolloClient({
   cache: new InMemoryCache(),
 });
 
+const WEIGHTLESS_FALLBACK = {
+  freelancer: { jobs: [], totalEarned: '0', reputationScore: '0', jobsCompleted: '0', activeJobs: '0' },
+  client: { totalSpent: '0', activeEscrows: [] },
+  jobs: [],
+  freelancers: [],
+  globalStat: { totalJobs: '0', totalVolume: '0', activeUsers: '0' },
+  protocolStats: { totalYieldGenerated: '0', totalValueLocked: '0', totalOriginatorFees: '0', totalSovereignSurplus: '0', totalEliteIntents: '0' }
+};
+
+const CACHE_KEY_PREFIX = 'polylance_cache_';
+const saveToCache = (key, data) => {
+    try {
+        localStorage.setItem(CACHE_KEY_PREFIX + key, JSON.stringify(data));
+    } catch (e) {
+        console.warn('[CACHE] Write failure:', e.message);
+    }
+};
+const getFromCache = (key) => {
+    try {
+        const cached = localStorage.getItem(CACHE_KEY_PREFIX + key);
+        return cached ? JSON.parse(cached) : null;
+    } catch (e) {
+        return null;
+    }
+};
+
 export const GET_JOBS = gql`
   query GetJobs($first: Int, $skip: Int) {
     jobs(first: $first, skip: $skip, orderBy: createdAt, orderDirection: desc) {
@@ -63,6 +89,7 @@ export const GET_LEADERBOARD = gql`
 export const GET_ECOSYSTEM_STATS = gql`
   query GetEcosystemStats {
     globalStat(id: "1") {
+      id
       totalJobs
       totalVolume
       activeUsers
@@ -118,6 +145,7 @@ export const GET_DISPUTES = gql`
 export const GET_PROTOCOL_STATS = gql`
   query GetProtocolStats {
     protocolStats(id: "1") {
+      id
       totalYieldGenerated
       totalValueLocked
       totalOriginatorFees
@@ -132,16 +160,20 @@ export const SubgraphService = {
    * Fetches a list of recent jobs
    */
   getJobs: async (first = 20, skip = 0) => {
+    const cacheKey = `jobs_${first}_${skip}`;
     try {
       const { data } = await client.query({
         query: GET_JOBS,
         variables: { first, skip },
-        fetchPolicy: 'network-only'
+        fetchPolicy: 'network-only',
+        context: { fetchOptions: { timeout: 10000 } }
       });
-      return data?.jobs || [];
+      const result = data?.jobs || WEIGHTLESS_FALLBACK.jobs;
+      saveToCache(cacheKey, result);
+      return result;
     } catch (error) {
-      console.warn('[SUBGRAPH] Failed to fetch jobs. Resonance check required:', error.message);
-      return [];
+      console.error('[AGA_DATA_GRAVITY] Subgraph query collapsed:', error.message);
+      return getFromCache(cacheKey) || WEIGHTLESS_FALLBACK.jobs;
     }
   },
 
@@ -149,17 +181,21 @@ export const SubgraphService = {
    * Gets stats for a specific user address
    */
   getUserStats: async (address) => {
+    if (!address) return WEIGHTLESS_FALLBACK;
+    const cacheKey = `stats_${address.toLowerCase()}`;
     try {
-      if (!address) return null;
       const { data } = await client.query({
         query: GET_USER_STATS,
         variables: { address: address.toLowerCase() },
-        fetchPolicy: 'network-only'
+        fetchPolicy: 'network-only',
+        context: { fetchOptions: { timeout: 10000 } }
       });
-      return data;
+      const result = data || WEIGHTLESS_FALLBACK;
+      saveToCache(cacheKey, result);
+      return result;
     } catch (error) {
-      console.warn('[SUBGRAPH] User stats telemetry failed:', error.message);
-      return null;
+      console.error('[AGA_DATA_GRAVITY] User stats telemetery failure:', error.message);
+      return getFromCache(cacheKey) || WEIGHTLESS_FALLBACK;
     }
   },
 
@@ -167,17 +203,21 @@ export const SubgraphService = {
    * Gets the full portfolio and job history for a user
    */
   getUserPortfolio: async (address) => {
+    if (!address) return WEIGHTLESS_FALLBACK;
+    const cacheKey = `portfolio_${address.toLowerCase()}`;
     try {
-      if (!address) return null;
       const { data } = await client.query({
         query: GET_USER_PORTFOLIO,
         variables: { address: address.toLowerCase() },
-        fetchPolicy: 'network-only'
+        fetchPolicy: 'network-only',
+        context: { fetchOptions: { timeout: 10000 } }
       });
-      return data;
+      const result = data || WEIGHTLESS_FALLBACK;
+      saveToCache(cacheKey, result);
+      return result;
     } catch (error) {
-      console.warn('[SUBGRAPH] Portfolio reconstruction failed:', error.message);
-      return null;
+      console.error('[AGA_DATA_GRAVITY] Portfolio reconstruction failure:', error.message);
+      return getFromCache(cacheKey) || WEIGHTLESS_FALLBACK;
     }
   },
 
@@ -185,15 +225,19 @@ export const SubgraphService = {
    * Gets the top freelancers by reputation
    */
   getLeaderboard: async () => {
+    const cacheKey = 'leaderboard';
     try {
       const { data } = await client.query({
         query: GET_LEADERBOARD,
-        fetchPolicy: 'network-only'
+        fetchPolicy: 'network-only',
+        context: { fetchOptions: { timeout: 10000 } }
       });
-      return data?.freelancers || [];
+      const result = data?.freelancers || WEIGHTLESS_FALLBACK.freelancers;
+      saveToCache(cacheKey, result);
+      return result;
     } catch (error) {
-      console.warn('[SUBGRAPH] Leaderboard sync friction:', error.message);
-      return [];
+      console.error('[AGA_DATA_GRAVITY] Leaderboard failure:', error.message);
+      return getFromCache(cacheKey) || WEIGHTLESS_FALLBACK.freelancers;
     }
   },
 
@@ -201,15 +245,19 @@ export const SubgraphService = {
    * Gets global platform statistics
    */
   getEcosystemStats: async () => {
+    const cacheKey = 'ecosystem_stats';
     try {
       const { data } = await client.query({
         query: GET_ECOSYSTEM_STATS,
-        fetchPolicy: 'no-cache' // Bypassing internal cache for real-time stats
+        fetchPolicy: 'no-cache',
+        context: { fetchOptions: { timeout: 10000 } }
       });
-      return data?.globalStat || { totalJobs: 0, totalVolume: '0', activeUsers: [] };
+      const result = data?.globalStat || WEIGHTLESS_FALLBACK.globalStat;
+      saveToCache(cacheKey, result);
+      return result;
     } catch (error) {
-      // Subgraph ingestion delay or rate-limiting: Fallback to zero-state.
-      return { totalJobs: 0, totalVolume: '0', activeUsers: [] };
+      console.error('[AGA_DATA_GRAVITY] Ecosystem stats failure:', error.message);
+      return getFromCache(cacheKey) || WEIGHTLESS_FALLBACK.globalStat;
     }
   },
 
@@ -217,27 +265,19 @@ export const SubgraphService = {
    * Gets protocol-wide financial stats (Treasury, Fees, Surplus)
    */
   getProtocolStats: async () => {
+    const cacheKey = 'protocol_stats';
     try {
       const { data } = await client.query({
         query: GET_PROTOCOL_STATS,
-        fetchPolicy: 'network-only'
+        fetchPolicy: 'network-only',
+        context: { fetchOptions: { timeout: 10000 } }
       });
-      return data?.protocolStats || {
-        totalYieldGenerated: '0',
-        totalValueLocked: '0',
-        totalOriginatorFees: '0',
-        totalSovereignSurplus: '0',
-        totalEliteIntents: '0'
-      };
+      const result = data?.protocolStats || WEIGHTLESS_FALLBACK.protocolStats;
+      saveToCache(cacheKey, result);
+      return result;
     } catch (error) {
-      console.warn('[SUBGRAPH] Protocol stats resonance failure:', error.message);
-      return {
-        totalYieldGenerated: '0',
-        totalValueLocked: '0',
-        totalOriginatorFees: '0',
-        totalSovereignSurplus: '0',
-        totalEliteIntents: '0'
-      };
+      console.error('[AGA_DATA_GRAVITY] Protocol stats failure:', error.message);
+      return getFromCache(cacheKey) || WEIGHTLESS_FALLBACK.protocolStats;
     }
   },
 
@@ -245,15 +285,19 @@ export const SubgraphService = {
    * Gets a list of jobs that are currently in dispute
    */
   getDisputes: async () => {
+    const cacheKey = 'disputes';
     try {
       const { data } = await client.query({
         query: GET_DISPUTES,
-        fetchPolicy: 'network-only'
+        fetchPolicy: 'network-only',
+        context: { fetchOptions: { timeout: 10000 } }
       });
-      return data?.jobs || [];
+      const result = data?.jobs || WEIGHTLESS_FALLBACK.jobs;
+      saveToCache(cacheKey, result);
+      return result;
     } catch (error) {
-      console.error('Failed to fetch disputes from subgraph:', error);
-      return [];
+      console.error('[AGA_DATA_GRAVITY] Disputes failure:', error.message);
+      return getFromCache(cacheKey) || WEIGHTLESS_FALLBACK.jobs;
     }
   }
 };

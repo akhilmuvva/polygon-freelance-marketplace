@@ -1,0 +1,92 @@
+
+> frontend@1.1.0 build
+> vite build
+
+[36mvite v7.3.1 [32mbuilding client environment for production...[36m[39m
+transforming...
+node_modules/@base-org/account/node_modules/ox/_esm/core/Address.js (6:21): A comment
+
+"/*#__PURE__*/"
+
+in "node_modules/@base-org/account/node_modules/ox/_esm/core/Address.js" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+node_modules/@base-org/account/node_modules/ox/_esm/core/Base64.js (6:27): A comment
+
+"/*#__PURE__*/"
+
+in "node_modules/@base-org/account/node_modules/ox/_esm/core/Base64.js" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+node_modules/@coinbase/wallet-sdk/node_modules/ox/_esm/core/Address.js (6:21): A comment
+
+"/*#__PURE__*/"
+
+in "node_modules/@coinbase/wallet-sdk/node_modules/ox/_esm/core/Address.js" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+node_modules/@coinbase/wallet-sdk/node_modules/ox/_esm/core/Base64.js (6:27): A comment
+
+"/*#__PURE__*/"
+
+in "node_modules/@coinbase/wallet-sdk/node_modules/ox/_esm/core/Base64.js" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+node_modules/porto/node_modules/ox/_esm/core/Base64.js (6:27): A comment
+
+"/*#__PURE__*/"
+
+in "node_modules/porto/node_modules/ox/_esm/core/Base64.js" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+node_modules/@base-org/account/node_modules/ox/_esm/core/internal/cursor.js (2:21): A comment
+
+"/*#__PURE__*/"
+
+in "node_modules/@base-org/account/node_modules/ox/_esm/core/internal/cursor.js" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+node_modules/@coinbase/wallet-sdk/node_modules/ox/_esm/core/internal/cursor.js (2:21): A comment
+
+"/*#__PURE__*/"
+
+in "node_modules/@coinbase/wallet-sdk/node_modules/ox/_esm/core/internal/cursor.js" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+node_modules/@walletconnect/utils/node_modules/ox/_esm/core/internal/cursor.js (2:21): A comment
+
+"/*#__PURE__*/"
+
+in "node_modules/@walletconnect/utils/node_modules/ox/_esm/core/internal/cursor.js" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+node_modules/@walletconnect/utils/node_modules/ox/_esm/core/Address.js (6:21): A comment
+
+"/*#__PURE__*/"
+
+in "node_modules/@walletconnect/utils/node_modules/ox/_esm/core/Address.js" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+node_modules/@reown/appkit/node_modules/ox/_esm/core/internal/cursor.js (2:21): A comment
+
+"/*#__PURE__*/"
+
+in "node_modules/@reown/appkit/node_modules/ox/_esm/core/internal/cursor.js" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+node_modules/@reown/appkit/node_modules/ox/_esm/core/Address.js (6:21): A comment
+
+"/*#__PURE__*/"
+
+in "node_modules/@reown/appkit/node_modules/ox/_esm/core/Address.js" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+node_modules/@reown/appkit-controllers/node_modules/ox/_esm/core/internal/cursor.js (2:21): A comment
+
+"/*#__PURE__*/"
+
+in "node_modules/@reown/appkit-controllers/node_modules/ox/_esm/core/internal/cursor.js" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+node_modules/@reown/appkit-controllers/node_modules/ox/_esm/core/Address.js (6:21): A comment
+
+"/*#__PURE__*/"
+
+in "node_modules/@reown/appkit-controllers/node_modules/ox/_esm/core/Address.js" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[32mΓ£ô[39m 10512 modules transformed.
+Γ£ù Build failed in 19.42s
+error during build:
+src/components/JobsList.jsx (1:9): "useQuery" is not exported by "node_modules/@apollo/client/core/index.js", imported by "src/components/JobsList.jsx".
+file: C:/Users/akhil/.gemini/antigravity/scratch/polygon-freelance-marketplace/frontend/src/components/JobsList.jsx:1:9
+
+1: import { useQuery, gql } from '@apollo/client';
+            ^
+2: import { useAccount, useWalletClient, useWriteContract } from 'wagmi';
+3: import React, { useState, useEffect, useRef } from 'react';
+
+    at getRollupError (file:///C:/Users/akhil/.gemini/antigravity/scratch/polygon-freelance-marketplace/frontend/node_modules/rollup/dist/es/shared/parseAst.js:402:41)
+    at error (file:///C:/Users/akhil/.gemini/antigravity/scratch/polygon-freelance-marketplace/frontend/node_modules/rollup/dist/es/shared/parseAst.js:398:42)
+    at Module.error (file:///C:/Users/akhil/.gemini/antigravity/scratch/polygon-freelance-marketplace/frontend/node_modules/rollup/dist/es/shared/node-entry.js:17040:16)
+    at Module.traceVariable (file:///C:/Users/akhil/.gemini/antigravity/scratch/polygon-freelance-marketplace/frontend/node_modules/rollup/dist/es/shared/node-entry.js:17452:29)
+    at ModuleScope.findVariable (file:///C:/Users/akhil/.gemini/antigravity/scratch/polygon-freelance-marketplace/frontend/node_modules/rollup/dist/es/shared/node-entry.js:15070:39)
+    at ReturnValueScope.findVariable (file:///C:/Users/akhil/.gemini/antigravity/scratch/polygon-freelance-marketplace/frontend/node_modules/rollup/dist/es/shared/node-entry.js:5673:38)
+    at FunctionBodyScope.findVariable (file:///C:/Users/akhil/.gemini/antigravity/scratch/polygon-freelance-marketplace/frontend/node_modules/rollup/dist/es/shared/node-entry.js:5673:38)
+    at Identifier.bind (file:///C:/Users/akhil/.gemini/antigravity/scratch/polygon-freelance-marketplace/frontend/node_modules/rollup/dist/es/shared/node-entry.js:5447:40)
+    at CallExpression.bind (file:///C:/Users/akhil/.gemini/antigravity/scratch/polygon-freelance-marketplace/frontend/node_modules/rollup/dist/es/shared/node-entry.js:2829:23)
+    at CallExpression.bind (file:///C:/Users/akhil/.gemini/antigravity/scratch/polygon-freelance-marketplace/frontend/node_modules/rollup/dist/es/shared/node-entry.js:12179:15)

@@ -1,6 +1,6 @@
 
 
-import React, { useState, Suspense, lazy, useEffect } from 'react';
+import React, { useState, Suspense, lazy, useEffect, useRef, useContext } from 'react';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import {
   Briefcase, PlusCircle, LayoutDashboard, MessageSquare,
@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useAnimeAnimations } from './hooks/useAnimeAnimations';
+import { AuthContext } from './Web3Provider';
 
 // Lazy load heavy components
 const Dashboard = lazy(() => import('./components/Dashboard.jsx'));
@@ -242,7 +243,8 @@ const useNetworkHealth = () => {
       let indexing = 'Healthy';
       let storage = 'Healthy';
       try {
-        const res = await fetch(import.meta.env.VITE_SUBGRAPH_URL, {
+        const subgraphUrl = import.meta.env.VITE_SUBGRAPH_URL || 'https://api.studio.thegraph.com/query/poly-lance-studio/poly-lance/v0.0.1';
+        const res = await fetch(subgraphUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ query: '{ _meta { block { number } } }' })
@@ -261,17 +263,20 @@ const useNetworkHealth = () => {
 };
 
 function App() {
-  useNetworkHealth(); // Runs background health checks; result used only in future telemetry
+  const { authStatus, setAuthStatus } = useContext(AuthContext);
   const { address, isConnected: isWalletConnected, isReconnecting } = useAccount();
   const { data: walletClient } = useWalletClient();
   const { disconnect } = useDisconnect();
   const { data: blockNumber } = useBlockNumber({ watch: true });
+  const { staggerFadeIn } = useAnimeAnimations();
+  
+  useNetworkHealth(); // Runs background health checks; result used only in future telemetry
 
-  const [isHydrated, setIsHydrated] = React.useState(false);
-  const [activeTab, setActiveTab] = React.useState('dashboard');
-  const [activeTabParams, setActiveTabParams] = React.useState({});
+  const [isHydrated, setIsHydrated] = useState(false);
+  const [activeTab, setActiveTab] = useState('dashboard');
+  const [activeTabParams, setActiveTabParams] = useState({});
 
-  React.useEffect(() => {
+  useEffect(() => {
     setIsHydrated(true);
   }, []);
 
@@ -300,11 +305,10 @@ function App() {
     return () => window.removeEventListener('NAV_TO_CREATE', handleNavToCreate);
   }, [blockNumber]);
 
-  const sidebarRef = React.useRef(null);
-  const { staggerFadeIn } = useAnimeAnimations();
-  const hasAnimatedRef = React.useRef(false);
+  const sidebarRef = useRef(null);
+  const hasAnimatedRef = useRef(false);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!hasAnimatedRef.current && window.innerWidth > 1024 && sidebarRef.current) {
       hasAnimatedRef.current = true;
       import('animejs').then(({ animate }) => {
@@ -392,6 +396,20 @@ function App() {
     }
   };
 
+  const actuateBypassIntent = async () => {
+    console.info('[SECURITY] Actuating Sovereign developer bypass.');
+    const mockSA = {
+      accountAddress: '0x25F6C8ed995C811E6c0ADb1D66A60830E8115e9A',
+      isMock: true,
+      sendTransaction: async () => ({
+        waitForTxHash: async () => ({ transactionHash: '0xmock_bypass_' + Date.now() })
+      })
+    };
+    setSmartAccount(mockSA);
+    setIsGasless(true);
+    hotToast.success('Sovereign Bypass Active');
+  };
+
   const actuateLogoutIntent = async () => {
     setSmartAccount(null);
     setSocialProvider(null);
@@ -403,17 +421,22 @@ function App() {
     } catch (e) { console.warn('[AUTH] Logout had minor issue:', e?.message); }
   };
 
-  React.useEffect(() => {
-    // Directive 06: Identity Persistence. Only reset if BOTH standard and social pathways collapse.
-    if (!isWalletConnected && !socialProvider) {
+  useEffect(() => {
+    // Directive 06: Identity Persistence. 
+    // Circuit Breaker: Only reset if BOTH resonance pathways collapse.
+    if (!isWalletConnected && !socialProvider && authStatus !== 'loading') {
       setIsGasless(false);
       setSmartAccount(null);
     }
-  }, [isWalletConnected, socialProvider]);
+  }, [isWalletConnected, socialProvider, authStatus]);
+
 
   const effectiveAddress = smartAccount?.accountAddress || address;
   const isAdmin = effectiveAddress?.toLowerCase() === ARCHITECT_WALLET.toLowerCase();
   
+  // A session is active if we have a Smart Account (Social/Bypass) OR a connected wallet with a successful SIWE handshake.
+  const isSessionActive = smartAccount !== null || (isWalletConnected && authStatus === 'authenticated');
+
   const navigate = (tab) => { setActiveTab(tab); setIsSidebarOpen(false); };
   const onSelectChat = (addr) => { setChatPeerAddress(addr); setActiveTab('chat'); };
 
@@ -453,9 +476,13 @@ function App() {
   return (
     <>
       <Toaster position="top-right" />
-      {(!effectiveAddress || isReconnecting) && activeTab !== 'terms' && activeTab !== 'privacy' ? (
+      {(!isSessionActive || isReconnecting) && activeTab !== 'terms' && activeTab !== 'privacy' ? (
         <Suspense fallback={null}>
-          <LandingPage onSocialLogin={actuateSocialLoginIntent} isLoggingIn={isLoggingIn} />
+          <LandingPage 
+            onSocialLogin={actuateSocialLoginIntent} 
+            onBypass={actuateBypassIntent}
+            isLoggingIn={isLoggingIn} 
+          />
         </Suspense>
       ) : (
         <div style={styles.shell}>

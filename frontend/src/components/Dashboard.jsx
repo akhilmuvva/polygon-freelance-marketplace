@@ -34,9 +34,16 @@ const Dashboard = ({ address: propAddress }) => {
         queryKey: ['protocolStats'],
         queryFn: () => SubgraphService.getProtocolStats(),
     });
-    const surplus = qStats?.totalYieldGenerated 
-        ? parseFloat(formatEther(BigInt(qStats.totalYieldGenerated) * 20n / 100n))
-        : 0; 
+    const surplus = useMemo(() => {
+        try {
+            if (!qStats?.totalYieldGenerated) return 0;
+            const rawVal = String(qStats.totalYieldGenerated).split(' ')[0].replace(/,/g, '');
+            // If it's a decimal string, we can't BigInt it directly, but MockDataService now returns Wei.
+            return parseFloat(formatEther(BigInt(rawVal) * 20n / 100n));
+        } catch (e) {
+            return 0;
+        }
+    }, [qStats]);
     const [tbaInfo, setTbaInfo] = useState(null);
     const [activeEscrows, setActiveEscrows] = useState([]);
     
@@ -73,7 +80,7 @@ const Dashboard = ({ address: propAddress }) => {
                         title: `Contract #${j.jobId}`,
                         status: ['Created', 'Accepted', 'Ongoing', 'Disputed', 'Arbitration', 'Completed', 'Cancelled'][Number(j.status)] || 'Active',
                         progress: Number(j.status) === 0 ? 0 : Number(j.status) === 1 ? 25 : 50,
-                        budget: formatEther(BigInt(j.amount || 0))
+                        budget: formatEther(BigInt(String(j.amount || 0).split(' ')[0].replace(/,/g, '')))
                     })));
                 } else {
                     setActiveEscrows([]);

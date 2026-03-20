@@ -263,9 +263,29 @@ const IdentityManager = ({ address }) => {
                                                 </span>
                                             ))}
                                         </div>
-                                        <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', lineHeight: 1.6, fontStyle: 'italic', marginBottom: 32, maxWidth: 300 }}>
+                                        <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', lineHeight: 1.6, fontStyle: 'italic', marginBottom: 20, maxWidth: 300 }}>
                                             "{profile.bio || 'Initialization required. Propagate your profile to activate this identity node.'}"
                                         </p>
+                                        
+                                        {/* Privado ID (Polygon ID) Verification Badge */}
+                                        <div style={{ width: '100%', padding: '12px 16px', borderRadius: 16, background: 'rgba(139, 92, 246, 0.05)', border: '1px solid rgba(139, 92, 246, 0.2)', marginBottom: 24, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                                <div style={{ width: 32, height: 32, borderRadius: 8, background: 'var(--accent)', color: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                    <Award size={18} />
+                                                </div>
+                                                <div style={{ textAlign: 'left' }}>
+                                                    <div style={{ fontSize: '0.65rem', fontWeight: 900, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Privado ID</div>
+                                                    <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#fff' }}>ZK-Personhood</div>
+                                                </div>
+                                            </div>
+                                            <button 
+                                                className="btn btn-ghost btn-xs"
+                                                style={{ fontSize: '0.6rem', fontWeight: 900, textTransform: 'uppercase', background: 'rgba(255,255,255,0.05)', padding: '4px 10px', borderRadius: 6 }}
+                                                onClick={() => hotToast('Redirecting to Privado ID Mobile App...')}
+                                            >
+                                                Verify
+                                            </button>
+                                        </div>
                                         
                                         <div style={{ marginTop: 'auto', width: '100%', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, paddingTop: 24, borderTop: '1px solid var(--border)' }}>
                                             {[

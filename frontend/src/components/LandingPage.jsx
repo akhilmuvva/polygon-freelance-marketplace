@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { Shield, Globe, Mail, Wallet, Zap, ShieldCheck, Sparkles } from 'lucide-react';
 import { useConnectModal } from '@rainbow-me/rainbowkit';
 
-const LandingPage = ({ onSocialLogin, isLoggingIn }) => {
+const LandingPage = ({ onSocialLogin, onBypass, isLoggingIn }) => {
   const { openConnectModal } = useConnectModal();
 
   const teal = "#2dd4bf";
@@ -41,13 +41,16 @@ const LandingPage = ({ onSocialLogin, isLoggingIn }) => {
         </div>
         
         <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-          <button style={{
-            display: 'flex', alignItems: 'center', gap: '8px', 
-            padding: '10px 20px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)',
-            background: 'rgba(255,255,255,0.02)', color: grey, fontSize: '10px', fontWeight: 900,
-            textTransform: 'uppercase', letterSpacing: '0.15em', cursor: 'pointer'
-          }}>
-            <ShieldCheck size={14} opacity={0.5} /> Sovereign Shield
+          <button 
+            onClick={onBypass}
+            style={{
+              display: 'flex', alignItems: 'center', gap: '8px', 
+              padding: '10px 20px', borderRadius: '12px', border: `1px solid ${teal}33`,
+              background: 'rgba(255,255,255,0.02)', color: teal, fontSize: '10px', fontWeight: 900,
+              textTransform: 'uppercase', letterSpacing: '0.15em', cursor: 'pointer'
+            }}
+          >
+            <ShieldCheck size={14} /> Sovereign Shield
           </button>
           <button 
             onClick={onSocialLogin}

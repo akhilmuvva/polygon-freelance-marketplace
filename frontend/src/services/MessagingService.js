@@ -84,9 +84,11 @@ class MessagingService {
     }
 
     disconnect() {
-        console.log('[XMTP] Sovereign session terminated. Purging messaging client...');
-        this.client = null;
-        this.notifyListeners();
+        if (this.client) {
+            console.log('[XMTP] Sovereign session terminated. Purging messaging client...');
+            this.client = null;
+            this.notifyListeners();
+        }
     }
 
     notifyListeners() {

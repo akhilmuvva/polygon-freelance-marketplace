@@ -1,6 +1,6 @@
 import React from 'react';
 import { useAccount } from 'wagmi';
-// import { parseUnits, formatEther } from 'viem';
+import { formatEther } from 'viem';
 import {
   FileText, CheckCircle2, CircleDollarSign, BarChart3,
   ShieldCheck, Clock, TrendingUp, Info, ArrowUpRight,
@@ -25,8 +25,12 @@ export default function ZenithLiquidity() {
 
   React.useEffect(() => {
     const fetchStats = async () => {
-      const data = await SubgraphService.getProtocolStats();
-      setStats(data);
+      try {
+        const data = await SubgraphService.getProtocolStats();
+        setStats(data);
+      } catch (e) {
+        console.error('[LIQUIDITY] Stats hydration error:', e);
+      }
     };
     fetchStats();
   }, []);
@@ -39,6 +43,17 @@ export default function ZenithLiquidity() {
     card: { padding: 24, borderRadius: 24, background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border)', transition: 'all 0.3s ease' },
     label: { fontSize: '0.62rem', fontWeight: 800, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 6 },
     badge: (color) => ({ padding: '4px 10px', borderRadius: 8, fontSize: '0.6rem', fontWeight: 800, background: `${color}15`, color: color, textTransform: 'uppercase' })
+  };
+
+  const formatWei = (val) => {
+    try {
+      if (!val) return '0.00';
+      const bigVal = typeof val === 'string' ? BigInt(val.split(' ')[0].replace(/,/g, '')) : BigInt(val);
+      return parseFloat(formatEther(bigVal)).toLocaleString(undefined, { maximumFractionDigits: 2 });
+    } catch (e) {
+      console.warn('[LIQUIDITY] Formatting error:', e);
+      return '0.00';
+    }
   };
 
   return (
@@ -58,10 +73,10 @@ export default function ZenithLiquidity() {
       {/* Hero Stats */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 20, marginBottom: 40 }}>
         {[
-          { label: 'Market Liquidity', value: `$${Number(stats?.totalValueLocked || 0).toLocaleString()}`, icon: <Flame size={16} />, color: 'var(--danger)' },
+          { label: 'Market Liquidity', value: `$ ${formatWei(stats?.totalValueLocked)}`, icon: <Flame size={16} />, color: 'var(--danger)' },
           { label: 'Elite Intents', value: stats?.totalEliteIntents || '0', icon: <FileText size={16} />, color: 'var(--info)' },
-          { label: 'Sovereign Surplus', value: `$${Number(stats?.totalSovereignSurplus || 0).toLocaleString()}`, icon: <TrendingUp size={16} />, color: 'var(--success)' },
-          { label: 'Yield Generated', value: `$${Number(stats?.totalYieldGenerated || 0).toLocaleString()}`, icon: <Shield size={16} />, color: 'var(--secondary)' }
+          { label: 'Sovereign Surplus', value: `$ ${formatWei(stats?.totalSovereignSurplus)}`, icon: <TrendingUp size={16} />, color: 'var(--success)' },
+          { label: 'Yield Generated', value: `$ ${formatWei(stats?.totalYieldGenerated)}`, icon: <Shield size={16} />, color: 'var(--secondary)' }
         ].map((stat, i) => (
           <div key={i} style={s.card}>
             <div style={s.label}>{stat.icon} {stat.label}</div>

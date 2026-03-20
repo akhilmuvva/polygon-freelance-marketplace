@@ -13,16 +13,182 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' * data: blob: 'unsafe-inline' 'unsafe-eval'; script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: *; connect-src 'self' *; frame-src 'self' *; img-src 'self' data: blob: *; style-src 'self' 'unsafe-inline' *; font-src 'self' data: *;">
   <script>
-    try {
-      if (window.trustedTypes && window.trustedTypes.createPolicy) {
-        window.trustedTypes.createPolicy('default', {
-          createHTML: (s) => s,
-          createScriptURL: (s) => s,
-          createScript: (s) => s,
+    // ─── PHASE 0: Lit dev mode suppression (must run before any ES module) ─────
+    globalThis.litDisableDevMode = true;
+
+    // ─── PHASE 1: Sovereign Intrinsics (runs synchronously before any module) ──
+    (function stabilizeSovereignIntrinsics() {
+      'use strict';
+      const noop = () => {};
+      const noopPort = () => ({
+        onMessage:    { addListener: noop, removeListener: noop },
+        onDisconnect: { addListener: noop, removeListener: noop },
+        postMessage: noop, disconnect: noop
+      });
+      const noopStorage = {
+        get:    (_, cb) => { try { if(cb) cb({}); } catch(e) {} },
+        set:    (_, cb) => { try { if(cb) cb();   } catch(e) {} },
+        remove: (_, cb) => { try { if(cb) cb();   } catch(e) {} },
+        clear:  (cb)   => { try { if(cb) cb();   } catch(e) {} }
+      };
+
+      const runtimeSham = {
+        connect:      noopPort,
+        sendMessage:  (a, b, c, cb) => { try { if(typeof cb==='function') cb(undefined); } catch(e){} },
+        getURL:       (s) => s,
+        id:           undefined,
+        onMessage:    { addListener: noop, removeListener: noop, hasListener: () => false },
+        onConnect:    { addListener: noop, removeListener: noop, hasListener: () => false },
+        onConnectExternal: { addListener: noop, removeListener: noop, hasListener: () => false },
+        lastError:    undefined
+      };
+      const storageSham = {
+        local: noopStorage, sync: noopStorage, managed: noopStorage,
+        onChanged: { addListener: noop, removeListener: noop }
+      };
+
+      // ── Chrome API Proxy Shield ─────────────────────────────────────────
+      // The assignment-based approach (chrome.storage.sync = noopStorage) fails
+      // when Chrome or an extension defines .sync as a getter-only property, OR
+      // when an extension later overwrites chrome.storage with a new object.
+      //
+      // A Proxy intercepts every property ACCESS at the JS engine level —
+      // regardless of timing, minification, or how the property is defined.
+      (function installChromeProxy() {
+        const makeStore = () => ({
+          get:    (k, cb)  => { if (typeof cb  === 'function') cb({});  },
+          set:    (k, cb)  => { if (typeof cb  === 'function') cb();    },
+          remove: (k, cb)  => { if (typeof cb  === 'function') cb();    },
+          clear:  (cb)     => { if (typeof cb  === 'function') cb();    },
+          getBytesInUse: (k, cb) => { if (typeof cb === 'function') cb(0); },
+          onChanged: { addListener: noop, removeListener: noop, hasListener: () => false }
+        });
+        const safeStorageAreas = ['sync','local','managed','session'];
+        const storageProxy = new Proxy({}, {
+          get(target, prop) {
+            // Always return a safe store for the known storage areas
+            if (safeStorageAreas.includes(String(prop))) {
+              const real = Reflect.get(target, prop);
+              return real || makeStore();
+            }
+            if (prop === 'onChanged') return { addListener: noop, removeListener: noop, hasListener: () => false };
+            return Reflect.get(target, prop);
+          }
+        });
+        try {
+          const existingChrome = window.chrome;
+          const chromeProxy = new Proxy(existingChrome || Object.create(null), {
+            get(target, prop) {
+              if (prop === 'storage') return storageProxy;
+              const val = Reflect.get(target, prop);
+              return val;
+            }
+          });
+          window.chrome = chromeProxy;
+        } catch(e) {
+          // Proxy replacement failed — try direct assignment as fallback
+          try {
+            if (!window.chrome) window.chrome = { storage: storageProxy };
+            else if (!window.chrome.storage) window.chrome.storage = storageProxy;
+            else {
+              safeStorageAreas.forEach(k => {
+                try { if (!window.chrome.storage[k]) window.chrome.storage[k] = makeStore(); } catch(e2) {
+                  try { Object.defineProperty(window.chrome.storage, k, { value: makeStore(), writable: true, configurable: true }); } catch(e3) {}
+                }
+              });
+            }
+          } catch(e2) {}
+        }
+      })();
+
+      // matchMedia prototype hardening — retroactively patches all MediaQueryList instances
+      try {
+        if (window.MediaQueryList && !window.MediaQueryList.prototype.addListener) {
+          window.MediaQueryList.prototype.addListener    = function(cb) { this.addEventListener('change', cb); };
+          window.MediaQueryList.prototype.removeListener = function(cb) { this.removeEventListener('change', cb); };
+        }
+      } catch(e) {}
+
+      if (!window.matchMedia) {
+        window.matchMedia = (q) => ({
+          matches: false, media: q, onchange: null,
+          addListener: noop, removeListener: noop,
+          addEventListener: noop, removeEventListener: noop,
+          dispatchEvent: () => false
         });
       }
-    } catch (e) { /* policy already registered or unsupported */ }
+
+      // Blob injection — stabilize sandboxed workers and extension blobs
+      const OriginalBlob = window.Blob;
+      window.Blob = function(parts, options) {
+        if (options && options.type && (options.type.includes('javascript') || options.type.includes('worker'))) {
+          const shamCode = `(function(){const n=()=>{};const p=()=>({onMessage:{addListener:n,removeListener:n},onDisconnect:{addListener:n,removeListener:n},postMessage:n,disconnect:n});if(!self.chrome)self.chrome={runtime:{connect:p,sendMessage:n,getURL:s=>s,id:undefined,onMessage:{addListener:n,removeListener:n,hasListener:()=>false},onConnect:{addListener:n,removeListener:n,hasListener:()=>false}},storage:{local:{get:(a,b)=>b&&b({}),set:(a,b)=>b&&b(),remove:(a,b)=>b&&b(),clear:b=>b&&b()},sync:{get:(a,b)=>b&&b({}),set:(a,b)=>b&&b(),remove:(a,b)=>b&&b(),clear:b=>b&&b()},onChanged:{addListener:n}}};else{if(!self.chrome.runtime)self.chrome.runtime={connect:p,sendMessage:n,getURL:s=>s,id:undefined,onMessage:{addListener:n},onConnect:{addListener:n}};else{if(!self.chrome.runtime.connect)self.chrome.runtime.connect=p;}}if(!self.matchMedia)self.matchMedia=q=>({matches:false,media:q,onchange:null,addListener:n,removeListener:n,addEventListener:n,removeEventListener:n,dispatchEvent:()=>false});})();`;
+          parts = [shamCode, ...(parts || [])];
+        }
+        return new OriginalBlob(parts, options);
+      };
+      window.Blob.prototype = OriginalBlob.prototype;
+
+      // Trusted Types
+      try {
+        if (window.trustedTypes && window.trustedTypes.createPolicy) {
+          window.trustedTypes.createPolicy('default', {
+            createHTML: (s) => s,
+            createScriptURL: (s) => s,
+            createScript: (s) => s
+          });
+        }
+      } catch(e) {}
+    })();
+
+    // ─── PHASE 2: Global error suppression for un-ownable extension errors ─────
+    // These errors originate from MetaMask / WalletConnect extension content
+    // scripts. They run in the page's window context but are not our code.
+    // We suppress them to achieve console silence without hiding real app errors.
+    (function suppressExtensionNoise() {
+      const SUPPRESSED_PATTERNS = [
+        'Failed to connect to MetaMask',
+        'chrome.runtime.connect is not a function',
+        "Cannot read properties of undefined (reading 'addListener')",
+        "State loaded from storage couldn't be migrated",
+        'MetaMask extension not found',
+        'Lit is in dev mode',
+        'lit.dev/msg/dev-mode',
+        'Not recommended for production',
+      ];
+      const shouldSuppress = (msg) => msg && SUPPRESSED_PATTERNS.some(p => String(msg).includes(p));
+
+      window.addEventListener('unhandledrejection', (e) => {
+        if (shouldSuppress(e.reason?.message) || shouldSuppress(String(e.reason))) {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+        }
+      }, true);
+
+      window.addEventListener('error', (e) => {
+        if (shouldSuppress(e.message) || shouldSuppress(e.error?.message)) {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+        }
+      }, true);
+
+      // Intercept console.warn early (before main.jsx) to catch Lit from Vite pre-bundled deps
+      const _w = console.warn;
+      console.warn = (...args) => {
+        const msg = String(args[0] ?? '');
+        if (shouldSuppress(msg)) return;
+        _w.apply(console, args);
+      };
+      // Intercept console.log for Apollo/React DevTools promo noise
+      const _l = console.log;
+      console.log = (...args) => {
+        const msg = String(args[0] ?? '');
+        if (msg.includes('Apollo DevTools') || msg.includes('React DevTools') || msg.includes('Download the')) return;
+        _l.apply(console, args);
+      };
+    })();
   </script>
   <title>PolyLance | Zenith</title>
 </head>

@@ -137,6 +137,8 @@
 ✅ Multi-Currency Support        ✅ Gasless Transactions
 ✅ RWA Tokenization 🆕           ✅ Invoice Financing 🆕
 ✅ Fractional Ownership 🆕       ✅ Automated Distribution 🆕
+✅ POL Gravitational Boost 🚀    ✅ Privado ID Verification 🚀
+✅ AggLayer Unified Bridge 🚀    ✅ ZK-Email Anchoring 🚀
 
 ═══════════════════════════════════════════════════════════════════════════════
                               SECURITY LAYERS
@@ -151,11 +153,13 @@ Layer 1: Smart Contract Security
 Layer 2: Economic Security
   • Platform fees prevent spam
   • Reputation-based incentives
+  • **POL Gravitational Boost**: 1.5x reputation for users staking native POL.
   • Stake requirements
   • Late payment penalties
 
 Layer 3: Verification Security
   • AI Oracle (80% confidence threshold)
+  • **Privado ID (Polygon ID)**: ZK-Personhood verification for sybil-resistance.
   • Manual override for disputes
   • Kleros arbitration (future)
   • Legal hash anchoring

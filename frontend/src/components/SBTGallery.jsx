@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Award, Shield, CheckCircle, ExternalLink, Cpu, Zap, Star } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAccount } from 'wagmi';
+import SubgraphService from '../services/SubgraphService';
 
 const SBT_ABI = [
     { inputs: [{ internalType: "address", name: "owner", type: "address" }], name: "balanceOf", outputs: [{ internalType: "uint256", name: "", type: "uint256" }], stateMutability: "view", type: "function" },
