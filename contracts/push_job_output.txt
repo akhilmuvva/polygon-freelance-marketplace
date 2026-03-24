@@ -1,10 +1,8 @@
-[dotenv@17.3.1] injecting env (4) from .env -- tip: ΓÜÖ∩╕Å  load multiple .env files with { path: ['.env.local', '.env'] }
-[dotenv@17.3.1] injecting env (0) from .env -- tip: ≡ƒöÉ prevent building .env in docker: https://dotenvx.com/prebuild
-Account: 0x25F6C8ed995C811E6c0ADb1D66A60830E8115e9A
-Balance: 0.138447228474123067 MATIC
-Escrow Address: 0x5Ff3E1223B5c37f1C18CC279dfC9C181bF22BEf9
-Actuating Sovereignty: Creating Job on Amoy...
-Transaction Hash: 0x8a6dfed9c4c1951ef190dbe9ece8bfe82359c39a65c61e41b3271dc3fc3d6823
-Synchronizing with Polygon Amoy Mesh...
-Resonance Confirmed! Status: SUCCESS
-View on Explorer: https://amoy.polygonscan.com/tx/0x8a6dfed9c4c1951ef190dbe9ece8bfe82359c39a65c61e41b3271dc3fc3d6823
+[dotenv@17.3.1] injecting env (4) from .env -- tip: ΓÜÖ∩╕Å  override existing env vars with { override: true }
+[dotenv@17.3.1] injecting env (0) from .env -- tip: ≡ƒöÉ encrypt with Dotenvx: https://dotenvx.com
+≡ƒÜÇ Actuating Job Contract Push to Amoy...
+Deployer: 0x25F6C8ed995C811E6c0ADb1D66A60830E8115e9A
+Pushing Job Contract...
+Transaction Hash: 0xc849e71da365b7233641b8b351be0c855bc16834816075dc44aef6b5d8e8081d
+Γ£à Job Contract Pushed Successfully!
+Job ID: 2

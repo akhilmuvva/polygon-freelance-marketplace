@@ -42,9 +42,9 @@ contract ReputationStaking is Ownable, ReentrancyGuard {
         uint256 baseStake = userStakes[_user].amount;
         if (!userStakes[_user].active) return 0;
 
-        // Polygon Mainnet POL Address: 0x455e53CBB86018Ac2B8092FdCd39d8444fFF5a44
+        // Polygon Mainnet POL Address: 0x455E53Cbb86018ac2b8092FDcd39D8444FFF5A44
         // If the staking token is the native POL, grant a 1.5x "Gravitational Boost"
-        if (address(stakingToken) == 0x455e53CBB86018Ac2B8092FdCd39d8444fFF5a44) {
+        if (address(stakingToken) == 0x455E53Cbb86018ac2b8092FDcd39D8444FFF5A44) {
             return (baseStake * 15) / 10;
         }
 
@@ -60,7 +60,7 @@ contract ReputationStaking is Ownable, ReentrancyGuard {
     function getRewardTier(address _user) public view returns (uint8 tier, uint256 feeDiscountBps, uint256 yieldBoostBps) {
         uint256 stakeAmount = userStakes[_user].amount;
         // Only applies if staking the native POL token
-        if (address(stakingToken) != 0x455e53CBB86018Ac2B8092FdCd39d8444fFF5a44) return (0, 0, 0);
+        if (address(stakingToken) != 0x455E53Cbb86018ac2b8092FDcd39D8444FFF5A44) return (0, 0, 0);
 
         if (stakeAmount >= 10000 * 1e18) {
             return (3, 5000, 1500); // 50% discount, 15% boost

@@ -10,7 +10,7 @@ const env = {
   ALCHEMY_ID: import.meta.env.VITE_ALCHEMY_ID || '',
   
   // ── Subgraph & Data ──────────────────────────────────────────────
-  SUBGRAPH_URL: import.meta.env.VITE_SUBGRAPH_URL || 'https://api.studio.thegraph.com/query/poly-lance-studio/poly-lance/v0.0.1',
+  SUBGRAPH_URL: import.meta.env.VITE_SUBGRAPH_URL || 'https://api.studio.thegraph.com/query/49625/polylance-zenith-amoy/v0.0.1',
   
   // ── Storage (IPFS via Pinata) ───────────────────────────────────
   // Fallbacks ensure uploads work even if Vercel env vars are not configured.
