@@ -26,6 +26,7 @@ const StorageService = {
             };
         }
 
+        console.info('[STORAGE] Uploading metadata to Pinata IPFS...');
         try {
             const response = await fetch('https://api.pinata.cloud/pinning/pinJSONToIPFS', {
                 method: 'POST',
@@ -34,12 +35,20 @@ const StorageService = {
                     'pinata_api_key': PINATA_API_KEY,
                     'pinata_secret_api_key': PINATA_API_SECRET,
                 },
-                body: JSON.stringify(metadata)
+                body: JSON.stringify({
+                    pinataContent: metadata,
+                    pinataMetadata: {
+                        name: `polylance-job-${Date.now()}`,
+                        keyvalues: { app: 'polylance', type: 'job-metadata' }
+                    }
+                })
             });
 
             const data = await response.json();
-            if (!response.ok) throw new Error(data.error || 'Pinata Upload Failed');
+            if (!response.ok) throw new Error(data.error?.reason || data.error || 'Pinata Upload Failed');
+            if (!data.IpfsHash) throw new Error('Pinata returned no CID');
 
+            console.info('[STORAGE] Pinned to IPFS:', data.IpfsHash);
             return {
                 cid: data.IpfsHash,
                 url: `${IPFS_GATEWAY}${data.IpfsHash}`

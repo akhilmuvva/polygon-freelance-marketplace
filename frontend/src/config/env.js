@@ -12,10 +12,11 @@ const env = {
   // ── Subgraph & Data ──────────────────────────────────────────────
   SUBGRAPH_URL: import.meta.env.VITE_SUBGRAPH_URL || 'https://api.studio.thegraph.com/query/95536/freelance-marketplace/version/latest',
   
-  // ── Storage (IPFS) ──────────────────────────────────────────────
-  PINATA_API_KEY: import.meta.env.VITE_PINATA_API_KEY || '',
-  PINATA_API_SECRET: import.meta.env.VITE_PINATA_API_SECRET || '',
-  IPFS_GATEWAY: import.meta.env.VITE_IPFS_GATEWAY || 'https://ipfs.io/ipfs/',
+  // ── Storage (IPFS via Pinata) ───────────────────────────────────
+  // Fallbacks ensure uploads work even if Vercel env vars are not configured.
+  PINATA_API_KEY: import.meta.env.VITE_PINATA_API_KEY || '330bb91ec61163910834',
+  PINATA_API_SECRET: import.meta.env.VITE_PINATA_API_SECRET || '657a4b101289c88627b65514577669f1351678c95c1a624cd8adeac76921496c',
+  IPFS_GATEWAY: import.meta.env.VITE_IPFS_GATEWAY || 'https://gateway.pinata.cloud/ipfs/',
 
   // ── Particle Auth (Social Login) ──────────────────────────────────
   PARTICLE_PROJECT_ID: import.meta.env.VITE_PARTICLE_PROJECT_ID || '',
