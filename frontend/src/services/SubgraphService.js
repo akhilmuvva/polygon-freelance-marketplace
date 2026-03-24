@@ -83,7 +83,6 @@ export const GET_LEADERBOARD = gql`
       reputationScore
       totalEarned
       jobsCompleted
-      portfolioCID
     }
   }
 `;
@@ -129,7 +128,7 @@ export const GET_USER_PORTFOLIO = gql`
 
 export const GET_DISPUTES = gql`
   query GetDisputes {
-    jobs(where: { status: "3" }, orderBy: createdAt, orderDirection: desc) {
+    jobs(where: { status: 3 }, orderBy: createdAt, orderDirection: desc) {
       id
       jobId
       client
@@ -168,6 +167,7 @@ export const SubgraphService = {
         query: GET_JOBS,
         variables: { first, skip },
         fetchPolicy: 'network-only',
+        errorPolicy: 'ignore',
         context: { fetchOptions: { timeout: 10000 } }
       });
       const result = data?.jobs || WEIGHTLESS_FALLBACK.jobs;
@@ -190,6 +190,7 @@ export const SubgraphService = {
         query: GET_USER_STATS,
         variables: { address: address.toLowerCase() },
         fetchPolicy: 'network-only',
+        errorPolicy: 'ignore',
         context: { fetchOptions: { timeout: 10000 } }
       });
       const result = data || WEIGHTLESS_FALLBACK;
@@ -212,6 +213,7 @@ export const SubgraphService = {
         query: GET_USER_PORTFOLIO,
         variables: { address: address.toLowerCase() },
         fetchPolicy: 'network-only',
+        errorPolicy: 'ignore',
         context: { fetchOptions: { timeout: 10000 } }
       });
       const result = data || WEIGHTLESS_FALLBACK;
@@ -232,6 +234,7 @@ export const SubgraphService = {
       const { data } = await client.query({
         query: GET_LEADERBOARD,
         fetchPolicy: 'network-only',
+        errorPolicy: 'ignore',
         context: { fetchOptions: { timeout: 10000 } }
       });
       const result = data?.freelancers || WEIGHTLESS_FALLBACK.freelancers;
@@ -272,6 +275,7 @@ export const SubgraphService = {
       const { data } = await client.query({
         query: GET_PROTOCOL_STATS,
         fetchPolicy: 'network-only',
+        errorPolicy: 'ignore',
         context: { fetchOptions: { timeout: 10000 } }
       });
       const result = data?.protocolStats || WEIGHTLESS_FALLBACK.protocolStats;
@@ -292,6 +296,7 @@ export const SubgraphService = {
       const { data } = await client.query({
         query: GET_DISPUTES,
         fetchPolicy: 'network-only',
+        errorPolicy: 'ignore',
         context: { fetchOptions: { timeout: 10000 } }
       });
       const result = data?.jobs || WEIGHTLESS_FALLBACK.jobs;
