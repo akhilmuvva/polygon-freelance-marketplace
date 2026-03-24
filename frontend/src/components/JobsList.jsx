@@ -95,16 +95,18 @@ const JobsList = ({ onSelectChat, onFiatPay, gasless, smartAccount: propSmartAcc
     }, [gasless, walletClient, smartAccount, propSmartAccount]);
 
     const filteredJobs = React.useMemo(() => {
-        // Merge Subgraph jobs with local intents from the Sovereign Mesh
+        // Directive 15: Optimistic Job Board Synchronization
+        // Merging live sub-graph data with locally anchored intents to ensure zero network-lag perception.
+        const pendingIntents = JSON.parse(localStorage.getItem('pending_intents') || '[]');
         const localIntents = JSON.parse(localStorage.getItem('SOVEREIGN_INTENTS') || '[]')
             .map(intent => ({
                 ...intent,
                 jobId: 'INTENT-' + (intent.ipfsHash ? intent.ipfsHash.slice(-6).toUpperCase() : Math.random().toString(36).substring(7).toUpperCase()),
-                status: '0', // Native status for un-actuated intent
+                status: '0', 
                 isIntent: true
             }));
 
-        let res = [...jobs, ...localIntents];
+        let res = [...jobs, ...pendingIntents, ...localIntents];
 
         if (filter !== 'All Categories') {
             res = res.filter(j => (j.categoryId?.toString() === filter || j.category === filter));

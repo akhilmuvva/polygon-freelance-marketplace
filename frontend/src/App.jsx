@@ -292,6 +292,16 @@ function App() {
     }
   }, [setAuthStatus]);
 
+  // Directive 16: Global State Resurrection
+  // If the user is connected, we proactively hydrate their view from the local-first mesh.
+  useEffect(() => {
+    if (isWalletConnected && address) {
+        console.info('[SYSTEM] Resurrecting Sovereign State for:', address);
+        // This triggers a refresh of all components listening to REFRESH_DASHBOARD event
+        window.dispatchEvent(new CustomEvent('REFRESH_DASHBOARD'));
+    }
+  }, [isWalletConnected, address]);
+
   const navigateToOnramp = (recipient = null) => {
     setActiveTabParams({ recipient });
     setActiveTab('onramp');

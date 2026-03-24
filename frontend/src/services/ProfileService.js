@@ -10,46 +10,61 @@ import CeramicService from './CeramicService';
 export const ProfileService = {
     /**
      * Gets a user's profile.
-     * Hierarchy: 
-     * 1. Ceramic (ComposeDB) - the sovereign "Weightless" source.
-     * 2. Subgraph/IPFS - the legacy "on-chain link" source.
-     * 3. Default fallback.
+     * Directive 13: Local-First Identity Resolution
+     * Prioritizes localStorage for immediate UI hydration to eliminate 'Data Amnesia'.
      */
     getProfile: async (address) => {
         if (!address) return null;
         const addr = address.toLowerCase();
+        const cacheKey = `polylance_profile_v3_${addr}`;
 
+        // 1. Instant Retrieval: Check local cache first
+        const localCache = localStorage.getItem(cacheKey);
+        if (localCache) {
+            try {
+                const data = JSON.parse(localCache);
+                // Background update: Non-blocking fetch to refresh Ceramic/Subgraph data
+                ProfileService._refreshProfileCache(addr, cacheKey).catch(() => {});
+                return data;
+            } catch (e) { console.error('Cache corruption:', e); }
+        }
+
+        return await ProfileService._refreshProfileCache(addr, cacheKey);
+    },
+
+    /**
+     * Internal: Fetches profile from decentralized sources and updates cache
+     */
+    _refreshProfileCache: async (address, cacheKey) => {
+        const addr = address.toLowerCase();
         try {
-            // 1. Check weightless Ceramic stream first
+            // Check Ceramic first
             const ceramicProfile = await CeramicService.getProfile(addr);
             if (ceramicProfile) {
-                console.info('[PROFILE] Sovereign weightless source verified for:', addr);
-                return {
-                    address: addr,
-                    ...ceramicProfile,
-                    source: 'ceramic'
-                };
+                const updated = { address: addr, ...ceramicProfile, source: 'ceramic' };
+                localStorage.setItem(cacheKey, JSON.stringify(updated));
+                return updated;
             }
 
-            // 2. Legacy fallback: Check Subgraph for CID
+            // Subgraph/IPFS Fallback
             const stats = await SubgraphService.getUserStats(addr);
             const cid = stats?.freelancer?.portfolioCID;
-
             if (cid) {
                 const data = await resolver.resolve(cid);
                 if (data) {
-                    return {
+                    const updated = {
                         address: addr,
                         ...data,
                         reputationScore: stats.freelancer?.reputationScore || 0,
                         totalEarned: stats.freelancer?.totalEarned || 0,
                         source: 'ipfs'
                     };
+                    localStorage.setItem(cacheKey, JSON.stringify(updated));
+                    return updated;
                 }
             }
 
-            // 3. Fallback for new users
-            return {
+            const defaultProfile = {
                 address: addr,
                 name: 'Sovereign Explorer',
                 bio: 'This user has not initialized their weightless profile yet.',
@@ -57,6 +72,9 @@ export const ProfileService = {
                 totalEarned: stats?.freelancer?.totalEarned || 0,
                 source: 'default'
             };
+            localStorage.setItem(cacheKey, JSON.stringify(defaultProfile));
+            return defaultProfile;
+
         } catch (err) {
             console.warn('[PROFILE] Identity resolution friction:', err.message);
             return {
@@ -73,11 +91,15 @@ export const ProfileService = {
      */
     updateSovereignProfile: async (address, profileData) => {
         console.info('[PROFILE] Propagating intent to Ceramic mesh for:', address);
-        return await CeramicService.updateProfile(address, profileData);
+        const result = await CeramicService.updateProfile(address, profileData);
+        // Instant Cache Invalidation: Update local view immediately
+        const cacheKey = `polylance_profile_v3_${address.toLowerCase()}`;
+        localStorage.setItem(cacheKey, JSON.stringify({ address, ...profileData, source: 'local-update' }));
+        return result;
     },
 
     /**
-     * Legacy IPFS upload (kept for backward compatibility during migration)
+     * Legacy IPFS upload
      */
     uploadToIPFS: async (profileData) => {
         console.info('[PROFILE] Anchoring legacy metadata to IPFS...');
@@ -86,8 +108,7 @@ export const ProfileService = {
     },
 
     /**
-     * Shadow-Banning (Ghost Moderator): Invisibility for malicious actors.
-     * Updates Ceramic profile visibility to "Hidden".
+     * Shadow-Banning
      */
     shadowBan: async (address, reason) => {
         console.warn(`[GHOST MODERATOR] Shadow-banning ${address} for ${reason}`);
@@ -96,4 +117,3 @@ export const ProfileService = {
 };
 
 export default ProfileService;
-
