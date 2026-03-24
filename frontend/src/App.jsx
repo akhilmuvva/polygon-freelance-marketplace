@@ -279,7 +279,18 @@ function App() {
 
   useEffect(() => {
     setIsHydrated(true);
-  }, []);
+    // Directive 12: Persistence Verification Restoration
+    const anchor = localStorage.getItem('polylance_identity_anchor');
+    if (anchor) {
+      try {
+        const { address: savedAddr, authenticated } = JSON.parse(anchor);
+        if (authenticated && savedAddr) {
+          setAuthStatus('authenticated');
+          console.info('[SECURITY] Sovereign session restored from identity anchor.');
+        }
+      } catch (e) { localStorage.removeItem('polylance_identity_anchor'); }
+    }
+  }, [setAuthStatus]);
 
   const navigateToOnramp = (recipient = null) => {
     setActiveTabParams({ recipient });

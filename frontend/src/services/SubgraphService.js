@@ -4,10 +4,13 @@ import env from '../config/env';
 
 const SUBGRAPH_URL = env.SUBGRAPH_URL;
 
-// Robust initialization with explicit HttpLink to avoid "link property" errors
+// Robust initialization with explicit HttpLink and CORS mode enabled for production resilience.
 const client = new ApolloClient({
   link: new HttpLink({
     uri: SUBGRAPH_URL,
+    fetchOptions: {
+      mode: 'cors',
+    },
   }),
   cache: new InMemoryCache(),
 });

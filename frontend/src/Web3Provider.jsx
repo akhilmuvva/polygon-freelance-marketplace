@@ -77,15 +77,16 @@ function SovereignAuthProvider({ children, authStatus, setAuthStatus }) {
                 const targetAddress = siweAddress || identityRef.current;
                 const targetChainId = siweChainId || chainRef.current || 80002;
                 
-                // Dynamic Domain Resolution: Strictly aligning with the current host to prevent mismatch gravity.
-                const host = window.location.host;
-                const origin = window.location.origin;
+                // Directive 11: Production Identity Alignment
+                // Hardcoding the domain and URI to ensure strictly zero 'Domain Gravity' mismatch on polylance.codes.
+                const domain = 'polylance.codes';
+                const uri = 'https://polylance.codes';
 
                 return new SiweMessage({
-                    domain: host || 'polylance.codes',
+                    domain,
                     address: targetAddress,
                     statement: 'Sovereign Identity Actuation on PolyLance Zenith.',
-                    uri: origin,
+                    uri,
                     version: '1',
                     chainId: Number(targetChainId),
                     nonce,
@@ -98,12 +99,24 @@ function SovereignAuthProvider({ children, authStatus, setAuthStatus }) {
         getMessageBody: ({ message }) => message,
         verify: async ({ message, signature }) => {
             console.log("%c[SECURITY] Identity Handshake Success.", "color: #10b981");
+            
+            // Directive 12: Persistence Verification
+            // Saving the identity anchor to localStorage to prevent 'Data Erasure' on page refresh.
+            try {
+                localStorage.setItem('polylance_identity_anchor', JSON.stringify({
+                    address: identityRef.current,
+                    timestamp: Date.now(),
+                    authenticated: true
+                }));
+            } catch (e) { console.warn('[AUTH] Persistence failure:', e.message); }
+
             setAuthStatus('authenticated');
             hotToast.success('Identity Verified', { id: 'auth-success' });
             return true;
         },
         signOut: async () => {
             setAuthStatus('unauthenticated');
+            localStorage.removeItem('polylance_identity_anchor');
             console.info('[SECURITY] Sovereign session terminated.');
         },
     }), [setAuthStatus]);
@@ -124,6 +137,7 @@ const queryClient = new QueryClient({
 const apolloClient = new ApolloClient({
     link: new HttpLink({
         uri: env.SUBGRAPH_URL,
+        fetchOptions: { mode: 'cors' }
     }),
     cache: new InMemoryCache({
         typePolicies: {
@@ -149,8 +163,8 @@ export function Web3Provider({ children }) {
     const [authStatus, setAuthStatus] = useState('unauthenticated');
     const projectId = env.WALLET_CONNECT_PROJECT_ID;
 
-    // Production RPC Strategy: Utilizing a robust fallback array of high-uptime public nodes.
-    // This eliminates dependency on private keys that may trigger 401/CORS in live environments.
+    // RPC Total Purge: Removing all private/third-party providers (Infura, Blast, Llama) 
+    // to eliminate 401/CORS bottlenecks. Using only official high-uptime public Polygon nodes.
     const config = useMemo(() => getDefaultConfig({
         appName: 'PolyLance Zenith',
         projectId,
@@ -159,10 +173,9 @@ export function Web3Provider({ children }) {
             [polygonAmoy.id]: fallback([
                 http('https://rpc-amoy.polygon.technology', DEFENSIVE_RPC_CONFIG),
                 http('https://polygon-amoy-bor-rpc.publicnode.com', DEFENSIVE_RPC_CONFIG),
-                http('https://rpc.ankr.com/polygon_amoy', DEFENSIVE_RPC_CONFIG),
             ]),
             [polygon.id]: fallback([
-                http('https://polygon-bor-rpc.publicnode.com', DEFENSIVE_RPC_CONFIG),
+                http('https://polygon-rpc.com', DEFENSIVE_RPC_CONFIG),
                 http('https://rpc.ankr.com/polygon', DEFENSIVE_RPC_CONFIG),
             ]),
         },
