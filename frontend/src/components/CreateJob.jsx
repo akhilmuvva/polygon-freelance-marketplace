@@ -134,10 +134,14 @@ function CreateJob({ onJobCreated, gasless, smartAccount, freelancer: initialFre
                 ? freelancer
                 : '0x0000000000000000000000000000000000000000';
 
+            // Category ID Resolution: Translate human-readable categories to protocol IDs.
+            const categoryMap = { 'Development': 1n, 'Design': 2n, 'Marketing': 3n, 'Writing': 4n };
+            const resolvedCategoryId = categoryMap[category] || 1n;
+
             // Step 3: Actuation Logic for Fixed Contracts
             const deadline = Math.floor(Date.now() / 1000) + (Number(durationDays) * 86400);
             const params = {
-                categoryId: 1n,
+                categoryId: resolvedCategoryId,
                 freelancer: resolvedFreelancer,
                 token: selectedToken.address,
                 amount: rawAmount,

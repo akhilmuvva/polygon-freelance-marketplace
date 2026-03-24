@@ -141,8 +141,15 @@ const JobsList = ({ onSelectChat, onFiatPay, gasless, smartAccount: propSmartAcc
             });
         } else if (sortBy === 'Budget: High to Low') {
             res = res.sort((a, b) => {
-                const valA = a.isIntent ? parseFloat(a.amount || 0) : Number(formatUnits(BigInt(a.amount || 0), 6));
-                const valB = b.isIntent ? parseFloat(b.amount || 0) : Number(formatUnits(BigInt(b.amount || 0), 6));
+                const getTokenDecimals = (job) => {
+                    const token = SUPPORTED_TOKENS.find(t => 
+                        (t.address?.toLowerCase() === job.token?.toLowerCase()) || 
+                        (t.symbol?.toUpperCase() === job.token?.toUpperCase())
+                    );
+                    return token ? token.decimals : 18;
+                };
+                const valA = a.isIntent ? parseFloat(a.amount || 0) : Number(formatUnits(BigInt(a.amount || 0), getTokenDecimals(a)));
+                const valB = b.isIntent ? parseFloat(b.amount || 0) : Number(formatUnits(BigInt(b.amount || 0), getTokenDecimals(b)));
                 return valB - valA;
             });
         } else if (sortBy === 'Deadline') {
