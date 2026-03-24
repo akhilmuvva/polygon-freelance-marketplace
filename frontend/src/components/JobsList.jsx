@@ -98,16 +98,15 @@ const JobsList = ({ onSelectChat, onFiatPay, gasless, smartAccount: propSmartAcc
         // Directive 15: Optimistic Job Board Synchronization
         // Merging live sub-graph data with locally anchored intents to ensure zero network-lag perception.
         // Task 3: JobBoard Optimistic Merging
-        const pendingIntents = JSON.parse(localStorage.getItem('zenith_pending_jobs') || '[]');
-        const localIntents = JSON.parse(localStorage.getItem('zenith_pending_jobs') || '[]')
-            .map(intent => ({
-                ...intent,
-                jobId: 'INTENT-' + (intent.ipfsHash ? intent.ipfsHash.slice(-6).toUpperCase() : Math.random().toString(36).substring(7).toUpperCase()),
-                status: '0', 
-                isIntent: true
-            }));
+        const pendingJobs = JSON.parse(localStorage.getItem('zenith_pending_jobs') || '[]');
+        const localIntents = pendingJobs.map(intent => ({
+            ...intent,
+            jobId: 'INTENT-' + (intent.ipfsHash ? intent.ipfsHash.slice(-6).toUpperCase() : Math.random().toString(36).substring(7).toUpperCase()),
+            status: '0', 
+            isIntent: true
+        }));
 
-        let res = [...jobs, ...pendingIntents, ...localIntents];
+        let res = [...jobs, ...localIntents];
 
         if (filter !== 'All Categories') {
             res = res.filter(j => (j.categoryId?.toString() === filter || j.category === filter));
