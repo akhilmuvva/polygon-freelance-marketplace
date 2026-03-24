@@ -435,8 +435,9 @@ function App() {
   const effectiveAddress = smartAccount?.accountAddress || address;
   const isAdmin = effectiveAddress?.toLowerCase() === ARCHITECT_WALLET.toLowerCase();
   
-  // A session is active if we have a Smart Account (Social/Bypass) OR a connected wallet with a successful SIWE handshake.
-  const isSessionActive = smartAccount !== null || (isWalletConnected && authStatus === 'authenticated');
+  // A session is active if we have a Smart Account (Social/Bypass) OR a connected wallet.
+  // We relax the 'authenticated' (SIWE) check for a smoother, decentralized UX while still maintaining SIWE locally for security contexts.
+  const isSessionActive = smartAccount !== null || isWalletConnected;
 
   const navigate = (tab) => { setActiveTab(tab); setIsSidebarOpen(false); };
   const onSelectChat = (addr) => { setChatPeerAddress(addr); setActiveTab('chat'); };

@@ -119,7 +119,17 @@ function Portfolio({ address, onBack, onFiatPay }) {
 
     const { profile, jobs: rawJobs } = data;
     const jobs = rawJobs || [];
-    const completedJobs = jobs.filter(j => j.status === 'Completed' || j.status === 2 || j.status === 4);
+    const STATUS_MAP = { 'Created': 0, 'Accepted': 1, 'Ongoing': 2, 'Disputed': 3, 'Arbitration': 4, 'Completed': 5, 'Cancelled': 6 };
+    const getCode = (s) => typeof s === 'string' ? (STATUS_MAP[s] ?? 0) : Number(s || 0);
+
+    const completedJobs = jobs.filter(j => {
+        const code = getCode(j.status);
+        return code === 5 || code === 3 || code === 4 || j.status === 'Completed';
+    });
+    const activeJobs = jobs.filter(j => {
+        const code = getCode(j.status);
+        return code === 2 || j.status === 'Ongoing';
+    });
     const ratedJobs = completedJobs.filter(j => j.rating > 0);
     const avgRating = ratedJobs.length > 0
         ? (ratedJobs.reduce((acc, j) => acc + j.rating, 0) / ratedJobs.length).toFixed(1)
@@ -241,12 +251,12 @@ function Portfolio({ address, onBack, onFiatPay }) {
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
                         {/* 1. Ongoing "Stream of Work" */}
-                        {jobs.filter(j => j.status === 'Ongoing' || j.status === 2).length > 0 && (
+                        {activeJobs.length > 0 && (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                                 <h3 style={{ fontSize: '0.9rem', fontWeight: 800, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.1em', display: 'flex', alignItems: 'center', gap: 10 }}>
                                     <Zap size={16} color="var(--accent-light)" /> Active Work Stream
                                 </h3>
-                                {jobs.filter(j => j.status === 'Ongoing' || j.status === 2).map(job => (
+                                {activeJobs.map(job => (
                                     <div key={job.jobId} style={{ ...cardBg, background: 'rgba(255,255,255,0.01)', borderStyle: 'solid' }}>
                                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
                                             <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 700 }}>{job.title}</h4>

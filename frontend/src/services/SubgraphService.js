@@ -128,7 +128,7 @@ export const GET_USER_PORTFOLIO = gql`
 
 export const GET_DISPUTES = gql`
   query GetDisputes {
-    jobs(where: { status: 3 }, orderBy: createdAt, orderDirection: desc) {
+    jobs(where: { status: Disputed }, orderBy: createdAt, orderDirection: desc) {
       id
       jobId
       client

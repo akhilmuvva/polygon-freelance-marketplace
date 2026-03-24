@@ -49,13 +49,20 @@ const ZenithCourt = () => {
         setLoading(true);
         try {
             const rawDisputes = await SubgraphService.getDisputes();
+            if (!rawDisputes) {
+                setDisputes([]);
+                return;
+            }
             const hydrated = await Promise.all(rawDisputes.map(async (d) => {
                 const meta = await JobService.resolveMetadata(d.ipfsHash).catch(() => ({}));
                 return { ...d, ...meta };
             }));
             setDisputes(hydrated);
         }
-        catch (err) { console.error('Failed to fetch disputes:', err); }
+        catch (err) { 
+            console.error('Failed to fetch disputes:', err);
+            setDisputes([]);
+        }
         finally { setLoading(false); }
     };
 

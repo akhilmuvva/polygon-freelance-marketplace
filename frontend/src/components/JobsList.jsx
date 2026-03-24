@@ -288,8 +288,9 @@ const JobCard = ({ job, address, onSelectChat, onFiatPay }) => {
     const isClient = address?.toLowerCase() === job.client?.toLowerCase();
     const isFreelancer = address?.toLowerCase() === job.freelancer?.toLowerCase();
 
-    // Status Logic
-    const statusCode = Number(job.status || 0);
+    // Status Logic: Resolve Subgraph Enums to Numeric Codes
+    const STATUS_MAP = { 'Created': 0, 'Accepted': 1, 'Ongoing': 2, 'Disputed': 3, 'Arbitration': 4, 'Completed': 5, 'Cancelled': 6 };
+    const statusCode = typeof job.status === 'string' ? (STATUS_MAP[job.status] ?? 0) : Number(job.status || 0);
     const statusColor = statusCode === 5 ? 'var(--success)' : (statusCode === 3 || statusCode === 4) ? 'var(--danger)' : 'var(--accent-light)';
 
     /// @notice Actuates the final economic settlement for a milestone.

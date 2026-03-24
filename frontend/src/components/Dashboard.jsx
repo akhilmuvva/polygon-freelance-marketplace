@@ -49,16 +49,58 @@ const Dashboard = ({ address: propAddress }) => {
     const [activeEscrows, setActiveEscrows] = useState([]);
     
     // Queries
-    const { data: pData } = useQuery({
+    const { data: pData, refetch: refetchProfile } = useQuery({
         queryKey: ['profile', address],
         queryFn: () => ProfileService.getProfile(address),
         enabled: !!address
     });
 
-    const { data: aData } = useQuery({
+    const { data: aData, refetch: refetchEcosystem } = useQuery({
         queryKey: ['ecosystem-stats'],
         queryFn: () => SubgraphService.getEcosystemStats(),
     });
+
+    const refetchAll = React.useCallback(() => {
+        refetchProfile();
+        refetchEcosystem();
+        // Also re-run the manual effects
+        if (address) {
+            DemoProtocol.getTBAVisualProof(address).then(setTbaInfo);
+            SubgraphService.getUserPortfolio(address).then(p => {
+                if (p) {
+                    const freelancerJobs = p.freelancer?.jobs || [];
+                    const STATUS_MAP = { 'Created': 0, 'Accepted': 1, 'Ongoing': 2, 'Disputed': 3, 'Arbitration': 4, 'Completed': 5, 'Cancelled': 6 };
+                    
+                    const active = freelancerJobs.filter(j => {
+                        const code = STATUS_MAP[j.status] ?? 0;
+                        return code < 5;
+                    });
+                    
+                    setActiveEscrows(active.map(j => {
+                         const code = STATUS_MAP[j.status] ?? 0;
+                         return {
+                            id: j.jobId,
+                            title: `Contract #${j.jobId}`,
+                            status: j.status || 'Active',
+                            progress: code === 0 ? 0 : code === 1 ? 25 : 50,
+                            budget: formatEther(parseProtocolValue(j.amount))
+                        };
+                    }));
+                }
+            });
+        }
+    }, [address, refetchProfile, refetchEcosystem]);
+
+    useEffect(() => {
+        const handleUpdate = (e) => {
+            if (e.detail === address) {
+                console.info('[DASHBOARD] Identity update detected. Re-calibrating hub...');
+                refetchAll();
+            }
+        };
+        window.addEventListener('IDENTITY_UPDATED', handleUpdate);
+        return () => window.removeEventListener('IDENTITY_UPDATED', handleUpdate);
+    }, [address, refetchAll]);
 
     // Surplus dynamic logic disabled per liquidity reset directive — re-enable in v1.6
     // useEffect(() => { setSurplus(prev => prev + (Math.random() * 0.00001)); }, []);
