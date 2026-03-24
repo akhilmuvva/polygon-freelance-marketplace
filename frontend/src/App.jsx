@@ -279,16 +279,16 @@ function App() {
 
   useEffect(() => {
     setIsHydrated(true);
-    // Directive 12: Persistence Verification Restoration
-    const anchor = localStorage.getItem('polylance_identity_anchor');
-    if (anchor) {
+    // Task 1: Session Resurrection Restoration
+    const session = localStorage.getItem('zenith_active_session');
+    if (session) {
       try {
-        const { address: savedAddr, authenticated } = JSON.parse(anchor);
+        const { address: savedAddr, authenticated } = JSON.parse(session);
         if (authenticated && savedAddr) {
           setAuthStatus('authenticated');
-          console.info('[SECURITY] Sovereign session restored from identity anchor.');
+          console.info('[SECURITY] Zenith session resurrected from identity anchor.');
         }
-      } catch (e) { localStorage.removeItem('polylance_identity_anchor'); }
+      } catch (e) { localStorage.removeItem('zenith_active_session'); }
     }
   }, [setAuthStatus]);
 

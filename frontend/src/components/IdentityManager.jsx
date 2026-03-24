@@ -92,12 +92,23 @@ const IdentityManager = ({ address }) => {
                 ...profile,
                 skills: skillsArray
             });
-            // Update local state immediately to reflect changes in UI (e.g. preview card)
+
+            // Task 2: Profile Mirroring
+            // Anchoring the updated details to the local cache for instant rendering.
+            const cacheKey = `polylance_profile_v3_${address.toLowerCase()}`;
+            localStorage.setItem(cacheKey, JSON.stringify({
+                address: address.toLowerCase(),
+                ...profile,
+                skills: skillsArray,
+                source: 'local-update'
+            }));
+
+            // Update local state immediately
             setProfile(prev => ({
                 ...prev,
                 skills: skillsArray.join(', ')
             }));
-            hotToast.success('Sovereign Identity Propagated');
+            hotToast.success('Data Anchored: Identity Propagated', { id: 'profile-save-success' });
             window.dispatchEvent(new CustomEvent('IDENTITY_UPDATED', { detail: address }));
         } catch (err) {
             hotToast.error('Identity Propagation Failed');

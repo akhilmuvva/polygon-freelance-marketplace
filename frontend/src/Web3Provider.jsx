@@ -100,10 +100,10 @@ function SovereignAuthProvider({ children, authStatus, setAuthStatus }) {
         verify: async ({ message, signature }) => {
             console.log("%c[SECURITY] Identity Handshake Success.", "color: #10b981");
             
-            // Directive 12: Persistence Verification
-            // Saving the identity anchor to localStorage to prevent 'Data Erasure' on page refresh.
+            // Task 1: Session Resurrection Anchor
+            // Saving the active session to prevent 'Data Amnesia' on page refresh.
             try {
-                localStorage.setItem('polylance_identity_anchor', JSON.stringify({
+                localStorage.setItem('zenith_active_session', JSON.stringify({
                     address: identityRef.current,
                     timestamp: Date.now(),
                     authenticated: true
@@ -116,7 +116,7 @@ function SovereignAuthProvider({ children, authStatus, setAuthStatus }) {
         },
         signOut: async () => {
             setAuthStatus('unauthenticated');
-            localStorage.removeItem('polylance_identity_anchor');
+            localStorage.removeItem('zenith_active_session');
             console.info('[SECURITY] Sovereign session terminated.');
         },
     }), [setAuthStatus]);
