@@ -124,12 +124,9 @@ export default defineConfig({
     },
     rollupOptions: {
       output: {
-        manualChunks: {
-          'vendor-graphics': ['three', '@react-three/fiber', '@react-three/drei'],
-          'vendor-web3': ['ethers', 'viem', 'wagmi', 'siwe'],
-          'vendor-ui': ['@rainbow-me/rainbowkit', '@tanstack/react-query', 'framer-motion', 'animejs'],
-          'vendor-xmtp': ['@xmtp/browser-sdk'],
-        }
+        // Let Rollup decide chunking — manual chunks caused circular init errors
+        // between vendor-ui and vendor-xmtp leading to "hh is not a function"
+        manualChunks: undefined
       }
     }
   },
