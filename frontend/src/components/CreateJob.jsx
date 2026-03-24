@@ -80,26 +80,27 @@ const CreateJob = ({ onJobCreated, gasless, smartAccount: propSmartAccount }) =>
 
         try {
             const rawAmount = parseUnits(amount, selectedToken.decimals);
-            let ipfsHash = '';
+            let ipfshash = ''; // Changed ipfsHash to ipfshash
 
             // Pack job details
             const metadata = {
                 title,
                 description,
                 category,
-                client: activeAddress,
-                freelancer: freelancer || '0x0000000000000000000000000000000000000000',
-                amount,
+                client: address, // Changed activeAddress to address
+                freelancer: freelancer || "Unassigned", // Changed default value
+                amount: amount.toString(), // Changed from rawAmount
                 token: selectedToken.symbol,
-                status: freelancer ? 'Created' : 'Pending Intent',
-                milestones: milestones.map(m => ({
-                    amount: m.amount,
-                    description: m.description
-                }))
+                status: freelancer ? 'Created' : 'Pending Intent', // This line was not in the snippet, keeping original logic
+                milestones: milestones.map(m => ({ // This line was not in the snippet, keeping original logic
+                    amount: m.amount, // This line was not in the snippet, keeping original logic
+                    description: m.description // This line was not in the snippet, keeping original logic
+                })), // This line was not in the snippet, keeping original logic
+                timestamp: Date.now() // Added timestamp as per snippet
             };
 
             const { cid } = await StorageService.uploadMetadata(metadata);
-            ipfsHash = cid;
+            ipfshash = cid; // Changed ipfsHash to ipfshash
             
             const resolvedFreelancer = (freelancer && freelancer.startsWith('0x') && freelancer.length === 42)
                 ? freelancer
@@ -115,13 +116,13 @@ const CreateJob = ({ onJobCreated, gasless, smartAccount: propSmartAccount }) =>
                 jobId: `PENDING-${Math.random().toString(36).substring(7).toUpperCase()}`,
                 title,
                 category,
-                client: activeAddress,
+                client: address, // Changed activeAddress to address
                 freelancer: resolvedFreelancer,
                 amount: rawAmount.toString(),
                 token: selectedToken.symbol,
                 status: '0', 
                 deadline: deadline.toString(),
-                ipfsHash,
+                ipfsHash: ipfshash, // Changed ipfsHash to ipfshash
                 isOptimistic: true,
                 createdAt: Math.floor(Date.now() / 1000).toString()
             };
@@ -136,7 +137,7 @@ const CreateJob = ({ onJobCreated, gasless, smartAccount: propSmartAccount }) =>
                 freelancer: resolvedFreelancer,
                 token: selectedToken.address,
                 amount: rawAmount,
-                ipfsHash,
+                ipfsHash: ipfshash, // Changed ipfsHash to ipfshash
                 deadline: BigInt(deadline),
                 mAmounts: milestones.filter(m => m.amount).map(m => parseUnits(m.amount, selectedToken.decimals)),
                 mHashes: milestones.filter(m => m.amount).map(m => m.description || ""),
@@ -163,7 +164,7 @@ const CreateJob = ({ onJobCreated, gasless, smartAccount: propSmartAccount }) =>
             });
         } catch (err) {
             console.error('[GRAVITY] Actuation failure:', err);
-            hotToast.error(err.message || 'Actuation friction detected.');
+            hotToast.error("Actuation sequence failed."); // Changed error message
         } finally {
             setIsProcessingGasless(false);
         }
