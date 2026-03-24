@@ -70,7 +70,7 @@ function SovereignAuthProvider({ children, authStatus, setAuthStatus }) {
     }, [address, chainId]);
 
     const authAdapter = useMemo(() => createAuthenticationAdapter({
-        getNonce: async () => Math.random().toString(36).substring(2, 15).slice(0, 12),
+        getNonce: async () => Math.random().toString(36).substring(2),
         createMessage: (args) => {
             try {
                 const { nonce, address: siweAddress, chainId: siweChainId } = args;
@@ -171,12 +171,10 @@ export function Web3Provider({ children }) {
         chains: [polygonAmoy, polygon],
         transports: {
             [polygonAmoy.id]: fallback([
-                http('https://rpc-amoy.polygon.technology', DEFENSIVE_RPC_CONFIG),
-                http('https://polygon-amoy-bor-rpc.publicnode.com', DEFENSIVE_RPC_CONFIG),
+                http('https://rpc-amoy.polygon.technology'),
             ]),
             [polygon.id]: fallback([
-                http('https://polygon-rpc.com', DEFENSIVE_RPC_CONFIG),
-                http('https://rpc.ankr.com/polygon', DEFENSIVE_RPC_CONFIG),
+                http('https://polygon-rpc.com'),
             ]),
         },
         ssr: false,
