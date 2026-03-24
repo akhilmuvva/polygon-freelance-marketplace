@@ -444,17 +444,24 @@ const JobCard = ({ job, address, onSelectChat, onFiatPay }) => {
                     <span style={{ fontSize: '0.78rem', fontWeight: 600 }}>{isNaN(Number(job.deadline)) ? 'No deadline' : new Date(Number(job.deadline) * 1000).toLocaleDateString()}</span>
                 </div>
             </div>
-
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 'auto' }}>
                 <div style={{ display: 'flex', gap: 8, flex: 1 }}>
                     {statusCode === 0 && !isClient && (
-                        <button onClick={actuateApplyIntent} className="btn btn-primary" style={{ flex: 1, height: 40, borderRadius: 10, fontSize: '0.8rem', background: 'linear-gradient(135deg, #10b981, #3b82f6)', color: '#fff' }}>
-                            <Rocket size={14} /> Apply
+                        <button 
+                            disabled={!isConnected || isPending}
+                            onClick={actuateApplyIntent} 
+                            className="btn btn-primary btn-sm" 
+                            style={{ flex: 1, borderRadius: 10, height: 36, fontSize: '0.75rem', fontWeight: 800, opacity: (!isConnected || isPending) ? 0.5 : 1 }}>
+                            {isPending ? <Loader2 size={14} className="animate-spin" /> : <><Zap size={14} /> Apply Now</>}
                         </button>
                     )}
-                    {statusCode === 1 && isFreelancer && (
-                        <button onClick={actuateAcceptanceIntent} className="btn btn-primary" style={{ flex: 1, height: 40, borderRadius: 10, fontSize: '0.8rem', background: 'var(--accent-light)', color: '#fff' }}>
-                            <Zap size={14} /> Accept Job
+                    {statusCode === 1 && !isClient && isFreelancer && (
+                        <button 
+                            disabled={!isConnected || isPending}
+                            onClick={actuateAcceptanceIntent} 
+                            className="btn btn-success btn-sm" 
+                            style={{ flex: 1, borderRadius: 10, height: 36, fontSize: '0.75rem', fontWeight: 800, opacity: (!isConnected || isPending) ? 0.5 : 1 }}>
+                            {isPending ? <Loader2 size={14} className="animate-spin" /> : <><CheckCircle2 size={14} /> Accept Contract</>}
                         </button>
                     )}
                     {(isClient || (statusCode !== 0 && statusCode !== 1) || (!isFreelancer && statusCode === 1)) && (

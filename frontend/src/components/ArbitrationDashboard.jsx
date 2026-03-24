@@ -276,9 +276,15 @@ const ZenithCourt = () => {
                                         <div style={{ borderTop: '1px solid var(--border)', paddingTop: 24 }}>
                                             <h4 style={s.label}>Protocol Ruling</h4>
                                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
-                                                <button disabled={isPending || loading || !isConnected} onClick={() => actuateManualRulingIntent(selectedJob.jobId, 0)} className="btn btn-ghost" style={{ borderRadius: 12, color: 'var(--danger)', opacity: (loading || !isConnected) ? 0.4 : 1 }}>Ruling: Client</button>
-                                                <button disabled={isPending || loading || !isConnected} onClick={() => actuateManualRulingIntent(selectedJob.jobId, 50)} className="btn btn-ghost" style={{ borderRadius: 12, opacity: (loading || !isConnected) ? 0.4 : 1 }}>Split 50/50</button>
-                                                <button disabled={isPending || loading || !isConnected} onClick={() => actuateManualRulingIntent(selectedJob.jobId, 100)} className="btn btn-ghost" style={{ borderRadius: 12, color: 'var(--success)', opacity: (loading || !isConnected) ? 0.4 : 1 }}>Ruling: Freelancer</button>
+                                                <button disabled={isPending || loading || !isConnected} onClick={() => actuateManualRulingIntent(selectedJob.jobId, 0)} className="btn btn-ghost" style={{ borderRadius: 12, color: 'var(--danger)', opacity: (isPending || loading || !isConnected) ? 0.4 : 1 }}>
+                                                    {isPending ? <Loader2 size={14} className="animate-spin" /> : 'Ruling: Client'}
+                                                </button>
+                                                <button disabled={isPending || loading || !isConnected} onClick={() => actuateManualRulingIntent(selectedJob.jobId, 50)} className="btn btn-ghost" style={{ borderRadius: 12, opacity: (isPending || loading || !isConnected) ? 0.4 : 1 }}>
+                                                    {isPending ? <Loader2 size={14} className="animate-spin" /> : 'Split 50/50'}
+                                                </button>
+                                                <button disabled={isPending || loading || !isConnected} onClick={() => actuateManualRulingIntent(selectedJob.jobId, 100)} className="btn btn-ghost" style={{ borderRadius: 12, color: 'var(--success)', opacity: (isPending || loading || !isConnected) ? 0.4 : 1 }}>
+                                                    {isPending ? <Loader2 size={14} className="animate-spin" /> : 'Ruling: Freelancer'}
+                                                </button>
                                             </div>
                                         </div>
                                     ) : (

@@ -1,7 +1,7 @@
 {
   "version": 2,
   "installCommand": "npm install --prefix frontend",
-  "buildCommand": "npm run build --prefix frontend",
+  "buildCommand": "npx cross-env NODE_OPTIONS=--max-old-space-size=4096 npm run build --prefix frontend",
   "outputDirectory": "frontend/dist",
   "cleanUrls": true,
   "trailingSlash": false,

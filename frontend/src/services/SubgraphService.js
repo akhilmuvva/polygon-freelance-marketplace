@@ -175,6 +175,8 @@ export const SubgraphService = {
       return result;
     } catch (error) {
       console.error('[AGA_DATA_GRAVITY] Subgraph query collapsed:', error.message);
+      // Resilience Strategy: If server response is malformed or connection timed out, 
+      // return strictly from localStorage to maintain UI continuity.
       return getFromCache(cacheKey) || WEIGHTLESS_FALLBACK.jobs;
     }
   },

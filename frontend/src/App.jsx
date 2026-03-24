@@ -564,7 +564,7 @@ function App() {
                   <div style={{ ...styles.versionAvatar, background: 'linear-gradient(135deg, #00f5d4, #6366f1)', boxShadow: '0 0 15px rgba(0,245,212,0.3)' }} />
                   <div>
                     <div style={styles.versionText}>Protocol</div>
-                    <div style={styles.versionNum}>v1.5.0-Z</div>
+                    <div style={styles.versionNum}>v1.5.1-Z</div>
                   </div>
                 </div>
                 <div style={styles.toggleRow}>

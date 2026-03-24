@@ -77,11 +77,15 @@ function SovereignAuthProvider({ children, authStatus, setAuthStatus }) {
                 const targetAddress = siweAddress || identityRef.current;
                 const targetChainId = siweChainId || chainRef.current || 80002;
                 
+                // Dynamic Domain Resolution: Strictly aligning with the current host to prevent mismatch gravity.
+                const host = window.location.host;
+                const origin = window.location.origin;
+
                 return new SiweMessage({
-                    domain: window.location.hostname || 'localhost',
+                    domain: host || 'polylance.codes',
                     address: targetAddress,
                     statement: 'Sovereign Identity Actuation on PolyLance Zenith.',
-                    uri: window.location.origin,
+                    uri: origin,
                     version: '1',
                     chainId: Number(targetChainId),
                     nonce,
@@ -92,7 +96,7 @@ function SovereignAuthProvider({ children, authStatus, setAuthStatus }) {
             }
         },
         getMessageBody: ({ message }) => message,
-        verify: async ({ message: _message, signature: _signature }) => {
+        verify: async ({ message, signature }) => {
             console.log("%c[SECURITY] Identity Handshake Success.", "color: #10b981");
             setAuthStatus('authenticated');
             hotToast.success('Identity Verified', { id: 'auth-success' });
@@ -145,6 +149,8 @@ export function Web3Provider({ children }) {
     const [authStatus, setAuthStatus] = useState('unauthenticated');
     const projectId = env.WALLET_CONNECT_PROJECT_ID;
 
+    // Production RPC Strategy: Utilizing a robust fallback array of high-uptime public nodes.
+    // This eliminates dependency on private keys that may trigger 401/CORS in live environments.
     const config = useMemo(() => getDefaultConfig({
         appName: 'PolyLance Zenith',
         projectId,
@@ -152,9 +158,11 @@ export function Web3Provider({ children }) {
         transports: {
             [polygonAmoy.id]: fallback([
                 http('https://rpc-amoy.polygon.technology', DEFENSIVE_RPC_CONFIG),
+                http('https://polygon-amoy-bor-rpc.publicnode.com', DEFENSIVE_RPC_CONFIG),
                 http('https://rpc.ankr.com/polygon_amoy', DEFENSIVE_RPC_CONFIG),
             ]),
             [polygon.id]: fallback([
+                http('https://polygon-bor-rpc.publicnode.com', DEFENSIVE_RPC_CONFIG),
                 http('https://rpc.ankr.com/polygon', DEFENSIVE_RPC_CONFIG),
             ]),
         },
