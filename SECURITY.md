@@ -15,7 +15,7 @@ We take the security of PolyLance seriously. If you believe you have found a sec
 
 **Do not open a public GitHub issue for security vulnerabilities.**
 
-Instead, please send an email to security@polylance.com (placeholder) with a detailed description of the vulnerability, steps to reproduce, and a Proof of Concept (PoC) if possible.
+Instead, please send an email to [security@polylance.codes](mailto:security@polylance.codes) with a detailed description of the vulnerability, steps to reproduce, and a Proof of Concept (PoC) if possible.
 
 ### What to expect
 

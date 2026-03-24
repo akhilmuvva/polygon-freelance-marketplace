@@ -1,5 +1,5 @@
 # 🚀 PolyLance Zenith: Sovereign Architect's Edition
-**Protocol Engineers:** [Akhil Muvva](https://github.com/akhilmuvva) & [Jhansi Kupireddy](https://github.com/jhansikupireddy-lang)
+**Protocol Engineers:** [Akhil Muvva](mailto:akhilmuvva@polylance.codes) & [Jhansi Kupireddy](mailto:jhansikupireddy@polylance.codes)
 
 ## 🌌 The Antigravity Equilibrium
 PolyLance Zenith is the world's first **0-Friction, Sovereign Real-World Asset (RWA) Talent Layer**. Built on the Polygon AggLayer, it eliminates the extractive fees of Web2 platforms (Upwork, Fiverr) by treating freelance labor as an institutional-grade, yield-bearing RWA. 
@@ -80,4 +80,10 @@ Our engineering mandate is strict: No friction. No exploits.
 > *A deep-tissue Audit Summary of our security patches and architectural mandates is available in `AUDIT_SUMMARY.md`.*
 
 ---
-**Sovereignty Actuated. Friction Eliminated.**
+---
++
++## 🛡️ Support & Security
++For administrative inquiries, contact **[admin@polylance.codes](mailto:admin@polylance.codes)**.  
++To report vulnerabilities, please refer to our **[SECURITY.md](SECURITY.md)** or email **[security@polylance.codes](mailto:security@polylance.codes)**.
++
++**Sovereignty Actuated. Friction Eliminated.**

@@ -1,6 +1,6 @@
 # PolyLance Zenith: Project Status Report
 
-**Maintained and Developed by:** [Akhil Muvva](https://github.com/akhilmuvva) & [Jhansi Kupireddy](https://github.com/jhansikupireddy-lang)
+**Maintained and Developed by:** [Akhil Muvva](mailto:akhilmuvva@polylance.codes) & [Jhansi Kupireddy](mailto:jhansikupireddy@polylance.codes)
 
 ---
 
@@ -131,4 +131,10 @@
 - [x] **UI Rendering:** Refactored shell CSS into the design system for fastest FCP.
 - [x] **Safe Initialization:** 0 console errors in the Sovereign production build.
 - [x] **Memory Guard:** `max-old-space-size=4096` hardcoded in the Arweave build pipeline.
-- [x] **Mainnet Hardening:** `YieldManager.sol` pointing to Aave V3 Polygon `0x794a6135...14aD`.
+---
++
++## 📧 Official Project Contacts
++- **Platform Administration:** [admin@polylance.codes](mailto:admin@polylance.codes)
++- **Security Vulnerabilities:** [security@polylance.codes](mailto:security@polylance.codes)
++- **Protocol Engineer (Akhil):** [akhilmuvva@polylance.codes](mailto:akhilmuvva@polylance.codes)
++- **Protocol Engineer (Jhansi):** [jhansikupireddy@polylance.codes](mailto:jhansikupireddy@polylance.codes)
