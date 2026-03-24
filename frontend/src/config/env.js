@@ -19,13 +19,13 @@ const env = {
   IPFS_GATEWAY: import.meta.env.VITE_IPFS_GATEWAY || 'https://gateway.pinata.cloud/ipfs/',
 
   // ── Particle Auth (Social Login) ──────────────────────────────────
-  PARTICLE_PROJECT_ID: import.meta.env.VITE_PARTICLE_PROJECT_ID || '',
-  PARTICLE_CLIENT_KEY: import.meta.env.VITE_PARTICLE_CLIENT_KEY || '',
-  PARTICLE_APP_ID: import.meta.env.VITE_PARTICLE_APP_ID || '',
+  PARTICLE_PROJECT_ID: import.meta.env.VITE_PARTICLE_PROJECT_ID || '07928a08-6e61-43c2-8ab6-b03e240df39b',
+  PARTICLE_CLIENT_KEY: import.meta.env.VITE_PARTICLE_CLIENT_KEY || 'copZES78qEpPmjSFKJLXOYfRqXLfaiVHVRr1gJmP',
+  PARTICLE_APP_ID: import.meta.env.VITE_PARTICLE_APP_ID || 'df654a5d-4d11-451a-9f48-816041124d44',
 
   // ── Biconomy (Gasless Account Abstraction) ────────────────────────
-  BICONOMY_PAYMASTER_URL: import.meta.env.VITE_BICONOMY_PAYMASTER_URL || '',
-  BICONOMY_BUNDLER_URL: import.meta.env.VITE_BICONOMY_BUNDLER_URL || '',
+  BICONOMY_PAYMASTER_URL: import.meta.env.VITE_BICONOMY_PAYMASTER_URL || 'mee_5bETq4RwcMcNzcRKVnEDnT',
+  BICONOMY_BUNDLER_URL: import.meta.env.VITE_BICONOMY_BUNDLER_URL || 'https://bundler.biconomy.io/api/v2/80002/nJPK7B3ru.dd7f7861-190d-41bd-af80-6877f74b8f44',
 
   // ── Huddle01 (Web3 Communication) ────────────────────────────────
   HUDDLE_PROJECT_ID: import.meta.env.VITE_HUDDLE_PROJECT_ID || '',

@@ -37,8 +37,19 @@ export async function initSocialLogin() {
 
         // Use a timeout for the Particle initialization to prevent hanging the UI
         const initPromise = new Promise((resolve) => {
-            const ParticleConstructor = ParticleAuthModule.ParticleAuth || ParticleAuthModule.ParticleNetwork || ParticleAuthModule;
-            if (typeof ParticleConstructor !== 'function') resolve(null);
+            // Directive 19: Particle Gateway Resolution
+            // The SDK export varies between environments. We proactively resolve the constructor.
+            const ParticleConstructor = ParticleAuthModule.ParticleAuth || 
+                                       ParticleAuthModule.default?.ParticleAuth || 
+                                       ParticleAuthModule.ParticleNetwork || 
+                                       ParticleAuthModule.default || 
+                                       ParticleAuthModule;
+            
+            if (typeof ParticleConstructor !== 'function') {
+                console.error('[SECURITY] Particle gateway malformed. Resolution found:', typeof ParticleConstructor);
+                resolve(null);
+                return;
+            }
             
             const particle = new ParticleConstructor({
                 projectId,
