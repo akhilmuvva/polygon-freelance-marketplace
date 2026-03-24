@@ -124,8 +124,12 @@ export default defineConfig({
     },
     rollupOptions: {
       output: {
-        // Consolidated for stability — prevents circular initialization errors
-        manualChunks: undefined 
+        manualChunks: {
+          'vendor-graphics': ['three', '@react-three/fiber', '@react-three/drei'],
+          'vendor-web3': ['ethers', 'viem', 'wagmi', 'siwe'],
+          'vendor-ui': ['@rainbow-me/rainbowkit', '@tanstack/react-query', 'framer-motion', 'animejs'],
+          'vendor-xmtp': ['@xmtp/browser-sdk'],
+        }
       }
     }
   },
