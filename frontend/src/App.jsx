@@ -41,6 +41,7 @@ import { NotificationManager } from './components/NotificationManager';
 import CourtErrorBoundary from './components/CourtErrorBoundary';
 import { Toaster, toast as hotToast } from 'react-hot-toast';
 import { useAccount, useWalletClient, useDisconnect, useBlockNumber } from 'wagmi';
+import env from './config/env';
 import { initSocialLogin, createBiconomySmartAccount } from './utils/biconomy';
 import { createWalletClient, custom } from 'viem';
 import { polygonAmoy } from 'viem/chains';
@@ -471,7 +472,15 @@ function App() {
     }
   };
 
-  if (!isHydrated) return null;
+  if (!isHydrated) return (
+    <div style={{ height: '100vh', width: '100vw', background: '#050608', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '24px' }}>
+      <div style={{ position: 'relative' }}>
+          <div style={{ position: 'absolute', inset: '-20px', background: 'radial-gradient(circle, rgba(0,245,212,0.1) 0%, transparent 70%)', filter: 'blur(10px)' }} />
+          <Loader2 size={48} className="animate-spin" color="#00f5d4" />
+      </div>
+      <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '10px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.4em' }}>Core System Initializing</div>
+    </div>
+  );
 
   return (
     <>
@@ -594,7 +603,8 @@ function App() {
                   {isInitializingGasless ? <Shield size={14} className="animate-spin" /> : <ShieldCheck size={14} style={{ color: isGasless ? '#00f5d4' : 'inherit' }} />}
                   {isInitializingGasless ? 'Initializing...' : 'Sovereign Shield'}
                 </button>
-                {!smartAccount && (
+                {/* SOCIAL LOGIN - Only shown if NO wallet is connected AND NO smart account exists */}
+                {!isWalletConnected && !smartAccount && (
                   <button className="desktop-only" 
                     style={{ 
                         ...styles.socialBtn, 

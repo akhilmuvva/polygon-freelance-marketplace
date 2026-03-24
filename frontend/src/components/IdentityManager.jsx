@@ -10,6 +10,7 @@ import ProfileService from '../services/ProfileService';
 import SubgraphService from '../services/SubgraphService';
 import { useAnimeAnimations } from '../hooks/useAnimeAnimations';
 import { formatEther } from 'viem';
+import { parseProtocolValue } from '../utils/protocolUtils';
 
 const IdentityManager = ({ address }) => {
     const [activeSection, setActiveSection] = useState('profile'); 
@@ -291,7 +292,7 @@ const IdentityManager = ({ address }) => {
                                             {[
                                                 { label: 'Activity', value: profile.totalJobs || '0' },
                                                 { label: 'Reputation', value: profile.reputationScore || '0' },
-                                                { label: 'Earned', value: parseFloat(formatEther(BigInt(profile.totalEarned || '0'))).toFixed(1) }
+                                                { label: 'Earned', value: parseFloat(formatEther(parseProtocolValue(profile.totalEarned))).toFixed(1) }
                                             ].map((stat, i) => (
                                                 <div key={i}>
                                                     <div style={{ fontSize: '1.2rem', fontWeight: 900, color: '#fff' }}>{stat.value}</div>

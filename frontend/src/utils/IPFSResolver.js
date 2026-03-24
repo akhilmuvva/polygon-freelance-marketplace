@@ -92,7 +92,9 @@ class IPFSResolver {
                 const keys = Object.keys(this.cache);
                 if (keys.length > 100) delete this.cache[keys[0]];
                 localStorage.setItem(this.cacheKey, JSON.stringify(this.cache));
-            } catch (e) {}
+            } catch (e) {
+                // Silently skip cache write if storage is full or unreachable
+            }
         }, 0);
     }
 }

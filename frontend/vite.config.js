@@ -76,16 +76,6 @@ const particleShimPlugin = () => ({
       `;
     }
   },
-
-  // ── 2. renderChunk: catch any remaining chrome.storage references ─────────
-  renderChunk(code) {
-    const SAFE_SYNC  = `(typeof chrome!=="undefined"&&chrome.storage&&chrome.storage.sync  ||{get:()=>{},set:()=>{},remove:()=>{},clear:()=>{},onChanged:{addListener:()=>{}}})`;
-    const SAFE_LOCAL = `(typeof chrome!=="undefined"&&chrome.storage&&chrome.storage.local ||{get:()=>{},set:()=>{},remove:()=>{},clear:()=>{},onChanged:{addListener:()=>{}}})`;
-    let out = code;
-    if (out.includes('chrome.storage.sync'))  out = out.replaceAll('chrome.storage.sync',  SAFE_SYNC);
-    if (out.includes('chrome.storage.local')) out = out.replaceAll('chrome.storage.local', SAFE_LOCAL);
-    return out !== code ? { code: out, map: null } : null;
-  },
 });
 
 // https://vite.dev/config/
@@ -93,6 +83,13 @@ const particleShimPlugin = () => ({
 // so window.isSecureContext === true even on plain HTTP — XMTP works fine.
 export default defineConfig({
   base: '/',
+  // Sovereign Redirection: Map problematic Chrome APIs to our safe globalThis.__SovereignStorage identifiers.
+  // These identifiers are initialized at the absolute start of index.html for 100% stability.
+  define: {
+    'chrome.storage.sync':  'globalThis.__SovereignStorageSync',
+    'chrome.storage.local': 'globalThis.__SovereignStorageLocal',
+    'chrome.storage':        'globalThis.__SovereignStorage'
+  },
   plugins: [
     react(),
     basicSsl(),
@@ -105,55 +102,31 @@ export default defineConfig({
     include: ['@xmtp/browser-sdk'],
     exclude: ['@biconomy/particle-auth', '@walletconnect/keyvaluestorage'],
   },
-  define: {
-    // Build-time safety net: flatten chrome.storage.* property chains
-    // that WalletConnect core and Biconomy SDKs access unconditionally.
-    // These are replaced as literals in the minified output — they act as
-    // a second layer of defence if the runtime window.chrome shim in
-    // index.html hasn't fired yet when a lazy chunk is first evaluated.
-    'globalThis.__chromeStorageSyncSafe': 'true',
-  },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
     },
   },
   server: {
-    port: 5174,
-    strictPort: false,
+    port: 3000,
     host: true,
+    strictPort: true,
     hmr: {
       protocol: 'wss',
       host: 'localhost',
-      port: 5174,
-    },
+    }
   },
   build: {
     target: 'esnext',
     sourcemap: false,
+    commonjsOptions: {
+      transformMixedEsModules: true,
+    },
     rollupOptions: {
       output: {
-        manualChunks(id) {
-          // React MUST be resolved first — one instance across all chunks
-          if (id.includes('node_modules/react/') || id.includes('node_modules/react-dom/') ||
-              id.includes('node_modules/scheduler/')) {
-            return 'vendor';
-          }
-          // Three.js / R3F — after React is guaranteed from vendor
-          if (id.includes('node_modules/three/') ||
-              id.includes('node_modules/@react-three/')) {
-            return 'graphics';
-          }
-          // Web3 stack
-          if (id.includes('node_modules/ethers/') ||
-              id.includes('node_modules/wagmi/') ||
-              id.includes('node_modules/viem/') ||
-              id.includes('node_modules/@biconomy/')) {
-            return 'web3';
-          }
-        }
+        // Consolidated for stability — prevents circular initialization errors
+        manualChunks: undefined 
       }
     }
-  }
-})
-
+  },
+});

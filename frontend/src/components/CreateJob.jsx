@@ -59,8 +59,11 @@ function CreateJob({ onJobCreated, gasless, smartAccount, freelancer: initialFre
     const [milestones, setMilestones] = useState([{ amount: '', description: '' }]);
     const [durationDays, setDurationDays] = useState('7');
     const [isProcessingGasless, setIsProcessingGasless] = useState(false);
-    const { address } = useAccount();
-    const isConnected = !!address;
+    const { address, status } = useAccount();
+    
+    // Sovereign Connection Logic: Support both standard wallets and Biconomy Smart Accounts
+    const isConnected = !!address || !!smartAccount;
+    const activeAddress = address || smartAccount?.accountAddress;
 
     // Anime.js hooks
     const headerRef = React.useRef(null);
@@ -89,7 +92,7 @@ function CreateJob({ onJobCreated, gasless, smartAccount, freelancer: initialFre
     const actuateEscrowIntent = async (e) => {
         e.preventDefault();
         
-        if (!address) {
+        if (!activeAddress) {
             hotToast.error('Connect your wallet first to post a job.');
             return;
         }
@@ -110,7 +113,7 @@ function CreateJob({ onJobCreated, gasless, smartAccount, freelancer: initialFre
             const metadata = {
                 title,
                 category,
-                client: address,
+                client: activeAddress,
                 freelancer: freelancer || '0x0000000000000000000000000000000000000000',
                 amount,
                 token: selectedToken.symbol,
@@ -215,10 +218,19 @@ function CreateJob({ onJobCreated, gasless, smartAccount, freelancer: initialFre
                 {!isConnected && (
                     <div style={{ padding: '14px 20px', borderRadius: 12, background: 'rgba(239, 68, 68, 0.08)', border: '1px solid rgba(239, 68, 68, 0.25)', display: 'flex', alignItems: 'center', gap: 10 }}>
                         <span style={{ fontSize: '1.2rem' }}>⚠️</span>
-                        <div>
-                            <div style={{ color: '#f87171', fontWeight: 700, fontSize: '0.85rem' }}>Wallet Not Connected</div>
-                            <div style={{ color: 'var(--text-secondary)', fontSize: '0.78rem' }}>Connect your wallet using the button in the top-right corner to post a job.</div>
+                        <div style={{ flex: 1 }}>
+                            <div style={{ color: '#f87171', fontWeight: 700, fontSize: '0.85rem' }}>
+                                {status === 'connecting' || status === 'reconnecting' ? 'Synchronizing Identity...' : 'Wallet Not Connected'}
+                            </div>
+                            <div style={{ color: 'var(--text-secondary)', fontSize: '0.78rem' }}>
+                                {status === 'connecting' || status === 'reconnecting' 
+                                  ? 'The mesh is establishing a secure link with your provider. Please wait.' 
+                                  : 'Connect your wallet using the button in the top-right corner to post a job.'}
+                            </div>
                         </div>
+                        <button type="button" onClick={() => window.location.reload()} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', color: '#fff', fontSize: '0.65rem', padding: '6px 10px', borderRadius: 6, cursor: 'pointer' }}>
+                          Force Re-Sync
+                        </button>
                     </div>
                 )}
                 {/* 1. Job Basics */}

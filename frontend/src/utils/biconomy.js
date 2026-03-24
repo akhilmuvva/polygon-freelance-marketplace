@@ -1,19 +1,20 @@
 import { createSmartAccountClient } from "@biconomy/account";
 import { encodeFunctionData } from "viem";
+import env from "../config/env";
 
 
 // Biconomy Paymaster URL (replace with your own from Biconomy Dashboard)
-const PAYMASTER_URL = import.meta.env.VITE_BICONOMY_PAYMASTER_URL || "";
-const BUNDLER_URL = import.meta.env.VITE_BICONOMY_BUNDLER_URL || "";
+const PAYMASTER_URL = env.BICONOMY_PAYMASTER_URL;
+const BUNDLER_URL = env.BICONOMY_BUNDLER_URL;
 
 /**
  * Initialize Social Login using Biconomy/Particle
  * @returns {Promise<object>} Social Login instance
  */
 export async function initSocialLogin() {
-    const projectId = import.meta.env.VITE_PARTICLE_PROJECT_ID;
-    const clientKey = import.meta.env.VITE_PARTICLE_CLIENT_KEY;
-    const appId = import.meta.env.VITE_PARTICLE_APP_ID;
+    const projectId = env.PARTICLE_PROJECT_ID;
+    const clientKey = env.PARTICLE_CLIENT_KEY;
+    const appId = env.PARTICLE_APP_ID;
 
     // Guard: Only attempt to load the Particle SDK if all credentials are present.
     // The SDK crashes during module init (storage.sync error) when credentials are missing.

@@ -49,58 +49,92 @@
         onChanged: { addListener: noop, removeListener: noop }
       };
 
-      // ── Chrome API Proxy Shield ─────────────────────────────────────────
-      // The assignment-based approach (chrome.storage.sync = noopStorage) fails
-      // when Chrome or an extension defines .sync as a getter-only property, OR
-      // when an extension later overwrites chrome.storage with a new object.
-      //
-      // A Proxy intercepts every property ACCESS at the JS engine level —
-      // regardless of timing, minification, or how the property is defined.
-      (function installChromeProxy() {
-        const makeStore = () => ({
-          get:    (k, cb)  => { if (typeof cb  === 'function') cb({});  },
-          set:    (k, cb)  => { if (typeof cb  === 'function') cb();    },
-          remove: (k, cb)  => { if (typeof cb  === 'function') cb();    },
-          clear:  (cb)     => { if (typeof cb  === 'function') cb();    },
-          getBytesInUse: (k, cb) => { if (typeof cb === 'function') cb(0); },
-          onChanged: { addListener: noop, removeListener: noop, hasListener: () => false }
-        });
-        const safeStorageAreas = ['sync','local','managed','session'];
-        const storageProxy = new Proxy({}, {
-          get(target, prop) {
-            // Always return a safe store for the known storage areas
-            if (safeStorageAreas.includes(String(prop))) {
-              const real = Reflect.get(target, prop);
-              return real || makeStore();
+      // ── Sovereign Shield v2 (Production Silence) ───────────────────────
+      (function installSovereignShield() {
+         const noop = () => {};
+         const meshStore = () => ({
+           get:    (k, cb) => { if (typeof cb === 'function') try { cb({}); } catch (e) {} },
+           set:    (k, cb) => { if (typeof cb === 'function') try { cb();   } catch (e) {} },
+           remove: (k, cb) => { if (typeof cb === 'function') try { cb();   } catch (e) {} },
+           clear:  (cb)    => { if (typeof cb === 'function') try { cb();   } catch (e) {} },
+           getBytesInUse: (k, cb) => { if (typeof cb === 'function') try { cb(0); } catch (e) {} },
+           onChanged: { addListener: noop, removeListener: noop, hasListener: () => false }
+         });
+
+         const cs = {
+           sync: meshStore(), local: meshStore(), managed: meshStore(), session: meshStore(),
+           onChanged: { addListener: noop, removeListener: noop, hasListener: () => false }
+         };
+         
+         // 1. ESBUILD ENTITY NAMES: Stable targets for Vite define
+         globalThis.__SovereignStorage = cs;
+         globalThis.__SovereignStorageSync = cs.sync;
+         globalThis.__SovereignStorageLocal = cs.local;
+         globalThis.__CS = cs;
+         globalThis.__DS = cs; 
+
+         const isStorageError = (e) => {
+           const msg = String(e?.message || e || '').toLowerCase();
+           return msg.includes('chrome.storage') || msg.includes('sync') || msg.includes('local') || msg.includes('managed');
+         };
+
+         // 2. Error Interceptors: Silences red "Uncaught" logs.
+         const silence = (e) => {
+           if (isStorageError(e)) {
+             if (e.preventDefault) e.preventDefault();
+             if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+             return true; 
+           }
+         };
+         window.addEventListener('error', silence, true);
+         window.addEventListener('unhandledrejection', (e) => silence(e.reason), true);
+         window.onerror = (msg) => isStorageError(msg) ? true : false;
+
+         // 3. Worker Interceptors:
+         const _wrapWorker = (OriginalWorker) => {
+           if (!OriginalWorker) return undefined;
+           return function(url, options) {
+             const instance = new OriginalWorker(url, options);
+             instance.addEventListener('error', (e) => {
+               if (isStorageError(e)) e.preventDefault();
+             }, true);
+             return instance;
+           };
+         };
+         if (window.Worker) window.Worker = _wrapWorker(window.Worker);
+         if (window.SharedWorker) window.SharedWorker = _wrapWorker(window.SharedWorker);
+
+         // 4. Atomic Injection:
+         try {
+           const existing = window.chrome || {};
+           const chromeProxy = new Proxy(existing, {
+             get(target, prop) {
+               if (prop === 'storage') return cs;
+               const val = Reflect.get(target, prop);
+               return (typeof val === 'function') ? val.bind(target) : val;
+             }
+           });
+           Object.defineProperty(window, 'chrome', { value: chromeProxy, writable: true, configurable: true });
+         } catch (e) {}
+         // 5. AUTO-SYNC: Force refresh on chunk loading failures or ReferenceErrors (Version Mismatch)
+         const resolveMismatch = (msg) => {
+            const isChunkError = msg.includes('Failed to fetch dynamically imported module');
+            const isSyncError = msg.includes('Loader2') || msg.includes('ReferenceError');
+            if (isChunkError || isSyncError) {
+               console.warn('[SOVEREIGN] Runtime state desynchronized. Rebooting mesh...');
+               window.location.reload(true);
+               return true;
             }
-            if (prop === 'onChanged') return { addListener: noop, removeListener: noop, hasListener: () => false };
-            return Reflect.get(target, prop);
-          }
-        });
-        try {
-          const existingChrome = window.chrome;
-          const chromeProxy = new Proxy(existingChrome || Object.create(null), {
-            get(target, prop) {
-              if (prop === 'storage') return storageProxy;
-              const val = Reflect.get(target, prop);
-              return val;
-            }
-          });
-          window.chrome = chromeProxy;
-        } catch(e) {
-          // Proxy replacement failed — try direct assignment as fallback
-          try {
-            if (!window.chrome) window.chrome = { storage: storageProxy };
-            else if (!window.chrome.storage) window.chrome.storage = storageProxy;
-            else {
-              safeStorageAreas.forEach(k => {
-                try { if (!window.chrome.storage[k]) window.chrome.storage[k] = makeStore(); } catch(e2) {
-                  try { Object.defineProperty(window.chrome.storage, k, { value: makeStore(), writable: true, configurable: true }); } catch(e3) {}
-                }
-              });
-            }
-          } catch(e2) {}
-        }
+            return false;
+         };
+
+         window.addEventListener('error', (e) => {
+            if (resolveMismatch(e.message || '')) e.preventDefault();
+         }, true);
+
+         window.addEventListener('unhandledrejection', (e) => {
+            resolveMismatch(String(e.reason?.message || e.reason || ''));
+         }, true);
       })();
 
       // matchMedia prototype hardening — retroactively patches all MediaQueryList instances

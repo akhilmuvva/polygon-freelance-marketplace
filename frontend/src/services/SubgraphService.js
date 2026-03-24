@@ -1,6 +1,8 @@
 import { ApolloClient, InMemoryCache, HttpLink, gql } from '@apollo/client';
 
-const SUBGRAPH_URL = import.meta.env.VITE_SUBGRAPH_URL || 'https://api.studio.thegraph.com/query/poly-lance-studio/poly-lance/v0.0.1';
+import env from '../config/env';
+
+const SUBGRAPH_URL = env.SUBGRAPH_URL;
 
 // Robust initialization with explicit HttpLink to avoid "link property" errors
 const client = new ApolloClient({
@@ -256,7 +258,7 @@ export const SubgraphService = {
       saveToCache(cacheKey, result);
       return result;
     } catch (error) {
-      console.error('[AGA_DATA_GRAVITY] Ecosystem stats failure:', error.message);
+      // Use silent fallback - subgraph availability is not critical for global stats
       return getFromCache(cacheKey) || WEIGHTLESS_FALLBACK.globalStat;
     }
   },
@@ -276,7 +278,7 @@ export const SubgraphService = {
       saveToCache(cacheKey, result);
       return result;
     } catch (error) {
-      console.error('[AGA_DATA_GRAVITY] Protocol stats failure:', error.message);
+      // Use silent fallback
       return getFromCache(cacheKey) || WEIGHTLESS_FALLBACK.protocolStats;
     }
   },

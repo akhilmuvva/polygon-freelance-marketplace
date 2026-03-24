@@ -6,7 +6,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useAnimeAnimations } from '../hooks/useAnimeAnimations';
 import { createBiconomySmartAccount } from '../utils/biconomy';
 import { RefreshCcw, Search, Filter, ChevronDown, Briefcase, Calendar, DollarSign, ArrowRight, ArrowUpDown, MessageSquare, CreditCard, Rocket, Zap } from 'lucide-react';
-import { formatUnits } from 'viem';
+import { formatUnits, parseUnits } from 'viem';
 import { SUPPORTED_TOKENS, CONTRACT_ADDRESS } from '../constants';
 import UserLink from './UserLink';
 import AiMatchRating from './AiMatchRating';

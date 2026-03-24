@@ -248,6 +248,7 @@ export default function Chat({ initialPeerAddress }) {
                         loadingContext={loadingContext}
                         isSyncing={isSyncing}
                         setIsSyncing={setIsSyncing}
+                        client={client}
                     />
                 ) : (
                     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--text-tertiary)' }}>
@@ -260,7 +261,7 @@ export default function Chat({ initialPeerAddress }) {
     );
 }
 
-function MessageContainer({ conversation, address, contractContext, loadingContext, isSyncing, setIsSyncing }) {
+function MessageContainer({ conversation, address, contractContext, loadingContext, isSyncing, setIsSyncing, client }) {
     const [messages, setMessages] = useState([]);
     const [inputValue, setInputValue] = useState('');
     const [isExporting, setIsExporting] = useState(false);

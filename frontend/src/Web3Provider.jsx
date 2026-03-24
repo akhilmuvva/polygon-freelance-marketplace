@@ -22,8 +22,9 @@ import { ApolloProvider } from '@apollo/client/react';
 import { HuddleClient, HuddleProvider } from '@huddle01/react';
 import messagingService from './services/MessagingService';
 import hotToast from 'react-hot-toast';
+import env from './config/env';
 
-const huddleProjectId = import.meta.env.VITE_HUDDLE_PROJECT_ID;
+const huddleProjectId = env.HUDDLE_PROJECT_ID;
 const huddleClient = huddleProjectId
     ? new HuddleClient({
         projectId: huddleProjectId,
@@ -118,7 +119,7 @@ const queryClient = new QueryClient({
 
 const apolloClient = new ApolloClient({
     link: new HttpLink({
-        uri: import.meta.env.VITE_SUBGRAPH_URL || 'https://api.studio.thegraph.com/query/poly-lance-studio/poly-lance/v0.0.1',
+        uri: env.SUBGRAPH_URL,
     }),
     cache: new InMemoryCache({
         typePolicies: {
@@ -142,7 +143,7 @@ export const AuthContext = createContext({
 
 export function Web3Provider({ children }) {
     const [authStatus, setAuthStatus] = useState('unauthenticated');
-    const projectId = import.meta.env.VITE_WALLET_CONNECT_PROJECT_ID || '65a5f1dd3b7df21cef34448cac019cd5';
+    const projectId = env.WALLET_CONNECT_PROJECT_ID;
 
     const config = useMemo(() => getDefaultConfig({
         appName: 'PolyLance Zenith',

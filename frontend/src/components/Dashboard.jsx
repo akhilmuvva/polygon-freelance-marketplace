@@ -7,7 +7,8 @@ import {
     Shield, Award, Zap, Brain, Rocket, Clock, Database, 
     Terminal, Layers, TrendingUp, Cpu, Flame, CheckCircle2,
     ArrowRight, MessageSquare, ChevronRight, Gavel, Sparkles,
-    Activity, Globe, Lock, Diamond, User, Wallet, ShieldCheck, Trophy
+    Activity, Globe, Lock, Diamond, User, Wallet, ShieldCheck, Trophy,
+    ArrowUpRight, Star, Search, Filter, AlertCircle, Info, Loader2
 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import SubgraphService from '../services/SubgraphService';
@@ -19,6 +20,7 @@ import { TreasuryButlerService } from '../services/TreasuryButlerService';
 import { GravityScoreService } from '../services/GravityScoreService';
 import { useAnimeAnimations } from '../hooks/useAnimeAnimations';
 import hotToast from 'react-hot-toast';
+import { parseProtocolValue } from '../utils/protocolUtils';
 
 const Dashboard = ({ address: propAddress }) => {
     const { address: wagmiAddress } = useAccount();
@@ -37,9 +39,8 @@ const Dashboard = ({ address: propAddress }) => {
     const surplus = useMemo(() => {
         try {
             if (!qStats?.totalYieldGenerated) return 0;
-            const rawVal = String(qStats.totalYieldGenerated).split(' ')[0].replace(/,/g, '');
-            // If it's a decimal string, we can't BigInt it directly, but MockDataService now returns Wei.
-            return parseFloat(formatEther(BigInt(rawVal) * 20n / 100n));
+            const weiVal = parseProtocolValue(qStats.totalYieldGenerated);
+            return parseFloat(formatEther(weiVal * 20n / 100n));
         } catch (e) {
             return 0;
         }
@@ -80,7 +81,7 @@ const Dashboard = ({ address: propAddress }) => {
                         title: `Contract #${j.jobId}`,
                         status: ['Created', 'Accepted', 'Ongoing', 'Disputed', 'Arbitration', 'Completed', 'Cancelled'][Number(j.status)] || 'Active',
                         progress: Number(j.status) === 0 ? 0 : Number(j.status) === 1 ? 25 : 50,
-                        budget: formatEther(BigInt(String(j.amount || 0).split(' ')[0].replace(/,/g, '')))
+                        budget: formatEther(parseProtocolValue(j.amount))
                     })));
                 } else {
                     setActiveEscrows([]);
@@ -121,7 +122,13 @@ const Dashboard = ({ address: propAddress }) => {
         setIsProofModalOpen(true);
     };
 
-    if (!isConnected) return null; // Shell handles non-connection state
+    // Shell handles non-connection state, but we show a loader if address is transiently missing
+    if (!isConnected) return (
+        <div style={{ height: '70vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '24px' }}>
+            <Loader2 size={32} className="animate-spin text-accent" />
+            <div style={{ color: 'rgba(255,255,255,0.2)', fontSize: '10px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.4em' }}>Synchronizing Node</div>
+        </div>
+    );
 
     return (
         <div style={{ 
