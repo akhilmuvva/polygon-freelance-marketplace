@@ -87,20 +87,20 @@ const CreateJob = ({ onJobCreated, gasless, smartAccount: propSmartAccount }) =>
                 title,
                 description,
                 category,
-                client: address, // Changed activeAddress to address
-                freelancer: freelancer || "Unassigned", // Changed default value
-                amount: amount.toString(), // Changed from rawAmount
+                client: activeAddress, 
+                freelancer: freelancer || "Unassigned", 
+                amount: amount.toString(), 
                 token: selectedToken.symbol,
-                status: freelancer ? 'Created' : 'Pending Intent', // This line was not in the snippet, keeping original logic
-                milestones: milestones.map(m => ({ // This line was not in the snippet, keeping original logic
-                    amount: m.amount, // This line was not in the snippet, keeping original logic
-                    description: m.description // This line was not in the snippet, keeping original logic
-                })), // This line was not in the snippet, keeping original logic
-                timestamp: Date.now() // Added timestamp as per snippet
+                status: freelancer ? 'Created' : 'Pending Intent', 
+                milestones: milestones.map(m => ({ 
+                    amount: m.amount, 
+                    description: m.description 
+                })), 
+                timestamp: Date.now() 
             };
 
             const { cid } = await StorageService.uploadMetadata(metadata);
-            ipfshash = cid; // Changed ipfsHash to ipfshash
+            ipfshash = cid; 
             
             const resolvedFreelancer = (freelancer && freelancer.startsWith('0x') && freelancer.length === 42)
                 ? freelancer
@@ -116,13 +116,13 @@ const CreateJob = ({ onJobCreated, gasless, smartAccount: propSmartAccount }) =>
                 jobId: `PENDING-${Math.random().toString(36).substring(7).toUpperCase()}`,
                 title,
                 category,
-                client: address, // Changed activeAddress to address
+                client: activeAddress, 
                 freelancer: resolvedFreelancer,
                 amount: rawAmount.toString(),
                 token: selectedToken.symbol,
                 status: '0', 
                 deadline: deadline.toString(),
-                ipfsHash: ipfshash, // Changed ipfsHash to ipfshash
+                ipfsHash: ipfshash, 
                 isOptimistic: true,
                 createdAt: Math.floor(Date.now() / 1000).toString()
             };
@@ -137,12 +137,12 @@ const CreateJob = ({ onJobCreated, gasless, smartAccount: propSmartAccount }) =>
                 freelancer: resolvedFreelancer,
                 token: selectedToken.address,
                 amount: rawAmount,
-                ipfsHash: ipfshash, // Changed ipfsHash to ipfshash
+                ipfsHash: ipfshash, 
                 deadline: BigInt(deadline),
                 mAmounts: milestones.filter(m => m.amount).map(m => parseUnits(m.amount, selectedToken.decimals)),
                 mHashes: milestones.filter(m => m.amount).map(m => m.description || ""),
                 mIsUpfront: milestones.filter(m => m.amount).map(() => false),
-                yieldStrategy: yieldStrategy,
+                yieldStrategy: BigInt(yieldStrategy),
                 paymentToken: selectedToken.address,
                 paymentAmount: rawAmount,
                 minAmountOut: 0n
