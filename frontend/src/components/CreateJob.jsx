@@ -49,7 +49,7 @@ const st = {
     actions: { display: 'flex', gap: 12, marginTop: 28 },
 };
 
-function CreateJob({ onJobCreated, gasless, smartAccount, freelancer: initialFreelancer, amount: initialAmount, title: initialTitle, category: initialCategory }) {
+function CreateJob({ onJobCreated, gasless, smartAccount, freelancer: initialFreelancer, amount: initialAmount, title: initialTitle, category: initialCategory, address: addressProp }) {
     const [freelancer, setFreelancer] = useState(initialFreelancer || '');
     const [amount, setAmount] = useState(initialAmount || '');
     const [title, setTitle] = useState(initialTitle || '');
@@ -59,11 +59,12 @@ function CreateJob({ onJobCreated, gasless, smartAccount, freelancer: initialFre
     const [milestones, setMilestones] = useState([{ amount: '', description: '' }]);
     const [durationDays, setDurationDays] = useState('7');
     const [isProcessingGasless, setIsProcessingGasless] = useState(false);
-    const { address, status } = useAccount();
+    const { address: wagmiAddress, status } = useAccount();
     
-    // Sovereign Connection Logic: Support both standard wallets and Biconomy Smart Accounts
-    const isConnected = !!address || !!smartAccount;
-    const activeAddress = address || smartAccount?.accountAddress;
+    // Sovereign Connection Logic: Trust the prop address (from App.jsx effectiveAddress) first,
+    // then fall back to wagmi's own address. This handles RainbowKit, Biconomy, and Social Login.
+    const isConnected = !!addressProp || !!wagmiAddress || !!smartAccount;
+    const activeAddress = addressProp || wagmiAddress || smartAccount?.accountAddress;
 
     // Anime.js hooks
     const headerRef = React.useRef(null);
