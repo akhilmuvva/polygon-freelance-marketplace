@@ -164,7 +164,7 @@ export function Web3Provider({ children }) {
 
 
     return (
-        <WagmiProvider config={config} reconnectOnMount={false}>
+        <WagmiProvider config={config} reconnectOnMount={true}>
             <QueryClientProvider client={queryClient}>
                 <ApolloProvider client={apolloClient}>
                     <SovereignAuthProvider authStatus={authStatus} setAuthStatus={setAuthStatus}>

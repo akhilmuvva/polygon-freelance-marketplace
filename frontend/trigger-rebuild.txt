@@ -1,0 +1,4 @@
+Triggering clean Vercel build to apply routing and identity sync fixes.
+Timestamp: 2026-03-24T11:00:00Z
+Author: Antigravity Architect
+Sovereign Status: ACTUATING MESH REBOOT.

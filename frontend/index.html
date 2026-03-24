@@ -116,14 +116,23 @@
            });
            Object.defineProperty(window, 'chrome', { value: chromeProxy, writable: true, configurable: true });
          } catch (e) {}
-         // 5. AUTO-SYNC: Force refresh on chunk loading failures or ReferenceErrors (Version Mismatch)
+         // 5. SMART RECOVERY: Prevent infinite reload loops while clearing cache for version mismatches.
          const resolveMismatch = (msg) => {
-            const isChunkError = msg.includes('Failed to fetch dynamically imported module');
+            const isChunkError = msg.includes('Failed to fetch dynamically imported module') || msg.includes('Load chunk');
             const isSyncError = msg.includes('Loader2') || msg.includes('ReferenceError');
+            
             if (isChunkError || isSyncError) {
-               console.warn('[SOVEREIGN] Runtime state desynchronized. Rebooting mesh...');
-               window.location.reload(true);
-               return true;
+               const lastReload = sessionStorage.getItem('reboot_guard');
+               const now = Date.now();
+               
+               // Only allow a reboot if we haven't rebooted in the last 10 seconds.
+               if (!lastReload || (now - parseInt(lastReload)) > 10000) {
+                  console.warn('[SOVEREIGN] Runtime desync detected. Actuating clean reboot...');
+                  sessionStorage.setItem('reboot_guard', now.toString());
+                  window.location.reload();
+                  return true;
+               }
+               console.error('[SOVEREIGN] Persistent runtime failure. Code assets may be missing on server.');
             }
             return false;
          };
