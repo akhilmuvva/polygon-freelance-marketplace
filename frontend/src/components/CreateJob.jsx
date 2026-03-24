@@ -126,8 +126,8 @@ const CreateJob = ({ onJobCreated, gasless, smartAccount: propSmartAccount }) =>
                 createdAt: Math.floor(Date.now() / 1000).toString()
             };
 
-            const existingIntents = JSON.parse(localStorage.getItem('pending_intents') || '[]');
-            localStorage.setItem('pending_intents', JSON.stringify([optimisticJob, ...existingIntents]));
+            const existingIntents = JSON.parse(localStorage.getItem('zenith_pending_jobs') || '[]');
+            localStorage.setItem('zenith_pending_jobs', JSON.stringify([optimisticJob, ...existingIntents]));
             
             hotToast.success('Data Anchored: Intent Broadcasted', { id: 'job-creation-success' });
 

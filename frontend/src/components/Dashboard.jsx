@@ -46,7 +46,6 @@ const Dashboard = ({ address: propAddress }) => {
         }
     }, [qStats]);
     const [tbaInfo, setTbaInfo] = useState(null);
-    const [activeEscrows, setActiveEscrows] = useState([]);
     
     // Queries
     const { data: pData, refetch: refetchProfile } = useQuery({
@@ -105,30 +104,46 @@ const Dashboard = ({ address: propAddress }) => {
     // Surplus dynamic logic disabled per liquidity reset directive — re-enable in v1.6
     // useEffect(() => { setSurplus(prev => prev + (Math.random() * 0.00001)); }, []);
 
-    // TBA and Active Escrow Logic
+    // Task 3: Dashboard Optimistic State Merging
+    const { data: portfolioRaw } = useQuery({
+        queryKey: ['portfolio', address],
+        queryFn: () => SubgraphService.getUserPortfolio(address),
+        enabled: !!address,
+        staleTime: 30000 
+    });
+
+    const activeEscrows = useMemo(() => {
+        if (!address) return [];
+        const freelancerJobs = portfolioRaw?.freelancer?.jobs || [];
+        const STATUS_MAP = { 'Created': 0, 'Accepted': 1, 'Ongoing': 2, 'Disputed': 3, 'Arbitration': 4, 'Completed': 5, 'Cancelled': 6 };
+        
+        // Live data from Subgraph
+        const live = freelancerJobs.filter(j => (STATUS_MAP[j.status] ?? 0) < 5).map(j => ({
+            id: j.jobId,
+            title: `Contract #${j.jobId}`,
+            status: j.status || 'Active',
+            progress: (STATUS_MAP[j.status] ?? 0) === 0 ? 0 : (STATUS_MAP[j.status] ?? 0) === 1 ? 25 : 50,
+            budget: formatEther(parseProtocolValue(j.amount))
+        }));
+
+        // Task 2 & 3: Local Pending Intents
+        const pending = JSON.parse(localStorage.getItem('zenith_pending_jobs') || '[]')
+            .filter(j => j.client === address || j.freelancer === address)
+            .map(j => ({
+                id: j.jobId,
+                title: j.title || `Contract #${j.jobId}`,
+                status: 'Authenticating...',
+                progress: 5,
+                budget: formatEther(parseProtocolValue(j.amount || '0')),
+                isOptimistic: true
+            }));
+
+        return [...pending, ...live];
+    }, [address, portfolioRaw]);
+
     useEffect(() => {
         if (address) {
             DemoProtocol.getTBAVisualProof(address).then(setTbaInfo);
-            
-            // Subgraph integration: Fetch real jobs for the connected address
-            SubgraphService.getUserPortfolio(address).then(p => {
-                if (p) {
-                    const freelancerJobs = p.freelancer?.jobs || [];
-                    const _clientJobs = p.client?.jobs || []; // Reserved for client-side portfolio view
-                    
-                    // Filter for active status (0-4)
-                    const active = freelancerJobs.filter(j => Number(j.status) < 5);
-                    setActiveEscrows(active.map(j => ({
-                        id: j.jobId,
-                        title: `Contract #${j.jobId}`,
-                        status: ['Created', 'Accepted', 'Ongoing', 'Disputed', 'Arbitration', 'Completed', 'Cancelled'][Number(j.status)] || 'Active',
-                        progress: Number(j.status) === 0 ? 0 : Number(j.status) === 1 ? 25 : 50,
-                        budget: formatEther(parseProtocolValue(j.amount))
-                    })));
-                } else {
-                    setActiveEscrows([]);
-                }
-            }).catch(() => setActiveEscrows([]));
         }
     }, [address]);
 

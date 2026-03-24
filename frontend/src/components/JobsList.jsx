@@ -97,8 +97,9 @@ const JobsList = ({ onSelectChat, onFiatPay, gasless, smartAccount: propSmartAcc
     const filteredJobs = React.useMemo(() => {
         // Directive 15: Optimistic Job Board Synchronization
         // Merging live sub-graph data with locally anchored intents to ensure zero network-lag perception.
-        const pendingIntents = JSON.parse(localStorage.getItem('pending_intents') || '[]');
-        const localIntents = JSON.parse(localStorage.getItem('SOVEREIGN_INTENTS') || '[]')
+        // Task 3: JobBoard Optimistic Merging
+        const pendingIntents = JSON.parse(localStorage.getItem('zenith_pending_jobs') || '[]');
+        const localIntents = JSON.parse(localStorage.getItem('zenith_pending_jobs') || '[]')
             .map(intent => ({
                 ...intent,
                 jobId: 'INTENT-' + (intent.ipfsHash ? intent.ipfsHash.slice(-6).toUpperCase() : Math.random().toString(36).substring(7).toUpperCase()),
