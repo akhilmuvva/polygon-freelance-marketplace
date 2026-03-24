@@ -18,16 +18,13 @@ jobs:
       - name: Install Dependencies
         run: |
           cd contracts
-          # AGA: Purging local Windows-ARM64 gravity from the metadata
-          rm -f package-lock.json 
-          npm install --omit=optional --legacy-peer-deps
-      - name: Run Sanity Test
-        run: cd contracts && npx hardhat test test/Barebones.test.js
-      - name: Run Full Contract Tests
+          # AGA: FORCES A FRESH LINUX BUILD - Purging local Windows-ARM64 lockout
+          npm install --legacy-peer-deps --no-optional --no-package-lock
+      - name: Run Tests
+        run: cd contracts && npx hardhat test
         env:
           CI: true
           NODE_OPTIONS: --openssl-legacy-provider
-        run: cd contracts && npx hardhat test --network hardhat
 
   test-frontend:
     runs-on: ubuntu-latest
@@ -40,8 +37,8 @@ jobs:
       - name: Install Dependencies
         run: |
           cd frontend
-          rm -f package-lock.json
-          npm install --legacy-peer-deps
+          # AGA: PURGES WINDOWS LOCKFILE FOR SUPREME CLOUD FINALITY
+          npm install --legacy-peer-deps --no-package-lock
       - name: Run Frontend Tests
         env:
           CI: true
