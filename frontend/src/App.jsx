@@ -264,7 +264,7 @@ const useNetworkHealth = () => {
 };
 
 function App() {
-  const { authStatus, setAuthStatus } = useContext(AuthContext);
+  const { authStatus = 'loading', setAuthStatus = () => {} } = useContext(AuthContext) || {};
   const { address, isConnected: isWalletConnected, isReconnecting } = useAccount();
   const { data: walletClient } = useWalletClient();
   const { disconnect } = useDisconnect();
