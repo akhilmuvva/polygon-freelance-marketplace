@@ -18,7 +18,7 @@ jobs:
       - name: Install Dependencies
         run: |
           cd contracts
-          npm install --legacy-peer-deps --no-optional
+          npm install --omit=optional --legacy-peer-deps
       - name: Run Sanity Test
         run: cd contracts && npx hardhat test test/Barebones.test.js
       - name: Run Full Contract Tests
@@ -43,4 +43,4 @@ jobs:
       - name: Run Frontend Tests
         env:
           CI: true
-        run: cd frontend && npm test -- --pool-options.threads.singleThread
+        run: cd frontend && npm test -- --run --no-threads
