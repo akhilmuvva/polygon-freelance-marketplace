@@ -15,13 +15,15 @@ jobs:
         uses: actions/setup-node@v4.0.2
         with:
           node-version: '22'
-      - name: Install dependencies
+      - name: Sovereign Dependency Purge
         run: |
           cd contracts
-          npm install --no-package-lock --legacy-peer-deps
-      - name: Run Tests
+          # AGA: Purging local Windows-ARM64 architecture ghosts from the metadata
+          rm -rf node_modules package-lock.json
+          npm install --legacy-peer-deps --no-optional
+      - name: Actuate Hardhat Tests
         run: |
           cd contracts
+          # AGA: Mandatory OpenSSL override for Node 22 + Hardhat EVM stability
+          export NODE_OPTIONS=--openssl-legacy-provider
           npx hardhat test
-        env:
-          NODE_OPTIONS: --openssl-legacy-provider
