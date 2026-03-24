@@ -16,19 +16,21 @@ async function main() {
 
     const escrow = await ethers.getContractAt("FreelanceEscrow", addresses.FreelanceEscrow);
 
-    const jobAmount = ethers.parseEther("0.01"); // 0.01 MATIC
+    const jobAmount = ethers.parseEther("0.001"); // 0.001 MATIC
     const deadline = Math.floor(Date.now() / 1000) + (3600 * 24 * 7); // 1 week
 
     const createParams = {
-        categoryId: 1, // Dev
-        freelancer: ethers.ZeroAddress, // Open to all
-        token: ethers.ZeroAddress, // Native MATIC
+        title: "PolyLance Zenith: Verified Marketplace Genesis",
+        description: "Core marketplace actuation test. Milestone-based escrow for decentralized freelancing.",
+        categoryId: 1, // Development
+        freelancer: "0x0000000000000000000000000000000000000000",
+        token: "0x0000000000000000000000000000000000000000", // MATIC
         amount: jobAmount,
-        ipfsHash: "ipfs://zenith-job-genesis-contract",
-        deadline: deadline,
-        mAmounts: [jobAmount],
-        mHashes: ["ipfs://milestone-1-genesis"],
-        mIsUpfront: [false],
+        ipfsHash: "ipfs://QmZenithGenesisTest", 
+        deadline: BigInt(deadline),
+        mAmounts: [jobAmount / 2n, jobAmount / 2n],
+        mHashes: ["Milestone 1: Prototype", "Milestone 2: Final Delivery"],
+        mIsUpfront: [false, false],
         yieldStrategy: 0, // NONE
         paymentToken: ethers.ZeroAddress,
         paymentAmount: jobAmount,

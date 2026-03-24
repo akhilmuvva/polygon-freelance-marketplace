@@ -1,0 +1,11 @@
+[dotenv@17.3.1] injecting env (4) from .env -- tip: ≡ƒöÉ prevent building .env in docker: https://dotenvx.com/prebuild
+[dotenv@17.3.1] injecting env (0) from .env -- tip: ΓÜí∩╕Å secrets for agents: https://dotenvx.com/as2
+Checking Job ID 2 on-chain...
+ProviderError: Too Many Requests error received from rpc-amoy.polygon.technology
+    at HttpProvider._fetchJsonRpcResponse (C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\contracts\node_modules\hardhat\src\internal\core\providers\http.ts:240:15)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at HttpProvider.request (C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\contracts\node_modules\hardhat\src\internal\core\providers\http.ts:104:29)
+    at staticCallResult (C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\contracts\node_modules\ethers\src.ts\contract\contract.ts:337:22)
+    at staticCall (C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\contracts\node_modules\ethers\src.ts\contract\contract.ts:303:24)
+    at Proxy.jobs (C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\contracts\node_modules\ethers\src.ts\contract\contract.ts:351:41)
+    at main (C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\contracts\scripts\check_job_status.js:9:17)

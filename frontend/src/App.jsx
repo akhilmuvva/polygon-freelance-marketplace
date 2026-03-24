@@ -244,7 +244,7 @@ const useNetworkHealth = () => {
       let indexing = 'Healthy';
       let storage = 'Healthy';
       try {
-        const subgraphUrl = import.meta.env.VITE_SUBGRAPH_URL || 'https://api.studio.thegraph.com/query/poly-lance-studio/poly-lance/v0.0.1';
+        const subgraphUrl = import.meta.env.VITE_SUBGRAPH_URL || 'https://api.studio.thegraph.com/query/49625/polylance-zenith-amoy/v0.0.1';
         const res = await fetch(subgraphUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
