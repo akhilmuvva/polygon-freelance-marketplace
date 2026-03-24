@@ -62,31 +62,11 @@ const Dashboard = ({ address: propAddress }) => {
     const refetchAll = React.useCallback(() => {
         refetchProfile();
         refetchEcosystem();
-        // Also re-run the manual effects
+        // Task 2: Component Cleanup
+        // Rely exclusively on the useQuery hooks for data visibility. 
+        // No manual state updates or redundant subgraph calls.
         if (address) {
             DemoProtocol.getTBAVisualProof(address).then(setTbaInfo);
-            SubgraphService.getUserPortfolio(address).then(p => {
-                if (p) {
-                    const freelancerJobs = p.freelancer?.jobs || [];
-                    const STATUS_MAP = { 'Created': 0, 'Accepted': 1, 'Ongoing': 2, 'Disputed': 3, 'Arbitration': 4, 'Completed': 5, 'Cancelled': 6 };
-                    
-                    const active = freelancerJobs.filter(j => {
-                        const code = STATUS_MAP[j.status] ?? 0;
-                        return code < 5;
-                    });
-                    
-                    setActiveEscrows(active.map(j => {
-                         const code = STATUS_MAP[j.status] ?? 0;
-                         return {
-                            id: j.jobId,
-                            title: `Contract #${j.jobId}`,
-                            status: j.status || 'Active',
-                            progress: code === 0 ? 0 : code === 1 ? 25 : 50,
-                            budget: formatEther(parseProtocolValue(j.amount))
-                        };
-                    }));
-                }
-            });
         }
     }, [address, refetchProfile, refetchEcosystem]);
 
