@@ -9,6 +9,10 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
+interface AggregatorV3Interface {
+  function latestRoundData() external view returns (uint80 roundId, int256 answer, uint256 startedAt, uint256 updatedAt, uint80 answeredInRound);
+}
+
 /**
  * @title AssetTokenizer
  * @notice Tokenizes real-world assets (invoices, IP rights, revenue shares) as fractional ERC-1155 tokens
@@ -70,11 +74,25 @@ contract AssetTokenizer is
     address public feeCollector;
     address public klerosArbitrator;
     address public aiOracle;
+    address public priceFeed;
 
     mapping(uint256 => RWAToken) public rwaTokens;
     mapping(uint256 => mapping(uint256 => Milestone)) public milestones;
     mapping(uint256 => uint256) public claimableRewards; // tokenId => total claimable
     mapping(uint256 => mapping(address => uint256)) public userClaims; // tokenId => user => claimed amount
+    
+    error ZeroValue();
+    error ZeroSupply();
+    error InvalidMaturity();
+    error NotIssuer();
+    error AlreadyVerified();
+    error IncorrectValue();
+    error FeeTransferFailed();
+    error NoTokensHeld();
+    error NothingToClaim();
+    error TransferFailed();
+    error Unauthorized();
+    error InvalidAssetStatus();
 
     // Events
     event AssetTokenized(
@@ -82,14 +100,15 @@ contract AssetTokenizer is
         AssetType assetType,
         address indexed issuer,
         uint256 totalValue,
-        uint256 totalSupply
+        uint256 totalSupply,
+        uint256 timestamp
     );
-    event MilestoneCreated(uint256 indexed assetId, uint256 indexed milestoneId, uint256 valueToRelease);
-    event MilestoneCompleted(uint256 indexed assetId, uint256 indexed milestoneId, address verifier);
+    event MilestoneCreated(uint256 indexed assetId, uint256 indexed milestoneId, uint256 valueToRelease, uint256 timestamp);
+    event MilestoneCompleted(uint256 indexed assetId, uint256 indexed milestoneId, address verifier, uint256 timestamp);
     event ValueDistributed(uint256 indexed tokenId, uint256 amount, uint256 timestamp);
-    event RewardsClaimed(uint256 indexed tokenId, address indexed holder, uint256 amount);
-    event AssetVerified(uint256 indexed tokenId, address indexed verifier);
-    event AssetStatusChanged(uint256 indexed tokenId, AssetStatus newStatus);
+    event RewardsClaimed(uint256 indexed tokenId, address indexed holder, uint256 amount, uint256 timestamp);
+    event AssetVerified(uint256 indexed tokenId, address indexed verifier, uint256 timestamp);
+    event AssetStatusChanged(uint256 indexed tokenId, AssetStatus newStatus, uint256 timestamp);
 
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
@@ -141,9 +160,9 @@ contract AssetTokenizer is
         string calldata metadataURI,
         bytes32 legalHash
     ) external nonReentrant returns (uint256 tokenId) {
-        require(totalValue > 0, "AssetTokenizer: Zero value");
-        require(totalSupply > 0, "AssetTokenizer: Zero supply");
-        require(maturityDate > block.timestamp, "AssetTokenizer: Invalid maturity");
+        if (totalValue == 0) revert ZeroValue();
+        if (totalSupply == 0) revert ZeroSupply();
+        if (maturityDate <= block.timestamp) revert InvalidMaturity();
 
         tokenId = nextTokenId++;
 
@@ -166,7 +185,7 @@ contract AssetTokenizer is
         // Mint fractional tokens to issuer
         _mint(msg.sender, tokenId, totalSupply, "");
 
-        emit AssetTokenized(tokenId, assetType, msg.sender, totalValue, totalSupply);
+        emit AssetTokenized(tokenId, assetType, msg.sender, totalValue, totalSupply, block.timestamp);
     }
 
     /**
@@ -183,9 +202,9 @@ contract AssetTokenizer is
         uint256 deadline
     ) external {
         RWAToken storage asset = rwaTokens[assetId];
-        require(msg.sender == asset.issuer, "AssetTokenizer: Not issuer");
-        require(asset.status == AssetStatus.PENDING || asset.status == AssetStatus.ACTIVE, "AssetTokenizer: Invalid status");
-        require(valueToRelease > 0, "AssetTokenizer: Zero value");
+        if (msg.sender != asset.issuer) revert NotIssuer();
+        if (asset.status != AssetStatus.PENDING && asset.status != AssetStatus.ACTIVE) revert InvalidAssetStatus();
+        if (valueToRelease == 0) revert ZeroValue();
 
         uint256 milestoneId = asset.milestoneCount++;
 
@@ -201,7 +220,7 @@ contract AssetTokenizer is
             proofHash: bytes32(0)
         });
 
-        emit MilestoneCreated(assetId, milestoneId, valueToRelease);
+        emit MilestoneCreated(assetId, milestoneId, valueToRelease, block.timestamp);
     }
 
     /**
@@ -215,13 +234,10 @@ contract AssetTokenizer is
         uint256 milestoneId,
         bytes32 proofHash
     ) external {
-        require(
-            hasRole(ORACLE_ROLE, msg.sender) || msg.sender == klerosArbitrator || msg.sender == aiOracle,
-            "AssetTokenizer: Not authorized verifier"
-        );
+        if (!hasRole(ORACLE_ROLE, msg.sender) && msg.sender != klerosArbitrator && msg.sender != aiOracle) revert Unauthorized();
 
         Milestone storage milestone = milestones[assetId][milestoneId];
-        require(!milestone.isVerified, "AssetTokenizer: Already verified");
+        if (milestone.isVerified) revert AlreadyVerified();
 
         milestone.isCompleted = true;
         milestone.isVerified = true;
@@ -231,7 +247,7 @@ contract AssetTokenizer is
         // Make value claimable for token holders
         claimableRewards[assetId] += milestone.valueToRelease;
 
-        emit MilestoneCompleted(assetId, milestoneId, msg.sender);
+        emit MilestoneCompleted(assetId, milestoneId, msg.sender, block.timestamp);
     }
 
     /**
@@ -241,11 +257,11 @@ contract AssetTokenizer is
      */
     function fundAsset(uint256 assetId, uint256 amount) external payable nonReentrant {
         RWAToken storage asset = rwaTokens[assetId];
-        require(msg.sender == asset.issuer, "AssetTokenizer: Not issuer");
-        require(amount > 0, "AssetTokenizer: Zero amount");
+        if (msg.sender != asset.issuer) revert NotIssuer();
+        if (amount == 0) revert ZeroValue();
 
         if (asset.paymentToken == address(0)) {
-            require(msg.value == amount, "AssetTokenizer: Incorrect value");
+            if (msg.value != amount) revert IncorrectValue();
         } else {
             IERC20(asset.paymentToken).safeTransferFrom(msg.sender, address(this), amount);
         }
@@ -257,7 +273,7 @@ contract AssetTokenizer is
         if (fee > 0) {
             if (asset.paymentToken == address(0)) {
                 (bool success, ) = payable(feeCollector).call{value: fee}("");
-                require(success, "AssetTokenizer: Fee transfer failed");
+                if (!success) revert FeeTransferFailed();
             } else {
                 IERC20(asset.paymentToken).safeTransfer(feeCollector, fee);
             }
@@ -276,25 +292,25 @@ contract AssetTokenizer is
     function claimRewards(uint256 assetId) external nonReentrant {
         RWAToken storage asset = rwaTokens[assetId];
         uint256 holderBalance = balanceOf(msg.sender, assetId);
-        require(holderBalance > 0, "AssetTokenizer: No tokens held");
+        if (holderBalance == 0) revert NoTokensHeld();
 
         uint256 totalClaimable = claimableRewards[assetId];
         uint256 userShare = (totalClaimable * holderBalance) / asset.totalSupply;
         uint256 alreadyClaimed = userClaims[assetId][msg.sender];
         uint256 toClaim = userShare - alreadyClaimed;
 
-        require(toClaim > 0, "AssetTokenizer: Nothing to claim");
+        if (toClaim == 0) revert NothingToClaim();
 
         userClaims[assetId][msg.sender] += toClaim;
 
         if (asset.paymentToken == address(0)) {
             (bool success, ) = payable(msg.sender).call{value: toClaim}("");
-            require(success, "AssetTokenizer: Transfer failed");
+            if (!success) revert TransferFailed();
         } else {
             IERC20(asset.paymentToken).safeTransfer(msg.sender, toClaim);
         }
 
-        emit RewardsClaimed(assetId, msg.sender, toClaim);
+        emit RewardsClaimed(assetId, msg.sender, toClaim, block.timestamp);
     }
 
     /**
@@ -302,17 +318,14 @@ contract AssetTokenizer is
      * @param assetId The asset token ID
      */
     function verifyAsset(uint256 assetId) external {
-        require(
-            hasRole(ORACLE_ROLE, msg.sender) || hasRole(DEFAULT_ADMIN_ROLE, msg.sender),
-            "AssetTokenizer: Not authorized"
-        );
+        if (!hasRole(ORACLE_ROLE, msg.sender) && !hasRole(DEFAULT_ADMIN_ROLE, msg.sender)) revert Unauthorized();
 
         RWAToken storage asset = rwaTokens[assetId];
         asset.isVerified = true;
         asset.status = AssetStatus.ACTIVE;
 
-        emit AssetVerified(assetId, msg.sender);
-        emit AssetStatusChanged(assetId, AssetStatus.ACTIVE);
+        emit AssetVerified(assetId, msg.sender, block.timestamp);
+        emit AssetStatusChanged(assetId, AssetStatus.ACTIVE, block.timestamp);
     }
 
     /**
@@ -322,13 +335,10 @@ contract AssetTokenizer is
      */
     function updateAssetStatus(uint256 assetId, AssetStatus newStatus) external {
         RWAToken storage asset = rwaTokens[assetId];
-        require(
-            msg.sender == asset.issuer || hasRole(DEFAULT_ADMIN_ROLE, msg.sender),
-            "AssetTokenizer: Not authorized"
-        );
+        if (msg.sender != asset.issuer && !hasRole(DEFAULT_ADMIN_ROLE, msg.sender)) revert Unauthorized();
 
         asset.status = newStatus;
-        emit AssetStatusChanged(assetId, newStatus);
+        emit AssetStatusChanged(assetId, newStatus, block.timestamp);
     }
 
     /**
@@ -345,6 +355,15 @@ contract AssetTokenizer is
      */
     function setAIOracle(address _oracle) external onlyRole(DEFAULT_ADMIN_ROLE) {
         aiOracle = _oracle;
+    }
+
+    function setPriceFeed(address _feed) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        priceFeed = _feed;
+    }
+
+    function getInvoiceValueInUSD(uint256 amount, address feed) public view returns (uint256) {
+        (, int256 price, , , ) = AggregatorV3Interface(feed).latestRoundData();
+        return (uint256(price) * amount) / 1e8;
     }
 
     /**

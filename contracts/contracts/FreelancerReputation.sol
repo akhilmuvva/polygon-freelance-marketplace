@@ -5,6 +5,8 @@ import "@openzeppelin/contracts-upgradeable/token/ERC1155/ERC1155Upgradeable.sol
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/PausableUpgradeable.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  CUSTOM ERRORS
@@ -37,7 +39,8 @@ contract AntigravityReputation is
     Initializable,
     ERC1155Upgradeable,
     AccessControlUpgradeable,
-    UUPSUpgradeable
+    UUPSUpgradeable,
+    PausableUpgradeable
 {
     // ─── Roles ────────────────────────────────────────────────────────────────
     /// @notice Authorized to mint sovereignty points. Bound to the Escrow contract post-deployment.
@@ -72,6 +75,11 @@ contract AntigravityReputation is
     ///      High score = High friction = Higher yield discount demanded by financiers.
     mapping(address => uint16) public gravityScores;
 
+    /// @notice POL Token address for reputation multipliers.
+    address public polToken;
+    /// @notice Minimum POL threshold for 1.5x multiplier (e.g., 1000 tokens).
+    uint256 public polThreshold;
+
     // ─── Events ───────────────────────────────────────────────────────────────
     event SovereignRatingActuated(address indexed sovereign, uint8 newAverage, uint256 totalEngagements);
     event PortfolioAnchored(address indexed sovereign, string ceramicCID);
@@ -92,16 +100,28 @@ contract AntigravityReputation is
         if (admin == address(0)) revert ZeroAddress();
         __ERC1155_init(uri);
         __AccessControl_init();
+        __Pausable_init();
         _grantRole(DEFAULT_ADMIN_ROLE, admin);
         _grantRole(MINTER_ROLE, admin);
         _grantRole(UPGRADER_ROLE, admin);
     }
+
+    function pause() external onlyRole(DEFAULT_ADMIN_ROLE) { _pause(); }
+    function unpause() external onlyRole(DEFAULT_ADMIN_ROLE) { _unpause(); }
 
     // ─── Configuration ────────────────────────────────────────────────────────
 
     /// @notice Re-points the ERC-1155 metadata gateway. Useful for IPFS→Arweave migration.
     function setURI(string memory newuri) external onlyRole(DEFAULT_ADMIN_ROLE) {
         _setURI(newuri);
+    }
+
+    /**
+     * @notice Sets the POL token address and multiplier threshold.
+     */
+    function setPOLConfig(address _token, uint256 _threshold) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        polToken = _token;
+        polThreshold = _threshold;
     }
 
     // ─── Core: Reputation Actuations ──────────────────────────────────────────
@@ -119,21 +139,25 @@ contract AntigravityReputation is
     function actuateSovereignXP(address sovereign, uint256 skillId, uint256 xp)
         external
         onlyRole(MINTER_ROLE)
+        whenNotPaused
     {
-        _mint(sovereign, skillId, xp, "");
+        uint256 finalXp = xp;
+        
+        // POL Staker Multiplier: 1.5x (15000 bps) boost for loyal sovereigns.
+        if (polToken != address(0) && IERC20(polToken).balanceOf(sovereign) >= polThreshold) {
+            finalXp = (xp * 15000) / 10000;
+        }
+
+        _mint(sovereign, skillId, finalXp, "");
     }
 
     /**
      * @notice Records a verified client rating and recomputes the rolling average.
-     * @dev    Rolling average is floor-rounded intentionally — we bias conservatively.
-     *         Prevents rating inflation from small-denomination work.
-     *
-     * @param  sovereign The freelancer receiving the rating.
-     * @param  rating    Client's satisfaction score [0–5]. Reverts on out-of-bounds.
      */
     function actuateRating(address sovereign, uint8 rating)
         external
         onlyRole(MINTER_ROLE)
+        whenNotPaused
     {
         if (rating > 5) revert RatingOutOfBounds();
 

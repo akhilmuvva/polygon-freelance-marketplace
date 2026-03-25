@@ -31,6 +31,17 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
     event FreelancerPicked(uint256 indexed jobId, address indexed freelancer);
     event JobAccepted(uint256 indexed jobId, address indexed freelancer);
     event IntentMatched(uint256 indexed jobId, address indexed client, address indexed freelancer, bytes32 intentHash);
+    event SBTContractUpdated(address indexed newSbt);
+    event EntryPointUpdated(address indexed newEntry);
+    event VaultUpdated(address indexed newVault);
+    event PolyTokenUpdated(address indexed newToken);
+    event ReputationContractUpdated(address indexed newRep);
+    event CompletionCertContractUpdated(address indexed newCert);
+    event ReviewSBTUpdated(address indexed newReviewSbt);
+    event PrivacyShieldUpdated(address indexed newPrivacyShield);
+    event YieldManagerUpdated(address indexed newYieldManager);
+    event SwapManagerUpdated(address indexed newSwapManager);
+    event ReputationThresholdUpdated(uint256 newThreshold);
 
     /// @notice Address of the PolyToken (REWARD token)
     address public polyToken;
@@ -92,6 +103,7 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
     function setSBTContract(address _sbt) external onlyRole(DEFAULT_ADMIN_ROLE) {
         if (_sbt == address(0)) revert InvalidAddress();
         sbtContract = _sbt;
+        emit SBTContractUpdated(_sbt);
     }
 
     /**
@@ -101,6 +113,7 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
     function setEntryPoint(address _entry) external onlyRole(DEFAULT_ADMIN_ROLE) {
         if (_entry == address(0)) revert InvalidAddress();
         entryPoint = _entry;
+        emit EntryPointUpdated(_entry);
     }
 
     /**
@@ -110,6 +123,7 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
     function setVault(address _vault) external onlyRole(DEFAULT_ADMIN_ROLE) {
         if (_vault == address(0)) revert InvalidAddress();
         vault = _vault;
+        emit VaultUpdated(_vault);
     }
 
     /**
@@ -120,6 +134,7 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
     function setPlatformFee(uint256 _bps) external onlyRole(DEFAULT_ADMIN_ROLE) {
         if (_bps > MAX_PLATFORM_FEE_BPS) revert InvalidStatus(); 
         gravityFactor = _bps;
+        emit FeeAdjusted(_bps, block.timestamp);
     }
 
     /**
@@ -128,6 +143,7 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
      */
     function setPolyToken(address _token) external onlyRole(DEFAULT_ADMIN_ROLE) {
         polyToken = _token;
+        emit PolyTokenUpdated(_token);
     }
 
     /**
@@ -136,6 +152,7 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
      */
     function setReputationContract(address _rep) external onlyRole(DEFAULT_ADMIN_ROLE) {
         reputationContract = _rep;
+        emit ReputationContractUpdated(_rep);
     }
 
     /**
@@ -145,7 +162,7 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
     function updatePlatformFee(uint256 _bps) external onlyRole(AGENT_ROLE) {
         if (_bps > MAX_PLATFORM_FEE_BPS) revert InvalidStatus();
         gravityFactor = _bps;
-        emit FeeAdjusted(_bps);
+        emit FeeAdjusted(_bps, block.timestamp);
     }
 
     /**
@@ -165,7 +182,7 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
         IERC20(token).forceApprove(yieldManager, amount);
         IYieldManager(yieldManager).deposit(toStrategy, token, amount);
         
-        emit TreasuryRebalanced(token, amount, fromStrategy, toStrategy);
+        emit TreasuryRebalanced(token, amount, fromStrategy, toStrategy, block.timestamp);
     }
 
     /**
@@ -174,6 +191,7 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
      */
     function setCompletionCertContract(address _cert) external onlyRole(DEFAULT_ADMIN_ROLE) {
         completionCertContract = _cert;
+        emit CompletionCertContractUpdated(_cert);
     }
 
     /**
@@ -182,6 +200,7 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
      */
     function setReviewSBT(address _rsbt) external onlyRole(DEFAULT_ADMIN_ROLE) {
         reviewSBT = _rsbt;
+        emit ReviewSBTUpdated(_rsbt);
     }
 
     /**
@@ -190,12 +209,19 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
      */
     function setPrivacyShield(address _ps) external onlyRole(DEFAULT_ADMIN_ROLE) {
         privacyShield = _ps;
+        emit PrivacyShieldUpdated(_ps);
     }
 
     /**
      * @notice Mapping to manually mark users as 'Supreme Members'.
      */
     mapping(address => bool) public isSupreme;
+    event SupremeStatusUpdated(address indexed user, bool status);
+
+    function setIsSupreme(address _user, bool _status) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        isSupreme[_user] = _status;
+        emit SupremeStatusUpdated(_user, _status);
+    }
 
     /**
      * @notice Updates the reputation threshold for fee waivers.
@@ -203,6 +229,7 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
      */
     function setReputationThreshold(uint256 _t) external onlyRole(DEFAULT_ADMIN_ROLE) {
         reputationThreshold = _t;
+        emit ReputationThresholdUpdated(_t);
     }
 
     /**
@@ -215,10 +242,12 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
 
     function setYieldManager(address _ym) external onlyRole(DEFAULT_ADMIN_ROLE) {
         yieldManager = _ym;
+        emit YieldManagerUpdated(_ym);
     }
 
     function setSwapManager(address _sm) external onlyRole(DEFAULT_ADMIN_ROLE) {
         swapManager = _sm;
+        emit SwapManagerUpdated(_sm);
     }
 
     uint256 public constant MAX_APPLICATIONS_PER_JOB = 50;
@@ -250,7 +279,7 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
         jobApplications[jobId].push(Application(_msgSender(), stake));
         hasApplied[jobId][_msgSender()] = true;
         
-        emit JobApplied(jobId, _msgSender(), stake);
+        emit JobApplied(jobId, _msgSender(), stake); // Base doesn't have timestamp for this one yet but let's keep it safe
     }
 
     /**
@@ -319,7 +348,7 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
         if (job.status != JobStatus.Ongoing) revert InvalidStatus();
 
         job.ipfsHash = ipfsHash;
-        emit WorkSubmitted(jobId, _msgSender(), ipfsHash);
+        emit WorkSubmitted(jobId, _msgSender(), ipfsHash, block.timestamp);
     }
 
     /**
@@ -406,7 +435,7 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
     function sovereignFreeze() external onlyRole(AGENT_ROLE) {
         emergencyMode = true;
         _pause();
-        emit FeeAdjusted(0); // SIGNAL: Trust minimization active
+        emit FeeAdjusted(0, block.timestamp); // SIGNAL: Trust minimization active
     }
 
     /**
@@ -490,7 +519,7 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
         _initJobRecord(jobId, p.freelancer, p.token, actualAmount, p.ipfsHash, p.categoryId, p.deadline, p.yieldStrategy, p.mAmounts.length);
         _setupMilestones(jobId, p.freelancer, p.mAmounts, p.mHashes, p.mIsUpfront);
 
-        emit JobCreated(jobId, _msgSender(), p.freelancer, actualAmount, jobs[jobId].deadline);
+        emit JobCreated(jobId, _msgSender(), p.freelancer, actualAmount, jobs[jobId].deadline, block.timestamp);
         return jobId;
     }
 
@@ -608,7 +637,7 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
         }
 
         balances[job.freelancer][job.token] += amt;
-        emit MilestoneReleased(jobId, job.freelancer, mId, amt);
+        emit MilestoneReleased(jobId, job.freelancer, mId, amt, block.timestamp);
     }
 
     /**
@@ -661,8 +690,13 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
         }
 
         if (polyToken != address(0)) {
-            uint256 reward = isSupremeMember ? REWARD_BASE * SUPREME_REWARD_BOOST : REWARD_BASE;
-            (bool success, ) = polyToken.call(abi.encodeWithSignature("mint(address,uint256)", job.freelancer, reward));
+            uint256 baseReward = REWARD_BASE;
+            
+            // Apply Multipliers
+            if (isSupremeMember) baseReward *= SUPREME_REWARD_BOOST;
+            if (job.token == polyToken) baseReward *= 2; // Extra multiplier for ecosystem token utility (POL_MULTIPLIER)
+
+            (bool success, ) = polyToken.call(abi.encodeWithSignature("mint(address,uint256)", job.freelancer, baseReward));
             success;
         }
 
@@ -679,8 +713,8 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
             balances[vault][job.token] += fee;
         }
 
-        emit FundsReleased(jobId, job.freelancer, payout, jobId);
-        emit ReviewSubmitted(jobId, job.client, job.freelancer, rating, "");
+        emit FundsReleased(jobId, job.freelancer, payout, jobId, block.timestamp);
+        emit ReviewSubmitted(jobId, job.client, job.freelancer, rating, "", block.timestamp);
     }
 
     /**
@@ -773,7 +807,8 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
             emit Dispute(IArbitrator(arbitrator), dId, jobId, jobId);
         } else {
             // Internal arbitration or manual mode
-            emit DisputeRaised(jobId, jobId);
+            // In internal mode, use jobId as the dispute ID
+            emit DisputeRaised(jobId, jobId, block.timestamp);
         }
     }
 
@@ -866,7 +901,7 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
 
         if (clientAmt > 0) balances[job.client][job.token] += clientAmt;
         
-        emit DisputeResolved(jobId, freelancerBps);
+        emit DisputeResolved(jobId, freelancerBps, block.timestamp);
     }
 
     function _transferFunds(address to, address token, uint256 amt) internal {

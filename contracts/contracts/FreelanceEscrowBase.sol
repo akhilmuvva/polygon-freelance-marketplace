@@ -48,21 +48,30 @@ abstract contract FreelanceEscrowBase is
      * @dev Structure representing a freelance job in the system.
      */
     struct Job {
-        address client;          /// @dev The individual/entity creating the job
-        uint32 id;               /// @dev Unique job identifier
-        uint48 deadline;         /// @dev Unix timestamp for job deadline
-        JobStatus status;        /// @dev Current status in the lifecycle
-        uint8 rating;            /// @dev Rating given upon completion (0-5)
-        address freelancer;      /// @dev The individual/entity performing the work
-        uint16 categoryId;       /// @dev Job Category (Dev, Design, etc.)
-        uint16 milestoneCount;   /// @dev Total number of milestones
-        bool paid;               /// @dev Whether final payment has been processed
-        IYieldManager.Strategy yieldStrategy; /// @dev Selected DeFi yield strategy
-        address token;           /// @dev ERC20 token address (0 for native)
-        uint256 amount;          /// @dev Total job budget/amount
-        uint256 freelancerStake; /// @dev Amount staked by freelancer (anti-spam)
-        uint256 totalPaidOut;    /// @dev Total amount released to freelancer so far
-        string ipfsHash;         /// @dev IPFS hash for job details/work submission
+        // SLOT 1: Address(20) + uint32(4) + uint48(6) + uint16(2) = 32 bytes
+        address client;
+        uint32 id;
+        uint48 deadline;
+        uint16 categoryId;
+
+        // SLOT 2: Address(20) + uint16(2) + JobStatus(1) + uint8(1) + bool(1) + Strategy(1) = 26 bytes
+        address freelancer;
+        uint16 milestoneCount;
+        JobStatus status;
+        uint8 rating;
+        bool paid;
+        IYieldManager.Strategy yieldStrategy;
+
+        // SLOT 3: Address(20) + (12 bytes padding)
+        address token;
+
+        // SLOTS 4-6: uint256 take full slots
+        uint256 amount;
+        uint256 freelancerStake;
+        uint256 totalPaidOut;
+
+        // SLOT 7: string (dynamic pointer)
+        string ipfsHash;
     }
 
     struct Application {
@@ -115,15 +124,15 @@ abstract contract FreelanceEscrowBase is
         return super.supportsInterface(interfaceId);
     }
 
-    event JobCreated(uint256 indexed jobId, address indexed client, address indexed freelancer, uint256 amount, uint256 deadline);
-    event FundsReleased(uint256 indexed jobId, address indexed freelancer, uint256 amount, uint256 nftId);
-    event MilestoneReleased(uint256 indexed jobId, address indexed freelancer, uint256 indexed milestoneId, uint256 amount);
-    event DisputeRaised(uint256 indexed jobId, uint256 disputeId);
-    event DisputeResolved(uint256 indexed jobId, uint256 freelancerBps);
-    event ReviewSubmitted(uint256 indexed jobId, address indexed client, address indexed freelancer, uint8 rating, string review);
-    event WorkSubmitted(uint256 indexed jobId, address indexed freelancer, string ipfsHash);
-    event TreasuryRebalanced(address indexed token, uint256 amount, IYieldManager.Strategy from, IYieldManager.Strategy to);
-    event FeeAdjusted(uint256 newBps);
+    event JobCreated(uint256 indexed jobId, address indexed client, address indexed freelancer, uint256 amount, uint256 deadline, uint256 timestamp);
+    event FundsReleased(uint256 indexed jobId, address indexed freelancer, uint256 amount, uint256 nftId, uint256 timestamp);
+    event MilestoneReleased(uint256 indexed jobId, address indexed freelancer, uint256 indexed milestoneId, uint256 amount, uint256 timestamp);
+    event DisputeRaised(uint256 indexed jobId, uint256 disputeId, uint256 timestamp);
+    event DisputeResolved(uint256 indexed jobId, uint256 freelancerBps, uint256 timestamp);
+    event ReviewSubmitted(uint256 indexed jobId, address indexed client, address indexed freelancer, uint8 rating, string review, uint256 timestamp);
+    event WorkSubmitted(uint256 indexed jobId, address indexed freelancer, string ipfsHash, uint256 timestamp);
+    event TreasuryRebalanced(address indexed token, uint256 amount, IYieldManager.Strategy from, IYieldManager.Strategy to, uint256 timestamp);
+    event FeeAdjusted(uint256 newBps, uint256 timestamp);
 
     /**
      * @notice ERC-7201 storage gap. Prevents storage slot collision when new

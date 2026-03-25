@@ -1,8 +1,8 @@
-// Network Configuration
+// Network Configuration (ZENITH LOGIC-HARDENED: v2.1.0)
 const IS_AMOY = true; // Toggle for deployment
 
 export const CONTRACT_ADDRESS = IS_AMOY
-    ? '0x5Ff3E1223B5c37f1C18CC279dfC9C181bF22BEf9'
+    ? '0x5Ff3E1223B5c37f1C18CC279dfC9C181bF22BEf9' // Main Escrow (Logic Hardened)
     : '0x38c76A767d45Fc390160449948aF80569E2C4217';
 
 export const SUPPORTED_TOKENS = [

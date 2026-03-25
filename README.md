@@ -1,5 +1,5 @@
 # 🚀 PolyLance Zenith: Sovereign Architect's Edition
-**Protocol Engineers:** [Akhil Muvva](mailto:akhilmuvva@polylance.codes) & [Jhansi Kupireddy](mailto:jhansikupireddy@polylance.codes)
+**Protocol Engineers:** [Akhil Muvva](mailto:akhilmuvva@polylance.codes) & [Jhansi Kupireddy](mailto:jhansi.kupireddy@polylance.codes)
 
 ## 🌌 The Antigravity Equilibrium
 PolyLance Zenith is the world's first **0-Friction, Sovereign Real-World Asset (RWA) Talent Layer**. Built on the Polygon AggLayer, it eliminates the extractive fees of Web2 platforms (Upwork, Fiverr) by treating freelance labor as an institutional-grade, yield-bearing RWA. 
@@ -76,6 +76,23 @@ Our engineering mandate is strict: No friction. No exploits.
 | **Antigravity Reputation** | `0x89791A9A3210667c828492DB98DCa3e2076cc373` |
 | **Zenith Governance Engine** | `0x4653251486a57f90Ee89F9f34E098b9218659b83` |
 | **YieldManager (Aave Mainnet Anchor)** | `0x794a6135D5A5B64eBcEeB42779aa57c0b5b4814aD` |
+
+## 🛠️ Hardening & Remediation Ledger (v1.5.1-Z)
+The PolyLance Zenith protocol has undergone a 22-step agentic hardening process to ensure mainnet-readiness.
+
+- **Phase 1: Smart Contract Resilience**
+    - Implementation of `ReentrancyGuard` (namespaced) across all entry points.
+    - Transition to 48-hour `PolyLanceTimelock` for governance stability.
+    - Integration of Chainlink `AggregatorV3` for real-time asset valuation.
+    - UUPS Proxy hardening with enforced initialization guards.
+- **Phase 3: Frontend Protocol Stability**
+    - `NetworkGuard` implementation for automatic chain resonance.
+    - `useTx` unified hook for transaction lifecycle feedback.
+    - Transition to Pinata JWT for decentralized IPFS persistence.
+- **Phase 5: Subgraph Efficiency**
+    - Implementation of GraphQL pagination (first/skip) to handle talent mesh scaling.
+
+> *Full implementation details are recorded in [AGENT_FIX_LOG.md](AGENT_FIX_LOG.md).*
 
 > *A deep-tissue Audit Summary of our security patches and architectural mandates is available in `AUDIT_SUMMARY.md`.*
 
