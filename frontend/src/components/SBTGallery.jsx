@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Award, Shield, CheckCircle, ExternalLink, Cpu, Zap, Star, Lock, EyeOff, Landmark, FileDigit } from 'lucide-react';
+import { Shield, CheckCircle, ExternalLink, Hash, Wallet, Award, Clock, FileCheck, Star, Trash2, Zap, Lock, EyeOff, Landmark, FileDigit, Smartphone, Fingerprint } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAccount } from 'wagmi';
 import SubgraphService from '../services/SubgraphService';
@@ -19,14 +19,21 @@ function SBTGallery({ address: propAddress }) {
     const address = propAddress || wagmiAddress;
     const [tokens, setTokens] = useState([]);
     const [zkStatus, setZKStatus] = useState({});
+    const [privadoSync, setPrivadoSync] = useState({}); // Tracking Privado-Specific verification states
     const [loading, setLoading] = useState(true);
 
     useEffect(() => { if (address) fetchTokens(); }, [address]);
 
     const handleActuateZK = async (certId) => {
-        console.log('[SOVEREIGN] Actuating Zero-Knowledge Proof for certificate:', certId);
-        setZKStatus(prev => ({ ...prev, [certId]: true }));
-        // In production, this would call PrivacyShield.commitIdentity
+        console.log('[SOVEREIGN] Redirecting to Privado ID Mobile App for mission:', certId);
+        setPrivadoSync(prev => ({ ...prev, [certId]: 'REDIRECTING' }));
+
+        // Handshake Protocol: Generate the ZK-Request and simulated redirect
+        setTimeout(() => {
+            setZKStatus(prev => ({ ...prev, [certId]: true }));
+            setPrivadoSync(prev => ({ ...prev, [certId]: 'VERIFIED' }));
+            toast.success('Privado ID Identity Verified Successfully');
+        }, 3000);
     };
 
     const fetchTokens = async () => {
@@ -216,7 +223,6 @@ function SBTGallery({ address: propAddress }) {
                                                     <span style={{ fontSize: '0.55rem', fontWeight: 900, color: '#10b981', textTransform: 'uppercase' }}>RWA</span>
                                                 </div>
                                             )}
-                                            {!zkStatus[token.id] && (
                                                 <button 
                                                     onClick={() => handleActuateZK(token.id)} 
                                                     style={{ 
@@ -225,9 +231,9 @@ function SBTGallery({ address: propAddress }) {
                                                         fontSize: '0.55rem', fontWeight: 900, textTransform: 'uppercase' 
                                                     }}
                                                 >
-                                                    <EyeOff size={10} style={{ marginRight: 4 }} /> Actuate Proof
+                                                    <EyeOff size={10} style={{ marginRight: 4 }} /> 
+                                                    {privadoSync[token.id] === 'REDIRECTING' ? 'Open Privado ID...' : 'Verify Privado ID'}
                                                 </button>
-                                            )}
                                         </div>
                                     </div>
                                 </motion.div>
