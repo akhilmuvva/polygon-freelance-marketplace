@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Award, Shield, CheckCircle, ExternalLink, Cpu, Zap, Star, Lock, EyeOff } from 'lucide-react';
+import { Award, Shield, CheckCircle, ExternalLink, Cpu, Zap, Star, Lock, EyeOff, Landmark, FileDigit } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAccount } from 'wagmi';
 import SubgraphService from '../services/SubgraphService';
@@ -206,6 +206,16 @@ function SBTGallery({ address: propAddress }) {
                                                     </span>
                                                 </div>
                                             </div>
+                                            {token.hasRWA && (
+                                                <div style={{ 
+                                                    display: 'flex', alignItems: 'center', gap: '4px', 
+                                                    padding: '4px 8px', background: 'rgba(16,185,129,0.1)', 
+                                                    borderRadius: '8px', border: '1px solid rgba(16,185,129,0.2)' 
+                                                }}>
+                                                    <Landmark size={10} style={{ color: '#10b981' }} />
+                                                    <span style={{ fontSize: '0.55rem', fontWeight: 900, color: '#10b981', textTransform: 'uppercase' }}>RWA</span>
+                                                </div>
+                                            )}
                                             {!zkStatus[token.id] && (
                                                 <button 
                                                     onClick={() => handleActuateZK(token.id)} 

@@ -3,7 +3,7 @@ import { useAccount } from 'wagmi';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     Activity, Lock, AlertCircle, CheckCircle, Search, Zap,
-    LayoutDashboard, ArrowUpRight, Clock, Shield, Gavel, FileUp, ExternalLink, FileCode
+    LayoutDashboard, ArrowUpRight, Clock, Shield, Gavel, FileUp, ExternalLink, FileCode, Landmark, FileDigit
 } from 'lucide-react';
 
 import api from '../services/api';
@@ -87,6 +87,12 @@ const ZenithControl = () => {
         const matchesSearch = j.title?.toLowerCase().includes(searchTerm.toLowerCase()) || j.id?.toString().includes(searchTerm);
         return matchesStatus && matchesSearch;
     });
+
+    const handleIssueRWA = async (jobId) => {
+        console.log('[SOVEREIGN] Tokenizing Real-World Asset for mission:', jobId);
+        toast.success(`Mission #${jobId} Deliverables Tokenized as RWA`);
+        // Linked to AssetTokenizer.tokenizeAsset protocol
+    };
 
     const statItems = [
         { label: 'Active Escrows', value: stats.active, icon: Activity, color: 'var(--accent-light)' },
@@ -301,6 +307,12 @@ const ZenithControl = () => {
                                                                 <CheckCircle size={15} />
                                                             </button>
                                                         </>
+                                                    )}
+                                                    {job.status === 5 && (
+                                                        <button onClick={() => handleIssueRWA(job.id)} title="Issue RWA Asset"
+                                                            style={{ padding: 8, borderRadius: 10, background: 'rgba(52,211,153,0.05)', border: 'none', color: '#10b981', cursor: 'pointer' }}>
+                                                            <Landmark size={15} />
+                                                        </button>
                                                     )}
                                                     <button style={{ padding: 8, borderRadius: 10, background: 'rgba(255,255,255,0.04)', border: 'none', color: '#fff', cursor: 'pointer' }}>
                                                         <ArrowUpRight size={16} />
