@@ -280,6 +280,14 @@ function App() {
 
   useEffect(() => {
     setIsHydrated(true);
+
+    // Sync activeTab with URL path for SEO/Direct deep linking
+    const path = window.location.pathname.replace('/', '');
+    const validTabs = ['manifesto', 'jobs', 'specialists', 'leaderboard', 'dashboard', 'identity', 'portfolio'];
+    if (validTabs.includes(path)) {
+      setActiveTab(path);
+    }
+
     // Task 1: Session Resurrection Restoration
     const session = localStorage.getItem('zenith_active_session');
     if (session) {
@@ -510,7 +518,7 @@ function App() {
   return (
     <>
       <Toaster position="top-right" />
-      {(!isSessionActive || isReconnecting) && activeTab !== 'terms' && activeTab !== 'privacy' ? (
+      {(!isSessionActive || isReconnecting) && activeTab !== 'terms' && activeTab !== 'privacy' && activeTab !== 'manifesto' ? (
         <Suspense fallback={null}>
           <LandingPage 
             onSocialLogin={actuateSocialLoginIntent} 
