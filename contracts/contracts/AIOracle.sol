@@ -186,6 +186,14 @@ contract AIOracle is AccessControl, ReentrancyGuard {
                 abi.encodeWithSignature("verifyAsset(uint256)", request.targetId)
             );
             require(success, "AIOracle: Callback failed");
+        } else if (keccak256(bytes(request.verificationType)) == keccak256("dispute")) {
+            // Sovereign Dispute Resolution: AI settles the contest with a suggested BPS split
+            // targetId = jobId, confidence can be used to determine split if approved
+            uint256 splitBps = approved ? request.confidence * 100 : 0;
+            (bool success, ) = request.targetContract.call(
+                abi.encodeWithSignature("aiResolveDispute(uint256,uint256)", request.targetId, splitBps)
+            );
+            require(success, "AIOracle: Callback failed");
         }
     }
 
