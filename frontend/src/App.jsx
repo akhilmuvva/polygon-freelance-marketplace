@@ -39,6 +39,7 @@ const IdentityManager = lazy(() => import('./components/IdentityManager'));
 const Manifesto = lazy(() => import('./components/Manifesto.jsx'));
 const InsuranceDashboard = lazy(() => import('./components/InsuranceDashboard'));
 const AICommandCenter = lazy(() => import('./components/AICommandCenter'));
+const ProtocolDashboard = lazy(() => import('./components/ProtocolDashboard'));
 
 import { NotificationManager } from './components/NotificationManager';
 import CourtErrorBoundary from './components/CourtErrorBoundary';
@@ -503,6 +504,7 @@ function App() {
       case 'specialists': return <SpecialistMarketplace onRegister={() => setActiveTab('identity')} />;
       case 'insurance': return <InsuranceDashboard />;
       case 'ai-oracle': return <AICommandCenter />;
+      case 'protocol': return <ProtocolDashboard />;
       case 'manifesto': return <Manifesto />;
       default: return <Dashboard address={effectiveAddress} />;
     }
@@ -571,6 +573,7 @@ function App() {
                   {[
                     { id: 'control', icon: Activity, label: 'Zenith Watcher' },
                     { id: 'ai-oracle', icon: Brain, label: 'AI Oracle' },
+                    { id: 'protocol', icon: Landmark, label: 'Zenith Protocol' },
                     { id: 'analytics', icon: BarChart3, label: 'Network Analytics' },
                   ].map(item => (
                     <div key={item.id} className="anime-nav-item" onClick={() => navigate(item.id)} style={styles.navItem(activeTab === item.id)}>
