@@ -13,7 +13,7 @@ import {
     createAuthenticationAdapter,
     darkTheme,
 } from '@rainbow-me/rainbowkit';
-import { WagmiProvider, http, fallback, useAccount } from 'wagmi';
+import { WagmiProvider, http, fallback, useAccount, useSwitchChain } from 'wagmi';
 import { polygon, polygonAmoy } from 'wagmi/chains';
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 import { SiweMessage } from 'siwe';
@@ -57,6 +57,34 @@ function ConnectionLogger() {
     }, [isConnected, address, status]);
 
     return null;
+}
+
+function NetworkGuard({ children }) {
+    const { chainId, isConnected } = useAccount();
+    const { switchChain } = useSwitchChain();
+    const AMOY_ID = 80002;
+
+    useEffect(() => {
+        if (isConnected && chainId && chainId !== AMOY_ID) {
+            hotToast.error('Resonance Mismatch: Please switch to Polygon Amoy.', {
+                id: 'network-switch-prompt',
+                duration: 10000,
+                position: 'top-right',
+                style: {
+                    background: '#1a1a1a',
+                    color: '#fff',
+                    border: '1px solid #8a2be2',
+                },
+                icon: '🛰️',
+            });
+            // Auto-prompt switch after a small delay
+            setTimeout(() => {
+                 switchChain({ chainId: AMOY_ID });
+            }, 1500);
+        }
+    }, [chainId, isConnected, switchChain]);
+
+    return children;
 }
 
 function SovereignAuthProvider({ children, authStatus, setAuthStatus }) {
@@ -163,8 +191,8 @@ export function Web3Provider({ children }) {
     const [authStatus, setAuthStatus] = useState('unauthenticated');
     const projectId = env.WALLET_CONNECT_PROJECT_ID;
 
-    // RPC Total Purge: Removing all private/third-party providers (Infura, Blast, Llama) 
-    // to eliminate 401/CORS bottlenecks. Using only official high-uptime public Polygon nodes.
+    // RPC Total Purge: Expanding to a multi-node 'Resonance Fallback' cluster
+    // Adding high-availability public nodes to neutralize 401/CORS rate-limiting bottlenecks.
     const config = useMemo(() => getDefaultConfig({
         appName: 'PolyLance Zenith',
         projectId,
@@ -172,11 +200,17 @@ export function Web3Provider({ children }) {
         transports: {
             [polygonAmoy.id]: fallback([
                 http('https://rpc-amoy.polygon.technology'),
+                http('https://polygon-amoy-bor-rpc.publicnode.com'),
+                http('https://amoy.polygon.drpc.org'),
+                http('https://rpc.ankr.com/polygon_amoy'),
             ]),
             [polygon.id]: fallback([
-                http('https://polygon-rpc.com'),
+                http('https://polygon-bor-rpc.publicnode.com'),
+                http('https://polygon.drpc.org'),
+                http('https://1rpc.io/matic'),
             ]),
         },
+        ...DEFENSIVE_RPC_CONFIG, // Integrate retry & jitter-based batching
         ssr: false,
     }), [projectId]);
 
@@ -198,12 +232,16 @@ export function Web3Provider({ children }) {
                                 {huddleClient ? (
                                     <HuddleProvider client={huddleClient}>
                                         <ConnectionLogger />
-                                        {children}
+                                        <NetworkGuard>
+                                            {children}
+                                        </NetworkGuard>
                                     </HuddleProvider>
                                 ) : (
                                     <>
                                         <ConnectionLogger />
-                                        {children}
+                                        <NetworkGuard>
+                                            {children}
+                                        </NetworkGuard>
                                     </>
                                 )}
                             </RainbowKitProvider>

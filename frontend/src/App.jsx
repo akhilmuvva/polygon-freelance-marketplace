@@ -46,8 +46,7 @@ import env from './config/env';
 import { initSocialLogin, createBiconomySmartAccount } from './utils/biconomy';
 import { createWalletClient, custom } from 'viem';
 import { polygonAmoy } from 'viem/chains';
-
-const ARCHITECT_WALLET = '0x25F6C8ed995C811E6c0ADb1D66A60830E8115e9A';
+import { ZENITH_JUDGES } from './constants';
 
 /* ── Inline styles for the shell — 8PM AUTHENTIC ── */
 const styles = {
@@ -463,7 +462,7 @@ function App() {
 
 
   const effectiveAddress = smartAccount?.accountAddress || address;
-  const isAdmin = effectiveAddress?.toLowerCase() === ARCHITECT_WALLET.toLowerCase();
+  const isAdmin = effectiveAddress && ZENITH_JUDGES.some(j => j.toLowerCase() === effectiveAddress.toLowerCase());
   
   // Directive 10: Session Continuity Guard
   // A session is active if we have a Smart Account (Social/Bypass) OR a fully connected wallet with an address.
@@ -488,11 +487,11 @@ function App() {
           <ZenithCourt address={effectiveAddress} />
         </CourtErrorBoundary>
       );
-      case 'control': return <ZenithControl address={effectiveAddress} />;
+      case 'control': return isAdmin ? <ZenithControl address={effectiveAddress} /> : <Dashboard address={effectiveAddress} />;
       case 'strata': return <ZenithStrata address={effectiveAddress} />;
       case 'liquidity': return <ZenithLiquidity />;
       case 'cross-chain': return <CrossChainDashboard address={effectiveAddress} />;
-      case 'analytics': return <AnalyticsDashboard />;
+      case 'analytics': return isAdmin ? <AnalyticsDashboard /> : <Dashboard address={effectiveAddress} />;
       case 'sbt-gallery': return <SBTGallery address={effectiveAddress} />;
       case 'terms': return <TermsOfService />;
       case 'privacy': return <PrivacyCenter address={effectiveAddress} />;
@@ -565,7 +564,7 @@ function App() {
                 <>
                   <div style={styles.sectionLabel}>Sovereign Oversight</div>
                   {[
-                    { id: 'control', icon: Activity, label: 'Command Panel' },
+                    { id: 'control', icon: Activity, label: 'Zenith Watcher' },
                     { id: 'analytics', icon: BarChart3, label: 'Network Analytics' },
                   ].map(item => (
                     <div key={item.id} className="anime-nav-item" onClick={() => navigate(item.id)} style={styles.navItem(activeTab === item.id)}>

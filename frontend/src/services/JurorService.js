@@ -4,7 +4,7 @@
  * Manages juror enrollment, staking, and case assignments.
  * In a production environment, this would interact with a Court Contract.
  */
-import { GravityScoreService } from './GravityScoreService';
+import { ZENITH_JUDGES } from '../constants';
 
 const JUROR_STAKE_REQUIREMENT = 500; // POL
 
@@ -40,15 +40,15 @@ export const JurorService = {
      * Get Juror Stats
      */
     async getJurorStats(address) {
-        // The Architect (0x25F6C8ed995C811E6c0ADb1D66A60830E8115e9A) holds Judicial Supremacy by default.
-        const isArchitect = address?.toLowerCase() === '0x25F6C8ed995C811E6c0ADb1D66A60830E8115e9A'.toLowerCase();
+        // Any account in ZENITH_JUDGES holds Judicial Supremacy by default.
+        const isMagistrate = address && ZENITH_JUDGES.some(j => j.toLowerCase() === address.toLowerCase());
         
         return {
-            totalCases: isArchitect ? 12 : 0, 
-            correctVotes: isArchitect ? 12 : 0,
-            rewardsEarned: isArchitect ? 450 : 0,
+            totalCases: isMagistrate ? 12 : 0, 
+            correctVotes: isMagistrate ? 12 : 0,
+            rewardsEarned: isMagistrate ? 450 : 0,
             activeStake: 0, // Default juror without any stake as requested
-            rank: isArchitect ? 'Supreme Justice' : 'Novice'
+            rank: isMagistrate ? 'Supreme Justice' : 'Novice'
         };
     }
 };

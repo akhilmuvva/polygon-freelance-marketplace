@@ -12,10 +12,10 @@ import DisputeModal from './DisputeModal';
 import EvidenceModal from './EvidenceModal';
 import { useReadContract } from 'wagmi';
 import FreelanceEscrowABI from '../contracts/FreelanceEscrow.json';
-import { CONTRACT_ADDRESS } from '../constants';
+import { CONTRACT_ADDRESS, ZENITH_JUDGES } from '../constants';
 import toast from 'react-hot-toast';
 
-const ARCHITECT_WALLET = '0x25F6C8ed995C811E6c0ADb1D66A60830E8115e9A';
+// ZENITH MAGISTRATES: THE BOARD OF SUPREME JUSTICE
 
 const statusColors = {
     0: { color: '#60a5fa', bg: 'rgba(96,165,250,0.08)' },
@@ -37,17 +37,19 @@ const ZenithControl = () => {
     const { address } = useAccount();
     const [jobs, setJobs] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [viewMode, setViewMode] = useState('Personal'); // Personal | Global
+    
+    // Sovereignty Logic
+    const isAuthorizedAdmin = address && ZENITH_JUDGES.some(j => j.toLowerCase() === address.toLowerCase());
+    const [viewMode, setViewMode] = useState(isAuthorizedAdmin ? 'Global' : 'Personal'); // Default to Global for Magistrates
     const [globalStats, setGlobalStats] = useState(null);
     const [filterStatus, setFilterStatus] = useState('All');
     const [searchTerm, setSearchTerm] = useState('');
     const [disputeJob, setDisputeJob] = useState(null);
     const [evidenceJob, setEvidenceJob] = useState(null);
 
-    // Directive 04: Sovereign Identity Check + Architectural Lock-in
-    // Sovereign Override: If the identity matches the Architect signature, 
-    // we grant UI-layer sovereignty even if roles are unsynced on-chain.
-    const isAuthorizedAdmin = address?.toLowerCase() === ARCHITECT_WALLET.toLowerCase();
+    // Directive 04: Sovereign Identity Check + Magistrate Board Resonance
+    // Sovereign Override: If the identity matches any of the Magistrate signatures,
+    // we grant UI-layer sovereignty and Global Oversight by default.
 
     useEffect(() => {
         const fetchData = async () => {
@@ -92,6 +94,18 @@ const ZenithControl = () => {
         { label: 'In Dispute', value: stats.disputed, icon: AlertCircle, color: '#f87171' },
         { label: 'Success Rate', value: `${jobs.length ? Math.round((stats.completed / jobs.length) * 100) : 0}%`, icon: CheckCircle2, color: '#818cf8' },
     ];
+
+    if (!isAuthorizedAdmin) {
+        return (
+            <div style={{ padding: 80, textAlign: 'center', background: 'rgba(255,255,255,0.02)', borderRadius: 24, border: '1px solid var(--border)' }}>
+                <Lock size={64} style={{ color: '#f87171', marginBottom: 24, opacity: 0.5 }} />
+                <h2 style={{ fontSize: '1.5rem', fontWeight: 900, marginBottom: 16 }}>Sovereign Access Denied</h2>
+                <p style={{ color: 'var(--text-tertiary)', fontSize: '0.88rem', maxWidth: 400, margin: '0 auto' }}>
+                    Identity signature resonance failure. This console is restricted to designated Zenith Court Magistrates only.
+                </p>
+            </div>
+        );
+    }
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 40 }}>

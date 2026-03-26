@@ -4,15 +4,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAccount, useWriteContract, useReadContract } from 'wagmi';
 import FreelanceEscrowABI from '../contracts/FreelanceEscrow.json';
 import { formatEther } from 'viem';
-import { CONTRACT_ADDRESS } from '../constants';
+import { CONTRACT_ADDRESS, ZENITH_JUDGES } from '../constants';
 import hotToast from 'react-hot-toast';
 import SubgraphService from '../services/SubgraphService';
 import JobService from '../services/JobService';
 import { useAnimeAnimations } from '../hooks/useAnimeAnimations.js';
 import JurorService from '../services/JurorService';
 import { useIdentity } from '../hooks/useIdentity';
-
-const ARCHITECT_WALLET = '0x25F6C8ed995C811E6c0ADb1D66A60830E8115e9A';
 
 const ZenithCourt = () => {
     const { address, isConnected } = useAccount();
@@ -27,8 +25,8 @@ const ZenithCourt = () => {
     const { staggerFadeIn, slideInLeft } = useAnimeAnimations();
     const headerRef = useRef(null);
 
-    // Sovereign Override: Architect identity grants judicial supremacy.
-    const isAdmin = address?.toLowerCase() === ARCHITECT_WALLET.toLowerCase();
+    // Sovereign Override: Zenith Judges hold Judicial Supremacy by default.
+    const isAdmin = address && ZENITH_JUDGES.some(j => j.toLowerCase() === address.toLowerCase());
     const { writeContract, isPending } = useWriteContract();
 
     useEffect(() => {

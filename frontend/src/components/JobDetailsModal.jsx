@@ -229,7 +229,7 @@ const JobDetailsModal = ({
                                 <MessageSquare size={16} /> Chat with Freelancer
                             </button>
                         )}
-                        {onFiatPay && (
+                        {isClient && onFiatPay && (
                             <button onClick={() => onFiatPay(job.freelancer || job.client)} style={styles.btnSecondary}>
                                 <CreditCard size={16} /> Fiat Pay
                             </button>

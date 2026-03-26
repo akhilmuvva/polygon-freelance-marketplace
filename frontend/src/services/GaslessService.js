@@ -21,7 +21,7 @@ export const ANTIGRAVITY_RELAY_CONFIG = {
 export const getWebsocketTransport = (alchemyId) => {
     // Standardizing on sovereign fallback or Amoy for the current protocol phase
     const isAmoy = import.meta.env.VITE_APP_ENV !== 'production' || window.location.hostname.includes('amoy');
-    return isAmoy ? 'wss://rpc-amoy.polygon.technology/ws' : 'wss://polygon-rpc.com/ws'; 
+    return isAmoy ? 'wss://polygon-amoy-bor-rpc.publicnode.com/ws' : 'wss://polygon-bor-rpc.publicnode.com/ws'; 
 };
 
 /**

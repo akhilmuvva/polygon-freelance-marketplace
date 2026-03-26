@@ -18,7 +18,7 @@ const publicClient = createPublicClient({
   transport: fallback([
     http('https://polygon-amoy-bor-rpc.publicnode.com'),
     http('https://rpc-amoy.polygon.technology'),
-    http('https://polygon-amoy.drpc.org'),
+    http('https://amoy.polygon.drpc.org'),
     http('https://rpc.ankr.com/polygon_amoy')
   ], { rank: true })
 });
@@ -128,7 +128,41 @@ const SovereignService = {
       return job;
     } catch {
       console.warn('[SOVEREIGN] High gravity detected: Triggering cross-chain fallback for job retrieval...');
-      // Direct chain read if Indexer is slow
+      
+      // Directive 21: Direct-to-Chain Fallback
+      // If the Subgraph is lagging, we query the source of truth directly.
+      try {
+        const jobData = await publicClient.readContract({
+          address: ESCROW_ADDRESS,
+          abi: parseAbi([
+            'function jobs(uint256) view returns (address client, address freelancer, uint256 amount, uint256 deadline, uint8 status, string ipfsHash, uint256 createdAt)'
+          ]),
+          functionName: 'jobs',
+          args: [BigInt(jobId)]
+        });
+
+        if (jobData && jobData[0] !== '0x0000000000000000000000000000000000000000') {
+           const job = {
+             jobId: jobId.toString(),
+             client: jobData[0],
+             freelancer: jobData[1],
+             amount: jobData[2].toString(),
+             status: jobData[4],
+             ipfsHash: jobData[5],
+             createdAt: jobData[6].toString(),
+             isSovereign: true,
+             isFallback: true
+           };
+           
+           if (job.ipfsHash) {
+             const metadata = await IPFSResolver.resolve(job.ipfsHash);
+             return { ...job, ...metadata };
+           }
+           return job;
+        }
+      } catch (err) {
+        console.error('[SOVEREIGN] Critical Resonance Failure:', err.message);
+      }
       return null;
     }
   },

@@ -126,7 +126,7 @@ export async function createBiconomySmartAccount(signer) {
             biconomyPaymasterApiKey: PAYMASTER_URL,
             rpcUrl: signer.chain?.id === 80002 
                 ? 'https://rpc-amoy.polygon.technology' 
-                : 'https://polygon-rpc.com'
+                : 'https://polygon-bor-rpc.publicnode.com'
         });
 
         // Resolve accountAddress — newer SDK versions require getAccountAddress()

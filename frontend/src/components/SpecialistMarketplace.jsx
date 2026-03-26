@@ -222,31 +222,67 @@ const SpecialistMarketplace = ({ onRegister }) => {
     }, [specialists, filterLevel, sortBy, searchTerm]);
 
     return (
-        <div className="specialist-marketplace space-y-12">
-            <header className="marketplace-header relative px-12 py-16 rounded-[3rem] bg-bg-surface border border-accent-border overflow-hidden">
-                <div className="absolute top-0 right-0 w-96 h-96 bg-accent/10 rounded-full blur-[100px] pointer-events-none" />
-                <div className="relative z-10 flex flex-col md:flex-row justify-between items-center gap-8">
-                    <div className="text-center md:text-left">
-                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent-subtle border border-accent-border text-accent-light text-[10px] font-black uppercase tracking-widest mb-4">
-                            <Target size={12} className="text-accent" /> Expert Intelligence Node
-                        </div>
-                        <h1 className="text-6xl font-black text-white tracking-tighter leading-none mb-4 uppercase italic">
-                            Sovereign <span className="shimmer-text">Specialists</span>
-                        </h1>
-                        <p className="text-text-secondary text-lg font-medium max-w-xl">
-                            Deploy high-gravity Web3 talent into your mission protocols. Zero extractive friction.
-                        </p>
+        <div className="specialist-marketplace space-y-16">
+            {/* CINEMATIC HEADER: THE INTELLIGENCE NEXUS */}
+            <header className="relative px-12 py-20 rounded-[4rem] bg-[#020617] border border-white/5 overflow-hidden shadow-2xl">
+                {/* Kinetic Atmosphere */}
+                <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-accent/20 rounded-full blur-[160px] animate-pulse pointer-events-none" />
+                <div className="absolute -bottom-40 -left-40 w-[600px] h-[600px] bg-secondary/10 rounded-full blur-[140px] pointer-events-none" />
+                <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-30 mix-blend-overlay pointer-events-none" />
+                
+                {/* Protocol Grid Lattice */}
+                <div className="absolute inset-0 opacity-10 pointer-events-none" 
+                     style={{ backgroundImage: 'radial-gradient(circle, #fff 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
+
+                <div className="relative z-10 flex flex-col lg:flex-row justify-between items-center gap-12">
+                    <div className="text-center lg:text-left space-y-6">
+                        <motion.div 
+                            initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}
+                            className="inline-flex items-center gap-3 px-4 py-1.5 rounded-full bg-accent/10 border border-accent/20 text-accent-light text-[11px] font-black uppercase tracking-[0.3em] backdrop-blur-md"
+                        >
+                            <Target size={14} className="text-accent animate-pulse" /> Global Intelligence Mesh
+                        </motion.div>
+                        
+                        <motion.h1 
+                            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+                            className="text-7xl xl:text-8xl font-black text-white tracking-tighter leading-tight uppercase italic"
+                        >
+                            Sovereign <br />
+                            <span className="bg-gradient-to-r from-accent via-white to-secondary bg-clip-text text-transparent italic">Specialists</span>
+                        </motion.h1>
+                        
+                        <motion.p 
+                            initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}
+                            className="text-text-secondary text-xl font-medium max-w-2xl leading-relaxed"
+                        >
+                            Access the planet's highest-gravity Web3 talent. Direct protocol engagement with <span className="text-white font-bold">zero extraction fees</span> and absolute execution certainty.
+                        </motion.p>
                     </div>
-                    <div className="flex gap-4">
-                        <div className="px-6 py-4 rounded-2xl bg-white/[0.03] border border-white/10 backdrop-blur-sm">
-                            <div className="text-[10px] font-black text-text-tertiary uppercase tracking-widest mb-1">Active Talent</div>
-                            <div className="text-2xl font-black text-white">{categoryStats.activeSpecialists || '0'}</div>
+
+                    {/* Holographic Protocol Stats */}
+                    <motion.div 
+                        initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
+                        className="flex flex-col sm:flex-row gap-6"
+                    >
+                        <div className="group relative p-8 rounded-[2.5rem] bg-white/[0.03] border border-white/10 backdrop-blur-2xl hover:bg-white/[0.05] transition-all duration-500">
+                            <div className="absolute inset-0 rounded-[2.5rem] bg-gradient-to-br from-accent/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                            <div className="relative">
+                                <Activity size={20} className="text-accent mb-4" />
+                                <div className="text-[11px] font-black text-text-tertiary uppercase tracking-widest mb-1">Active Nodes</div>
+                                <div className="text-4xl font-black text-white tabular-nums">{categoryStats.activeSpecialists || '0'}</div>
+                            </div>
                         </div>
-                        <div className="px-6 py-4 rounded-2xl bg-white/[0.03] border border-white/10 backdrop-blur-sm">
-                            <div className="text-[10px] font-black text-text-tertiary uppercase tracking-widest mb-1">Protocol Volume</div>
-                            <div className="text-2xl font-black text-accent">{categoryStats.totalVolume?.toFixed(1) || '0.0'} <span className="text-xs">MATIC</span></div>
+                        <div className="group relative p-8 rounded-[2.5rem] bg-white/[0.03] border border-white/10 backdrop-blur-2xl hover:bg-white/[0.05] transition-all duration-500">
+                            <div className="absolute inset-0 rounded-[2.5rem] bg-gradient-to-br from-secondary/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                            <div className="relative">
+                                <Zap size={20} className="text-secondary mb-4" />
+                                <div className="text-[11px] font-black text-text-tertiary uppercase tracking-widest mb-1">Volume Reserve</div>
+                                <div className="text-4xl font-black text-white tabular-nums">
+                                    {categoryStats.totalVolume?.toFixed(1) || '0.0'} <span className="text-sm font-medium text-text-tertiary italic">MATIC</span>
+                                </div>
+                            </div>
                         </div>
-                    </div>
+                    </motion.div>
                 </div>
             </header>
 
@@ -254,111 +290,130 @@ const SpecialistMarketplace = ({ onRegister }) => {
                 {selectedCategory === null ? (
                     <motion.div 
                         key="categories"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -20 }}
+                        initial={{ opacity: 0, filter: 'blur(10px)' }}
+                        animate={{ opacity: 1, filter: 'blur(0px)' }}
+                        exit={{ opacity: 0, filter: 'blur(10px)' }}
+                        className="space-y-20"
                     >
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: 60, alignItems: 'start' }}>
-                            <div className="category-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-                                {categories.map((category) => (
-                                    <div
-                                        key={category.id}
-                                        className="category-card p-8 rounded-[2rem] bg-bg-card border border-border hover:border-accent-border transition-all group relative overflow-hidden cursor-pointer shadow-lg hover:shadow-accent/10"
-                                        onClick={() => setSelectedCategory(category.id)}
-                                    >
-                                        {category.status && (
-                                            <div className="absolute top-4 right-4 px-2 py-0.5 rounded-full bg-accent/10 border border-accent/20 text-[8px] font-black text-accent uppercase tracking-tighter z-20">
-                                                {category.status}
-                                            </div>
-                                        )}
-                                        <div className="category-glow absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" style={{ background: `radial-gradient(circle at center, ${category.color}20 0%, transparent 70%)` }} />
-                                        <div className="absolute top-0 right-0 w-32 h-32 bg-accent/5 rounded-full blur-2xl group-hover:bg-accent/10 transition-colors" />
-                                        <div className="p-5 rounded-2xl bg-bg-surface border border-border inline-flex text-white mb-8 group-hover:scale-110 transition-transform shadow-neon" style={{ color: category.color, boxShadow: `0 0 20px ${category.color}40` }}>
-                                            <category.icon size={28} />
-                                        </div>
-                                        <h3 className="text-xl font-black text-white leading-tight mb-3 group-hover:text-accent transition-colors tracking-tight">{category.name}</h3>
-                                        <p className="text-[11px] text-text-tertiary font-medium mb-10 line-clamp-2 leading-relaxed">{category.description}</p>
-                                        
-                                        <div className="flex justify-between items-end">
-                                            <div className="space-y-1">
-                                                <div className="text-[10px] font-black text-text-tertiary uppercase tracking-widest opacity-50">Gravity Rate</div>
-                                                <div className="text-base font-black text-white flex items-center gap-1">
-                                                    <span className="text-success text-xs">$</span>{category.avgRate}<span className="text-[10px] text-text-tertiary">/hr</span>
-                                                </div>
-                                            </div>
-                                            <div className="text-right">
-                                                <div className="text-[10px] font-black text-text-tertiary uppercase tracking-widest mb-2 opacity-50">Resonance</div>
-                                                <div className="h-1.5 w-20 bg-white/5 rounded-full overflow-hidden border border-white/5">
-                                                    <div className="h-full bg-accent" style={{ width: `${category.demand}%`, background: `linear-gradient(90deg, ${category.color}, #fff)`, boxShadow: `0 0 10px ${category.color}80` }} />
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-
-                            {/* CTA Sidebar for Nexus View */}
-                            <div className="main-cta-card p-12 rounded-[3.5rem] bg-[#00f5d4]/5 border border-[#00f5d4]/20 text-white relative overflow-hidden group h-full flex flex-col justify-center backdrop-blur-3xl shadow-2xl">
-                                <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 pointer-events-none" />
-                                <div className="absolute -top-20 -right-20 w-64 h-64 bg-accent/20 rounded-full blur-[80px] pointer-events-none" />
-                                <div className="p-5 rounded-2xl bg-white/5 border border-white/10 inline-flex self-start mb-8 group-hover:scale-110 transition-transform">
-                                    <Sparkles size={32} className="text-accent" />
-                                </div>
-                                <h4 className="text-2xl font-black leading-none mb-4 uppercase tracking-tighter">Join the Sovereign <br/><span className="text-accent">Network</span></h4>
-                                <p className="text-sm font-medium opacity-60 mb-10 leading-relaxed max-w-[240px]">Monetize your elite intelligence with zero extraction and direct-to-chain yield.</p>
-                                <button 
-                                    onClick={onRegister}
-                                    className="w-full py-4 rounded-2xl bg-white text-accent text-xs font-black uppercase tracking-widest hover:bg-bg-base hover:text-white transition-all shadow-xl"
+                        {/* High-Gravity Grid */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                            {categories.map((category, idx) => (
+                                <motion.div
+                                    key={category.id}
+                                    initial={{ opacity: 0, y: 30 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: idx * 0.05 }}
+                                    className="group relative p-10 rounded-[2.5rem] bg-[#0a0a0b] border border-white/5 hover:border-white/20 transition-all duration-500 cursor-pointer overflow-hidden"
+                                    onClick={() => setSelectedCategory(category.id)}
                                 >
-                                    Register Alias
-                                </button>
-                            </div>
+                                    {/* Bioluminescent Aura */}
+                                    <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700"
+                                         style={{ 
+                                             background: `radial-gradient(circle at 50% 100%, ${category.color}40 0%, transparent 60%)`,
+                                         }} />
+                                    
+                                    {/* Particle Burst Icon */}
+                                    <div className="relative z-10 p-5 rounded-2xl border border-white/5 bg-white/[0.02] inline-flex mb-10 group-hover:scale-110 transition-transform duration-500"
+                                         style={{ boxShadow: `0 0 30px ${category.color}30` }}>
+                                        <category.icon size={32} style={{ color: category.color }} />
+                                    </div>
+                                    
+                                    <h3 className="relative z-10 text-2xl font-black text-white leading-none mb-4 uppercase tracking-tighter group-hover:text-white transition-colors">
+                                        {category.name.split(' ').map((word, i) => (
+                                            <span key={i} className={i === 0 ? "block" : "text-text-tertiary group-hover:text-white/70 block text-lg font-bold"}>
+                                                {word}
+                                            </span>
+                                        ))}
+                                    </h3>
+                                    
+                                    <p className="relative z-10 text-sm text-text-tertiary font-medium mb-12 line-clamp-2 leading-relaxed opacity-60 group-hover:opacity-100 transition-opacity">
+                                        {category.description}
+                                    </p>
+
+                                    <div className="relative z-10 flex justify-between items-end pt-6 border-t border-white/5">
+                                        <div className="space-y-1">
+                                            <div className="text-[10px] font-black text-text-tertiary uppercase tracking-widest opacity-50">Entry Rate</div>
+                                            <div className="text-xl font-black text-white">${category.avgRate}/hr</div>
+                                        </div>
+                                        <ChevronRight size={24} className="text-white opacity-0 -translate-x-4 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
+                                    </div>
+                                </motion.div>
+                            ))}
+
+                            {/* AGENT REGISTRATION NODE */}
+                            <motion.div 
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                className="group relative p-10 rounded-[2.5rem] bg-gradient-to-br from-accent/20 to-secondary/10 border-2 border-accent/30 flex flex-col justify-center items-center text-center overflow-hidden"
+                            >
+                                <div className="absolute inset-0 bg-[#00f5d4]/5 backdrop-blur-3xl" />
+                                <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 pointer-events-none" />
+                                
+                                <div className="relative z-10 space-y-8">
+                                    <div className="p-6 rounded-3xl bg-white/5 border border-white/10 inline-flex shadow-2xl">
+                                        <Rocket size={40} className="text-white animate-bounce" />
+                                    </div>
+                                    <h4 className="text-3xl font-black text-white uppercase tracking-tighter leading-none">
+                                        Become a <br /><span className="text-accent italic">Specialist</span>
+                                    </h4>
+                                    <p className="text-sm font-medium text-white/60 leading-relaxed">
+                                        Monetize your elite Web3 intelligence at absolute scale.
+                                    </p>
+                                    <button 
+                                        onClick={onRegister}
+                                        className="w-full py-5 rounded-2xl bg-white text-accent text-xs font-black uppercase tracking-[0.3em] hover:bg-black hover:text-white transition-all shadow-[0_0_40px_rgba(255,255,255,0.3)] hover:shadow-accent/40"
+                                    >
+                                        Register Alias
+                                    </button>
+                                </div>
+                            </motion.div>
                         </div>
                     </motion.div>
                 ) : (
                     <motion.div 
                         key="specialists"
-                        initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -20 }}
-                        className="space-y-8"
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        className="space-y-10"
                     >
                         <button 
-                            className="flex items-center gap-2 text-xs font-black text-text-tertiary uppercase tracking-widest hover:text-accent transition-colors"
+                            className="group flex items-center gap-3 text-xs font-black text-text-tertiary uppercase tracking-[0.2em] hover:text-white transition-all underline decoration-accent/30 underline-offset-8 decoration-2"
                             onClick={() => setSelectedCategory(null)}
                         >
-                            <ArrowLeft size={14} /> Back to Nexus
+                            <div className="p-2 rounded-lg bg-white/5 group-hover:bg-accent/20 transition-colors"><ArrowLeft size={14} /></div>
+                            Back to Sovereign Nexus
                         </button>
 
-                        <div className="flex flex-col lg:flex-row gap-8 items-start">
-                            <div className="w-full lg:w-3/4 space-y-6">
-                                {/* Filter Bar */}
-                                <div className="flex flex-col sm:flex-row justify-between items-center gap-4 p-4 rounded-2xl bg-bg-surface border border-border">
-                                    <div className="flex flex-col sm:flex-row items-center gap-6 w-full sm:w-auto">
-                                        <div className="relative w-full sm:w-64">
-                                            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-tertiary" />
+                        <div className="flex flex-col lg:flex-row gap-12 items-start">
+                            <div className="w-full lg:w-3/4 space-y-8">
+                                {/* TACTICAL FILTER NEXUS */}
+                                <div className="flex flex-col md:flex-row justify-between items-center gap-6 p-6 rounded-3xl bg-white/[0.02] border border-white/5 backdrop-blur-3xl shadow-2xl">
+                                    <div className="flex flex-col md:flex-row items-center gap-6 w-full md:w-auto">
+                                        <div className="relative w-full md:w-80">
+                                            <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-text-tertiary" />
                                             <input 
                                                 type="text"
-                                                placeholder="Search Specialists..."
-                                                className="w-full bg-white/[0.03] border border-border rounded-xl py-2 pl-9 pr-4 text-xs font-medium text-white placeholder:text-text-tertiary focus:border-accent/30 focus:ring-1 focus:ring-accent/20 transition-all"
+                                                placeholder="Scan Node Signatures..."
+                                                className="w-full bg-white/[0.03] border border-white/10 rounded-2xl py-3.5 pl-12 pr-6 text-xs font-medium text-white placeholder:text-text-tertiary focus:border-accent/40 focus:ring-4 focus:ring-accent/10 transition-all"
                                                 value={searchTerm}
                                                 onChange={(e) => setSearchTerm(e.target.value)}
                                             />
                                         </div>
-                                        <div className="flex items-center gap-2">
-                                            <Filter size={14} className="text-accent" />
+                                        <div className="flex items-center gap-3">
+                                            <Filter size={16} className="text-accent" />
                                             <select 
-                                                className="bg-transparent border-none text-xs font-black text-white uppercase tracking-widest focus:ring-0 cursor-pointer"
+                                                className="bg-transparent border-none text-xs font-black text-white uppercase tracking-widest focus:ring-0 cursor-pointer hover:bg-white/5 rounded-xl px-4 py-2 transition-colors"
                                                 value={filterLevel}
                                                 onChange={(e) => setFilterLevel(e.target.value)}
                                             >
-                                                <option value="all" className="bg-bg-surface">All Proficiency</option>
-                                                {proficiencyLevels.map(l => <option key={l.id} value={l.id} className="bg-bg-surface">{l.name}</option>)}
+                                                <option value="all" className="bg-[#0f172a]">All Tiers</option>
+                                                {proficiencyLevels.map(l => <option key={l.id} value={l.id} className="bg-[#0f172a]">{l.name}</option>)}
                                             </select>
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-[10px] font-black text-text-tertiary uppercase">Sort:</span>
+                                    <div className="flex items-center gap-3 px-4 py-2 rounded-xl bg-white/5 border border-white/5">
+                                        <span className="text-[10px] font-black text-text-tertiary uppercase tracking-widest">Sort:</span>
                                         <select 
                                             className="bg-transparent border-none text-xs font-black text-accent uppercase tracking-widest focus:ring-0 cursor-pointer"
                                             value={sortBy}
@@ -367,133 +422,148 @@ const SpecialistMarketplace = ({ onRegister }) => {
                                             <option value="rating">Gravity Rank</option>
                                             <option value="projects">Execution History</option>
                                             <option value="earnings">Accumulated Yield</option>
-                                            <option value="rate">Friction Minimum</option>
+                                            <option value="rate">Friction Min</option>
                                         </select>
                                     </div>
-                                                                {/* Specialists Grid */}
-                                <div className="grid grid-cols-1 gap-4">
+                                </div>
+
+                                {/* AGENT DOSSIER GRID */}
+                                <div className="grid grid-cols-1 gap-6">
                                     {filteredAndSortedSpecialists.length > 0 ? filteredAndSortedSpecialists.map((specialist, idx) => (
-                                        <div key={idx} className="specialist-card p-6 rounded-3xl bg-bg-raised border border-border hover:border-accent-border transition-all flex flex-col md:flex-row justify-between gap-8 group">
-                                            <div className="flex gap-6 items-start">
+                                        <motion.div 
+                                            key={idx} 
+                                            initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: idx * 0.05 }}
+                                            className="group relative p-8 rounded-[2.5rem] bg-[#0a0a0b] border border-white/5 hover:border-accent/30 transition-all duration-500 flex flex-col xl:flex-row justify-between gap-10 overflow-hidden"
+                                        >
+                                            <div className="absolute inset-0 bg-gradient-to-r from-accent/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                                            
+                                            <div className="relative z-10 flex gap-8 items-start">
                                                 <div className="relative">
-                                                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-accent to-secondary flex items-center justify-center text-3xl">
+                                                    <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-accent to-secondary flex items-center justify-center text-4xl shadow-2xl group-hover:scale-105 transition-transform">
                                                         {specialist.avatar}
                                                     </div>
-                                                    <div className="absolute -bottom-2 -right-2 p-1 bg-bg-base border border-border rounded-lg">
-                                                        {React.createElement(proficiencyLevels[specialist.proficiency].icon, { size: 12, className: "text-white" })}
+                                                    <div className="absolute -bottom-3 -right-3 p-2 bg-[#020617] border border-white/10 rounded-2xl shadow-neon">
+                                                        {React.createElement(proficiencyLevels[specialist.proficiency].icon, { size: 16, className: "text-white" })}
                                                     </div>
                                                 </div>
-                                                <div className="space-y-3">
+                                                <div className="space-y-4">
                                                     <div>
-                                                        <div className="flex items-center gap-2 mb-1">
-                                                            <h3 className="text-xl font-black text-white group-hover:text-accent transition-colors">{specialist.name}</h3>
+                                                        <div className="flex items-center gap-3 mb-2">
+                                                            <h3 className="text-2xl font-black text-white group-hover:text-accent transition-colors tracking-tight">{specialist.name}</h3>
                                                             {specialist.proficiency >= 3 && (
-                                                                <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-success/10 border border-success/20 text-[8px] font-black text-success uppercase">
-                                                                    <ShieldCheck size={10} /> Verified
+                                                                <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-success/10 border border-success/20 text-[9px] font-black text-success uppercase tracking-wider">
+                                                                    <ShieldCheck size={12} /> Verified Agent
                                                                 </div>
                                                             )}
                                                         </div>
-                                                        <code className="text-[10px] text-text-tertiary font-mono">{specialist.address}</code>
+                                                        <code className="text-[11px] text-text-tertiary font-mono bg-white/5 px-2 py-1 rounded-md">{specialist.address}</code>
                                                     </div>
                                                     <div className="flex flex-wrap gap-2">
                                                         {specialist.specialties.map((s, i) => (
-                                                            <span key={i} className="px-2 py-0.5 rounded-md bg-white/[0.03] border border-white/5 text-[9px] font-bold text-text-secondary uppercase">{s}</span>
+                                                            <span key={i} className="px-3 py-1 rounded-full bg-white/[0.03] border border-white/5 text-[10px] font-bold text-text-secondary uppercase tracking-tight">{s}</span>
                                                         ))}
                                                     </div>
                                                 </div>
                                             </div>
 
-                                            <div className="flex flex-col sm:flex-row items-center gap-8 md:text-right">
-                                                <div className="grid grid-cols-2 md:grid-cols-1 gap-x-8 gap-y-2">
+                                            <div className="relative z-10 flex flex-col sm:flex-row items-center gap-10 xl:text-right">
+                                                <div className="grid grid-cols-2 xl:grid-cols-1 gap-x-12 gap-y-4 w-full sm:w-auto">
                                                     <div>
-                                                        <div className="text-[9px] font-black text-text-tertiary uppercase tracking-widest">Execution Rate</div>
-                                                        <div className="text-lg font-black text-white">${specialist.hourlyRate}/hr</div>
+                                                        <div className="text-[10px] font-black text-text-tertiary uppercase tracking-[0.2em] mb-1">Execution Rate</div>
+                                                        <div className="text-2xl font-black text-white">${specialist.hourlyRate}<span className="text-xs text-text-tertiary">/HR</span></div>
                                                     </div>
                                                     <div>
-                                                        <div className="text-[9px] font-black text-text-tertiary uppercase tracking-widest">Resonance</div>
-                                                        <div className="text-lg font-black text-success">{specialist.averageRating}%</div>
+                                                        <div className="text-[10px] font-black text-text-tertiary uppercase tracking-[0.2em] mb-1">Resonance</div>
+                                                        <div className="text-2xl font-black text-success">{specialist.averageRating}%</div>
                                                     </div>
                                                 </div>
-                                                <div className="flex gap-2">
+                                                <div className="flex gap-4 w-full sm:w-auto">
                                                     <button 
                                                         onClick={() => handleHireSpecialist(specialist)}
-                                                        className="px-6 py-3 rounded-xl bg-accent text-bg-base text-xs font-black uppercase tracking-widest hover:scale-105 transition-all shadow-lg shadow-accent/20"
+                                                        className="flex-1 sm:flex-none px-8 py-4 rounded-2xl bg-white text-black text-xs font-black uppercase tracking-[0.3em] hover:bg-accent hover:text-white transition-all shadow-xl hover:shadow-accent/40"
                                                     >
                                                         Initialize Mission
                                                     </button>
-                                                    <button className="p-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors">
-                                                        <MessageSquare size={16} className="text-text-secondary" />
+                                                    <button className="p-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all">
+                                                        <MessageSquare size={18} className="text-text-secondary" />
                                                     </button>
                                                 </div>
                                             </div>
-                                        </div>
+                                        </motion.div>
                                     )) : (
-                                        <div className="py-20 flex flex-col items-center justify-center text-center space-y-4 rounded-3xl bg-white/[0.01] border border-dashed border-white/5">
-                                            <div className="p-4 rounded-2xl bg-white/5 text-text-tertiary">
-                                                <Search size={32} />
+                                        <div className="py-32 flex flex-col items-center justify-center text-center space-y-6 rounded-[3rem] bg-white/[0.01] border border-dashed border-white/5 backdrop-blur-sm">
+                                            <div className="p-6 rounded-3xl bg-white/5 text-text-tertiary">
+                                                <Search size={48} className="opacity-20" />
                                             </div>
-                                            <div>
-                                                <h4 className="text-lg font-black text-white">No Intelligence Detected</h4>
-                                                <p className="text-sm text-text-tertiary">Adjust your filters to scan the network again.</p>
+                                            <div className="space-y-2">
+                                                <h4 className="text-2xl font-black text-white uppercase tracking-tighter">No Active Signatures</h4>
+                                                <p className="text-sm text-text-tertiary max-w-xs mx-auto">The network is silent in this frequency. Adjust your telemetry to scan again.</p>
                                             </div>
                                             <button 
                                                 onClick={() => { setSearchTerm(''); setFilterLevel('all'); }}
-                                                className="text-xs font-black text-accent uppercase tracking-widest hover:underline"
+                                                className="text-xs font-black text-accent uppercase tracking-[0.3em] hover:text-white transition-all underline underline-offset-8"
                                             >
                                                 Reset Telemetry
                                             </button>
                                         </div>
                                     )}
-                                </div>     </div>
+                                </div>
                             </div>
 
-                            {/* Sidebar Stats */}
-                            <div className="w-full lg:w-1/4 space-y-6">
-                                <div className="p-8 rounded-3xl bg-bg-surface border border-accent-border relative overflow-hidden">
+                            {/* TACTICAL TELEMETRY SIDEBAR */}
+                            <div className="w-full lg:w-1/4 space-y-8">
+                                <div className="p-10 rounded-[3rem] bg-[#020617] border border-white/5 relative overflow-hidden shadow-2xl">
                                     <div className="absolute top-0 right-0 w-32 h-32 bg-accent/10 rounded-full blur-3xl pointer-events-none" />
-                                    <h4 className="text-xs font-black text-white uppercase tracking-widest mb-6 flex items-center gap-2">
-                                        <Activity size={12} className="text-accent" /> Telemetry
-                                    </h4>
-                                    <div className="space-y-6">
+                                    
+                                    <div className="inline-flex items-center gap-3 px-3 py-1 rounded-full bg-accent/10 border border-accent/20 text-accent text-[9px] font-black uppercase tracking-widest mb-8">
+                                        <Activity size={12} className="animate-pulse" /> Live Telemetry
+                                    </div>
+                                    
+                                    <div className="space-y-8">
                                         {[
                                             { label: 'Active Talent', value: categoryStats.activeSpecialists, icon: User },
-                                            { label: 'Escrows Closed', value: categoryStats.totalJobs, icon: Briefcase },
+                                            { label: 'Missions Closed', value: categoryStats.totalJobs, icon: Briefcase },
                                             { label: 'Execution Speed', value: categoryStats.avgCompletionTime, icon: Clock },
-                                            { label: 'Resonance Accuracy', value: `${categoryStats.successRate}%`, icon: ShieldCheck },
+                                            { label: 'Resonance Acc', value: `${categoryStats.successRate}%`, icon: ShieldCheck },
                                         ].map((stat, i) => {
                                             const StatIcon = stat.icon;
                                             return (
-                                                <div key={i} className="flex justify-between items-center">
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="p-2 rounded-lg bg-white/5 text-text-tertiary"><StatIcon size={12} /></div>
+                                                <div key={i} className="flex justify-between items-center group">
+                                                    <div className="flex items-center gap-4">
+                                                        <div className="p-3 rounded-xl bg-white/5 text-text-tertiary group-hover:text-accent transition-colors"><StatIcon size={14} /></div>
                                                         <span className="text-xs font-bold text-text-secondary">{stat.label}</span>
                                                     </div>
-                                                    <span className="text-xs font-black text-white">{stat.value}</span>
+                                                    <span className="text-sm font-black text-white tabular-nums">{stat.value}</span>
                                                 </div>
                                             );
                                         })}
                                     </div>
-                                    <div className="mt-8 pt-8 border-t border-white/5">
-                                        <div className="p-4 rounded-2xl bg-accent-subtle border border-accent-border">
-                                            <div className="text-[10px] font-black text-accent uppercase tracking-widest leading-normal">
-                                                Absolute Zero Gravity Enforced for this vertical.
+
+                                    <div className="mt-10 pt-10 border-t border-white/5">
+                                        <div className="p-5 rounded-3xl bg-accent-subtle/50 border border-accent/20 backdrop-blur-3xl">
+                                            <div className="text-[10px] font-black text-accent-light uppercase tracking-widest leading-relaxed">
+                                                Mission execution certainty anchored on Polygon PoS. No extractive friction in this vertical.
                                             </div>
                                         </div>
                                     </div>
                                 </div>
 
-                                <div className="p-8 rounded-3xl bg-gradient-to-br from-accent to-secondary text-white relative overflow-hidden group">
+                                {/* SIDEBAR CTA */}
+                                <motion.div 
+                                    whileHover={{ scale: 1.02 }}
+                                    className="p-10 rounded-[3rem] bg-gradient-to-br from-accent to-secondary text-black relative overflow-hidden group shadow-2xl shadow-accent/20"
+                                >
                                     <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 pointer-events-none" />
-                                    <Sparkles size={32} className="mb-4 opacity-50 group-hover:scale-110 transition-transform" />
-                                    <h4 className="text-xl font-black leading-tight mb-2">Join the Sovereign Network</h4>
-                                    <p className="text-xs font-medium opacity-80 mb-6">Monetize your elite intelligence with zero extraction.</p>
+                                    <Sparkles size={40} className="mb-6 group-hover:rotate-12 transition-transform" />
+                                    <h4 className="text-3xl font-black leading-none uppercase tracking-tighter mb-4">Elite <br />Registration</h4>
+                                    <p className="text-sm font-medium opacity-80 mb-10 leading-relaxed">Monetize your sovereign intelligence with zero protocol extraction.</p>
                                     <button 
                                         onClick={onRegister}
-                                        className="w-full py-4 rounded-2xl bg-white text-accent text-xs font-black uppercase tracking-widest hover:bg-bg-base hover:text-white transition-all"
+                                        className="w-full py-5 rounded-2xl bg-black text-white text-xs font-black uppercase tracking-[0.3em] hover:bg-white hover:text-black transition-all"
                                     >
-                                        Register Alias
+                                        Register Node
                                     </button>
-                                </div>
+                                </motion.div>
                             </div>
                         </div>
                     </motion.div>

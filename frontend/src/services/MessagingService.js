@@ -34,18 +34,26 @@ class MessagingService {
             console.info('[XMTP] Actuating sovereign communication singleton for:', address);
 
             try {
+                // Directive 10: Actuate XMTP V3 Sovereign Signer
+                // Version 5.x+ expects getAccount() with .type property resonance.
                 const xmtpSigner = {
-                    getIdentifier: () => ({
-                        identifier: address.toLowerCase(),
-                        identifierKind: 'Ethereum',
+                    getAccount: async () => ({
+                        id: address.toLowerCase(),
+                        type: 'eth_mainnet', // Common EOA identity type for XMTP V3
                     }),
-                    signMessage: async (message) => {
-                        console.log('[XMTP] Awaiting cryptographic approval...');
-                        const signature = await walletClient.signMessage({
-                            account: address,
-                            message: typeof message === 'string' ? message : { raw: message },
-                        });
-                        return hexToBytes(signature);
+                    sign: async (message) => {
+                        console.log('[XMTP] Actuating cryptographic signature resonance...');
+                        try {
+                            // Directive 11: Defensively invoke signMessage without explicit account resolution.
+                            // XMTP installation keys must be resonated without 'type' resolution conflicts.
+                            const signature = await walletClient.signMessage({
+                                message: { raw: message },
+                            });
+                            return hexToBytes(signature);
+                        } catch (err) {
+                            console.error('[XMTP] Signature Refusal:', err);
+                            throw err;
+                        }
                     },
                 };
 

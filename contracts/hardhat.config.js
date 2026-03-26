@@ -1,5 +1,4 @@
-require("@nomicfoundation/hardhat-ethers");
-require("@nomicfoundation/hardhat-chai-matchers");
+require("@nomicfoundation/hardhat-toolbox");
 require("@openzeppelin/hardhat-upgrades");
 require("dotenv").config();
 require("solidity-coverage");
@@ -12,10 +11,10 @@ module.exports = {
     solidity: {
         version: "0.8.24",
         settings: {
-            evmVersion: "cancun",
+            evmVersion: "shanghai",
             optimizer: {
                 enabled: true,
-                runs: 200
+                runs: 1000
             },
             viaIR: true
         }
@@ -23,7 +22,7 @@ module.exports = {
     networks: {
         hardhat: {
             allowUnlimitedContractSize: true,
-            hardfork: "cancun"
+            hardfork: "shanghai"
         },
         // Polygon Amoy Testnet (ChainID: 80002)
         amoy: {

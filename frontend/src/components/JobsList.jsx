@@ -445,8 +445,7 @@ const JobCard = ({ job, address, onSelectChat, onFiatPay }) => {
                     <span style={{ fontSize: '0.6rem', fontWeight: 700, color: 'var(--text-tertiary)', textTransform: 'uppercase' }}>Deadline</span>
                     <span style={{ fontSize: '0.78rem', fontWeight: 600 }}>{isNaN(Number(job.deadline)) ? 'No deadline' : new Date(Number(job.deadline) * 1000).toLocaleDateString()}</span>
                 </div>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 'auto' }}>
+            </div>            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 'auto' }}>
                 <div style={{ display: 'flex', gap: 8, flex: 1 }}>
                     {statusCode === 0 && !isClient && (
                         <button 
@@ -472,16 +471,8 @@ const JobCard = ({ job, address, onSelectChat, onFiatPay }) => {
                         </button>
                     )}
                 </div>
-
-                {onFiatPay && (
-                    <button onClick={() => onFiatPay(job.freelancer || job.client)} className="btn btn-secondary" style={{ height: 40, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '0 12px' }}>
-                        <CreditCard size={14} /> <span style={{ fontSize: '0.72rem', fontWeight: 700 }}>Fiat Pay</span>
-                    </button>
-                )}
-                <button onClick={() => onSelectChat(job.client)} className="btn btn-ghost" style={{ width: 40, height: 40, padding: 0, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <MessageSquare size={16} />
-                </button>
             </div>
+
 
             <ProofOfWorkModal isOpen={isPoWOpen} onClose={() => setIsPoWOpen(false)} jobId={job.jobId} />
             <JobDetailsModal 

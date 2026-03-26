@@ -97,6 +97,18 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
     }
 
     /**
+     * @notice Actuates the Zenith Court by designating multiple supreme magistrates.
+     * @param judges Array of wallet addresses to be granted the ARBITRATOR_ROLE.
+     */
+    function actuateZenithJudges(address[] calldata judges) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        for (uint256 i = 0; i < judges.length; i++) {
+            if (judges[i] == address(0)) revert InvalidAddress();
+            _grantRole(ARBITRATOR_ROLE, judges[i]);
+            emit SupremeStatusUpdated(judges[i], true);
+        }
+    }
+
+    /**
      * @notice Updates the Soulbound Token (SBT) contract address.
      * @param _sbt New SBT contract address.
      */
