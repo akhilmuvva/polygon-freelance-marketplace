@@ -36,6 +36,7 @@ const AnimationShowcase = lazy(() => import('./components/AnimationShowcase'));
 const FiatOnramp = lazy(() => import('./components/FiatOnramp'));
 const LandingPage = lazy(() => import('./components/LandingPage'));
 const IdentityManager = lazy(() => import('./components/IdentityManager'));
+const Manifesto = lazy(() => import('./components/Manifesto.jsx'));
 
 import { NotificationManager } from './components/NotificationManager';
 import CourtErrorBoundary from './components/CourtErrorBoundary';
@@ -491,6 +492,7 @@ function App() {
       case 'identity': return <IdentityManager address={effectiveAddress} />;
       case 'portfolio': return <Portfolio address={effectiveAddress} onFiatPay={navigateToOnramp} />;
       case 'specialists': return <SpecialistMarketplace onRegister={() => setActiveTab('identity')} />;
+      case 'manifesto': return <Manifesto />;
       default: return <Dashboard address={effectiveAddress} />;
     }
   };
@@ -668,6 +670,7 @@ function App() {
               <div style={styles.footerLinks}>
                 <button style={styles.footerLink} onClick={() => setActiveTab('terms')}>Terms</button>
                 <button style={styles.footerLink} onClick={() => setActiveTab('privacy')}>Privacy</button>
+                <button style={styles.footerLink} onClick={() => setActiveTab('manifesto')}>Manifesto</button>
               </div>
               <p style={styles.footerCopy}>© 2026 PolyLance. All rights reserved.</p>
             </footer>

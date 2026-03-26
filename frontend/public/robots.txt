@@ -1,4 +1,5 @@
 User-agent: *
 Allow: /
+Allow: /manifesto
 
-Sitemap: https://frontend-nu-dun-ev4dp8hpxv.vercel.app/sitemap.xml
+Sitemap: https://polylance.codes/sitemap.xml
