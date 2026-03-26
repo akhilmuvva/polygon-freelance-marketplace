@@ -140,26 +140,10 @@ const JobDetailsModal = ({
                                         </div>
                                     )}
 
-                                    <div style={{ marginTop: 16, borderTop: '1px solid var(--border)', paddingTop: 16 }}>
-                                        <div style={{ ...styles.summaryLabel, marginBottom: 8 }}>Assign Directly (Offline Agreement)</div>
-                                        <div style={{ display: 'flex', gap: 10 }}>
-                                            <input 
-                                                type="text" 
-                                                placeholder="0x... (Freelancer Wallet Address)" 
-                                                className="form-input"
-                                                style={{ flex: 1, fontSize: '0.85rem' }}
-                                                value={directFreelancer}
-                                                onChange={(e) => setDirectFreelancer(e.target.value)}
-                                            />
-                                            <button 
-                                                onClick={() => handlePick(directFreelancer)}
-                                                className="btn btn-secondary"
-                                                disabled={!directFreelancer || directFreelancer.length < 42}
-                                                style={{ height: 40, whiteSpace: 'nowrap' }}
-                                            >
-                                                Assign
-                                            </button>
-                                        </div>
+                                    <div style={{ marginTop: 16, borderTop: '1px solid var(--border)', paddingTop: 16, textAlign: 'center' }}>
+                                        <p style={{ ...styles.summaryLabel, marginBottom: 0, textTransform: 'none' }}>
+                                            Direct Assign is disabled. Specialists must apply with their <span style={{ color: 'var(--accent-light)' }}>Sovereign ID</span> to join this mission.
+                                        </p>
                                     </div>
                                 </div>
                             </section>
@@ -238,9 +222,24 @@ const JobDetailsModal = ({
                             Close
                         </button>
                         {isEligibleToApply && !isClient && (
-                            <button onClick={() => { onApply(); onClose(); }} className="btn btn-primary" style={{ ...styles.btnMain, background: 'linear-gradient(135deg, #10b981, #3b82f6)' }}>
-                                <Rocket size={16} /> Apply for Job
-                            </button>
+                            <div style={{ display: 'flex', gap: 10, flex: 1 }}>
+                                <input 
+                                    type="text" 
+                                    placeholder="Verify Wallet ID (0x...)" 
+                                    className="form-input"
+                                    style={{ flex: 1, height: 40, background: 'rgba(255,255,255,0.05)', borderRadius: 12, border: '1px solid var(--border)', padding: '0 16px', color: '#fff', fontSize: '0.8rem' }}
+                                    value={directFreelancer}
+                                    onChange={(e) => setDirectFreelancer(e.target.value)}
+                                />
+                                <button 
+                                    disabled={!directFreelancer || directFreelancer.toLowerCase() !== address?.toLowerCase()}
+                                    onClick={() => { onApply(); onClose(); }} 
+                                    className="btn btn-primary" 
+                                    style={{ ...styles.btnMain, background: 'linear-gradient(135deg, #10b981, #3b82f6)', opacity: (!directFreelancer || directFreelancer.toLowerCase() !== address?.toLowerCase()) ? 0.5 : 1 }}
+                                >
+                                    <Rocket size={16} /> Apply
+                                </button>
+                            </div>
                         )}
                         {isEligibleToAccept && !isClient && job.freelancer?.toLowerCase() === address?.toLowerCase() && (
                             <button onClick={() => { onAccept(); onClose(); }} className="btn btn-secondary" style={{ ...styles.btnSecondary, borderColor: 'var(--accent-light)', color: 'var(--accent-light)' }}>
