@@ -81,13 +81,23 @@ const SovereignService = {
         fetchPolicy: 'network-only'
       });
 
-      // Hydrate with IPFS descriptions if possible
+      // Hydrate with IPFS descriptions and on-chain applicant data
       const hydratedJobs = await Promise.all(data.jobs.map(async (job) => {
-        if (job.ipfsHash) {
-          const metadata = await IPFSResolver.resolve(job.ipfsHash);
-          return { ...job, ...metadata, isSovereign: true };
+        try {
+          const [metadata, applications] = await Promise.all([
+            job.ipfsHash ? IPFSResolver.resolve(job.ipfsHash) : Promise.resolve({}),
+            publicClient.readContract({
+              address: ESCROW_ADDRESS,
+              abi: parseAbi(['function getJobApplications(uint256) view returns (tuple(address freelancer, uint256 stake)[])']),
+              functionName: 'getJobApplications',
+              args: [BigInt(job.jobId)]
+            })
+          ]);
+          return { ...job, ...metadata, applicantCount: (applications || []).length, isSovereign: true };
+        } catch (err) {
+          console.warn(`[SOVEREIGN] Hydration friction for Job #${job.jobId}:`, err.message);
+          return { ...job, applicantCount: 0 };
         }
-        return job;
       }));
 
       return hydratedJobs;

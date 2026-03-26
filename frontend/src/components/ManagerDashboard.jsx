@@ -206,6 +206,7 @@ const ZenithControl = () => {
                                 <th style={thStyle}>Project</th>
                                 <th style={thStyle}>Locked Value</th>
                                 <th style={thStyle}>Status</th>
+                                <th style={thStyle}>Applicants</th>
                                 <th style={thStyle}>Progress</th>
                                 <th style={thStyle}>Actions</th>
                             </tr>
@@ -258,6 +259,17 @@ const ZenithControl = () => {
                                                 }}>
                                                     <StatusIcon size={12} /> {statusLabels[job.status]}
                                                 </span>
+                                            </td>
+                                            <td style={{ padding: 20 }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                                    <span style={{
+                                                        padding: '4px 10px', borderRadius: 10, background: 'rgba(255,255,255,0.03)',
+                                                        border: '1px solid rgba(255,255,255,0.05)', fontSize: '0.72rem', fontWeight: 900,
+                                                        color: (job.applicantCount || 0) > 0 ? 'var(--accent-light)' : 'var(--text-tertiary)'
+                                                    }}>
+                                                        {job.applicantCount || 0}
+                                                    </span>
+                                                </div>
                                             </td>
                                             <td style={{ padding: 20 }}>
                                                 <div style={{ width: 128, height: 6, background: 'rgba(255,255,255,0.06)', borderRadius: 20, overflow: 'hidden' }}>
