@@ -380,10 +380,28 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
      */
     function withdraw(address token) external whenNotPaused nonReentrant {
         uint256 amt = balances[_msgSender()][token];
-        if (amt == 0) revert InvalidStatus();
+        if (amt == 0) revert LowValue();
         balances[_msgSender()][token] = 0;
         _transferFunds(_msgSender(), token, amt);
     }
+
+    /**
+     * @notice Allows a specialist to withdraw funds directly to their Token Bound Account or another destination.
+     * @param token Address of the token.
+     * @param to Destination address (e.g., the specialist's Shadow Vault).
+     */
+    function withdrawTo(address token, address to) external whenNotPaused nonReentrant {
+        if (to == address(0)) revert InvalidAddress();
+        uint256 amt = balances[_msgSender()][token];
+        if (amt == 0) revert LowValue();
+        
+        balances[_msgSender()][token] = 0;
+        _transferFunds(to, token, amt);
+        
+        emit FundsWithdrawn(_msgSender(), to, token, amt);
+    }
+
+    event FundsWithdrawn(address indexed owner, address indexed recipient, address indexed token, uint256 amount);
 
     /**
      * @notice Allows users to stake their earned balance into a yield strategy.
