@@ -19,6 +19,12 @@ module.exports = {
             viaIR: true
         }
     },
+    paths: {
+        sources: "./contracts",
+        tests: "./test",
+        cache: "./cache",
+        artifacts: "./artifacts"
+    },
     networks: {
         hardhat: {
             allowUnlimitedContractSize: true,

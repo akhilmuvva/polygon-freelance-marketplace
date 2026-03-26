@@ -1,0 +1,10 @@
+TypeError: l1HardforkFromString is not a function
+    at _genesisStateAndOwnedAccounts (C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\contracts\node_modules\hardhat\internal\hardhat-network\provider\provider.js:433:26)
+    at EdrProviderWrapper.create (C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\contracts\node_modules\hardhat\internal\hardhat-network\provider\provider.js:125:47)
+    at createHardhatNetworkProvider (C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\contracts\node_modules\hardhat\internal\hardhat-network\provider\provider.js:403:47)
+    at async createProvider (C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\contracts\node_modules\hardhat\internal\core\providers\construction.js:63:27)
+    at async LazyInitializationProviderAdapter.init (C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\contracts\node_modules\hardhat\internal\core\providers\lazy-initialization.js:32:29)
+    at async LazyInitializationProviderAdapter._getOrInitProvider (C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\contracts\node_modules\hardhat\internal\core\providers\lazy-initialization.js:131:29)
+    at async LazyInitializationProviderAdapter.send (C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\contracts\node_modules\hardhat\internal\core\providers\lazy-initialization.js:52:26)
+    at async getSigners (C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\contracts\node_modules\@nomicfoundation\hardhat-ethers\internal\helpers.js:41:20)
+    at async main (C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\contracts\scripts\check.js:9:29)

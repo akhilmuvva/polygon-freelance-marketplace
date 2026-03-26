@@ -1,0 +1,47 @@
+[dotenv@17.3.1] injecting env (4) from .env -- tip: ≡ƒöÉ prevent building .env in docker: https://dotenvx.com/prebuild
+====================================================
+≡ƒîè ZENITH SOVEREIGN DEPLOYER (IN-MEMORY BYPASS)
+====================================================
+
+Deployer: 0x25F6C8ed995C811E6c0ADb1D66A60830E8115e9A
+Balance: 0.103869461959213502 MATIC
+
+≡ƒôª Performing Zenith 'Hot-Sync' Compilation...
+ParserError: Source "FreelanceRenderer.sol" not found: File not found: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\contracts\node_modules\FreelanceRenderer.sol
+  --> FreelanceEscrow.sol:14:1:
+   |
+14 | import "./FreelanceRenderer.sol";
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+ParserError: Source "interfaces/IFreelanceSBT.sol" not found: File not found: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\contracts\node_modules\interfaces\IFreelanceSBT.sol
+  --> FreelanceEscrow.sol:16:1:
+   |
+16 | import "./interfaces/IFreelanceSBT.sol";
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+ParserError: Source "PrivacyShield.sol" not found: File not found: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\contracts\node_modules\PrivacyShield.sol
+  --> FreelanceEscrow.sol:17:1:
+   |
+17 | import "./PrivacyShield.sol";
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+ParserError: Source "FreelanceEscrowLibrary.sol" not found: File not found: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\contracts\node_modules\FreelanceEscrowLibrary.sol
+  --> FreelanceEscrowBase.sol:11:1:
+   |
+11 | import "./FreelanceEscrowLibrary.sol";
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+ParserError: Source "IArbitrator.sol" not found: File not found: C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\contracts\node_modules\IArbitrator.sol
+  --> FreelanceEscrowBase.sol:13:1:
+   |
+13 | import "./IArbitrator.sol";
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+Error: Zenith Compilation failed. Structural errors found.
+    at main (C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\contracts\scripts\sovereign_actin.js:63:29)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)

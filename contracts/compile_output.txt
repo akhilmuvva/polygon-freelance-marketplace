@@ -1,0 +1,6 @@
+[dotenv@17.3.1] injecting env (4) from .env -- tip: ΓÜí∩╕Å secrets for agents: https://dotenvx.com/as2
+Error HH18: You installed Hardhat with a corrupted lockfile due to the NPM bug #4828.
+
+Please delete your node_modules, package-lock.json, reinstall your project, and try again.
+
+For more info go to https://v2.hardhat.org/HH18 or run Hardhat with --show-stack-traces

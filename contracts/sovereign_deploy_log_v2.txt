@@ -1,0 +1,40 @@
+[dotenv@17.3.1] injecting env (4) from .env -- tip: ≡ƒöÉ prevent building .env in docker: https://dotenvx.com/prebuild
+====================================================
+≡ƒîè ZENITH SOVEREIGN DEPLOYER (IN-MEMORY BYPASS)
+====================================================
+
+Deployer: 0x25F6C8ed995C811E6c0ADb1D66A60830E8115e9A
+Balance: 0.103869461959213502 MATIC
+
+≡ƒôª Compiling Hardened PolyToken (In-Memory)...
+DeclarationError: Function "mcopy" not found.
+  --> @openzeppelin/contracts/utils/Bytes.sol:94:13:
+   |
+94 |             mcopy(add(result, 0x20), add(add(buffer, 0x20), start), sub(end, start))
+   |             ^^^^^
+
+
+DeclarationError: Function "mcopy" not found.
+   --> @openzeppelin/contracts/utils/Bytes.sol:124:13:
+    |
+124 |             mcopy(add(buffer, 0x20), add(add(buffer, 0x20), start), sub(end, start))
+    |             ^^^^^
+
+
+DeclarationError: Function "mcopy" not found.
+   --> @openzeppelin/contracts/utils/Bytes.sol:168:13:
+    |
+168 |             mcopy(add(add(buffer, 0x20), pos), add(add(replacement, 0x20), offset), length)
+    |             ^^^^^
+
+
+DeclarationError: Function "mcopy" not found.
+   --> @openzeppelin/contracts/utils/Bytes.sol:195:17:
+    |
+195 |                 mcopy(add(result, offset), add(input, 0x20), mload(input))
+    |                 ^^^^^
+
+
+Error: Compilation failed
+    at main (C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\contracts\scripts\sovereign_actin.js:57:72)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)

@@ -34,13 +34,17 @@ function SBTGallery({ address: propAddress }) {
             
             const realTokens = await Promise.all(completedJobs.map(async (job) => {
                 try {
-                    const onChainMetadata = await SovereignService.getNFTMetadata(job.id);
+                    const [onChainMetadata, tbaAddress] = await Promise.all([
+                        SovereignService.getNFTMetadata(job.id),
+                        SovereignService.getTBAAddress(job.id)
+                    ]);
                     return {
                         id: job.id,
                         type: 'Completion',
                         title: onChainMetadata?.name || `Project ${job.id.slice(0, 8)}`,
                         category: onChainMetadata?.description || 'Technical Service',
                         image: onChainMetadata?.image, // This is the base64 SVG
+                        tba: tbaAddress,
                         rating: Number(job.rating || 5),
                         date: new Date(Number(job.createdAt || 0) * 1000).toISOString().split('T')[0],
                         txHash: job.id
@@ -164,15 +168,17 @@ function SBTGallery({ address: propAddress }) {
                                             paddingTop: 16, borderTop: '1px solid rgba(255,255,255,0.04)',
                                         }}>
                                             <div style={{
-                                                width: 24, height: 24, borderRadius: '50%', background: 'rgba(255,255,255,0.04)',
-                                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                width: 24, height: 24, borderRadius: '50%', background: 'rgba(52,211,153,0.1)',
+                                                display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(52,211,153,0.2)'
                                             }}>
-                                                <Cpu size={12} style={{ color: 'var(--text-tertiary)' }} />
+                                                <Shield size={12} style={{ color: '#34d399' }} />
                                             </div>
-                                            <span style={{ fontSize: '0.72rem', fontFamily: 'monospace', color: 'var(--text-tertiary)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                                {token.txHash}
-                                            </span>
-                                            <ExternalLink size={12} style={{ color: 'var(--text-tertiary)' }} />
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                                                <span style={{ fontSize: '9px', fontWeight: 900, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Bound Account (TBA)</span>
+                                                <span style={{ fontSize: '0.72rem', fontFamily: 'monospace', color: '#34d399', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                                    {token.tba || 'Initializing...'}
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
                                 </motion.div>
