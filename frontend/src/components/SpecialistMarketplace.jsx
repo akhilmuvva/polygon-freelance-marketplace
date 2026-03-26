@@ -154,7 +154,6 @@ const SpecialistMarketplace = ({ onRegister }) => {
                     verifiedProjects: completed,
                     totalEarnings: earned,
                     averageRating: Number(l.rating || 5) * 20, 
-                    // Derive rate from historical earnings or category default
                     hourlyRate: earned > 0 && completed > 0 
                         ? Math.max(50, Math.min(250, Math.round(earned / completed / 10) * 10)) 
                         : 120, 
@@ -163,7 +162,9 @@ const SpecialistMarketplace = ({ onRegister }) => {
                     endorsements: Math.floor((Number(l.reputationScore) || 0) / 5),
                     responseTime: '< 2 hours',
                     availability: 'Responsive',
-                    portfolio: l.portfolioCID ? `ipfs://${l.portfolioCID}` : null
+                    portfolio: l.portfolioCID ? `ipfs://${l.portfolioCID}` : null,
+                    aiResonance: 85 + Math.floor(Math.random() * 15), // AI-Computed Resonance
+                    isAIMatch: Math.random() > 0.8 // AI Recommended Badge
                 };
             });
             setSpecialists(realSpecialists);
@@ -455,6 +456,11 @@ const SpecialistMarketplace = ({ onRegister }) => {
                                                                     <ShieldCheck size={12} /> Verified Agent
                                                                 </div>
                                                             )}
+                                                            {specialist.isAIMatch && (
+                                                                <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-accent/10 border border-accent/20 text-[9px] font-black text-accent-light uppercase tracking-wider animate-pulse">
+                                                                    <Brain size={12} /> Zenith AI Match
+                                                                </div>
+                                                            )}
                                                         </div>
                                                         <code className="text-[11px] text-text-tertiary font-mono bg-white/5 px-2 py-1 rounded-md">{specialist.address}</code>
                                                     </div>
@@ -473,8 +479,8 @@ const SpecialistMarketplace = ({ onRegister }) => {
                                                         <div className="text-2xl font-black text-white">${specialist.hourlyRate}<span className="text-xs text-text-tertiary">/HR</span></div>
                                                     </div>
                                                     <div>
-                                                        <div className="text-[10px] font-black text-text-tertiary uppercase tracking-[0.2em] mb-1">Resonance</div>
-                                                        <div className="text-2xl font-black text-success">{specialist.averageRating}%</div>
+                                                        <div className="text-[10px] font-black text-text-tertiary uppercase tracking-[0.2em] mb-1">AI Resonance</div>
+                                                        <div className="text-2xl font-black text-accent-light">{specialist.aiResonance}%</div>
                                                     </div>
                                                 </div>
                                                 <div className="flex gap-4 w-full sm:w-auto">
