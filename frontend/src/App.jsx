@@ -6,7 +6,7 @@ import {
   Briefcase, PlusCircle, LayoutDashboard, MessageSquare,
   Trophy, Gavel, Activity, Globe, BarChart3, Menu, X,
   Award, Zap, CreditCard, Shield, ShieldCheck, Mail, User,
-  LogOut, Cpu, Ticket, ChevronDown, Loader2, Flame
+  LogOut, Cpu, Ticket, ChevronDown, Loader2, Flame, Brain, Landmark
 } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useAnimeAnimations } from './hooks/useAnimeAnimations';
