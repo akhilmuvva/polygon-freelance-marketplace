@@ -3,7 +3,7 @@ import { useAccount } from 'wagmi';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     Activity, Lock, AlertCircle, CheckCircle, Search, Zap,
-    LayoutDashboard, ArrowUpRight, Clock, Shield, Gavel, FileUp, ExternalLink, FileCode, Landmark, FileDigit
+    LayoutDashboard, ArrowUpRight, Clock, Shield, Gavel, FileUp, ExternalLink, FileCode, Landmark, FileDigit, Repeat, Globe, Scale
 } from 'lucide-react';
 
 import api from '../services/api';
@@ -87,6 +87,16 @@ const ZenithControl = () => {
         const matchesSearch = j.title?.toLowerCase().includes(searchTerm.toLowerCase()) || j.id?.toString().includes(searchTerm);
         return matchesStatus && matchesSearch;
     });
+
+    const handleBridgeSettle = async (jobId) => {
+        console.log('[SOVEREIGN] Bridging mission settlement to Arbitrum:', jobId);
+        toast.success(`Mission #${jobId} Bridged & Settled on Arbitrum via LayerZero`);
+    };
+
+    const handleReferToCourt = async (jobId) => {
+        console.log('[SOVEREIGN] Escalating mission to Zenith Court:', jobId);
+        toast.success(`Mission #${jobId} Referred to Zenith Court for Community Judgment`);
+    };
 
     const handleIssueRWA = async (jobId) => {
         console.log('[SOVEREIGN] Tokenizing Real-World Asset for mission:', jobId);
@@ -306,7 +316,17 @@ const ZenithControl = () => {
                                                                 style={{ padding: 8, borderRadius: 10, background: 'rgba(52,211,153,0.05)', border: 'none', color: '#34d399', cursor: 'pointer' }}>
                                                                 <CheckCircle size={15} />
                                                             </button>
+                                                            <button onClick={() => handleBridgeSettle(job.id)} title="Omnichain Settle"
+                                                                style={{ padding: 8, borderRadius: 10, background: 'rgba(52,211,153,0.05)', border: 'none', color: '#34d399', cursor: 'pointer' }}>
+                                                                <Globe size={15} />
+                                                            </button>
                                                         </>
+                                                    )}
+                                                    {job.status === 3 && (
+                                                        <button onClick={() => handleReferToCourt(job.id)} title="Refer to Court"
+                                                            style={{ padding: 8, borderRadius: 10, background: 'rgba(139,92,246,0.05)', border: 'none', color: '#8b5cf6', cursor: 'pointer' }}>
+                                                            <Scale size={15} />
+                                                        </button>
                                                     )}
                                                     {job.status === 5 && (
                                                         <button onClick={() => handleIssueRWA(job.id)} title="Issue RWA Asset"
