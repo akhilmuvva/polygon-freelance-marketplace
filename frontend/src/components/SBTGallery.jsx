@@ -3,6 +3,7 @@ import { Award, Shield, CheckCircle, ExternalLink, Cpu, Zap, Star } from 'lucide
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAccount } from 'wagmi';
 import SubgraphService from '../services/SubgraphService';
+import SovereignService from '../services/SovereignService';
 
 const SBT_ABI = [
     { inputs: [{ internalType: "address", name: "owner", type: "address" }], name: "balanceOf", outputs: [{ internalType: "uint256", name: "", type: "uint256" }], stateMutability: "view", type: "function" },
@@ -31,14 +32,30 @@ function SBTGallery({ address: propAddress }) {
                 ...(stats?.client?.activeEscrows?.filter(e => e.status === 'COMPLETED') || [])
             ];
             
-            const realTokens = completedJobs.map((job, idx) => ({
-                id: job.id,
-                type: 'Completion',
-                title: job.ipfsHash ? `Project ${job.id.slice(0, 8)}` : 'Sovereign Contribution',
-                category: Number(job.categoryId) === 0 ? 'Fullstack' : 'Technical Service',
-                rating: Number(job.rating || 5),
-                date: new Date(Number(job.createdAt || 0) * 1000).toISOString().split('T')[0],
-                txHash: job.id
+            const realTokens = await Promise.all(completedJobs.map(async (job) => {
+                try {
+                    const onChainMetadata = await SovereignService.getNFTMetadata(job.id);
+                    return {
+                        id: job.id,
+                        type: 'Completion',
+                        title: onChainMetadata?.name || `Project ${job.id.slice(0, 8)}`,
+                        category: onChainMetadata?.description || 'Technical Service',
+                        image: onChainMetadata?.image, // This is the base64 SVG
+                        rating: Number(job.rating || 5),
+                        date: new Date(Number(job.createdAt || 0) * 1000).toISOString().split('T')[0],
+                        txHash: job.id
+                    };
+                } catch {
+                    return {
+                        id: job.id,
+                        type: 'Completion',
+                        title: job.ipfsHash ? `Project ${job.id.slice(0, 8)}` : 'Sovereign Contribution',
+                        category: Number(job.categoryId) === 0 ? 'Fullstack' : 'Technical Service',
+                        rating: Number(job.rating || 5),
+                        date: new Date(Number(job.createdAt || 0) * 1000).toISOString().split('T')[0],
+                        txHash: job.id
+                    };
+                }
             }));
             
             setTokens(realTokens);
@@ -109,9 +126,23 @@ function SBTGallery({ address: propAddress }) {
                                         </div>
                                     </div>
 
-                                    <div style={{ marginBottom: 24 }}>
-                                        <span style={dimLabel}>{token.category}</span>
+                                    <div style={{ marginBottom: 20, borderRadius: 10, overflow: 'hidden', background: '#000', border: '1px solid rgba(255,255,255,0.05)', position: 'relative' }}>
+                                        {token.image ? (
+                                            <img src={token.image} alt={token.title} style={{ width: '100%', display: 'block' }} />
+                                        ) : (
+                                            <div style={{ padding: '40px 20px', textAlign: 'center' }}>
+                                                <Award size={48} style={{ color: 'rgba(255,255,255,0.05)', marginBottom: 16 }} />
+                                                <span style={dimLabel}>On-Chain Certificate</span>
+                                            </div>
+                                        )}
+                                        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: 12, background: 'linear-gradient(transparent, rgba(0,0,0,0.8))' }}>
+                                            <span style={{ ...dimLabel, margin: 0, color: '#fff' }}>#{token.id.slice(0, 6)}</span>
+                                        </div>
+                                    </div>
+
+                                    <div style={{ marginBottom: 16 }}>
                                         <h3 style={{ fontSize: '1.2rem', fontWeight: 900, letterSpacing: '-0.02em' }}>{token.title}</h3>
+                                        <span style={{ ...dimLabel, color: accentColor }}>{token.category}</span>
                                     </div>
 
                                     <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: 16 }}>

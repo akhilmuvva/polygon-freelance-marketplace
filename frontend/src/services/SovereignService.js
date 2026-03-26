@@ -219,6 +219,31 @@ const SovereignService = {
   },
 
   /**
+   * Fetch On-Chain NFT Metadata (SVG + JSON)
+   */
+  async getNFTMetadata(jobId) {
+    try {
+      const tokenURI = await publicClient.readContract({
+        address: ESCROW_ADDRESS,
+        abi: parseAbi(['function tokenURI(uint256) view returns (string)']),
+        functionName: 'tokenURI',
+        args: [BigInt(jobId)]
+      });
+
+      if (tokenURI && tokenURI.startsWith('data:application/json;base64,')) {
+        const jsonBase64 = tokenURI.split(',')[1];
+        const jsonStr = atob(jsonBase64);
+        const metadata = JSON.parse(jsonStr);
+        return metadata;
+      }
+      return null;
+    } catch (err) {
+      console.warn(`[SOVEREIGN] NFT Metadata Friction for #${jobId}:`, err.message);
+      return null;
+    }
+  },
+
+  /**
    * Basic SIWE Auth without Backend (Pure Client-Side Auth)
    */
   async checkHealth() {
