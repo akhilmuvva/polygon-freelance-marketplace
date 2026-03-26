@@ -58,8 +58,8 @@ abstract contract FreelanceEscrowBase is
         address freelancer;
         uint16 milestoneCount;
         JobStatus status;
-        uint8 rating;
         bool paid;
+        bool zkRequired;
         IYieldManager.Strategy yieldStrategy;
 
         // SLOT 3: Address(20) + (12 bytes padding)

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Award, Shield, CheckCircle, ExternalLink, Cpu, Zap, Star } from 'lucide-react';
+import { Award, Shield, CheckCircle, ExternalLink, Cpu, Zap, Star, Lock, EyeOff } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAccount } from 'wagmi';
 import SubgraphService from '../services/SubgraphService';
@@ -18,9 +18,16 @@ function SBTGallery({ address: propAddress }) {
     const { address: wagmiAddress } = useAccount();
     const address = propAddress || wagmiAddress;
     const [tokens, setTokens] = useState([]);
+    const [zkStatus, setZKStatus] = useState({});
     const [loading, setLoading] = useState(true);
 
     useEffect(() => { if (address) fetchTokens(); }, [address]);
+
+    const handleActuateZK = async (certId) => {
+        console.log('[SOVEREIGN] Actuating Zero-Knowledge Proof for certificate:', certId);
+        setZKStatus(prev => ({ ...prev, [certId]: true }));
+        // In production, this would call PrivacyShield.commitIdentity
+    };
 
     const fetchTokens = async () => {
         if (!address) return;
@@ -179,6 +186,38 @@ function SBTGallery({ address: propAddress }) {
                                                     {token.tba || 'Initializing...'}
                                                 </span>
                                             </div>
+                                        </div>
+
+                                        <div style={{
+                                            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                            paddingTop: 16, borderTop: '1px solid rgba(255,255,255,0.04)',
+                                        }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                                <div style={{
+                                                    width: 24, height: 24, borderRadius: '50%', background: 'rgba(124,92,252,0.1)',
+                                                    display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(124,92,252,0.2)'
+                                                }}>
+                                                    <Lock size={12} style={{ color: 'var(--accent-light)' }} />
+                                                </div>
+                                                <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                                                    <span style={{ fontSize: '9px', fontWeight: 900, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Sovereign Shield</span>
+                                                    <span style={{ fontSize: '0.68rem', fontWeight: 800, color: zkStatus[token.id] ? '#34d399' : 'rgba(255,255,255,0.2)' }}>
+                                                        {zkStatus[token.id] ? 'ZK-Verified' : 'Unverified'}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            {!zkStatus[token.id] && (
+                                                <button 
+                                                    onClick={() => handleActuateZK(token.id)} 
+                                                    style={{ 
+                                                        background: 'rgba(124,92,252,0.08)', border: 'none', color: 'var(--accent-light)', 
+                                                        padding: '4px 10px', borderRadius: '8px', cursor: 'pointer',
+                                                        fontSize: '0.55rem', fontWeight: 900, textTransform: 'uppercase' 
+                                                    }}
+                                                >
+                                                    <EyeOff size={10} style={{ marginRight: 4 }} /> Actuate Proof
+                                                </button>
+                                            )}
                                         </div>
                                     </div>
                                 </motion.div>

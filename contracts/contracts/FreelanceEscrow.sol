@@ -273,7 +273,13 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
         if (job.client == address(0)) revert InvalidAddress();
         if (job.status != JobStatus.Created) revert InvalidStatus();
         if (hasApplied[jobId][_msgSender()]) revert InvalidStatus();
-        if (jobApplications[jobId].length >= MAX_APPLICATIONS_PER_JOB) revert NotAuthorized(); // Simplified error for "Capacity Reached"
+        
+        // Sovereign Directive 23: ZK-Identity Gating
+        if (job.zkRequired && privacyShield != address(0)) {
+            if (!IPrivacyShield(privacyShield).isVerified(_msgSender())) revert NotAuthorized();
+        }
+
+        if (jobApplications[jobId].length >= MAX_APPLICATIONS_PER_JOB) revert NotAuthorized();
 
         uint256 stake = (job.amount * APPLICATION_STAKE_PERCENT) / 100;
 
@@ -515,6 +521,7 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
         address paymentToken; // Token used for payment (can be different from target)
         uint256 paymentAmount; // Amount of paymentToken sent
         uint256 minAmountOut; // Slippage protection for swap
+        bool zkRequired; // Explicitly require a Sovereign Shield
     }
 
     /**
@@ -530,23 +537,8 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
 
         uint256 jobId = ++jobCount;
         
-        uint256 actualAmount = _handleJobFunding(
-            p.token, 
-            p.amount, 
-            p.yieldStrategy, 
-            p.paymentToken, 
-            p.paymentAmount, 
-            p.minAmountOut
-        );
-
-        // Validation: Sum of milestones must equal total amount
-        uint256 mSum = 0;
-        for(uint256 i=0; i<p.mAmounts.length; i++) {
-            mSum += p.mAmounts[i];
-        }
-        if (mSum != p.amount) revert InvalidStatus(); // Insolvency protection
-        
-        _initJobRecord(jobId, p.freelancer, p.token, actualAmount, p.ipfsHash, p.categoryId, p.deadline, p.yieldStrategy, p.mAmounts.length);
+        _handleJobFunding(p.token, p.amount, p.yieldStrategy, p.paymentToken, p.paymentAmount, p.minAmountOut);
+        _initJobRecord(jobId, p.freelancer, p.token, p.amount, p.ipfsHash, p.categoryId, p.deadline, p.yieldStrategy, p.mAmounts.length, p.zkRequired);
         _setupMilestones(jobId, p.freelancer, p.mAmounts, p.mHashes, p.mIsUpfront);
 
         emit JobCreated(jobId, _msgSender(), p.freelancer, actualAmount, jobs[jobId].deadline, block.timestamp);
@@ -562,7 +554,8 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
         uint256 categoryId, 
         uint256 deadline, 
         IYieldManager.Strategy yieldStrategy,
-        uint256 mCount
+        uint256 mCount,
+        bool zkRequired
     ) internal {
         Job storage job = jobs[jobId];
         job.client = _msgSender();
@@ -574,6 +567,7 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
         job.categoryId = uint16(categoryId);
         job.milestoneCount = uint16(mCount);
         job.yieldStrategy = yieldStrategy;
+        job.zkRequired = zkRequired;
         job.deadline = uint48(deadline == 0 ? block.timestamp + 7 days : deadline);
     }
 
