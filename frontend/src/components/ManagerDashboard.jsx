@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useAccount } from 'wagmi';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-    Activity, Lock, AlertCircle, CheckCircle2, Search,
-    LayoutDashboard, ArrowUpRight, Clock, Shield, Gavel, FileUp
+    Activity, Lock, AlertCircle, CheckCircle, Search, Zap,
+    LayoutDashboard, ArrowUpRight, Clock, Shield, Gavel, FileUp, ExternalLink, FileCode
 } from 'lucide-react';
 
 import api from '../services/api';
@@ -207,7 +207,7 @@ const ZenithControl = () => {
                                 <th style={thStyle}>Locked Value</th>
                                 <th style={thStyle}>Status</th>
                                 <th style={thStyle}>Applicants</th>
-                                <th style={thStyle}>Progress</th>
+                                <th style={thStyle}>Latest Evidence</th>
                                 <th style={thStyle}>Actions</th>
                             </tr>
                         </thead>
@@ -272,46 +272,39 @@ const ZenithControl = () => {
                                                 </div>
                                             </td>
                                             <td style={{ padding: 20 }}>
-                                                <div style={{ width: 128, height: 6, background: 'rgba(255,255,255,0.06)', borderRadius: 20, overflow: 'hidden' }}>
-                                                    <div style={{
-                                                        height: '100%', background: 'var(--accent-light)',
-                                                        width: `${job.status === 5 ? 100 : job.status >= 2 ? 60 : 20}%`
-                                                    }} />
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                    <div style={{ 
+                                                        padding: '4px 8px', background: 'rgba(255,255,255,0.02)', 
+                                                        borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)',
+                                                        maxWidth: '120px', overflow: 'hidden'
+                                                    }}>
+                                                        <span style={{ fontSize: '0.65rem', fontFamily: 'monospace', color: 'var(--text-tertiary)', whiteSpace: 'nowrap' }}>
+                                                            {job.ipfsHash ? job.ipfsHash.slice(0, 12) + '...' : '---'}
+                                                        </span>
+                                                    </div>
+                                                    {job.ipfsHash && (
+                                                        <a href={`https://gateway.pinata.cloud/ipfs/${job.ipfsHash}`} target="_blank" rel="noreferrer">
+                                                            <ExternalLink size={10} style={{ opacity: 0.3 }} />
+                                                        </a>
+                                                    )}
                                                 </div>
                                             </td>
                                             <td style={{ padding: 20 }}>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                                    {job.status >= 1 && job.status <= 2 && (
-                                                        <button onClick={() => setDisputeJob(job)} title="Raise Dispute"
-                                                            style={{
-                                                                padding: 8, borderRadius: 10, background: 'rgba(255,255,255,0.04)',
-                                                                border: 'none', color: 'var(--text-tertiary)', cursor: 'pointer',
-                                                                transition: 'all 0.2s ease',
-                                                            }}
-                                                            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(248,113,113,0.12)'; e.currentTarget.style.color = '#f87171'; }}
-                                                            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.color = 'var(--text-tertiary)'; }}>
-                                                            <Gavel size={16} />
-                                                        </button>
+                                                    {job.status === 2 && (
+                                                        <>
+                                                            <button onClick={() => handleRequestAIAudit(job.id)} title="AI Audit"
+                                                                style={{ padding: 8, borderRadius: 10, background: 'rgba(124,92,252,0.05)', border: 'none', color: '#8b5cf6', cursor: 'pointer' }}>
+                                                                <Zap size={15} />
+                                                            </button>
+                                                            <button onClick={() => handleReleaseMilestone(job.id, 0)} title="Release to Vault"
+                                                                style={{ padding: 8, borderRadius: 10, background: 'rgba(52,211,153,0.05)', border: 'none', color: '#34d399', cursor: 'pointer' }}>
+                                                                <CheckCircle size={15} />
+                                                            </button>
+                                                        </>
                                                     )}
-                                                    {job.status === 3 && (
-                                                        <button onClick={() => setEvidenceJob(job)} title="Submit Evidence"
-                                                            style={{
-                                                                padding: 8, borderRadius: 10, background: 'rgba(255,255,255,0.04)',
-                                                                border: 'none', color: 'var(--accent-light)', cursor: 'pointer',
-                                                                transition: 'all 0.2s ease',
-                                                            }}>
-                                                            <FileUp size={16} />
-                                                        </button>
-                                                    )}
-                                                    <button style={{
-                                                        padding: 8, borderRadius: 10, background: 'rgba(255,255,255,0.04)',
-                                                        border: 'none', color: '#fff', cursor: 'pointer', transition: 'all 0.2s ease',
-                                                    }}
-                                                        onMouseEnter={e => e.currentTarget.style.background = 'rgba(124,92,252,0.12)'}
-                                                        onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.04)'}>
+                                                    <button style={{ padding: 8, borderRadius: 10, background: 'rgba(255,255,255,0.04)', border: 'none', color: '#fff', cursor: 'pointer' }}>
                                                         <ArrowUpRight size={16} />
                                                     </button>
-                                                </div>
                                             </td>
                                         </motion.tr>
                                     );
