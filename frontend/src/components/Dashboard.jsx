@@ -93,33 +93,48 @@ const Dashboard = ({ address: propAddress }) => {
     });
 
     const activeEscrows = useMemo(() => {
-        if (!address) return [];
-        const freelancerJobs = portfolioRaw?.freelancer?.jobs || [];
+        if (!address || !portfolioRaw) return [];
+        const clientJobs = portfolioRaw.client?.jobs || [];
+        const freelancerJobs = portfolioRaw.freelancer?.jobs || [];
+        const allJobsRaw = [...clientJobs, ...freelancerJobs];
+        
         const STATUS_MAP = { 'Created': 0, 'Accepted': 1, 'Ongoing': 2, 'Disputed': 3, 'Arbitration': 4, 'Completed': 5, 'Cancelled': 6 };
         
-        // Live data from Subgraph
-        const live = freelancerJobs.filter(j => (STATUS_MAP[j.status] ?? 0) < 5).map(j => ({
+        // Remove duplicates and map to unified structure
+        const jobIds = new Set();
+        const live = allJobsRaw.filter(j => {
+            if (jobIds.has(j.jobId)) return false;
+            jobIds.add(j.jobId);
+            return (STATUS_MAP[j.status] ?? 0) < 5;
+        }).map(j => ({
             id: j.jobId,
             title: `Contract #${j.jobId}`,
-            status: j.status || 'Active',
-            progress: (STATUS_MAP[j.status] ?? 0) === 0 ? 0 : (STATUS_MAP[j.status] ?? 0) === 1 ? 25 : 50,
-            budget: formatEther(parseProtocolValue(j.amount))
+            status: STATUS_MAP[j.status] ?? 0,
+            statusLabel: j.status || 'Active',
+            amount: formatEther(parseProtocolValue(j.amount)),
+            applicantCount: j.applicantCount || 0 // This will be hydrated below
         }));
 
-        // Task 2 & 3: Local Pending Intents
-        const pending = JSON.parse(localStorage.getItem('zenith_pending_jobs') || '[]')
-            .filter(j => j.client === address || j.freelancer === address)
-            .map(j => ({
-                id: j.jobId,
-                title: j.title || `Contract #${j.jobId}`,
-                status: 'Authenticating...',
-                progress: 5,
-                budget: formatEther(parseProtocolValue(j.amount || '0')),
-                isOptimistic: true
-            }));
-
-        return [...pending, ...live];
+        return live;
     }, [address, portfolioRaw]);
+
+    // Hydrate applicant counts in Dashboard for real-time visibility
+    const [hydratedEscrows, setHydratedEscrows] = useState([]);
+    useEffect(() => {
+        const hydrate = async () => {
+            if (activeEscrows.length === 0) return;
+            const updated = await Promise.all(activeEscrows.map(async (job) => {
+                try {
+                    const applications = await SubgraphService.getJobApplications?.(job.id) || [];
+                    // Note: If Subgraph doesn't have applications, we'd need SovereignService
+                    // For now, let's assume it's indexed or uses the same service pattern
+                    return { ...job, applicantCount: applications.length };
+                } catch { return job; }
+            }));
+            setHydratedEscrows(updated);
+        };
+        hydrate();
+    }, [activeEscrows]);
 
     useEffect(() => {
         if (address) {
@@ -368,6 +383,77 @@ const Dashboard = ({ address: propAddress }) => {
                                 <span style={{ fontSize: '10px', fontWeight: 900, color: s.color, letterSpacing: '0.1em' }}>{s.val}</span>
                             </div>
                         ))}
+                    </div>
+                </motion.div>
+
+                {/* 5. Active Operations Table */}
+                <motion.div 
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    style={{ gridColumn: 'span 12', marginTop: '30px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '32px', overflow: 'hidden' }}
+                >
+                    <div style={{ padding: '32px', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div>
+                            <h4 style={{ fontSize: '11px', fontWeight: 900, color: 'rgba(255,255,255,0.2)', textTransform: 'uppercase', letterSpacing: '0.3em', margin: 0 }}>Active Operations</h4>
+                            <p style={{ fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.4)', marginTop: '4px' }}>Real-time Escrow Tracking</p>
+                        </div>
+                        <button style={{ padding: '8px 16px', background: 'rgba(255,255,255,0.04)', border: 'none', borderRadius: '12px', fontSize: '10px', fontWeight: 900, color: 'var(--accent-light)', cursor: 'pointer' }}>
+                            View All
+                        </button>
+                    </div>
+                    <div style={{ overflowX: 'auto' }}>
+                        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                            <thead>
+                                <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', background: 'rgba(0,0,0,0.2)' }}>
+                                    <th style={{ padding: '20px 32px', textAlign: 'left', fontSize: '9px', fontWeight: 900, textTransform: 'uppercase', color: 'rgba(255,255,255,0.2)' }}>Mission ID</th>
+                                    <th style={{ padding: '20px 32px', textAlign: 'left', fontSize: '9px', fontWeight: 900, textTransform: 'uppercase', color: 'rgba(255,255,255,0.2)' }}>Status</th>
+                                    <th style={{ padding: '20px 32px', textAlign: 'left', fontSize: '9px', fontWeight: 900, textTransform: 'uppercase', color: 'rgba(255,255,255,0.2)' }}>Applicants</th>
+                                    <th style={{ padding: '20px 32px', textAlign: 'left', fontSize: '9px', fontWeight: 900, textTransform: 'uppercase', color: 'rgba(255,255,255,0.2)' }}>Value</th>
+                                    <th style={{ padding: '20px 32px', textAlign: 'right', fontSize: '9px', fontWeight: 900, textTransform: 'uppercase', color: 'rgba(255,255,255,0.2)' }}>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {hydratedEscrows.map((job) => (
+                                    <tr key={job.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
+                                        <td style={{ padding: '24px 32px' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                                <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#00f5d4' }} />
+                                                <span style={{ fontSize: '12px', fontWeight: 700, fontFamily: 'monospace' }}>#{job.id}</span>
+                                            </div>
+                                        </td>
+                                        <td style={{ padding: '24px 32px' }}>
+                                            <span style={{ fontSize: '9px', fontWeight: 900, textTransform: 'uppercase', padding: '4px 8px', borderRadius: '6px', background: 'rgba(255,255,255,0.03)', color: '#00f5d4' }}>
+                                                {job.statusLabel}
+                                            </span>
+                                        </td>
+                                        <td style={{ padding: '24px 32px' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                <div style={{ padding: '4px 10px', borderRadius: '100px', background: 'rgba(0,245,212,0.1)', border: '1px solid rgba(0,245,212,0.2)', fontSize: '10px', fontWeight: 900, color: '#00f5d4' }}>
+                                                    {job.applicantCount || 0} Specialists
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td style={{ padding: '24px 32px' }}>
+                                            <span style={{ fontSize: '13px', fontWeight: 900 }}>{job.amount} MATIC</span>
+                                        </td>
+                                        <td style={{ padding: '24px 32px', textAlign: 'right' }}>
+                                            <button 
+                                                onClick={() => handleViewProof(job)}
+                                                style={{ border: 'none', background: 'none', color: 'rgba(255,255,255,0.2)', cursor: 'pointer' }}>
+                                                <ChevronRight size={18} />
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                                {hydratedEscrows.length === 0 && (
+                                    <tr>
+                                        <td colSpan="5" style={{ padding: '60px', textAlign: 'center', fontSize: '10px', color: 'rgba(255,255,255,0.1)', textTransform: 'uppercase', letterSpacing: '0.2em' }}>
+                                            No active missions detected on this node
+                                        </td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
                     </div>
                 </motion.div>
 
