@@ -37,6 +37,7 @@ const FiatOnramp = lazy(() => import('./components/FiatOnramp'));
 const LandingPage = lazy(() => import('./components/LandingPage'));
 const IdentityManager = lazy(() => import('./components/IdentityManager'));
 const Manifesto = lazy(() => import('./components/Manifesto.jsx'));
+const InsuranceDashboard = lazy(() => import('./components/InsuranceDashboard'));
 
 import { NotificationManager } from './components/NotificationManager';
 import CourtErrorBoundary from './components/CourtErrorBoundary';
@@ -499,6 +500,7 @@ function App() {
       case 'identity': return <IdentityManager address={effectiveAddress} />;
       case 'portfolio': return <Portfolio address={effectiveAddress} onFiatPay={navigateToOnramp} />;
       case 'specialists': return <SpecialistMarketplace onRegister={() => setActiveTab('identity')} />;
+      case 'insurance': return <InsuranceDashboard />;
       case 'manifesto': return <Manifesto />;
       default: return <Dashboard address={effectiveAddress} />;
     }
@@ -553,6 +555,7 @@ function App() {
               {[
                   { id: 'governance', icon: Globe, label: 'DAO Governance' },
                   { id: 'court', icon: Gavel, label: 'Zenith Court' },
+                  { id: 'insurance', icon: ShieldCheck, label: 'Zenith Shield' },
                   { id: 'liquidity', icon: Flame, label: 'Zenith Liquidity' },
               ].map(item => (
                 <div key={item.id} className="anime-nav-item" onClick={() => navigate(item.id)} style={styles.navItem(activeTab === item.id)}>
