@@ -3,6 +3,7 @@ pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/cryptography/SignatureChecker.sol";
+import "@openzeppelin/contracts/governance/TimelockController.sol";
 
 /**
  * @title IFreelanceSBT
@@ -55,6 +56,7 @@ contract FreelanceGovernance is Ownable {
         uint256 convictionThreshold; 
         address target;
         bytes data;
+        bool queued;        // True once scheduled in timelock
         mapping(address => bool) hasVoted;
         mapping(bytes32 => bool) nullifiers;
         mapping(address => bytes32) commits;
@@ -82,6 +84,11 @@ contract FreelanceGovernance is Ownable {
     /// @notice Slashing amount for failed malicious proposals
     uint256 public constant PENALTY_AMOUNT = 2;
 
+    TimelockController public timelock;
+    address public timelockAddress;
+
+    event ProposalsQueued(uint256 indexed proposalId, uint256 eta);
+    event TimelockSet(address indexed timelockAddress);
     event ProposalCreated(uint256 indexed proposalId, address indexed proposer, string description, bool quadratic);
     event Voted(uint256 indexed proposalId, address indexed voter, bool support, uint256 weight);
     event ProposalExecuted(uint256 proposalId);
@@ -111,6 +118,52 @@ contract FreelanceGovernance is Ownable {
     function delegate(address delegatee) external {
         delegates[msg.sender] = delegatee;
         emit DelegationUpdated(msg.sender, delegatee);
+    }
+
+    /**
+     * @notice Sets the timelock address, called once after PolyLanceTimelock is deployed
+     */
+    function setTimelock(address _timelock) external onlyOwner {
+        require(timelockAddress == address(0), "Governance: Timelock already set");
+        require(_timelock != address(0), "Governance: Zero address");
+        timelockAddress = _timelock;
+        timelock = TimelockController(payable(_timelock));
+        emit TimelockSet(_timelock);
+    }
+
+    /**
+     * @notice Schedules a passed proposal in the timelock
+     */
+    function queueProposal(uint256 proposalId) external {
+        Proposal storage p = proposals[proposalId];
+        require(!p.isDisputed, "Governance: Proposal is suspended by arbitration");
+        require(block.timestamp > p.endTime, "Governance: Voting still active");
+        require(!p.executed, "Governance: Already executed");
+        require(!p.queued, "Governance: Already queued");
+        require(timelockAddress != address(0), "Governance: Timelock not set");
+
+        bool passed;
+        if (p.optimistic) {
+            passed = p.againstVotes <= p.forVotes;
+        } else {
+            passed = p.forVotes > p.againstVotes;
+        }
+        require(passed, "Governance: Proposal did not pass");
+
+        p.queued = true;
+
+        bytes32 salt = keccak256(abi.encodePacked(proposalId));
+        timelock.schedule(
+            p.target,
+            0,
+            p.data,
+            bytes32(0),
+            salt,
+            timelock.getMinDelay()
+        );
+
+        uint256 eta = block.timestamp + timelock.getMinDelay();
+        emit ProposalsQueued(proposalId, eta);
     }
 
     /// @notice Returns true if a proposal with given ID exists
@@ -313,31 +366,21 @@ contract FreelanceGovernance is Ownable {
     function executeProposal(uint256 proposalId) external {
         Proposal storage p = proposals[proposalId];
         require(!p.isDisputed, "Proposal is suspended by arbitration");
+        require(p.queued, "Governance: Must queue first");
         require(block.timestamp > p.endTime, "Voting still active");
         require(!p.executed, "Already executed");
         
-        bool passed;
-        if (p.optimistic) {
-            // Optimistic: passes if againstVotes <= forVotes (or even if no votes at all)
-            passed = p.againstVotes <= p.forVotes;
-        } else {
-            passed = p.forVotes > p.againstVotes;
-        }
-
-        if (passed) {
-            p.executed = true;
-            
-            // Real execution if target is set
-            if (p.target != address(0)) {
-                (bool success, ) = p.target.call(p.data);
-                require(success, "DAO Execution failed");
-            }
-            
-            emit ProposalExecuted(proposalId);
-        } else {
-            if (p.againstVotes > p.forVotes * 3 && p.againstVotes > 10) {
-                try sbtContract.burn(p.proposer, PENALTY_AMOUNT) {} catch {}
-            }
-        }
+        p.executed = true;
+        
+        bytes32 salt = keccak256(abi.encodePacked(proposalId));
+        timelock.execute(
+            p.target,
+            0,
+            p.data,
+            bytes32(0),
+            salt
+        );
+        
+        emit ProposalExecuted(proposalId);
     }
 }
