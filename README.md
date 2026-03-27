@@ -1,103 +1,76 @@
-# 🚀 PolyLance Zenith: Sovereign Protocol (Production Finality)
-**Protocol Engineers:** [Akhil Muvva](mailto:akhilmuvva@polylance.codes) & [Jhansi Kupireddy](mailto:jhansi.kupireddy@polylance.codes)
-**Status Report:** [Current Sovereign Status (13-Part Stack)](STATUS_REPORT.md)
+# PolyLance — Decentralized Freelance Marketplace
 
-## 🌌 The Antigravity Equilibrium
-PolyLance Zenith is the world's first **0-Friction, Sovereign Real-World Asset (RWA) Talent Layer**. Built on the Polygon AggLayer, it eliminates the extractive fees of Web2 platforms (Upwork, Fiverr) by treating freelance labor as an institutional-grade, yield-bearing RWA. 
+**A protocol for trustless recruitment, escrow-based settlement, and on-chain professional reputation on Polygon.**
 
-We do not govern; we *Actuate*. We do not tax; we harvest *Surplus*. 
-
-> **Architect's Philosophy:** "A decentralized market shouldn't just be cheaper—it should be *weightless*. By integrating the Antigravity OS, we've replaced centralized rent-seeking with autonomous money markets. Zenith captures yield friction from idle escrow and routes it to the Sovereign Treasury. The result? A 0% fee equilibrium for early adopters."
-
-> **Architect's Philosophy:** "A decentralized market shouldn't just be cheaper—it should be *weightless*. By integrating the Antigravity OS, we've replaced centralized rent-seeking with autonomous money markets. Zenith captures yield friction from idle escrow and routes it to the Sovereign Treasury. The result? A 0% fee equilibrium for early adopters."
-
-## 💠 Polygon Native Alignment (POL & AggLayer)
-PolyLance Zenith is engineered for the **Polygon 2.0** vision:
-- **POL Gravitational Boost**: Strategic utility for the **POL** token; users staking POL receive a **1.5x reputation multiplier**.
-- **Privado ID (Polygon ID)**: Zero-Knowledge personhood verification via Privado ID to ensure a sybil-resistant, compliant talent mesh.
-- **AggLayer Interoperability**: Utilizing the **Polygon Unified Bridge** architecture for seamless invoice financing liquidity across the AggLayer.
-
-### 1. Sovereign Invoice NFTs (RWA)
-Labor is tokenized natively as an ERC-721 Invoice.
-- **Immediate Liquidity:** Actuate instant capital by opening invoices to the factoring market at a dynamically calculated gravity discount.
-- **Originator Gravity:** 0.5% surplus routed automatically to the Sovereign Treasury upon verification.
-- **Checks-Effects-Interactions (CEI):** Bulletproof state management eliminates reentrancy vectors across external DeFi calls.
-
-### 2. Antigravity Reputation Engine (ERC-1155)
-Reputation is a mathematically robust record of operational velocity, not a volatile number.
-- **Negative Gravity (S-Tier):** Elite contributors exhibiting hyper-performance achieve negative-gravity status, unlocking exclusive intent-lanes and risk-premium compression.
-- **Sovereign Profile Pointers:** IPFS/Ceramic metadata anchoring tied securely to the user's Soulbound state.
-
-### 3. The Sovereign OS (AI Autonomous Stabilization)
-Zenith is patrolled by deterministic Stabilizer Oracles—intelligent daemons maintaining equilibrium.
-- **Treasury Butler:** Autonomously detects yield friction and executes cross-vault rebalancing (Aave, Morpho) to maximize Sovereign Surplus.
-- **Verifiable Nudges:** Stabilizer Oracle actively analyzes on-chain intent horizons, actuating XMTP nudges to prevent capital freeze defaults.
-
-## ⚙️ Engineering & Architecture
-
-```mermaid
-graph TD
-    Sovereign((Sovereign Actor))
-    Frontend[Sovereign Core OS]
-    XMTP[XMTP V3 - P2P Negotiator]
-    Ceramic[(Ceramic - Identity Hash)]
-    
-    subgraph "Polygon AggLayer"
-        InvoiceNFT[InvoiceNFT - RWA Issuer]
-        YieldMgr[YieldManager - Surplus Harvester]
-        Reputation[Antigravity Reputation]
-    end
-    
-    subgraph "Decentralized Liquidity"
-        Aave[Aave V3 Polygon Pool]
-        Morpho[Morpho Blue]
-    end
-    
-    Sovereign <-->|Session Intent| Frontend
-    Frontend <-->|E2E Encrypted| XMTP
-    Frontend <-->|Profile Sync| Ceramic
-    Frontend <-->|Actuates Intents| InvoiceNFT
-    InvoiceNFT <-->|Collateral Route| YieldMgr
-    YieldMgr <-->|DeFi Strategies| Aave
-    YieldMgr <-->|DeFi Strategies| Morpho
-    InvoiceNFT <-->|Query Gravity| Reputation
-```
-
-### Protocol Resilience Ledger
-Our engineering mandate is strict: No friction. No exploits.
-- **Gas Optimization via Custom Errors:** 100% replacement of generic string requires.
-- **Strict CEI Enforcement:** Mutex locks and ordered state changes protect against cascading vector attacks.
-- **Timestamp Manipulation Resistance:** Embedded grace buffers (e.g., 30s) eliminate boundary edge-case exploitation by opportunistic validators.
-
-## 🚀 Deployment (Mainnet-Anchored)
-
-| Core Primitive | Immutable Address (Polygon Amoy / Mainnet Anchor) | 
-| :--- | :--- | 
-| **Sovereign InvoiceNFT (Escrow)** | `0x25F6C8ed995C811E6c0ADb1D66A60830E8115e9A` |
-| **Antigravity Reputation** | `0x89791A9A3210667c828492DB98DCa3e2076cc373` |
-| **Zenith Governance Engine** | `0x4653251486a57f90Ee89F9f34E098b9218659b83` |
-| **YieldManager (Aave Mainnet Anchor)** | `0x794a6135D5A5B64eBcEeB42779aa57c0b5b4814aD` |
-
-## 🛠️ Protocol Finality & 13-Part Sovereign Stack
-The PolyLance Zenith protocol has reached **S-Tier Structural Maturity**. We have successfully integrated 13 decentralized tiers to ensure absolute autonomy and trust-minimization.
-
-- **Tier 1-13 Integration (FINALIZED)**
-    - **Identity & Privacy:** Soulbound Tokens + ZK-Privado ID integration.
-    - **Escrow & Assets:** Shadow Vaults (ERC-6551) + RWA Tokenization (ERC-1155).
-    - **Governance & Shield:** Quadratic Voting + Staked Insurance Pools.
-    - **Intelligence Layer:** AI-Oracle verified settlements + AI-Agent Matchmaking.
-    - **Omnichain Layer:** LayerZero V2 reputation syncing across supported clusters.
-    - **Economic Layer:** Central Protocol Treasury with yield-friction harvesting.
-
-> *Full protocol metrics and architectural breakdowns are documented in [STATUS_REPORT.md](STATUS_REPORT.md).*
-
-> *Detailed technical specifications of the 13-tier architecture are in [practical_record_breakdown.md](practical_record_breakdown.md).* 
+[![Website](https://img.shields.io/badge/Website-polylance.codes-blue)](https://polylance.codes)
+[![Network](https://img.shields.io/badge/Network-Polygon_Amoy-purple)](https://amoy.polygonscan.com)
+[![Tests](https://img.shields.io/badge/Tests-17_Files-green)](#)
+[![Contracts](https://img.shields.io/badge/Contracts-60_Files-blue)](#)
 
 ---
+
+## About PolyLance
+
+PolyLance is a decentralized alternative to traditional freelance platforms. It replaces centralized intermediaries and high fees with smart contract escrow and on-chain professional identity. 
+
+- **Official Website:** [https://polylance.codes](https://polylance.codes)
+- **Engineers:** [Akhil Muvva](mailto:akhilmuvva@polylance.codes) · [Jhansi Kupireddy](mailto:jhansi.kupireddy@polylance.codes)
+- **Security:** [security@polylance.codes](mailto:security@polylance.codes)
+
 ---
-+
-+## 🛡️ Support & Security
-+For administrative inquiries, contact **[admin@polylance.codes](mailto:admin@polylance.codes)**.  
-+To report vulnerabilities, please refer to our **[SECURITY.md](SECURITY.md)** or email **[security@polylance.codes](mailto:security@polylance.codes)**.
-+
-+**Sovereignty Actuated. Friction Eliminated.**
+
+## Core Protocol Features
+
+### 1. Smart Contract Escrow
+- **Milestone-Based Payments:** Funds are locked in `FreelanceEscrow.sol` and released upon client approval or arbitration victory.
+- **Yield Generation:** Idle escrowed funds can be routed to Aave V3 on Polygon to generate yield for the platform or users.
+- **Dispute Resolution:** Integration with Kleros decentralized courts for neutral arbitration.
+
+### 2. Professional Reputation (SBTs)
+- **Soulbound Tokens (ERC-5192):** Completed jobs mint a non-transferable token (`FreelanceSBT.sol`) recording skills and client ratings.
+- **On-chain CV:** A verifiable, sybil-resistant history of professional performance.
+
+### 3. Governance & Security
+- **Quadratic Governance:** Platform upgrades are voted on by long-term contributors via `FreelanceGovernance.sol`.
+- **48-Hour Timelock:** All successful governance proposals must pass through a 48-hour delay in `PolyLanceTimelock.sol` before execution.
+- **UUPS Upgradeability:** Protocol core contracts use UUPS proxies to allow for secure upgrades with developer accountability.
+
+---
+
+## 🛠️ Protocol Architecture
+
+The protocol is built on a modular stack:
+
+- **Identity Layer:** Soulbound Tokens and ZK-identity hooks (Privado ID).
+- **Settlement Layer:** ERC-20 (MATIC/PolyToken) escrow contracts with reentrancy protection.
+- **Governance Layer:** Governor-based quadratic voting system.
+- **Infrastructure:** Frontend hosted with IPFS/4Everland, metadata on Ceramic.
+
+### Contract Registry (Polygon Amoy)
+
+| Contract | Address |
+| :--- | :--- |
+| **FreelanceEscrow** | `0x25F6C8ed995C811E6c0ADb1D66A60830E8115e9A` |
+| **FreelancerReputation** | `0x89791A9A3210667c828492DB98DCa3e2076cc373` |
+| **FreelanceGovernance** | `0x4653251486a57f90Ee89F9f34E098b9218659b83` |
+| **PolyLanceTimelock** | (Deployed as part of governance upgrade) |
+
+---
+
+## 🚀 Getting Started
+
+1. **Visit the app:** [https://polylance.codes](https://polylance.codes)
+2. **Connect Wallet:** Use MetaMask or any WalletConnect provider on the Polygon Amoy network.
+3. **Register Profile:** Initialize your professional identity with a Soulbound Token.
+
+---
+
+## 🛡️ Security & Audits
+
+- **Timelock Enforcement:** 48-hour mandatory delay for all system-level changes.
+- **Open-Source:** All contract logic is verified on Polygonscan.
+- **Responsible Disclosure:** If you find a security vulnerability, please contact [security@polylance.codes](mailto:security@polylance.codes).
+
+---
+
+© 2026 PolyLance. Created by [Akhil Muvva](https://github.com/akhilmuvva) & [Jhansi Kupireddy](https://github.com/jhansikupireddy).

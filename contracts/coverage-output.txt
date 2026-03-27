@@ -1,0 +1,77 @@
+[dotenv@17.3.1] injecting env (4) from .env -- tip: ≡ƒ¢á∩╕Å  run anywhere with `dotenvx run -- yourcommand`
+
+Version
+=======
+> solidity-coverage: v0.8.17
+
+Instrumenting for coverage...
+=============================
+
+> AIOracle.sol
+> AntigravityGovernance.sol
+> AssetTokenizer.sol
+> ComplianceRegistry.sol
+> FreelanceEscrow.sol
+> FreelanceEscrowBase.sol
+> FreelanceEscrowLibrary.sol
+> FreelanceEscrowRWAAdapter.sol
+> FreelanceEscrowV2.sol
+> FreelanceGovernance.sol
+> FreelanceGovernanceV2.sol
+> FreelanceRenderer.sol
+> FreelancerReputation.sol
+> FreelanceSBT.sol
+> GrantMilestones.sol
+> IArbitrator.sol
+> InsurancePool.sol
+> interfaces\IArbitrator.sol
+> interfaces\IChainlinkPriceFeed.sol
+> interfaces\IERC5192.sol
+> interfaces\IERC6551Account.sol
+> interfaces\IERC6551Registry.sol
+> interfaces\IFreelanceSBT.sol
+> InvoiceNFT.sol
+> lz\AggLayerBridgeDemo.sol
+> lz\CrossChainGovernor.sol
+> lz\interfaces\ILayerZeroEndpointV2.sol
+> lz\OApp.sol
+> lz\OmniDispute.sol
+> lz\OmniGovernance.sol
+> lz\OmniReputation.sol
+> MockERC20.sol
+> MockPriceFeed.sol
+> MyProxy.sol
+> PolyCompletionSBT.sol
+> PolyGovernance.sol
+> PolyLanceForwarder.sol
+> PolyLanceTimelock.sol
+> PolyTimelock.sol
+> PolyToken.sol
+> PriceConverter.sol
+> PrivacyShield.sol
+> QuadraticGovernance.sol
+> ReputationStaking.sol
+> ReviewSBT.sol
+> SovereignAccount.sol
+> SovereignRegistry.sol
+> SpecializedSkillRegistry.sol
+> StreamingEscrow.sol
+> SwapManager.sol
+> test\Invariants.sol
+> test\MockArbitrator.sol
+> test\MockLayerZeroEndpointV2.sol
+> test\MockReputation.sol
+> test\MockWormhole.sol
+> test\TestHelpers.sol
+> wormhole\WormholeAdapter.sol
+> YieldManager.sol
+> ZodiacGovernanceModule.sol
+
+Compilation:
+============
+
+Error in plugin solidity-coverage: HardhatError: HH18: You installed Hardhat with a corrupted lockfile due to the NPM bug #4828.
+
+Please delete your node_modules, package-lock.json, reinstall your project, and try again.
+
+For more info run Hardhat with --show-stack-traces
