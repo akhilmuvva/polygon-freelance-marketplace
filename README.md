@@ -6,6 +6,8 @@
 [![Network](https://img.shields.io/badge/Network-Polygon_Amoy-purple)](https://amoy.polygonscan.com)
 [![Tests](https://img.shields.io/badge/Tests-17_Files-green)](#)
 [![Contracts](https://img.shields.io/badge/Contracts-60_Files-blue)](#)
+![Tests](https://img.shields.io/badge/Tests-not%20verified-lightgrey)
+![Coverage](https://img.shields.io/badge/Coverage-not%20run-lightgrey)
 
 ---
 

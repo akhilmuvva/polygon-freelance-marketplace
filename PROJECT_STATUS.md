@@ -1,69 +1,66 @@
 # PolyLance — Project Status
 
-**Engineers:** Akhil Muvva (akhilmuvva@polylance.codes) · Jhansi Kupireddy (jhansi.kupireddy@polylance.codes)
-**Updated:** 2026-03-28 [ZENITH SUPREME SYNC]
-**Network:** Polygon Mainnet (137)
-**Live app:** https://polylance.codes
+Engineers: Akhil Muvva · Jhansi Kupireddy
+Updated: 2026-03-29
+Network: Polygon Amoy Testnet
+Live app: https://polylance.codes
 
----
+## Deployed contracts (Polygon Amoy Testnet)
 
-## 🚀 Village 2.0 Readiness: ACHIEVED
-PolyLance has successfully transitioned to the "Sovereign Production" phase, meeting all criteria for the Polygon Village 2.0 program.
+| Contract | Address |
+|----------|---------|
+| FreelanceEscrow (Proxy) | 0x25F6C8ed995C811E6c0ADb1D66A60830E8115e9A |
+| FreelancerReputation    | 0x89791A9A3210667c828492DB98DCa3e2076cc373 |
+| PolyToken               | 0xd3b893cd083f07Fe371c1a87393576e7B01C52C6 |
+| FreelanceSBT            | 0xb4e9A5BC64DC07f890367F72941403EEd7faDCbB |
+| PolyLanceTimelock       | not yet deployed |
 
-### Key Milestones Completed:
-- **[TASK 1] Foundry Migration**: Activated the **Foundry (forge)** test suite migration plan to bypass HH18 environment blockers. Target: 100% test coverage (17/17).
-- **[TASK 2] Mainnet Actuation**: **ChainID 137** configuration finalized. `SwapRouter02` and Bor v2.6.0/Lisovo requirements confirmed.
-- **[TASK 3] Pre-Audit Report**: Internal "Sovereign Truth" security audit results consolidated into a formal pre-audit brief for Hacken/Certik review.
-- **[TASK 4] Village Application**: 100% drafted, covering UVP, Market Strategy, and Strategic Grant requirements.
-- **[TASK 5] Public Documentation**: Technical One-Pager structured for whitepaper-grade disclosure.
+> ZenithGovernance was removed: ZenithGovernance.sol did not appear in the Task A `find` output.
 
----
+## Test results (from Task A — npx hardhat test)
 
-## Deployed contracts (Polygon Mainnet Readiness)
+Tests passing : not verified
+Tests failing : not verified
 
-| Contract | Status | Address / Target |
-|----------|---------|---------|
-| FreelanceEscrow (Proxy) | Deployed (Amoy) | [Ready for Mainnet Actuation] |
-| PolyLanceNFTMarketplace | **UPGRADED** | [Ready for Mainnet Actuation] |
-| SwapManager (V3)        | **INTEGRATED**| [Ready for Mainnet Actuation] |
-| PolyLanceTimelock       | Deployed (Amoy) | 48-hour Governance Shield active. |
-| PolyToken (ERC-20)      | Deployed (Amoy) | Ecosystem utility confirmed. |
+> `npx hardhat test` exited with Error HH18 (corrupted lockfile, NPM bug #4828). No test counts were produced.
 
----
+## Coverage (from Task A — npx hardhat coverage)
 
-## What actually works
+Statements : coverage not run
+Branches   : coverage not run
+Functions  : coverage not run
+Lines      : coverage not run
 
-- **Zenith Exchange**: Atomic NFT-for-token swapping via Uniswap V3.
-- **Job Escrow**: Milestone-based settlement with neutral Kleros dispute arbitration.
-- **Soulbound Rep**: ERC-5192 reputation certificates (SBTs) auto-minted upon job completion.
-- **Mainnet Resilience**: Multi-node RPC cluster pointing to Polygon Mainnet (minet).
-- **Sovereign Stack**: Ceramic (Identity), XMTP (Encrypted Messaging), and IPFS (Frontend) fully functional.
+> `npx hardhat coverage` failed: could not instrument PolyLanceNFTMarketplace.sol (parser error at line 48).
 
----
+## Frontend build
 
-## Test coverage (Foundry Bridge)
+Status : passed
 
-| Metric     | Status | Target |
-|------------|----------|--------|
-| Statements | **Foundry Prep** | >95% |
-| Functions  | **Foundry Prep** | 100% |
-| Pass Rate  | **Foundry Prep** | 17/17 |
+> `npm run build` completed with exit code 0 — `✔ built in 30.66s`
 
-*Note: Transitioning to Forge eliminates the Node 22 NAPI-RS (HH18) execution blocker.*
+## What works (only list features that have a deployed contract address above)
 
----
+- Milestone escrow with Kleros dispute arbitration (FreelanceEscrow Proxy deployed)
+- Soulbound Token minting on job completion, ERC-5192 (FreelanceSBT deployed)
+- On-chain reputation tracking (FreelancerReputation deployed)
+- Protocol token (PolyToken deployed)
 
-## Production Roadmap
+## What is testnet-only (honest statement for evaluators)
 
-1. **Mainnet Execution**: Provisioning MATIC for the final contract suite deployment on Polygon Mainnet.
-2. **Security Audit**: Submitting pre-audit report for Hacken Village Voucher program.
-3. **Village Submission**: Uploading documentation to [polygon.technology/village](https://polygon.technology/village).
+All contracts are on Polygon Amoy Testnet.
+Mainnet deployment is planned after external security audit.
+No real funds are at risk.
 
----
+## Security
 
-## Security Architecture
+- UUPS upgradeable proxies with _disableInitializers
+- ReentrancyGuard on escrow release functions
+- 48h governance timelock (PolyLanceTimelock.sol)
+- Mythril and Slither analysis documented in AUDIT.md
+- Responsible disclosure: security@polylance.codes
 
-- **Timelock:** 48-hour delay for all governance updates enforced by `PolyLanceTimelock.sol`.
-- **Swap Security**: Slippage protection and atomic execution for all Zenith Exchange transactions.
-- **Checks-Effects-Interactions (CEI)**: Strictly applied to all fund-handling paths.
-- **Role-Based Access Control**: Multi-sig/Admin-gated UUPS upgrades.
+## Contacts
+
+Admin    : admin@polylance.codes
+Security : security@polylance.codes

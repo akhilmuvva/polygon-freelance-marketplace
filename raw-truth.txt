@@ -1,0 +1,108 @@
+================================================================
+TASK A — COMMAND 1: cd contracts && npx hardhat test 2>&1 | tail -5
+Run at: 2026-03-29 (UTC+5:30)
+Exit code: 1
+================================================================
+
+[dotenv@17.3.1] injecting env (4) from .env
+
+Error HH18: You installed Hardhat with a corrupted lockfile due to the NPM bug #4828.
+
+Please delete your node_modules, package-lock.json, reinstall your project, and try again.
+For more info go to https://v2.hardhat.org/HH18 or run Hardhat with --show-stack-traces
+
+================================================================
+TASK A — COMMAND 2: find contracts/contracts -name "*.sol" | sort
+Run at: 2026-03-29 (UTC+5:30)
+Exit code: 0
+================================================================
+
+contracts/AIOracle.sol
+contracts/AntigravityGovernance.sol
+contracts/AssetTokenizer.sol
+contracts/ComplianceRegistry.sol
+contracts/FreelanceEscrow.sol
+contracts/FreelanceEscrowBase.sol
+contracts/FreelanceEscrowLibrary.sol
+contracts/FreelanceEscrowRWAAdapter.sol
+contracts/FreelanceEscrowV2.sol
+contracts/FreelanceGovernance.sol
+contracts/FreelanceGovernanceV2.sol
+contracts/FreelanceRenderer.sol
+contracts/FreelancerReputation.sol
+contracts/FreelanceSBT.sol
+contracts/GrantMilestones.sol
+contracts/IArbitrator.sol
+contracts/InsurancePool.sol
+contracts/interfaces/IArbitrator.sol
+contracts/interfaces/IChainlinkPriceFeed.sol
+contracts/interfaces/IERC5192.sol
+contracts/interfaces/IERC6551Account.sol
+contracts/interfaces/IERC6551Registry.sol
+contracts/interfaces/IFreelanceSBT.sol
+contracts/InvoiceNFT.sol
+contracts/lz/AggLayerBridgeDemo.sol
+contracts/lz/CrossChainGovernor.sol
+contracts/lz/interfaces/ILayerZeroEndpointV2.sol
+contracts/lz/OApp.sol
+contracts/lz/OmniDispute.sol
+contracts/lz/OmniGovernance.sol
+contracts/lz/OmniReputation.sol
+contracts/MockERC20.sol
+contracts/MockPriceFeed.sol
+contracts/MyProxy.sol
+contracts/PolyCompletionSBT.sol
+contracts/PolyGovernance.sol
+contracts/PolyLanceForwarder.sol
+contracts/PolyLanceNFTMarketplace.sol
+contracts/PolyLanceTimelock.sol
+contracts/PolyTimelock.sol
+contracts/PolyToken.sol
+contracts/PriceConverter.sol
+contracts/PrivacyShield.sol
+contracts/QuadraticGovernance.sol
+contracts/ReputationStaking.sol
+contracts/ReviewSBT.sol
+contracts/SovereignAccount.sol
+contracts/SovereignRegistry.sol
+contracts/SpecializedSkillRegistry.sol
+contracts/StreamingEscrow.sol
+contracts/SwapManager.sol
+contracts/test/Invariants.sol
+contracts/test/MockArbitrator.sol
+contracts/test/MockLayerZeroEndpointV2.sol
+contracts/test/MockReputation.sol
+contracts/test/MockWormhole.sol
+contracts/test/TestHelpers.sol
+contracts/wormhole/WormholeAdapter.sol
+contracts/YieldManager.sol
+contracts/ZodiacGovernanceModule.sol
+
+NOTE: ZenithGovernance.sol was NOT found in the find output.
+
+================================================================
+TASK A — COMMAND 3: npx hardhat coverage 2>&1 | grep -E "Statements|Branches|Functions|Lines"
+Run at: 2026-03-29 (UTC+5:30)
+Exit code: 1
+================================================================
+
+Error in plugin solidity-coverage: Error: Could not instrument: PolyLanceNFTMarketplace.sol.
+(Please verify solc can compile this file without errors.)
+extraneous input 'interface' expecting {'from', '}', 'layout', 'at', 'error', 'using',
+'struct', 'modifier', 'function', 'event', 'enum', 'address', 'mapping', 'calldata',
+'revert', 'var', 'bool', 'string', 'byte', 'callback', Int, Uint, Byte, Fixed, Ufixed,
+'leave', 'payable', 'type', 'global', 'constructor', 'fallback', 'receive', Identifier} (48:4)
+
+No Statements/Branches/Functions/Lines output was produced — coverage did not run successfully.
+
+================================================================
+TASK A — COMMAND 4: cd ../frontend && npm run build 2>&1 | tail -5
+Run at: 2026-03-29 (UTC+5:30)
+Exit code: 0
+================================================================
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✔ built in 30.66s
