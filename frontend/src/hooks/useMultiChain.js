@@ -149,8 +149,8 @@ export const useMultiChain = () => {
             for (const [chainId, chainInfo] of Object.entries(SUPPORTED_CHAINS)) {
                 if (isNaN(Number(chainId))) continue;
                 
-                // Only fetch for current chain or Amoy to minimize background RPC friction
-                if (Number(chainId) !== chain?.id && Number(chainId) !== 80002) continue;
+                // Only fetch for current chain or Polygon Mainnet to minimize background RPC friction
+                if (Number(chainId) !== chain?.id && Number(chainId) !== 137) continue;
 
                 try {
                     const provider = new ethers.JsonRpcProvider(getRpcUrl(Number(chainId)));

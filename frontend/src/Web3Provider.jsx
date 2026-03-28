@@ -62,11 +62,11 @@ function ConnectionLogger() {
 function NetworkGuard({ children }) {
     const { chainId, isConnected } = useAccount();
     const { switchChain } = useSwitchChain();
-    const AMOY_ID = 80002;
+    const POLYGON_MAINNET_ID = 137;
 
     useEffect(() => {
-        if (isConnected && chainId && chainId !== AMOY_ID) {
-            hotToast.error('Resonance Mismatch: Please switch to Polygon Amoy.', {
+        if (isConnected && chainId && chainId !== POLYGON_MAINNET_ID) {
+            hotToast.error('Resonance Mismatch: Please switch to Polygon Mainnet.', {
                 id: 'network-switch-prompt',
                 duration: 10000,
                 position: 'top-right',
@@ -79,7 +79,7 @@ function NetworkGuard({ children }) {
             });
             // Auto-prompt switch after a small delay
             setTimeout(() => {
-                 switchChain({ chainId: AMOY_ID });
+                 switchChain({ chainId: POLYGON_MAINNET_ID });
             }, 1500);
         }
     }, [chainId, isConnected, switchChain]);
@@ -103,7 +103,7 @@ function SovereignAuthProvider({ children, authStatus, setAuthStatus }) {
             try {
                 const { nonce, address: siweAddress, chainId: siweChainId } = args;
                 const targetAddress = siweAddress || identityRef.current;
-                const targetChainId = siweChainId || chainRef.current || 80002;
+                const targetChainId = siweChainId || chainRef.current || 137;
                 
                 // Directive 11: Production Identity Alignment
                 // Hardcoding the domain and URI to ensure strictly zero 'Domain Gravity' mismatch on polylance.codes.

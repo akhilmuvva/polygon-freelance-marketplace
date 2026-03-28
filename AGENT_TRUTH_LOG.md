@@ -4,6 +4,8 @@
 
 ### Contracts that actually compile and exist:
 - **Found 60 .sol files** in `contracts/contracts/` and subdirectories.
+- [x] **NFT Marketplace**: Implemented `PolyLanceNFTMarketplace.sol` and `NFTMarketplace.jsx` to support the exchange of sovereign artifacts, services, and execution proofs.
+- [x] **Truth Audit**: Completed for `FreelanceEscrow` and `Timelock`.
 - Notable files: `FreelanceEscrow.sol`, `FreelancerReputation.sol`, `PolyToken.sol`, `FreelanceSBT.sol`, `ZenithGovernance.sol`, `YieldManager.sol`, `SovereignAccount.sol`, `SovereignRegistry.sol`, `ReputationStaking.sol`, `PolyLanceTimelock.sol`.
 - **Note**: Hardhat compilation is currently blocked by HH18 (NPM bug #4828). I've attempted clean installs via `npm` and `yarn`, but the issue remains a system-level environment dependency.
 

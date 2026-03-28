@@ -1,5 +1,5 @@
 import { createPublicClient, http, parseAbi, fallback } from 'viem';
-import { polygonAmoy } from 'viem/chains';
+import { polygon } from 'viem/chains';
 import IPFSResolver from '../utils/IPFSResolver';
 import { ApolloClient, InMemoryCache, gql, HttpLink } from '@apollo/client';
 
@@ -14,12 +14,12 @@ const REPUTATION_ADDRESS = import.meta.env.VITE_FREELANCER_REPUTATION_ADDRESS ||
 
 // Minimal Viem Client for Public Data - High Resilience Fallback
 const publicClient = createPublicClient({
-  chain: polygonAmoy,
+  chain: polygon,
   transport: fallback([
-    http('https://polygon-amoy-bor-rpc.publicnode.com'),
-    http('https://rpc-amoy.polygon.technology'),
-    http('https://amoy.polygon.drpc.org'),
-    http('https://rpc.ankr.com/polygon_amoy')
+    http('https://polygon-bor-rpc.publicnode.com'),
+    http('https://polygon.drpc.org'),
+    http('https://1rpc.io/matic'),
+    http('https://rpc.ankr.com/polygon')
   ], { rank: true })
 });
 
@@ -252,7 +252,7 @@ const SovereignService = {
         const registryAddr = '0x5Ff3E1223B5c37f1C18CC279dfC9C181bF22BEf9'; 
         const implementation = '0x0000000000000000000000000000000000000000';
         const salt = '0x0000000000000000000000000000000000000000000000000000000000000000';
-        const chainId = 80002;
+        const chainId = 137;
         
         // Deterministic visual placeholder for presentation consistent with ERC-6551 identity
         return `0x${jobId.slice(2, 42)}`; 

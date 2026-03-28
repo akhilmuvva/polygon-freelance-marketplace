@@ -1,0 +1,16 @@
+Error HH18: You installed Hardhat with a corrupted lockfile due to the NPM bug #4828.
+
+Please delete your node_modules, package-lock.json, reinstall your project, and try again.
+HardhatError: HH18: You installed Hardhat with a corrupted lockfile due to the NPM bug #4828.
+
+Please delete your node_modules, package-lock.json, reinstall your project, and try again.
+    at requireNapiRsModule (C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\contracts\node_modules\hardhat\src\common\napi-rs.ts:9:13)
+    at Parser.parse (C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\contracts\node_modules\hardhat\src\internal\solidity\parse.ts:31:44)
+    at Resolver._resolveFile (C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\contracts\node_modules\hardhat\src\internal\solidity\resolver.ts:430:40)
+    at Resolver.resolveSourceName (C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\contracts\node_modules\hardhat\src\internal\solidity\resolver.ts:98:22)
+    at async Promise.all (index 0)
+    at SimpleTaskDefinition.action (C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\contracts\node_modules\hardhat\src\builtin-tasks\compile.ts:244:29)
+    at Environment._runTaskDefinition (C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\contracts\node_modules\hardhat\src\internal\core\runtime-environment.ts:351:14)
+    at Environment.run (C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\contracts\node_modules\hardhat\src\internal\core\runtime-environment.ts:184:14)
+    at SimpleTaskDefinition.action (C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\contracts\node_modules\hardhat\src\builtin-tasks\compile.ts:1398:58)
+    at Environment._runTaskDefinition (C:\Users\akhil\.gemini\antigravity\scratch\polygon-freelance-marketplace\contracts\node_modules\hardhat\src\internal\core\runtime-environment.ts:351:14)

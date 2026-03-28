@@ -6,7 +6,7 @@ import {
   Briefcase, PlusCircle, LayoutDashboard, MessageSquare,
   Trophy, Gavel, Activity, Globe, BarChart3, Menu, X,
   Award, Zap, CreditCard, Shield, ShieldCheck, Mail, User,
-  LogOut, Cpu, Ticket, ChevronDown, Loader2, Flame, Brain, Landmark
+  LogOut, Cpu, Ticket, ChevronDown, Loader2, Flame, Brain, Landmark, ShoppingBag
 } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useAnimeAnimations } from './hooks/useAnimeAnimations';
@@ -40,6 +40,7 @@ const Manifesto = lazy(() => import('./components/Manifesto.jsx'));
 const InsuranceDashboard = lazy(() => import('./components/InsuranceDashboard'));
 const AICommandCenter = lazy(() => import('./components/AICommandCenter'));
 const ProtocolDashboard = lazy(() => import('./components/ProtocolDashboard'));
+const NFTMarketplace = lazy(() => import('./components/NFTMarketplace'));
 
 import { NotificationManager } from './components/NotificationManager';
 import CourtErrorBoundary from './components/CourtErrorBoundary';
@@ -505,6 +506,7 @@ function App() {
       case 'insurance': return <InsuranceDashboard />;
       case 'ai-oracle': return <AICommandCenter />;
       case 'protocol': return <ProtocolDashboard />;
+      case 'marketplace': return <NFTMarketplace />;
       case 'manifesto': return <Manifesto />;
       default: return <Dashboard address={effectiveAddress} />;
     }
@@ -545,6 +547,7 @@ function App() {
                 { id: 'dashboard', icon: LayoutDashboard, label: 'Command Center' },
                 { id: 'jobs', icon: Briefcase, label: 'Find a Job' },
                 { id: 'specialists', icon: User, label: 'Expert Network' },
+                { id: 'marketplace', icon: ShoppingBag, label: 'NFT Marketplace' },
                 { id: 'create-job', icon: PlusCircle, label: 'Initialize Contract' },
                 { id: 'leaderboard', icon: Trophy, label: 'Elite Leaderboard' },
                 { id: 'identity', icon: User, label: 'Profile Updater' },

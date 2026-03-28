@@ -1,4 +1,4 @@
-[dotenv@17.3.1] injecting env (4) from .env -- tip: ≡ƒ¢á∩╕Å  run anywhere with `dotenvx run -- yourcommand`
+[dotenv@17.3.1] injecting env (4) from .env -- tip: ≡ƒöÉ prevent building .env in docker: https://dotenvx.com/prebuild
 
 Version
 =======
@@ -70,8 +70,8 @@ Instrumenting for coverage...
 Compilation:
 ============
 
+
 Error in plugin solidity-coverage: HardhatError: HH18: You installed Hardhat with a corrupted lockfile due to the NPM bug #4828.
 
 Please delete your node_modules, package-lock.json, reinstall your project, and try again.
-
 For more info run Hardhat with --show-stack-traces
