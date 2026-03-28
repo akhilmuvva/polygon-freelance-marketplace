@@ -545,9 +545,9 @@ function App() {
               <div style={styles.sectionLabel}>Main Modules</div>
               {[
                 { id: 'dashboard', icon: LayoutDashboard, label: 'Command Center' },
+                { id: 'marketplace', icon: Flame, label: 'Zenith Exchange' },
                 { id: 'jobs', icon: Briefcase, label: 'Find a Job' },
                 { id: 'specialists', icon: User, label: 'Expert Network' },
-                { id: 'marketplace', icon: ShoppingBag, label: 'NFT Marketplace' },
                 { id: 'create-job', icon: PlusCircle, label: 'Initialize Contract' },
                 { id: 'leaderboard', icon: Trophy, label: 'Elite Leaderboard' },
                 { id: 'identity', icon: User, label: 'Profile Updater' },
