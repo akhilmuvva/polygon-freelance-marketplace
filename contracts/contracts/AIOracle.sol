@@ -2,14 +2,14 @@
 pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/access/AccessControl.sol";
-import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import "./ReentrancyGuardUpgradeable.sol";
 
 /**
  * @title AIOracle
  * @notice Integrates AI-powered verification for milestone completion and asset validation
  * @dev Uses Chainlink Functions or custom oracle network for off-chain AI computation
  */
-contract AIOracle is AccessControl, ReentrancyGuard {
+contract AIOracle is Initializable, AccessControl, ReentrancyGuardUpgradeable {
     bytes32 public constant ORACLE_OPERATOR_ROLE = keccak256("ORACLE_OPERATOR_ROLE");
     bytes32 public constant CONSUMER_ROLE = keccak256("CONSUMER_ROLE");
 
@@ -189,7 +189,7 @@ contract AIOracle is AccessControl, ReentrancyGuard {
         } else if (keccak256(bytes(request.verificationType)) == keccak256("dispute")) {
             // Sovereign Dispute Resolution: AI settles the contest with a suggested BPS split
             // targetId = jobId, confidence can be used to determine split if approved
-            uint256 splitBps = approved ? request.confidence * 100 : 0;
+            uint256 splitBps = (request.status == VerificationStatus.APPROVED) ? request.confidence * 100 : 0;
             (bool success, ) = request.targetContract.call(
                 abi.encodeWithSignature("aiResolveDispute(uint256,uint256)", request.targetId, splitBps)
             );

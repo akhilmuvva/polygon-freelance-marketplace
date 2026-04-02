@@ -5,30 +5,31 @@ import ceramicService from '../services/CeramicService';
 import { GravityScoreService } from '../services/GravityScoreService';
 import FreelanceEscrowABI from '../contracts/FreelanceEscrow.json';
 import { CONTRACT_ADDRESS } from '../constants';
-import { toast as hotToast } from 'react-hot-toast';
+import { toast } from 'react-hot-toast';
 import { assertMatic } from '../utils/chainGuard';
 
 /**
- * useSovereignLogic: The mission-critical logic orchestrator for PolyLance Zenith.
- * Enforces Absolute Zero Gravity by bypassing centralized state managers.
+ * useFreelanceLogic
+ * Core hook for job creation and messaging setup.
+ * Handles both on-chain escrow creation and off-chain job drafts.
  */
 export const useSovereignLogic = () => {
     const { address, chainId } = useAccount();
     const { writeContractAsync } = useWriteContract();
-    const [isActuating, setIsActuating] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     /**
-     * actuateEscrow: Finalizes the transition of capital into the yield-bearing mesh.
-     * If no freelancer is assigned, the "Intent" is safely anchored on Ceramic.
+     * createJob: Submits a new job to the FreelanceEscrow contract.
+     * If no freelancer is assigned yet, saves the job as a draft to Ceramic.
      */
     const actuateEscrow = useCallback(async (jobData) => {
-        if (!address) throw new Error("Identity required for actuation.");
-        assertMatic(chainId); // 🔒 Hard-stop: must be on Polygon Mainnet
-        setIsActuating(true);
-        
+        if (!address) throw new Error('Wallet not connected.');
+        assertMatic(chainId); // must be on Polygon Mainnet
+        setIsSubmitting(true);
+
         try {
             if (jobData.freelancer && jobData.freelancer !== '0x0000000000000000000000000000000000000000') {
-                // 100% On-chain Execution via Wagmi
+                // Submit job on-chain
                 const tx = await writeContractAsync({
                     address: CONTRACT_ADDRESS,
                     abi: FreelanceEscrowABI.abi,
@@ -36,7 +37,7 @@ export const useSovereignLogic = () => {
                     args: [{
                         categoryId: BigInt(jobData.categoryId || 0),
                         freelancer: jobData.freelancer,
-                        token: jobData.token, // Must be whitelisted asset
+                        token: jobData.token,
                         amount: BigInt(jobData.amount),
                         ipfsHash: jobData.ipfsHash,
                         deadline: BigInt(jobData.deadline),
@@ -50,47 +51,47 @@ export const useSovereignLogic = () => {
                     }],
                     value: jobData.token === '0x0000000000000000000000000000000000000000' ? BigInt(jobData.amount) : 0n
                 });
-                hotToast.success('Capital Actuated on Polygon.');
+                toast.success('Job created on Polygon.');
                 return tx;
             } else {
-                // "Job Intent" storage on Ceramic (Weightless fallback)
-                console.info('[SOVEREIGN] Freelancer unassigned. Anchoring Job Intent on Ceramic...');
+                // Save as draft on Ceramic (no freelancer assigned yet)
+                console.info('[Jobs] Saving draft — no freelancer assigned yet.');
                 const result = await ceramicService.updateProfile(address, {
-                    type: 'JOB_INTENT',
+                    type: 'JOB_DRAFT',
                     data: jobData,
                     timestamp: Date.now()
                 });
-                hotToast.success('Job Intent anchored in the Weightless Data Layer.');
+                toast.success('Job draft saved.');
                 return result;
             }
         } catch (err) {
-            console.error('[GRAVITY] Actuation Friction:', err);
-            hotToast.error('Actuation failed. Check RPC resonance.');
+            console.error('[Jobs] Failed to create job:', err);
+            toast.error('Job creation failed. Please try again.');
             throw err;
         } finally {
-            setIsActuating(false);
+            setIsSubmitting(false);
         }
-    }, [address, writeContractAsync]);
+    }, [address, chainId, writeContractAsync]);
 
     /**
-     * syncMessaging: Initializes the XMTP V3 singleton.
-     * Ensures the SovereignHandshake (signature) is verified before clearing state.
+     * initMessaging: Sets up the XMTP client for the connected wallet.
+     * Signs a message to authenticate with XMTP v3.
      */
     const syncMessaging = useCallback(async (walletClient) => {
         if (!address || !walletClient) return null;
         try {
-            hotToast.loading('Actuating Sovereign Handshake...', { id: 'xmtp-init' });
+            toast.loading('Connecting to messaging...', { id: 'xmtp-init' });
             const client = await messagingService.initialize(address, walletClient);
-            hotToast.success('Sovereign Channel Synchronized.', { id: 'xmtp-init' });
+            toast.success('Messaging connected.', { id: 'xmtp-init' });
             return client;
         } catch (err) {
-            hotToast.error('Handshake Neutralized.', { id: 'xmtp-init' });
+            toast.error('Failed to connect messaging.', { id: 'xmtp-init' });
             throw err;
         }
     }, [address]);
 
     /**
-     * calculateGravity: Computes the risk-weighted friction for RWA liquidity.
+     * calculateRiskScore: Runs the risk scoring model for a given set of metrics.
      */
     const calculateGravity = useCallback((metrics) => {
         return GravityScoreService.computeFriction(metrics);
@@ -100,6 +101,6 @@ export const useSovereignLogic = () => {
         actuateEscrow,
         syncMessaging,
         calculateGravity,
-        isActuating
+        isActuating: isSubmitting
     };
 };

@@ -11,7 +11,7 @@ module.exports = {
     solidity: {
         version: "0.8.24",
         settings: {
-            evmVersion: "shanghai",
+            evmVersion: "cancun",
             optimizer: {
                 enabled: true,
                 runs: 1000
@@ -28,7 +28,7 @@ module.exports = {
     networks: {
         hardhat: {
             allowUnlimitedContractSize: true,
-            hardfork: "shanghai"
+            hardfork: "cancun"
         },
         // Polygon Mainnet (ChainID: 137)
         polygon: {

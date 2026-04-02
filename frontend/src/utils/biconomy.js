@@ -2,31 +2,30 @@ import { createSmartAccountClient } from "@biconomy/account";
 import { encodeFunctionData } from "viem";
 import env from "../config/env";
 
-
-// Biconomy Paymaster URL (replace with your own from Biconomy Dashboard)
 const PAYMASTER_URL = env.BICONOMY_PAYMASTER_URL;
 const BUNDLER_URL = env.BICONOMY_BUNDLER_URL;
 
 /**
- * Initialize Social Login using Biconomy/Particle
- * @returns {Promise<object>} Social Login instance
+ * Initializes Particle Auth for social login (Google, Twitter, etc).
+ * Falls back to a mock login object if credentials are missing or init times out.
+ *
+ * @returns {Promise<object>} Particle Auth instance or mock
  */
 export async function initSocialLogin() {
     const projectId = env.PARTICLE_PROJECT_ID;
     const clientKey = env.PARTICLE_CLIENT_KEY;
     const appId = env.PARTICLE_APP_ID;
 
-    // Guard: Only attempt to load the Particle SDK if all credentials are present.
-    // The SDK crashes during module init (storage.sync error) when credentials are missing.
+    // Skip real init if credentials aren't configured
     if (!projectId || !clientKey || !appId) {
-        console.warn('[SECURITY] Particle credentials offline. Actuating Mock Social gateway.');
+        console.warn('[Biconomy] Particle credentials not set. Using mock social login.');
         return {
             auth: {
                 login: async () => {
-                    console.log('[SECURITY] Social Login success');
-                    return { user: { name: 'Adam Pioneer', email: 'adam@pioneer.com' } };
+                    console.log('[Biconomy] Mock social login');
+                    return { user: { name: 'Demo User', email: 'demo@polylance.codes' } };
                 },
-                logout: async () => console.log('[SECURITY] Logout'),
+                logout: async () => console.log('[Biconomy] Mock logout'),
             },
             isMock: true
         };
@@ -35,22 +34,20 @@ export async function initSocialLogin() {
     try {
         const { ParticleAuthModule } = await import("@biconomy/particle-auth");
 
-        // Use a timeout for the Particle initialization to prevent hanging the UI
+        // The exported constructor name varies between Particle SDK versions
+        const ParticleConstructor = ParticleAuthModule.ParticleAuth ||
+                                   ParticleAuthModule.default?.ParticleAuth ||
+                                   ParticleAuthModule.ParticleNetwork ||
+                                   ParticleAuthModule.default ||
+                                   ParticleAuthModule;
+
+        if (typeof ParticleConstructor !== 'function') {
+            console.error('[Biconomy] Could not resolve Particle constructor:', typeof ParticleConstructor);
+            return { auth: { login: async () => ({ user: { name: 'Demo User', email: 'demo@polylance.codes' } }), logout: async () => {} }, isMock: true };
+        }
+
+        // Race against a timeout to prevent blocking the UI
         const initPromise = new Promise((resolve) => {
-            // Directive 19: Particle Gateway Resolution
-            // The SDK export varies between environments. We proactively resolve the constructor.
-            const ParticleConstructor = ParticleAuthModule.ParticleAuth || 
-                                       ParticleAuthModule.default?.ParticleAuth || 
-                                       ParticleAuthModule.ParticleNetwork || 
-                                       ParticleAuthModule.default || 
-                                       ParticleAuthModule;
-            
-            if (typeof ParticleConstructor !== 'function') {
-                console.error('[SECURITY] Particle gateway malformed. Resolution found:', typeof ParticleConstructor);
-                resolve(null);
-                return;
-            }
-            
             const particle = new ParticleConstructor({
                 projectId,
                 clientKey,
@@ -65,10 +62,10 @@ export async function initSocialLogin() {
         const result = await Promise.race([initPromise, timeoutPromise]);
 
         if (result === 'TIMEOUT') {
-            console.warn('[SECURITY] Particle identity gateway timeout. Actuating Mock Resonance.');
+            console.warn('[Biconomy] Particle init timed out. Using mock.');
             return {
                 auth: {
-                    login: async () => ({ user: { name: 'Sovereign Pioneer', email: 'offline@zenith.com' } }),
+                    login: async () => ({ user: { name: 'Demo User', email: 'offline@polylance.codes' } }),
                     logout: async () => {},
                 },
                 isMock: true
@@ -77,11 +74,10 @@ export async function initSocialLogin() {
 
         return result;
     } catch (error) {
-        console.error('[SECURITY] Social identity gateway collapse:', error.message);
-        // Universal fallback for connectivity failure
+        console.error('[Biconomy] Social login init failed:', error.message);
         return {
             auth: {
-                login: async () => ({ user: { name: 'Sovereign Pioneer', email: 'offline@zenith.com' } }),
+                login: async () => ({ user: { name: 'Demo User', email: 'offline@polylance.codes' } }),
                 logout: async () => {},
             },
             isMock: true
@@ -90,14 +86,16 @@ export async function initSocialLogin() {
 }
 
 /**
- * Create a Biconomy Smart Account for gasless transactions
- * @param {object} signer - Ethers or Viem signer
- * @returns {Promise<object>} Smart Account client
+ * Creates a Biconomy Smart Account for gasless transactions.
+ * Returns null if setup fails, allowing callers to fall back to regular transactions.
+ *
+ * @param {object} signer - ethers/viem wallet signer
+ * @returns {Promise<object|null>} Smart account client or null
  */
 export async function createBiconomySmartAccount(signer) {
-    // Mock Account for Developers
+    // Return mock account if Biconomy isn't configured
     if (signer?.isMock || !PAYMASTER_URL || !BUNDLER_URL) {
-        console.warn('[SECURITY] Paymaster/Bundler offline. Actuating MOCK Smart Account resonance.');
+        console.warn('[Biconomy] Paymaster/Bundler not configured. Using mock smart account.');
         return {
             accountAddress: '0xDE4DbEef88888888888888888888888888888888',
             isMock: true,
@@ -108,47 +106,50 @@ export async function createBiconomySmartAccount(signer) {
     }
 
     try {
-        // Directive 08: Identity Pre-flight
-        // Ensure the signer has an associated account (required for Biconomy and Viem resonance).
+        // Biconomy requires an account address on the signer
         if (!signer.account && typeof signer.getAddresses === 'function') {
             const [address] = await signer.getAddresses();
             if (address) signer.account = address;
         }
 
         if (!signer.account) {
-            throw new Error('Signer missing account identity node.');
+            throw new Error('Could not resolve account address from signer.');
         }
 
-        console.info('[SECURITY] Actuating Smart Account client for chain:', signer.chain?.id || 'unknown');
+        console.info('[Biconomy] Creating smart account for chain:', signer.chain?.id || 'unknown');
         const smartAccount = await createSmartAccountClient({
             signer: signer,
             bundlerUrl: BUNDLER_URL,
             biconomyPaymasterApiKey: PAYMASTER_URL,
-            rpcUrl: signer.chain?.id === 137 
-                ? 'https://polygon-rpc.com' 
-                : 'https://polygon-bor-rpc.publicnode.com'
+            rpcUrl: 'https://polygon-rpc.com' // Polygon Mainnet
         });
 
-        // Resolve accountAddress — newer SDK versions require getAccountAddress()
+        // Newer SDK versions expose getAccountAddress() instead of accountAddress
         if (!smartAccount.accountAddress && typeof smartAccount.getAccountAddress === 'function') {
             smartAccount.accountAddress = await smartAccount.getAccountAddress();
         }
 
-        console.log('[SECURITY] Smart Account created:', smartAccount.accountAddress);
+        console.log('[Biconomy] Smart account ready:', smartAccount.accountAddress);
         return smartAccount;
     } catch (error) {
-        console.error('[SECURITY] Failed to create Smart Account. Resonance Error:', error.message);
-        console.error('[SECURITY] Full trace:', error);
+        console.error('[Biconomy] Failed to create smart account:', error.message);
         return null;
     }
 }
 
 /**
- * Submit work gaslessly using Biconomy
+ * Submits work proof for a job gaslessly (no MATIC required from the user).
+ *
+ * @param {object} smartAccount - Biconomy smart account
+ * @param {string} contractAddress - FreelanceEscrow contract address
+ * @param {Array} contractABI - contract ABI
+ * @param {number} jobId
+ * @param {string} ipfsHash - IPFS CID of the work deliverable
+ * @returns {Promise<string>} transaction hash
  */
 export async function submitWorkGasless(smartAccount, contractAddress, contractABI, jobId, ipfsHash) {
     if (!smartAccount) {
-        throw new Error('Smart Account not initialized.');
+        throw new Error('Smart account not initialized.');
     }
 
     try {
@@ -158,28 +159,29 @@ export async function submitWorkGasless(smartAccount, contractAddress, contractA
             args: [BigInt(jobId), ipfsHash]
         });
 
-        const tx = {
-            to: contractAddress,
-            data: data,
-        };
-
-        const userOpResponse = await smartAccount.sendTransaction(tx);
+        const userOpResponse = await smartAccount.sendTransaction({ to: contractAddress, data });
         const { transactionHash } = await userOpResponse.waitForTxHash();
 
-        console.log('[NETWORK] Gasless submission successful:', transactionHash);
+        console.log('[Biconomy] Gasless work submission sent:', transactionHash);
         return transactionHash;
     } catch (error) {
-        console.error('[NETWORK] Gasless transaction failed:', error);
+        console.error('[Biconomy] Gasless submitWork failed:', error);
         throw error;
     }
 }
 
 /**
- * Create a job gaslessly using Biconomy
+ * Creates a job gaslessly using a Biconomy smart account.
+ *
+ * @param {object} smartAccount - Biconomy smart account
+ * @param {string} contractAddress
+ * @param {Array} contractABI
+ * @param {object} params - job params
+ * @returns {Promise<string>} transaction hash
  */
 export async function createJobGasless(smartAccount, contractAddress, contractABI, params) {
     if (!smartAccount) {
-        throw new Error('Smart Account not initialized.');
+        throw new Error('Smart account not initialized.');
     }
 
     try {
@@ -189,22 +191,18 @@ export async function createJobGasless(smartAccount, contractAddress, contractAB
             args: [params]
         });
 
-        const tx = {
-            to: contractAddress,
-            data: data,
-        };
-
-        const userOpResponse = await smartAccount.sendTransaction(tx);
+        const userOpResponse = await smartAccount.sendTransaction({ to: contractAddress, data });
         const { transactionHash } = await userOpResponse.waitForTxHash();
 
-        console.log('[NETWORK] Gasless job creation successful:', transactionHash);
+        console.log('[Biconomy] Gasless job created:', transactionHash);
         return transactionHash;
     } catch (error) {
-        console.error('[NETWORK] Gasless job creation failed:', error);
+        console.error('[Biconomy] Gasless createJob failed:', error);
         throw error;
     }
 }
 
+/** Returns true if Biconomy is configured and ready. */
 export function isBiconomyAvailable() {
     return !!(PAYMASTER_URL && BUNDLER_URL);
 }

@@ -1,9 +1,9 @@
-import React, { 
-    createContext, 
-    useState, 
-    useMemo, 
-    useEffect, 
-    useRef 
+import React, {
+    createContext,
+    useState,
+    useMemo,
+    useEffect,
+    useRef
 } from 'react';
 import '@rainbow-me/rainbowkit/styles.css';
 import {
@@ -34,23 +34,21 @@ const huddleClient = huddleProjectId
     })
     : null;
 
-/**
- * Defensive Provider: Alchemy Shield Configuration
- * Caps block ranges and adds jitter-based retry logic to avoid 429 bottlenecks.
- */
-const DEFENSIVE_RPC_CONFIG = {
+// RPC config — retry on failure with a small backoff, throttle polling
+const RPC_CONFIG = {
     batch: { multicall: true },
     retryCount: 2,
-    retryDelay: ({ count }) => Math.min(count * 1000, 3000), // Jitter delay
-    pollingInterval: 12_000, // Throttled polling
+    retryDelay: ({ count }) => Math.min(count * 1000, 3000),
+    pollingInterval: 12_000,
 };
 
+// Logs wallet connect/disconnect events
 function ConnectionLogger() {
     const { address, isConnected, status } = useAccount();
 
     useEffect(() => {
         if (isConnected && address) {
-            console.info(`[SECURITY] Sovereign identity synchronized: ${address}`);
+            console.info(`[Auth] Wallet connected: ${address}`);
         } else if (status === 'disconnected') {
             messagingService.disconnect();
         }
@@ -59,6 +57,7 @@ function ConnectionLogger() {
     return null;
 }
 
+// Forces the wallet to switch to Polygon Mainnet if on a different network
 function NetworkGuard({ children }) {
     const { chainId, isConnected } = useAccount();
     const { switchChain } = useSwitchChain();
@@ -66,7 +65,7 @@ function NetworkGuard({ children }) {
 
     useEffect(() => {
         if (isConnected && chainId && chainId !== POLYGON_MAINNET_ID) {
-            hotToast.error('Resonance Mismatch: Please switch to Polygon Mainnet.', {
+            hotToast.error('Wrong network. Please switch to Polygon Mainnet.', {
                 id: 'network-switch-prompt',
                 duration: 10000,
                 position: 'top-right',
@@ -75,11 +74,11 @@ function NetworkGuard({ children }) {
                     color: '#fff',
                     border: '1px solid #8a2be2',
                 },
-                icon: '🛰️',
+                icon: '⚠️',
             });
-            // Auto-prompt switch after a small delay
+            // Auto-prompt network switch after a short delay
             setTimeout(() => {
-                 switchChain({ chainId: POLYGON_MAINNET_ID });
+                switchChain({ chainId: POLYGON_MAINNET_ID });
             }, 1500);
         }
     }, [chainId, isConnected, switchChain]);
@@ -87,7 +86,8 @@ function NetworkGuard({ children }) {
     return children;
 }
 
-function SovereignAuthProvider({ children, authStatus, setAuthStatus }) {
+// Handles Sign-In With Ethereum (SIWE) authentication flow
+function AuthProvider({ children, authStatus, setAuthStatus }) {
     const { address, chainId } = useAccount();
     const identityRef = useRef(address);
     const chainRef = useRef(chainId);
@@ -104,48 +104,44 @@ function SovereignAuthProvider({ children, authStatus, setAuthStatus }) {
                 const { nonce, address: siweAddress, chainId: siweChainId } = args;
                 const targetAddress = siweAddress || identityRef.current;
                 const targetChainId = siweChainId || chainRef.current || 137;
-                
-                // Directive 11: Production Identity Alignment
-                // Hardcoding the domain and URI to ensure strictly zero 'Domain Gravity' mismatch on polylance.codes.
-                const domain = 'polylance.codes';
-                const uri = 'https://polylance.codes';
 
                 return new SiweMessage({
-                    domain,
+                    domain: 'polylance.codes',
                     address: targetAddress,
-                    statement: 'Sovereign Identity Actuation on PolyLance Zenith.',
-                    uri,
+                    statement: 'Sign in to PolyLance.',
+                    uri: 'https://polylance.codes',
                     version: '1',
                     chainId: Number(targetChainId),
                     nonce,
                 }).prepareMessage();
             } catch (err) {
-                console.error('[SECURITY] SIWE Intent Preparation Failure:', err.message);
+                console.error('[Auth] Failed to create SIWE message:', err.message);
                 throw err;
             }
         },
         getMessageBody: ({ message }) => message,
         verify: async ({ message, signature }) => {
-            console.log("%c[SECURITY] Identity Handshake Success.", "color: #10b981");
-            
-            // Task 1: Session Resurrection Anchor
-            // Saving the active session to prevent 'Data Amnesia' on page refresh.
+            console.log('%c[Auth] Sign-in successful.', 'color: #10b981');
+
+            // Persist session to survive page refresh
             try {
-                localStorage.setItem('zenith_active_session', JSON.stringify({
+                localStorage.setItem('polylance_session', JSON.stringify({
                     address: identityRef.current,
                     timestamp: Date.now(),
                     authenticated: true
                 }));
-            } catch (e) { console.warn('[AUTH] Persistence failure:', e.message); }
+            } catch (e) {
+                console.warn('[Auth] Could not save session:', e.message);
+            }
 
             setAuthStatus('authenticated');
-            hotToast.success('Identity Verified', { id: 'auth-success' });
+            hotToast.success('Signed in successfully.', { id: 'auth-success' });
             return true;
         },
         signOut: async () => {
             setAuthStatus('unauthenticated');
-            localStorage.removeItem('zenith_active_session');
-            console.info('[SECURITY] Sovereign session terminated.');
+            localStorage.removeItem('polylance_session');
+            console.info('[Auth] User signed out.');
         },
     }), [setAuthStatus]);
 
@@ -178,10 +174,6 @@ const apolloClient = new ApolloClient({
     }),
 });
 
-/**
- * [SECURITY] AuthContext: Neutralizing State Race Conditions
- * Providing a stable default prevents "reading properties of undefined" on initial hydrate.
- */
 export const AuthContext = createContext({
     authStatus: 'loading',
     setAuthStatus: () => {}
@@ -191,10 +183,9 @@ export function Web3Provider({ children }) {
     const [authStatus, setAuthStatus] = useState('unauthenticated');
     const projectId = env.WALLET_CONNECT_PROJECT_ID;
 
-    // RPC Total Purge: Expanding to a multi-node 'Resonance Fallback' cluster
-    // Adding high-availability public nodes to neutralize 401/CORS rate-limiting bottlenecks.
+    // Use multiple public Polygon RPC nodes as fallback
     const config = useMemo(() => getDefaultConfig({
-        appName: 'PolyLance Zenith',
+        appName: 'PolyLance',
         projectId,
         chains: [polygon],
         transports: {
@@ -205,17 +196,15 @@ export function Web3Provider({ children }) {
                 http('https://polygon-rpc.com'),
             ]),
         },
-        ...DEFENSIVE_RPC_CONFIG, // Integrate retry & jitter-based batching
+        ...RPC_CONFIG,
         ssr: false,
     }), [projectId]);
-
-
 
     return (
         <WagmiProvider config={config} reconnectOnMount={true}>
             <QueryClientProvider client={queryClient}>
                 <ApolloProvider client={apolloClient}>
-                    <SovereignAuthProvider authStatus={authStatus} setAuthStatus={setAuthStatus}>
+                    <AuthProvider authStatus={authStatus} setAuthStatus={setAuthStatus}>
                         <AuthContext.Provider value={{ authStatus, setAuthStatus }}>
                             <RainbowKitProvider theme={darkTheme({
                                 accentColor: '#8a2be2',
@@ -223,7 +212,6 @@ export function Web3Provider({ children }) {
                                 borderRadius: 'medium',
                                 overlayBlur: 'small',
                             })}>
-
                                 {huddleClient ? (
                                     <HuddleProvider client={huddleClient}>
                                         <ConnectionLogger />
@@ -241,11 +229,9 @@ export function Web3Provider({ children }) {
                                 )}
                             </RainbowKitProvider>
                         </AuthContext.Provider>
-                    </SovereignAuthProvider>
+                    </AuthProvider>
                 </ApolloProvider>
             </QueryClientProvider>
         </WagmiProvider>
     );
 }
-
-

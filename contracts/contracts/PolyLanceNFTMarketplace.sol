@@ -8,7 +8,7 @@ import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import "./ReentrancyGuardUpgradeable.sol";
 
 interface ISwapManager {
     function swap(
@@ -28,7 +28,7 @@ interface ISwapManager {
 contract PolyLanceNFTMarketplace is 
     Initializable, 
     AccessControlUpgradeable, 
-    ReentrancyGuard, 
+    ReentrancyGuardUpgradeable, 
     UUPSUpgradeable 
 {
     using SafeERC20 for IERC20;
@@ -67,7 +67,7 @@ contract PolyLanceNFTMarketplace is
 
     function initialize(address admin, address _feeRecipient, uint256 _feeBps) public initializer {
         __AccessControl_init();
-        __UUPSUpgradeable_init();
+        __ReentrancyGuard_init();
 
         _grantRole(DEFAULT_ADMIN_ROLE, admin);
         _grantRole(MANAGER_ROLE, admin);

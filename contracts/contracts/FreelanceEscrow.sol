@@ -4,7 +4,7 @@ pragma solidity ^0.8.20;
 import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
-import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import "./ReentrancyGuardUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/PausableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
@@ -82,6 +82,7 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
         __AccessControl_init();
 
         __Pausable_init();
+        __ReentrancyGuard_init();
 
 
         _grantRole(DEFAULT_ADMIN_ROLE, admin);
@@ -276,7 +277,7 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
         
         // Sovereign Directive 23: ZK-Identity Gating
         if (job.zkRequired && privacyShield != address(0)) {
-            if (!IPrivacyShield(privacyShield).isVerified(_msgSender())) revert NotAuthorized();
+            if (!PrivacyShield(privacyShield).isVerified(_msgSender())) revert NotAuthorized();
         }
 
         if (jobApplications[jobId].length >= MAX_APPLICATIONS_PER_JOB) revert NotAuthorized();
@@ -537,7 +538,7 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
 
         uint256 jobId = ++jobCount;
         
-        _handleJobFunding(p.token, p.amount, p.yieldStrategy, p.paymentToken, p.paymentAmount, p.minAmountOut);
+        uint256 actualAmount = _handleJobFunding(p.token, p.amount, p.yieldStrategy, p.paymentToken, p.paymentAmount, p.minAmountOut);
         _initJobRecord(jobId, p.freelancer, p.token, p.amount, p.ipfsHash, p.categoryId, p.deadline, p.yieldStrategy, p.mAmounts.length, p.zkRequired);
         _setupMilestones(jobId, p.freelancer, p.mAmounts, p.mHashes, p.mIsUpfront);
 
