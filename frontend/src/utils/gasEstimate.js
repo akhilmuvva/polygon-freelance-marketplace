@@ -1,6 +1,6 @@
-import { formatEther, parseEther } from 'viem';
+import { formatEther } from 'viem';
 import { getPublicClient } from '@wagmi/core';
-import { polygonAmoy } from 'viem/chains';
+import { polygon } from 'viem/chains';
 
 /**
  * [ZENITH] Gas Estimator Utility
@@ -8,7 +8,7 @@ import { polygonAmoy } from 'viem/chains';
  */
 export async function estimateSovereignTxCost(client, functionName, args = [], value = 0n) {
   try {
-    const publicClient = getPublicClient({ chainId: polygonAmoy.id });
+    const publicClient = getPublicClient({ chainId: polygon.id }); // Polygon Mainnet (137)
     
     // 1. Estimate Gas Units
     const gasEstimate = await publicClient.estimateContractGas({

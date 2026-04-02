@@ -8,9 +8,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-hot-toast';
 import { useAccount, useWalletClient } from 'wagmi';
 import MarketplaceService from '../services/MarketplaceService';
+import { assertMatic } from '../utils/chainGuard';
 
 const NFTMarketplace = () => {
-    const { address, isConnected } = useAccount();
+    const { address, isConnected, chainId } = useAccount();
     const { data: walletClient } = useWalletClient();
     
     const [listings, setListings] = useState([]);
@@ -92,6 +93,13 @@ const NFTMarketplace = () => {
     const handleAcquisition = async () => {
         if (!selectedNFT || !walletClient) {
             toast.error('Identity not verified. Connect wallet to proceed.');
+            return;
+        }
+
+        try {
+            assertMatic(chainId); // 🔒 Hard-stop: all acquisitions must be on Polygon Mainnet
+        } catch (err) {
+            toast.error('Wrong Network: Switch to Polygon Mainnet (MATIC) to proceed.', { icon: '🛎️', duration: 6000 });
             return;
         }
 

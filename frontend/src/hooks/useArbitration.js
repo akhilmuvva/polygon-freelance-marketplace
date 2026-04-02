@@ -3,13 +3,14 @@ import FreelanceEscrowABI from '../contracts/FreelanceEscrow.json';
 import { CONTRACT_ADDRESS } from '../constants';
 import StorageService from '../services/StorageService';
 import { toast } from 'react-toastify';
+import { assertMatic } from '../utils/chainGuard';
 
 /**
  * Hook for Decentralized Arbitration (Kleros-style)
  * Enables raising disputes and submitting evidence (including XMTP logs)
  */
 export function useArbitration() {
-    const { address } = useAccount();
+    const { address, chainId } = useAccount();
     const { writeContractAsync } = useWriteContract();
     const publicClient = usePublicClient();
 
@@ -19,6 +20,7 @@ export function useArbitration() {
      */
     const raiseDispute = async (jobId) => {
         try {
+            assertMatic(chainId); // 🔒 Hard-stop: must be on Polygon Mainnet
             // 1. Get Arbitrator address from Escrow
             const arbitrator = await publicClient.readContract({
                 address: CONTRACT_ADDRESS,
@@ -71,6 +73,7 @@ export function useArbitration() {
      */
     const submitEvidence = async (jobId, evidenceData) => {
         try {
+            assertMatic(chainId); // 🔒 Hard-stop: must be on Polygon Mainnet
             toast.info("Uploading evidence to IPFS...");
             const { cid } = await StorageService.uploadMetadata(evidenceData);
 

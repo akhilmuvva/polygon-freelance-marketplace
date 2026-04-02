@@ -6,13 +6,14 @@ import { GravityScoreService } from '../services/GravityScoreService';
 import FreelanceEscrowABI from '../contracts/FreelanceEscrow.json';
 import { CONTRACT_ADDRESS } from '../constants';
 import { toast as hotToast } from 'react-hot-toast';
+import { assertMatic } from '../utils/chainGuard';
 
 /**
  * useSovereignLogic: The mission-critical logic orchestrator for PolyLance Zenith.
  * Enforces Absolute Zero Gravity by bypassing centralized state managers.
  */
 export const useSovereignLogic = () => {
-    const { address } = useAccount();
+    const { address, chainId } = useAccount();
     const { writeContractAsync } = useWriteContract();
     const [isActuating, setIsActuating] = useState(false);
 
@@ -22,6 +23,7 @@ export const useSovereignLogic = () => {
      */
     const actuateEscrow = useCallback(async (jobData) => {
         if (!address) throw new Error("Identity required for actuation.");
+        assertMatic(chainId); // 🔒 Hard-stop: must be on Polygon Mainnet
         setIsActuating(true);
         
         try {
