@@ -19,13 +19,20 @@ export const ProfileService = {
         const cacheKey = `POLYLANCE_PROFILE_CACHE_${addr}`;
 
         // Migration step: Recover data from legacy keys (Sovereign/v3)
+        // We migrate if NO data exists OR if the existing data is just the 'default' placeholder
         const legacyKeys = [`SOVEREIGN_PROFILE_${addr}`, `polylance_profile_v3_${addr}`];
-        for (const key of legacyKeys) {
-            const legacyData = localStorage.getItem(key);
-            if (legacyData && !localStorage.getItem(cacheKey)) {
-                console.info(`[PROFILE-MIGRATION] Recovered legacy data from ${key}`);
-                localStorage.setItem(cacheKey, legacyData);
-                localStorage.removeItem(key);
+        const currentData = localStorage.getItem(cacheKey);
+        const isDefault = currentData ? JSON.parse(currentData).source === 'default' : true;
+
+        if (isDefault) {
+            for (const key of legacyKeys) {
+                const legacyData = localStorage.getItem(key);
+                if (legacyData) {
+                    console.info(`[PROFILE-MIGRATION] Restoring profile from legacy storage: ${key}`);
+                    localStorage.setItem(cacheKey, legacyData);
+                    localStorage.removeItem(key);
+                    break; // Use the first legacy source found
+                }
             }
         }
 
