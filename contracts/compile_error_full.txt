@@ -1,3 +1,0 @@
-Error HH304: Unrecognised command line argument --show-stack-trace.
-Note that task arguments must come after the task name.
-For more info go to https://v2.hardhat.org/HH304 or run Hardhat with --show-stack-traces

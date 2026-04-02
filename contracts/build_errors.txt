@@ -1,4 +1,0 @@
-[dotenv@17.3.1] injecting env (4) from .env -- tip: ΓÜÖ∩╕Å  override existing env vars with { override: true }
-Error HH411: The library @chainlink/contracts-ccip, imported from contracts/AggLayerBridge.sol, is not installed. Try installing it using npm.
-
-For more info go to https://v2.hardhat.org/HH411 or run Hardhat with --show-stack-traces

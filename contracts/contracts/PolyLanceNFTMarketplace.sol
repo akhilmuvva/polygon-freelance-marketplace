@@ -10,6 +10,16 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
+interface ISwapManager {
+    function swap(
+        address tokenIn,
+        address tokenOut,
+        uint256 amountIn,
+        uint256 minAmountOut,
+        address recipient
+    ) external payable returns (uint256 amountOut);
+}
+
 /**
  * @title PolyLanceNFTMarketplace
  * @notice A premium marketplace for PolyLance assets (Job NFTs, Invoices, Service NFTs).
@@ -44,16 +54,6 @@ contract PolyLanceNFTMarketplace is
     uint256 public platformFeeBps; // e.g., 250 for 2.5%
     address public feeRecipient;
     address public swapManager;
-
-    interface ISwapManager {
-        function swap(
-            address tokenIn,
-            address tokenOut,
-            uint256 amountIn,
-            uint256 minAmountOut,
-            address recipient
-        ) external payable returns (uint256 amountOut);
-    }
 
     event NFTListed(uint256 indexed listingId, address indexed seller, address indexed nftContract, uint256 tokenId, uint256 price);
     event NFTSold(uint256 indexed listingId, address indexed buyer, address indexed seller, uint256 price);

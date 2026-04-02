@@ -1,8 +1,0 @@
-[dotenv@17.3.1] injecting env (4) from .env -- tip: ΓÜí∩╕Å secrets for agents: https://dotenvx.com/as2
-[dotenv@17.3.1] injecting env (0) from .env -- tip: ΓÜÖ∩╕Å  enable debug logging with { debug: true }
-≡ƒÜÇ Actuating Job Contract Push to Amoy...
-Deployer: 0x25F6C8ed995C811E6c0ADb1D66A60830E8115e9A
-Pushing Job Contract...
-Transaction Hash: 0xa32c361729261f3a7e6adb35a920521c90945454c54ca2284616e5d3ddc5a8c9
-Γ£à Job Contract Pushed Successfully!
-Job ID: 3
