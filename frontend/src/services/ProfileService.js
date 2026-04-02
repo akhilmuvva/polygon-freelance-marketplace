@@ -18,6 +18,17 @@ export const ProfileService = {
         const addr = address.toLowerCase();
         const cacheKey = `POLYLANCE_PROFILE_CACHE_${addr}`;
 
+        // Migration step: Recover data from legacy keys (Sovereign/v3)
+        const legacyKeys = [`SOVEREIGN_PROFILE_${addr}`, `polylance_profile_v3_${addr}`];
+        for (const key of legacyKeys) {
+            const legacyData = localStorage.getItem(key);
+            if (legacyData && !localStorage.getItem(cacheKey)) {
+                console.info(`[PROFILE-MIGRATION] Recovered legacy data from ${key}`);
+                localStorage.setItem(cacheKey, legacyData);
+                localStorage.removeItem(key);
+            }
+        }
+
         // 1. Instant Retrieval: Check local cache first
         const localCache = localStorage.getItem(cacheKey);
         if (localCache) {
