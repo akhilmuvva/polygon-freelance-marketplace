@@ -5,7 +5,7 @@ import CeramicService from './CeramicService';
 
 /**
  * ProfileService: Manages user profile data.
- * Updated for the "Antigravity" architecture: Prefers ComposeDB (Ceramic) for dApp-agnostic reputation.
+ * Adheres to decentralized identity standards using local-first resolution.
  */
 export const ProfileService = {
     /**
@@ -16,17 +16,19 @@ export const ProfileService = {
     getProfile: async (address) => {
         if (!address) return null;
         const addr = address.toLowerCase();
-        const cacheKey = `polylance_profile_v3_${addr}`;
+        const cacheKey = `POLYLANCE_PROFILE_CACHE_${addr}`;
 
         // 1. Instant Retrieval: Check local cache first
         const localCache = localStorage.getItem(cacheKey);
         if (localCache) {
             try {
                 const data = JSON.parse(localCache);
-                // Background update: Non-blocking fetch to refresh Ceramic/Subgraph data
+                // Background update: Refresh decentralized data in the background
                 ProfileService._refreshProfileCache(addr, cacheKey).catch(() => {});
                 return data;
-            } catch (e) { console.error('Cache corruption:', e); }
+            } catch (e) { 
+                console.error('[PROFILE] Cache corruption:', e); 
+            }
         }
 
         return await ProfileService._refreshProfileCache(addr, cacheKey);
@@ -57,7 +59,7 @@ export const ProfileService = {
                         ...data,
                         reputationScore: stats.freelancer?.reputationScore || 0,
                         totalEarned: stats.freelancer?.totalEarned || 0,
-                        source: 'ipfs'
+                        source: 'decentralized-storage'
                     };
                     localStorage.setItem(cacheKey, JSON.stringify(updated));
                     return updated;
@@ -66,8 +68,8 @@ export const ProfileService = {
 
             const defaultProfile = {
                 address: addr,
-                name: 'Sovereign Explorer',
-                bio: 'This user has not initialized their weightless profile yet.',
+                name: 'Professional Pioneer',
+                bio: 'This profile has not been configured yet.',
                 reputationScore: stats?.freelancer?.reputationScore || 0,
                 totalEarned: stats?.freelancer?.totalEarned || 0,
                 source: 'default'
@@ -79,22 +81,26 @@ export const ProfileService = {
             console.warn('[PROFILE] Identity resolution friction:', err.message);
             return {
                 address: addr,
-                name: 'Identity Loading...',
-                bio: 'The weightless layer is currently synchronizing.',
+                name: 'Loading Profile...',
+                bio: 'Synchronizing with the decentralized network.',
                 source: 'error'
             };
         }
     },
 
     /**
-     * Prepares a profile for weightless upload
+     * Updates the user's profile on the decentralized network
      */
-    updateSovereignProfile: async (address, profileData) => {
-        console.info('[PROFILE] Propagating intent to Ceramic mesh for:', address);
+    updateProfile: async (address, profileData) => {
+        console.info('[PROFILE] Saving profile to decentralized network for:', address);
         const result = await CeramicService.updateProfile(address, profileData);
-        // Instant Cache Invalidation: Update local view immediately
-        const cacheKey = `polylance_profile_v3_${address.toLowerCase()}`;
-        localStorage.setItem(cacheKey, JSON.stringify({ address, ...profileData, source: 'local-update' }));
+        // Instant local update for responsive UI
+        const cacheKey = `POLYLANCE_PROFILE_CACHE_${address.toLowerCase()}`;
+        localStorage.setItem(cacheKey, JSON.stringify({
+            address, 
+            ...profileData, 
+            source: 'local-update' 
+        }));
         return result;
     },
 

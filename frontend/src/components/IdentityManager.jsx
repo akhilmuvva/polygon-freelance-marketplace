@@ -88,14 +88,13 @@ const IdentityManager = ({ address }) => {
         setIsSaving(true);
         try {
             const skillsArray = profile.skills.split(',').map(s => s.trim()).filter(Boolean);
-            await ProfileService.updateSovereignProfile(address, {
+            await ProfileService.updateProfile(address, {
                 ...profile,
                 skills: skillsArray
             });
 
-            // Task 2: Profile Mirroring
-            // Anchoring the updated details to the local cache for instant rendering.
-            const cacheKey = `polylance_profile_v3_${address.toLowerCase()}`;
+            // Local cache update for instant rendering
+            const cacheKey = `POLYLANCE_PROFILE_CACHE_${address.toLowerCase()}`;
             localStorage.setItem(cacheKey, JSON.stringify({
                 address: address.toLowerCase(),
                 ...profile,
@@ -108,7 +107,7 @@ const IdentityManager = ({ address }) => {
                 ...prev,
                 skills: skillsArray.join(', ')
             }));
-            hotToast.success('Data Anchored: Identity Propagated', { id: 'profile-save-success' });
+            hotToast.success('Profile Saved: Syncing with Network', { id: 'profile-save-success' });
             window.dispatchEvent(new CustomEvent('IDENTITY_UPDATED', { detail: address }));
         } catch (err) {
             hotToast.error('Identity Propagation Failed');
@@ -138,11 +137,11 @@ const IdentityManager = ({ address }) => {
 
             setMatches(scoredMatches);
             setTimeout(() => {
-                hotToast.success('AGA Neural Matrix Synchronized');
+                hotToast.success('AI Matching Engine Synchronized');
                 setIsMatching(false);
             }, 1500);
         } catch (err) {
-            hotToast.error('Neural Sync Failed');
+            hotToast.error('AI Matching Failed');
             setIsMatching(false);
         }
     };
@@ -153,12 +152,12 @@ const IdentityManager = ({ address }) => {
             <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-12">
                 <div>
                     <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '4px 12px', borderRadius: 20, background: 'rgba(45, 212, 191, 0.1)', border: '1px solid rgba(45, 212, 191, 0.2)', color: 'var(--accent-light)', fontSize: '0.6rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: 12 }}>
-                        <Shield size={12} /> Sovereign Identity Engine
+                        <Shield size={12} /> Professional Identity Engine
                     </div>
                     <h1 style={{ fontSize: '3.2rem', fontWeight: 900, color: '#fff', letterSpacing: '-0.04em', lineHeight: 1 }}>
-                        Identity <span className="zenith-gradient">Updater</span>
+                        Profile <span className="zenith-gradient">Settings</span>
                     </h1>
-                    <p style={{ color: 'var(--text-tertiary)', fontSize: '0.95rem', fontWeight: 500, marginTop: 8 }}>Actuate your professional resonance on the decentralized mesh.</p>
+                    <p style={{ color: 'var(--text-tertiary)', fontSize: '0.95rem', fontWeight: 500, marginTop: 8 }}>Establish your professional presence on the decentralized network.</p>
                 </div>
                 
                 <div style={{ display: 'flex', background: 'rgba(255,255,255,0.03)', padding: 4, borderRadius: 16, border: '1px solid var(--border)' }}>
@@ -204,7 +203,7 @@ const IdentityManager = ({ address }) => {
                                 {/* Form */}
                                 <div style={s.card}>
                                     <div style={{ marginBottom: 24 }}>
-                                        <label htmlFor="profile-name" style={s.label}>Legal Persona</label>
+                                        <label htmlFor="profile-name" style={s.label}>Full Name</label>
                                         <input 
                                             id="profile-name"
                                             name="name"
@@ -217,7 +216,7 @@ const IdentityManager = ({ address }) => {
                                         />
                                     </div>
                                     <div style={{ marginBottom: 24 }}>
-                                        <label htmlFor="profile-bio" style={s.label}>Sovereign Manifesto (Bio)</label>
+                                        <label htmlFor="profile-bio" style={s.label}>Professional Bio</label>
                                         <textarea 
                                             id="profile-bio"
                                             name="bio"
@@ -230,7 +229,7 @@ const IdentityManager = ({ address }) => {
                                         />
                                     </div>
                                     <div style={{ marginBottom: 32 }}>
-                                        <label htmlFor="profile-skills" style={s.label}>Neural Nodes (Skills)</label>
+                                        <label htmlFor="profile-skills" style={s.label}>Core Skills</label>
                                         <input 
                                             id="profile-skills"
                                             name="skills"
@@ -255,7 +254,7 @@ const IdentityManager = ({ address }) => {
                                         }}
                                     >
                                         {isSaving ? <Cpu className="animate-spin" size={18} /> : <Save size={18} />}
-                                        Propagate to Ceramic
+                                        Save Profile
                                     </button>
                                 </div>
 
@@ -267,7 +266,7 @@ const IdentityManager = ({ address }) => {
                                             <div style={{ position: 'absolute', inset: -4, borderRadius: '50%', border: '2px solid var(--accent)', opacity: 0.2 }} />
                                             <User size={48} color="var(--accent-light)" />
                                         </div>
-                                        <h3 style={{ fontSize: '1.8rem', fontWeight: 900, color: '#fff', marginBottom: 8, letterSpacing: '-0.02em' }}>{profile.name || 'Sovereign Explorer'}</h3>
+                                        <h3 style={{ fontSize: '1.8rem', fontWeight: 900, color: '#fff', marginBottom: 8, letterSpacing: '-0.02em' }}>{profile.name || 'Professional Pioneer'}</h3>
                                         <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 6, marginBottom: 24 }}>
                                             {(profile.skills.split(',') || []).map((skill, i) => skill.trim() && (
                                                 <span key={i} style={{ padding: '4px 12px', borderRadius: 10, background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border)', fontSize: '0.62rem', fontWeight: 800, color: 'var(--text-tertiary)', textTransform: 'uppercase' }}>
@@ -276,7 +275,7 @@ const IdentityManager = ({ address }) => {
                                             ))}
                                         </div>
                                         <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', lineHeight: 1.6, fontStyle: 'italic', marginBottom: 20, maxWidth: 300 }}>
-                                            "{profile.bio || 'Initialization required. Propagate your profile to activate this identity node.'}"
+                                            "{profile.bio || 'Your bio will appear here after saving your profile.'}"
                                         </p>
                                         
                                         {/* Privado ID (Polygon ID) Verification Badge */}
@@ -328,9 +327,9 @@ const IdentityManager = ({ address }) => {
                                         <div className={`w-20 h-20 rounded-full bg-secondary-subtle border border-secondary/20 flex items-center justify-center mb-8 ${isMatching ? 'animate-pulse' : ''}`}>
                                             <Brain size={40} className="text-secondary" />
                                         </div>
-                                        <h2 className="text-3xl font-black text-white mb-4 uppercase tracking-tight">AGA Neural Intent Matcher</h2>
+                                        <h2 className="text-3xl font-black text-white mb-4 uppercase tracking-tight">AI Matching Engine</h2>
                                         <p className="text-text-secondary mb-8 leading-relaxed">
-                                            Our Anti-Gravity Agent (AGA) will now scan the job mesh and cross-reference your sovereign competencies with open intents.
+                                            Our AI matching engine will scan available jobs and cross-reference them with your skills to find the best opportunities.
                                         </p>
                                         <button 
                                             onClick={runNeuralMatching}
@@ -338,7 +337,7 @@ const IdentityManager = ({ address }) => {
                                             className="px-10 py-4 rounded-xl bg-secondary text-bg-base font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all disabled:opacity-50 flex items-center gap-3"
                                         >
                                             {isMatching ? <Sparkles className="animate-spin" size={20} /> : <Target size={20} />}
-                                            {isMatching ? 'Calculating Resonance...' : 'Actuate Job Matching'}
+                                            {isMatching ? 'Finding Matches...' : 'Start Job Matching'}
                                         </button>
                                     </div>
                                 </div>

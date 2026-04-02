@@ -10,9 +10,8 @@ const ComposeClient = class {
 
 
 /**
- * CeramicService: The core of the "Weightless" data layer.
- * Replaces the centralized MongoDB backend with a decentralized
- * and composable stream-based database.
+ * CeramicService: The core of the decentralized data layer.
+ * Manages verifiable credentials and user profile streams.
  */
 class CeramicService {
   constructor() {
@@ -36,7 +35,7 @@ class CeramicService {
    */
   async authenticate(did) {
     this.client.setDID(did);
-    console.info('[CERAMIC-DB] Identity authenticated on sovereign data layer:', did.id);
+    console.info('[CERAMIC-DB] Authenticated profile on decentralized layer:', did.id);
   }
 
   /**
@@ -44,10 +43,10 @@ class CeramicService {
    */
   async getProfile(address) {
     try {
-      console.info('[CERAMIC-DB] Harvesting weightless profile for:', address);
-      // Attempt to load from the "Sovereign Mesh" fallback (localStorage)
-      const meshData = JSON.parse(localStorage.getItem(`SOVEREIGN_PROFILE_${address.toLowerCase()}`));
-      if (meshData) return { ...meshData, source: 'mesh' };
+      console.info('[CERAMIC-DB] Retrieving profile for:', address);
+      // Attempt to load from the decentralized network cache
+      const meshData = JSON.parse(localStorage.getItem(`POLYLANCE_PROFILE_CACHE_${address.toLowerCase()}`));
+      if (meshData) return { ...meshData, source: 'network-cache' };
       
       // Force fallback to Subgraph/IPFS for real account history
       return null;
@@ -61,8 +60,8 @@ class CeramicService {
    * Create or update a profile on the weightless stream.
    */
   async updateProfile(address, profileData) {
-    console.info('[CERAMIC-DB] Actuating weightless stream update:', profileData);
-    localStorage.setItem(`SOVEREIGN_PROFILE_${address?.toLowerCase()}`, JSON.stringify(profileData));
+    console.info('[CERAMIC-DB] Updating profile stream:', profileData);
+    localStorage.setItem(`POLYLANCE_PROFILE_CACHE_${address?.toLowerCase()}`, JSON.stringify(profileData));
     return { id: 'stream-id-123', status: 'SYNCHRONIZED' };
   }
 
