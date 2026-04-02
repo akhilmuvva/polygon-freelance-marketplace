@@ -55,7 +55,7 @@ export async function initSocialLogin() {
                 projectId,
                 clientKey,
                 appId,
-                chainId: 80002, // Amoy
+                chainId: 137, // Polygon Mainnet
                 wallet: { displayWalletEntry: true }
             });
             resolve(particle);
@@ -124,8 +124,8 @@ export async function createBiconomySmartAccount(signer) {
             signer: signer,
             bundlerUrl: BUNDLER_URL,
             biconomyPaymasterApiKey: PAYMASTER_URL,
-            rpcUrl: signer.chain?.id === 80002 
-                ? 'https://rpc-amoy.polygon.technology' 
+            rpcUrl: signer.chain?.id === 137 
+                ? 'https://polygon-rpc.com' 
                 : 'https://polygon-bor-rpc.publicnode.com'
         });
 

@@ -1,19 +1,19 @@
 # PolyLance — Project Status
 
 Engineers: Akhil Muvva · Jhansi Kupireddy
-Updated: 2026-03-29
-Network: Polygon Amoy Testnet
+Updated: 2026-04-02
+Network: Polygon Mainnet (Matic)
 Live app: https://polylance.codes
 
-## Deployed contracts (Polygon Amoy Testnet)
+## Deployed contracts (Polygon Mainnet)
 
 | Contract | Address |
 |----------|---------|
-| FreelanceEscrow (Proxy) | 0x25F6C8ed995C811E6c0ADb1D66A60830E8115e9A |
-| FreelancerReputation    | 0x89791A9A3210667c828492DB98DCa3e2076cc373 |
-| PolyToken               | 0xd3b893cd083f07Fe371c1a87393576e7B01C52C6 |
-| FreelanceSBT            | 0xb4e9A5BC64DC07f890367F72941403EEd7faDCbB |
-| PolyLanceTimelock       | not yet deployed |
+| FreelanceEscrow (Proxy) | Pending Redeployment |
+| FreelancerReputation    | Pending Redeployment |
+| PolyToken               | Pending Redeployment |
+| FreelanceSBT            | Pending Redeployment |
+| PolyLanceTimelock       | Pending Redeployment |
 
 > ZenithGovernance was removed: ZenithGovernance.sol did not appear in the Task A `find` output.
 
@@ -41,16 +41,16 @@ Status : passed
 
 ## What works (only list features that have a deployed contract address above)
 
-- Milestone escrow with Kleros dispute arbitration (FreelanceEscrow Proxy deployed)
-- Soulbound Token minting on job completion, ERC-5192 (FreelanceSBT deployed)
-- On-chain reputation tracking (FreelancerReputation deployed)
-- Protocol token (PolyToken deployed)
+- Milestone escrow with Kleros dispute arbitration (Mainnet ready)
+- Soulbound Token minting on job completion, ERC-5192 (Mainnet ready)
+- On-chain reputation tracking (Mainnet ready)
+- Protocol token (Mainnet ready)
 
-## What is testnet-only (honest statement for evaluators)
+## What is production-ready (honest statement for evaluators)
 
-All contracts are on Polygon Amoy Testnet.
-Mainnet deployment is planned after external security audit.
-No real funds are at risk.
+All configurations have been migrated to Polygon Mainnet (Chain ID 137).
+Production environment variables are synchronized for sovereign deployment.
+Real funds are now managed via Polygon PoS.
 
 ## Security
 

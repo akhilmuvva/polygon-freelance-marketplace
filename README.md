@@ -3,7 +3,7 @@
 **A protocol for trustless recruitment, escrow-based settlement, and on-chain professional reputation on Polygon.**
 
 [![Website](https://img.shields.io/badge/Website-polylance.codes-blue)](https://polylance.codes)
-[![Network](https://img.shields.io/badge/Network-Polygon_Amoy-purple)](https://amoy.polygonscan.com)
+[![Network](https://img.shields.io/badge/Network-Polygon_Mainnet-purple)](https://polygonscan.com)
 [![Tests](https://img.shields.io/badge/Tests-17_Files-green)](#)
 [![Contracts](https://img.shields.io/badge/Contracts-60_Files-blue)](#)
 ![Tests](https://img.shields.io/badge/Tests-not%20verified-lightgrey)
@@ -48,7 +48,7 @@ The protocol is built on a modular stack:
 - **Governance Layer:** Governor-based quadratic voting system.
 - **Infrastructure:** Frontend hosted with IPFS/4Everland, metadata on Ceramic.
 
-### Contract Registry (Polygon Amoy)
+### Contract Registry (Polygon Mainnet — Pending Redeployment)
 
 | Contract | Address |
 | :--- | :--- |
@@ -62,7 +62,7 @@ The protocol is built on a modular stack:
 ## 🚀 Getting Started
 
 1. **Visit the app:** [https://polylance.codes](https://polylance.codes)
-2. **Connect Wallet:** Use MetaMask or any WalletConnect provider on the Polygon Amoy network.
+2. **Connect Wallet:** Use MetaMask or any WalletConnect provider on the **Polygon Mainnet** network.
 3. **Register Profile:** Initialize your professional identity with a Soulbound Token.
 
 ---

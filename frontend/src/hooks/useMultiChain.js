@@ -118,7 +118,7 @@ export const useMultiChain = () => {
     // Get testnet chains only
     const getTestnetChains = () => {
         return Object.entries(SUPPORTED_CHAINS)
-            .filter(([id]) => ['80002', '11155111', '84532', '421614', 'solana-devnet'].includes(id))
+            .filter(([id]) => ['11155111', '84532', '421614', 'solana-devnet'].includes(id))
             .map(([id, info]) => ({ id, ...info }));
     };
 

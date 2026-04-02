@@ -6,7 +6,7 @@
 export const INTENT_DOMAIN = {
     name: 'PolyLance Zenith',
     version: '1',
-    chainId: 80002, // Amoy
+    chainId: 137, // Polygon Mainnet
     verifyingContract: '0x0000000000000000000000000000000000000000' // Domain-wide
 };
 

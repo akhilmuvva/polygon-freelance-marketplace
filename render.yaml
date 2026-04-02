@@ -23,9 +23,9 @@ services:
       - key: GEMINI_API_KEY
         sync: false
       - key: RPC_URL
-        value: https://rpc-amoy.polygon.technology
+        value: https://polygon-rpc.com
       - key: NETWORK
-        value: amoy
+        value: polygon
       - key: RAZORPAY_KEY_ID
         sync: false
       - key: RAZORPAY_KEY_SECRET

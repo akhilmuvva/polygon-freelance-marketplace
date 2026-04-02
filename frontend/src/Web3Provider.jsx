@@ -14,7 +14,7 @@ import {
     darkTheme,
 } from '@rainbow-me/rainbowkit';
 import { WagmiProvider, http, fallback, useAccount, useSwitchChain } from 'wagmi';
-import { polygon, polygonAmoy } from 'wagmi/chains';
+import { polygon } from 'wagmi/chains';
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 import { SiweMessage } from 'siwe';
 import { ApolloClient, InMemoryCache, HttpLink } from '@apollo/client';
@@ -196,18 +196,13 @@ export function Web3Provider({ children }) {
     const config = useMemo(() => getDefaultConfig({
         appName: 'PolyLance Zenith',
         projectId,
-        chains: [polygonAmoy, polygon],
+        chains: [polygon],
         transports: {
-            [polygonAmoy.id]: fallback([
-                http('https://rpc-amoy.polygon.technology'),
-                http('https://polygon-amoy-bor-rpc.publicnode.com'),
-                http('https://amoy.polygon.drpc.org'),
-                http('https://rpc.ankr.com/polygon_amoy'),
-            ]),
             [polygon.id]: fallback([
                 http('https://polygon-bor-rpc.publicnode.com'),
                 http('https://polygon.drpc.org'),
                 http('https://1rpc.io/matic'),
+                http('https://polygon-rpc.com'),
             ]),
         },
         ...DEFENSIVE_RPC_CONFIG, // Integrate retry & jitter-based batching

@@ -4,7 +4,7 @@ require("dotenv").config();
 const fs = require("fs");
 const path = require("path");
 
-const RPC_URL = process.env.POLYGON_AMOY_RPC_URL || "https://rpc-amoy.polygon.technology";
+const RPC_URL = process.env.POLYGON_MAINNET_RPC_URL || "https://polygon-rpc.com";
 const PRIVATE_KEY = process.env.PRIVATE_KEY;
 
 async function main() {
@@ -118,7 +118,7 @@ async function main() {
         console.warn("⚠️ Could not sync full cross-contract ABIs due to complex dependencies, but PolyToken is live.");
     }
 
-    console.log("🚀 Actuating PolyToken on Amoy...");
+    console.log("🚀 Actuating PolyToken on Polygon Mainnet...");
     const Factory = new ethers.ContractFactory(abi, evm.bytecode.object, wallet);
     const contract = await Factory.deploy();
     await contract.waitForDeployment();

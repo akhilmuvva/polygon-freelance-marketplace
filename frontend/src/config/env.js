@@ -10,7 +10,7 @@ const env = {
   ALCHEMY_ID: import.meta.env.VITE_ALCHEMY_ID || '',
   
   // ── Subgraph & Data ──────────────────────────────────────────────
-  SUBGRAPH_URL: import.meta.env.VITE_SUBGRAPH_URL || 'https://api.studio.thegraph.com/query/49625/polylance-zenith-amoy/v0.0.1',
+  SUBGRAPH_URL: import.meta.env.VITE_SUBGRAPH_URL || 'https://api.studio.thegraph.com/query/poly-lance-studio/poly-lance/v0.0.1',
   
   // ── Storage (IPFS via Pinata) ───────────────────────────────────
   // Fallbacks ensure uploads work even if Vercel env vars are not configured.
@@ -25,7 +25,7 @@ const env = {
 
   // ── Biconomy (Gasless Account Abstraction) ────────────────────────
   BICONOMY_PAYMASTER_URL: import.meta.env.VITE_BICONOMY_PAYMASTER_URL || 'mee_5bETq4RwcMcNzcRKVnEDnT',
-  BICONOMY_BUNDLER_URL: import.meta.env.VITE_BICONOMY_BUNDLER_URL || 'https://bundler.biconomy.io/api/v2/80002/nJPK7B3ru.dd7f7861-190d-41bd-af80-6877f74b8f44',
+  BICONOMY_BUNDLER_URL: import.meta.env.VITE_BICONOMY_BUNDLER_URL || 'https://bundler.biconomy.io/api/v2/137/nJPK7B3ru.dd7f7861-190d-41bd-af80-6877f74b8f44',
 
   // ── Huddle01 (Web3 Communication) ────────────────────────────────
   HUDDLE_PROJECT_ID: import.meta.env.VITE_HUDDLE_PROJECT_ID || '',

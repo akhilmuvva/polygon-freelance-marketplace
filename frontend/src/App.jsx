@@ -49,7 +49,7 @@ import { useAccount, useWalletClient, useDisconnect, useBlockNumber } from 'wagm
 import env from './config/env';
 import { initSocialLogin, createBiconomySmartAccount } from './utils/biconomy';
 import { createWalletClient, custom } from 'viem';
-import { polygonAmoy } from 'viem/chains';
+import { polygon } from 'viem/chains';
 import { ZENITH_JUDGES } from './constants';
 
 /* ── Inline styles for the shell — 8PM AUTHENTIC ── */
@@ -248,7 +248,7 @@ const useNetworkHealth = () => {
       let indexing = 'Healthy';
       let storage = 'Healthy';
       try {
-        const subgraphUrl = import.meta.env.VITE_SUBGRAPH_URL || 'https://api.studio.thegraph.com/query/49625/polylance-zenith-amoy/v0.0.1';
+        const subgraphUrl = import.meta.env.VITE_SUBGRAPH_URL || 'https://api.studio.thegraph.com/query/poly-lance-studio/poly-lance/v0.0.1';
         const res = await fetch(subgraphUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -378,8 +378,8 @@ function App() {
     }
     setIsInitializingGasless(true);
     try {
-      if (walletClient.chain.id !== 80002) {
-        hotToast.error('Gasless Mode requires Polygon Amoy. Please switch network.');
+      if (walletClient.chain.id !== 137) {
+        hotToast.error('Gasless Mode requires Polygon Mainnet. Please switch network.');
         setIsInitializingGasless(false);
         return;
       }
@@ -413,7 +413,7 @@ function App() {
       
       const wc = createWalletClient({ 
         account: address,
-        chain: polygonAmoy, 
+        chain: polygon, 
         transport: custom(provider) 
       });
       

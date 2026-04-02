@@ -5,7 +5,7 @@ const path = require("path");
 
 async function main() {
     console.log("🚀 STANDALONE PURE-ETHERS DEPLOYER (ZENITH)");
-    const RPC = process.env.POLYGON_AMOY_RPC_URL || "https://rpc-amoy.polygon.technology";
+    const RPC = process.env.POLYGON_MAINNET_RPC_URL || "https://polygon-rpc.com";
     const PK = process.env.PRIVATE_KEY;
     
     if (!PK) throw new Error("Missing PRIVATE_KEY in .env");

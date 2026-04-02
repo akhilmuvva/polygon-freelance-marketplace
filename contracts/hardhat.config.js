@@ -30,6 +30,13 @@ module.exports = {
             allowUnlimitedContractSize: true,
             hardfork: "shanghai"
         },
+        // Polygon Mainnet (ChainID: 137)
+        polygon: {
+            url: process.env.POLYGON_MAINNET_RPC_URL || "https://polygon-rpc.com",
+            accounts: [PRIVATE_KEY],
+            chainId: 137,
+            gasPrice: "auto"
+        },
         // Polygon Amoy Testnet (ChainID: 80002)
         amoy: {
             url: process.env.POLYGON_AMOY_RPC_URL || "https://rpc-amoy.polygon.technology",

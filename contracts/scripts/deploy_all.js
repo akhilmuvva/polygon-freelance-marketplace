@@ -79,9 +79,9 @@ async function main() {
     } else {
         console.log("\n3. Deploying FreelanceEscrow (UUPS Proxy)...");
 
-        // Addresses for Amoy (Testnet) or Mocks (Local)
-        const lzEndpoint = ethers.getAddress("0x6EDDE65947B348035F7dB70163693e6F60416173".toLowerCase()); // Amoy LZ V2
-        const ccipRouter = ethers.getAddress("0x9C32fCB86BF0f4a1A8921a9Fe46de3198bb88464".toLowerCase()); // Amoy CCIP Router
+        // Polygon Mainnet production addresses
+        const lzEndpoint = ethers.getAddress("0x1a44076050125825900e736c501f859c50fE728c".toLowerCase()); // Polygon Mainnet LZ V2 Endpoint
+        const ccipRouter = ethers.getAddress("0x849c5ED5a80F5B408Dd4969b78c2C8fdf0565Bfe".toLowerCase()); // Polygon Mainnet CCIP Router
         const trustedForwarder = addresses.PolyLanceForwarder;
 
 
