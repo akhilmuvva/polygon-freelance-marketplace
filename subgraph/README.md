@@ -1,5 +1,5 @@
 # FreelanceEscrow Subgraph
-**Developed by:** Akhil Muvva & Jhansi Kupireddy
+**Developed by:** Akhil Muvva & Balram Taddi
 
 This subgraph indexes events from the `FreelanceEscrow` smart contract on Polygon (Mumbai/Amoy).
 

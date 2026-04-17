@@ -28,7 +28,7 @@ error InvalidStateTransition();
 
 /**
  * @title SovereignInvoice
- * @author Akhil Muvva × Jhansi Kupireddy
+ * @author Akhil Muvva & Balram Taddi
  * @notice Tokenizes verifiable work as an ERC-721 Real-World Asset (RWA)
  *         to actuate immediate liquidity without centralized intermediaries.
  * 

@@ -9,7 +9,7 @@
  * revenue source. Fee compression follows volume velocity, creating a flywheel:
  * high volume → lower gravity factor → more freelancers → more volume.
  *
- * Authors: Akhil Muvva × Jhansi Kupireddy
+ * Authors: Akhil Muvva & Balram Taddi
  */
 import ReasoningProofService from './ReasoningProofService';
 

@@ -64,9 +64,6 @@ const styles = {
     display: 'flex', flexDirection: 'column', zIndex: 3000,
     overflowY: 'auto', overflowX: 'hidden',
     transition: 'transform 0.25s ease',
-    ...(typeof window !== 'undefined' && window.innerWidth <= 1024
-      ? { transform: open ? 'translateX(0)' : 'translateX(-100%)', width: 280 }
-      : {}),
   }),
   sidebarLogo: {
     padding: '20px 18px 16px', borderBottom: '1px solid var(--border)',
@@ -225,10 +222,11 @@ const styles = {
     backdropFilter: 'blur(4px)', zIndex: 2500, cursor: 'pointer',
   },
   mobileNav: {
-    display: 'none', position: 'fixed', bottom: 0, left: 0, right: 0,
-    height: 64, background: 'var(--bg-sidebar)',
+    display: 'flex', position: 'fixed', bottom: 0, left: 0, right: 0,
+    height: 72, background: 'rgba(5,6,8,0.95)', backdropFilter: 'blur(10px)',
     borderTop: '1px solid var(--border)',
     justifyContent: 'space-around', alignItems: 'center', zIndex: 2000,
+    paddingBottom: 'env(safe-area-inset-bottom)',
   },
   mobileItem: (active) => ({
     display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
@@ -536,7 +534,8 @@ function App() {
       ) : (
         <div style={styles.shell}>
           <NotificationManager />
-          <aside ref={sidebarRef} className="app-sidebar" style={styles.sidebar(isSidebarOpen)}>
+          {isSidebarOpen && <div className="sidebar-overlay" style={styles.overlay} onClick={() => setIsSidebarOpen(false)} />}
+          <aside ref={sidebarRef} className={`app-sidebar ${isSidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`} style={styles.sidebar(isSidebarOpen)}>
             <div style={styles.sidebarLogo}>
               <div style={styles.logoText}>POLY<span style={styles.logoAccent}>LANCE</span></div>
               <button className="close-toggle" style={styles.closeBtn} onClick={() => setIsSidebarOpen(false)}><X size={20} /></button>
@@ -691,9 +690,26 @@ function App() {
                 <button style={styles.footerLink} onClick={() => setActiveTab('privacy')}>Privacy</button>
                 <button style={styles.footerLink} onClick={() => setActiveTab('manifesto')}>Manifesto</button>
               </div>
-              <p style={styles.footerCopy}>© 2026 PolyLance. All rights reserved.</p>
             </footer>
           </main>
+          <nav className="app-mobile-nav" style={styles.mobileNav}>
+            {[
+              { id: 'dashboard', icon: LayoutDashboard, label: 'Home' },
+              { id: 'marketplace', icon: Flame, label: 'Zenith' },
+              { id: 'jobs', icon: Briefcase, label: 'Jobs' },
+              { id: 'identity', icon: User, label: 'Profile' },
+            ].map(item => (
+              <button 
+                key={item.id} 
+                className="anime-nav-item"
+                style={styles.mobileItem(activeTab === item.id)} 
+                onClick={() => setActiveTab(item.id)}
+              >
+                <item.icon size={22} color={activeTab === item.id ? '#00f5d4' : 'rgba(255,255,255,0.4)'} />
+                <span style={{ marginTop: 2 }}>{item.label}</span>
+              </button>
+            ))}
+          </nav>
         </div>
       )}
     </>

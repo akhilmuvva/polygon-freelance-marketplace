@@ -9,8 +9,8 @@ import { ApolloClient, InMemoryCache, gql, HttpLink } from '@apollo/client';
  */
 
 const SUBGRAPH_URL = import.meta.env.VITE_SUBGRAPH_URL || 'https://api.studio.thegraph.com/query/poly-lance-studio/poly-lance/v0.0.1';
-const ESCROW_ADDRESS = import.meta.env.VITE_FREELANCE_ESCROW_ADDRESS || '0x5Ff3E1223B5c37f1C18CC279dfC9C181bF22BEf9';
-const REPUTATION_ADDRESS = import.meta.env.VITE_FREELANCER_REPUTATION_ADDRESS || '0x6976ED34702D29e8605C4b57752a61FeAaC14eeF';
+const ESCROW_ADDRESS = import.meta.env.VITE_FREELANCE_ESCROW_ADDRESS || '0x38c76A767d45Fc390160449948aF80569E2C4217';
+const REPUTATION_ADDRESS = import.meta.env.VITE_FREELANCER_REPUTATION_ADDRESS || '0xDC57724Ea354ec925BaFfCA0cCf8A1248a8E5CF1';
 
 // Minimal Viem Client for Public Data - High Resilience Fallback
 const publicClient = createPublicClient({

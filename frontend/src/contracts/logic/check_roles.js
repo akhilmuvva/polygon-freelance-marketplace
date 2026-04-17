@@ -1,12 +1,12 @@
 import { createPublicClient, http, keccak256, stringToBytes } from 'viem';
-import { polygonAmoy } from 'viem/chains';
+import { polygon } from 'viem/chains';
 
 const client = createPublicClient({
-  chain: polygonAmoy,
-  transport: http('https://rpc-amoy.polygon.technology')
+  chain: polygon,
+  transport: http('https://polygon-rpc.com')
 });
 
-const ESCROW_ADDRESS = '0x5Ff3E1223B5c37f1C18CC279dfC9C181bF22BEf9';
+const ESCROW_ADDRESS = '0x38c76A767d45Fc390160449948aF80569E2C4217';
 const ARCHITECT_WALLET = '0x25F6C8ed995C811E6c0ADb1D66A60830E8115e9A';
 
 // OpenZeppelin AccessControl roles

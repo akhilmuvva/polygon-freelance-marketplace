@@ -38,7 +38,7 @@ contract SwapManager is Ownable {
 
     event TokensSwapped(address tokenIn, address tokenOut, uint256 amountIn, uint256 amountOut);
 
-    constructor(address _router, address _owner) Ownable(_owner) {
+    constructor(address _router) Ownable(msg.sender) {
         swapRouter = ISwapRouter(_router);
     }
 

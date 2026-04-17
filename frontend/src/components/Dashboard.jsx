@@ -183,11 +183,8 @@ const Dashboard = ({ address: propAddress }) => {
     );
 
     return (
-        <div style={{ 
-            padding: '60px', 
+        <div className="px-4 py-8 md:p-[60px] mx-auto text-white" style={{ 
             maxWidth: '1800px', 
-            margin: '0 auto', 
-            color: '#fff',
             fontFamily: "'Outfit', sans-serif"
         }}>
             {/* ── Background Atmos ── */}
@@ -199,16 +196,8 @@ const Dashboard = ({ address: propAddress }) => {
                 animate={{ opacity: 1, y: 0 }}
                 style={{ marginBottom: '60px' }}
             >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
-                    <div style={{ 
-                        padding: '6px 16px', 
-                        background: 'rgba(255,255,255,0.03)', 
-                        border: '1px solid rgba(255,255,255,0.08)',
-                        borderRadius: '100px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px'
-                    }}>
+                <div className="flex flex-wrap items-center gap-3 mb-5">
+                    <div className="px-4 py-1.5 bg-white/5 border border-white/10 rounded-full flex items-center gap-2">
                         <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#00f5d4', boxShadow: '0 0 10px #00f5d4' }} />
                         <span style={{ fontSize: '9px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.3em', color: 'rgba(255,255,255,0.4)' }}>
                             Node: {address?.slice(0, 10)}... // Status: Active
@@ -216,7 +205,7 @@ const Dashboard = ({ address: propAddress }) => {
                     </div>
                 </div>
                 
-                <h1 style={{ fontSize: '4.5rem', fontWeight: 900, letterSpacing: '-0.05em', lineHeight: 1, margin: 0 }}>
+                <h1 className="text-[2.5rem] md:text-[4.5rem] font-black tracking-tight leading-[1.1] m-0 break-words">
                     <span style={{ color: 'rgba(255,255,255,0.1)' }}>/</span> {address?.slice(2, 6).toUpperCase()} <span style={{ color: '#00f5d4', textShadow: '0 0 30px rgba(0,245,212,0.2)' }}>Control Hub</span>
                 </h1>
                 <p style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.4em', color: 'rgba(255,255,255,0.2)', marginTop: '8px' }}>
@@ -225,40 +214,33 @@ const Dashboard = ({ address: propAddress }) => {
             </motion.header>
 
             {/* ── Main Operations Grid ── */}
-            <div style={{ 
-                display: 'grid', 
-                gridTemplateColumns: 'repeat(12, 1fr)', 
-                gap: '30px',
-                position: 'relative',
-                zIndex: 10
-            }}>
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-[30px] relative z-10">
                 
                 {/* 1. Protocol Reputation Tile */}
                 <motion.div 
                     whileHover={{ y: -5 }}
+                    className="col-span-1 lg:col-span-8 p-6 lg:p-[40px]"
                     style={{ 
-                        gridColumn: 'span 8', 
                         background: '#0a0b0e', 
                         border: '1px solid rgba(255,255,255,0.05)', 
                         borderRadius: '32px',
-                        padding: '40px',
                         position: 'relative',
                         overflow: 'hidden'
                     }}
                 >
-                    <div style={{ position: 'absolute', top: 0, right: 0, width: '300px', height: '300px', background: 'radial-gradient(circle, rgba(0,245,212,0.05) 0%, transparent 70%)', pointerEvents: 'none' }} />
+                    <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-[radial-gradient(circle,rgba(0,245,212,0.05)_0%,transparent_70%)] pointer-events-none" />
                     
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '80px' }}>
+                    <div className="flex flex-col lg:flex-row justify-between lg:items-center mb-8 lg:mb-[80px] gap-4 relative z-10">
                         <div>
-                            <h3 style={{ fontSize: '24px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '-0.02em', margin: 0 }}>Protocol Reputation</h3>
+                            <h3 className="text-xl lg:text-2xl font-black uppercase tracking-tight m-0">Protocol Reputation</h3>
                             <p style={{ fontSize: '10px', fontWeight: 700, color: 'rgba(255,255,255,0.2)', textTransform: 'uppercase', letterSpacing: '0.3em', marginTop: '4px' }}>Identity Alignment Mesh</p>
                         </div>
-                        <div style={{ padding: '8px 16px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px' }}>
+                        <div className="px-4 py-2 self-start lg:self-auto" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px' }}>
                             <span style={{ fontSize: '9px', fontWeight: 900, color: '#00f5d4', textTransform: 'uppercase', letterSpacing: '0.2em' }}>SBT-6551 Ready</span>
                         </div>
                     </div>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '40px', alignItems: 'end' }}>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-[40px] items-end relative z-10">
                         <div>
                             <div style={{ fontSize: '9px', fontWeight: 900, color: 'rgba(255,255,255,0.2)', textTransform: 'uppercase', letterSpacing: '0.2em', marginBottom: '12px' }}>Root Address</div>
                             <div style={{ padding: '16px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '16px', fontSize: '10px', fontFamily: 'monospace', color: 'rgba(0,245,212,0.7)', overflow: 'hidden', textOverflow: 'ellipsis' }}>
@@ -285,19 +267,15 @@ const Dashboard = ({ address: propAddress }) => {
                 {/* 2. Protocol Stats Side Card (Mirroring Reference) */}
                 <motion.div 
                     whileHover={{ scale: 1.02 }}
+                    className="col-span-1 lg:col-span-4 p-6 lg:p-[40px] flex flex-col justify-between"
                     style={{ 
-                        gridColumn: 'span 4', 
                         background: '#0d0e12', 
                         border: '1px solid rgba(255,255,255,0.08)', 
                         borderRadius: '32px',
-                        padding: '40px',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        justifyContent: 'space-between',
                         boxShadow: '0 20px 50px rgba(0,0,0,0.5)'
                     }}
                 >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div className="flex justify-between items-center mb-6 lg:mb-0">
                         <span style={{ fontSize: '10px', fontWeight: 900, color: 'rgba(255,255,255,0.2)', textTransform: 'uppercase', letterSpacing: '0.3em' }}>Protocol Stats</span>
                         <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#00f5d4', boxShadow: '0 0 10px #00f5d4' }} />
                     </div>
@@ -348,29 +326,29 @@ const Dashboard = ({ address: propAddress }) => {
                 </motion.div>
 
                 {/* 3. Global Stats Grid */}
-                <div style={{ gridColumn: 'span 8', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-                    <div style={{ padding: '32px', background: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '24px', display: 'flex', alignItems: 'center', gap: '24px' }}>
-                        <div style={{ width: '56px', height: '56px', borderRadius: '16px', background: 'rgba(0,245,212,0.05)', border: '1px solid rgba(0,245,212,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#00f5d4' }}>
+                <div className="col-span-1 lg:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-[20px]">
+                    <div className="flex items-center gap-6 p-6 lg:p-[32px]" style={{ background: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '24px' }}>
+                        <div style={{ width: '56px', height: '56px', borderRadius: '16px', background: 'rgba(0,245,212,0.05)', border: '1px solid rgba(0,245,212,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#00f5d4', flexShrink: 0 }}>
                             <Flame size={24} />
                         </div>
                         <div>
                             <div style={{ fontSize: '9px', fontWeight: 900, color: 'rgba(255,255,255,0.2)', textTransform: 'uppercase', letterSpacing: '0.2em' }}>Earned Yield</div>
-                            <div style={{ fontSize: '28px', fontWeight: 900 }}>{surplus.toFixed(4)} <span style={{ fontSize: '10px', color: '#00f5d4' }}>MATIC</span></div>
+                            <div className="text-2xl lg:text-[28px] font-black mt-1">{surplus.toFixed(4)} <span style={{ fontSize: '10px', color: '#00f5d4' }}>MATIC</span></div>
                         </div>
                     </div>
-                    <div style={{ padding: '32px', background: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '24px', display: 'flex', alignItems: 'center', gap: '24px' }}>
-                        <div style={{ width: '56px', height: '56px', borderRadius: '16px', background: 'rgba(0,245,212,0.05)', border: '1px solid rgba(0,245,212,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#00f5d4' }}>
+                    <div className="flex items-center gap-6 p-6 lg:p-[32px]" style={{ background: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '24px' }}>
+                        <div style={{ width: '56px', height: '56px', borderRadius: '16px', background: 'rgba(0,245,212,0.05)', border: '1px solid rgba(0,245,212,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#00f5d4', flexShrink: 0 }}>
                             <Zap size={24} />
                         </div>
                         <div>
                             <div style={{ fontSize: '9px', fontWeight: 900, color: 'rgba(255,255,255,0.2)', textTransform: 'uppercase', letterSpacing: '0.2em' }}>Active Pipelines</div>
-                            <div style={{ fontSize: '28px', fontWeight: 900 }}>{activeEscrows.length} <span style={{ fontSize: '10px', color: '#00f5d4' }}>UNITS</span></div>
+                            <div className="text-2xl lg:text-[28px] font-black mt-1">{activeEscrows.length} <span style={{ fontSize: '10px', color: '#00f5d4' }}>UNITS</span></div>
                         </div>
                     </div>
                 </div>
 
                 {/* 4. Telemetry Tile */}
-                <motion.div style={{ gridColumn: 'span 4', padding: '32px', background: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '24px' }}>
+                <motion.div className="col-span-1 lg:col-span-4 p-6 lg:p-[32px]" style={{ background: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '24px' }}>
                     <h4 style={{ fontSize: '10px', fontWeight: 900, color: 'rgba(255,255,255,0.2)', textTransform: 'uppercase', letterSpacing: '0.4em', marginBottom: '24px' }}>Telemetry</h4>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                         {[
@@ -390,9 +368,10 @@ const Dashboard = ({ address: propAddress }) => {
                 <motion.div 
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    style={{ gridColumn: 'span 12', marginTop: '30px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '32px', overflow: 'hidden' }}
+                    className="col-span-1 lg:col-span-12 mt-4 lg:mt-[30px]"
+                    style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '32px', overflow: 'hidden' }}
                 >
-                    <div style={{ padding: '32px', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div className="flex justify-between items-center p-6 lg:p-[32px] border-b border-white/5">
                         <div>
                             <h4 style={{ fontSize: '11px', fontWeight: 900, color: 'rgba(255,255,255,0.2)', textTransform: 'uppercase', letterSpacing: '0.3em', margin: 0 }}>Active Operations</h4>
                             <p style={{ fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.4)', marginTop: '4px' }}>Real-time Escrow Tracking</p>

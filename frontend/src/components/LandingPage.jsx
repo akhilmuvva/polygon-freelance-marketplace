@@ -214,7 +214,7 @@ const LandingPage = ({ onSocialLogin, onBypass, isLoggingIn }) => {
                 <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '12px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px' }}>
                     <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#10b981', boxShadow: '0 0 8px #10b981' }} />
-                    <span style={{ fontSize: '10px', fontWeight: 900, color: grey, textTransform: 'uppercase', letterSpacing: '0.3em' }}>Network: Polygon Amoy</span>
+                    <span style={{ fontSize: '10px', fontWeight: 900, color: grey, textTransform: 'uppercase', letterSpacing: '0.3em' }}>Network: Polygon Mainnet</span>
                   </div>
                   <span style={{ fontSize: '9px', fontWeight: 900, color: '#3f3f46', textTransform: 'uppercase', letterSpacing: '0.4em' }}>Secured by Chainlink & Biconomy</span>
                 </div>

@@ -7,7 +7,7 @@
  * exhibit negative gravity, unlocking Elite Intents and near-zero
  * discount rates when monetizing their verified work via RWAs.
  *
- * Authors: Akhil Muvva × Jhansi Kupireddy
+ * Authors: Akhil Muvva & Balram Taddi
  */
 import ReasoningProofService from './ReasoningProofService';
 

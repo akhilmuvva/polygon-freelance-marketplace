@@ -1,6 +1,6 @@
 # PolyLance Zenith: Project Status Report
 
-**Maintained and Protocol Engineers:** [Akhil Muvva](mailto:akhilmuvva@polylance.codes) & [Jhansi Kupireddy](mailto:jhansi.kupireddy@polylance.codes)
+**Maintained and Protocol Engineers:** [Akhil Muvva](mailto:akhilmuvva@polylance.codes) & [Balram Taddi](mailto:balramtaddi@polylance.codes)
 
 ---
 
@@ -141,4 +141,4 @@
 - **Platform Administration:** [admin@polylance.codes](mailto:admin@polylance.codes)
 - **Security Vulnerabilities:** [security@polylance.codes](mailto:security@polylance.codes)
 - **Protocol Engineer (Akhil):** [akhilmuvva@polylance.codes](mailto:akhilmuvva@polylance.codes)
-- **Protocol Engineer (Jhansi):** [jhansi.kupireddy@polylance.codes](mailto:jhansi.kupireddy@polylance.codes)
+- **Protocol Engineer (Balram):** [balramtaddi@polylance.codes](mailto:balramtaddi@polylance.codes)

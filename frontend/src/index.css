@@ -1546,6 +1546,12 @@ nav,
 /* ============================================
    RESPONSIVE OVERRIDES (ZENITH ADAPTIVE)
    ============================================ */
+@media (min-width: 1025px) {
+    .app-mobile-nav { display: none !important; }
+    .sidebar-overlay { display: none !important; }
+    .app-sidebar { transform: translateX(0) !important; }
+}
+
 @media (max-width: 1024px) {
     .app-main { margin-left: 0 !important; width: 100% !important; padding-bottom: 72px; }
     .app-header .menu-toggle { display: flex !important; }
@@ -1554,6 +1560,16 @@ nav,
     .app-mobile-nav { display: flex !important; }
     .app-footer { display: none !important; }
     .app-content { padding: 20px 16px 80px !important; }
+    
+    /* Mobile Sidebar States */
+    .app-sidebar.sidebar-closed {
+        transform: translateX(-100%) !important;
+    }
+    .app-sidebar.sidebar-open {
+        transform: translateX(0) !important;
+        width: 280px !important;
+        box-shadow: 10px 0 30px rgba(0,0,0,0.8);
+    }
 }
 
 @keyframes pulse {

@@ -1,7 +1,7 @@
 import { toast } from 'react-toastify';
 import { ExternalLink, CheckCircle, XCircle } from 'lucide-react';
 
-const EXPLORER_URL = "https://amoy.polygonscan.com/tx/";
+const EXPLORER_URL = "https://polygonscan.com/tx/";
 
 export const showPendingToast = (hash) => {
     return toast.loading(

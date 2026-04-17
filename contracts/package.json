@@ -1,9 +1,9 @@
 {
   "name": "contracts",
   "version": "1.1.0",
-  "author": "Akhil Muvva",
   "contributors": [
-    "Jhansi Kupireddy"
+    "Akhil Muvva <akhilmuvva@polylance.codes>",
+    "Balram Taddi <balramtaddi@polylance.codes>"
   ],
   "description": "Smart contracts for PolyLance Zenith marketplace",
   "main": "hardhat.config.js",

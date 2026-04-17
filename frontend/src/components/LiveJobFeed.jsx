@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Clock, DollarSign, User, ExternalLink } from 'lucide-react';
 import { formatEther } from 'viem';
 import FreelanceEscrowABI from '../contracts/FreelanceEscrow.json';
-import { CONTRACT_ADDRESS } from '../constants';
+import { CONTRACT_ADDRESS, SCANNER_URL } from '../constants';
 
 export default function LiveJobFeed() {
     const [jobs, setJobs] = useState([]);
@@ -64,7 +64,7 @@ export default function LiveJobFeed() {
                             </div>
                             <div style={{ marginTop: 8, display: 'flex', justifyContent: 'flex-end' }}>
                                 <a
-                                    href={`https://amoy.polygonscan.com/tx/${job.txHash}`}
+                                    href={`${SCANNER_URL}/tx/${job.txHash}`}
                                     target="_blank" rel="noopener noreferrer"
                                     style={{ fontSize: '0.7rem', color: 'var(--accent-light)', display: 'flex', alignItems: 'center', gap: 4, textDecoration: 'none' }}
                                 >

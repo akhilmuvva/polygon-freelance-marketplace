@@ -8,7 +8,7 @@
  * soft-resolutions when empirical evidence dictates a high
  * propensity for failure, ensuring system equilibrium.
  *
- * Authors: Akhil Muvva × Jhansi Kupireddy
+ * Authors: Akhil Muvva & Balram Taddi
  */
 import ReasoningProofService from './ReasoningProofService';
 

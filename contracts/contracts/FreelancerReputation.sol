@@ -18,7 +18,7 @@ error RatingOutOfBounds();
 
 /**
  * @title  AntigravityReputation
- * @author Akhil Muvva × Jhansi Kupireddy
+ * @author Akhil Muvva & Balram Taddi
  * @notice The on-chain identity backbone of the PolyLance Zenith protocol.
  *         Reputation is not a number — it is a sovereign record of verifiable
  *         contribution, expressed as ERC-1155 skill tokens and composed gravity

@@ -238,7 +238,7 @@ const AuthPortal = ({ actuateOnSocialLoginIntent, isLoggingIn }) => {
                                 </div>
                                 <div style={st.statusRow}>
                                     <div style={st.statusDot} />
-                                    <span style={st.statusText}>Network: Polygon Amoy</span>
+                                    <span style={st.statusText}>Network: Polygon Mainnet</span>
                                 </div>
                                 <p style={st.securedBy}>Secured by Chainlink & Biconomy</p>
                             </div>

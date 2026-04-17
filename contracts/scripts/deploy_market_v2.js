@@ -26,6 +26,8 @@ async function main() {
     const SWAP_ROUTER = "0x3bFA4769FB09eefC5a80d6E87c3B91650a76be21"; // Uniswap V3 SwapRouter02 on Amoy
 
     console.log("📦 Deploying SwapManager...");
+    console.log("   Router:", SWAP_ROUTER);
+    console.log("   Owner: ", deployer.address);
     const SwapFactory = await ethers.getContractFactory("SwapManager");
     const swapManager = await SwapFactory.deploy(SWAP_ROUTER);
     await swapManager.waitForDeployment();

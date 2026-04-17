@@ -4,7 +4,8 @@
   "version": "1.1.0",
   "author": "Akhil Muvva",
   "contributors": [
-    "Jhansi Kupireddy"
+    "Akhil Muvva <akhilmuvva@polylance.codes>",
+    "Balram Taddi <balramtaddi@polylance.codes>"
   ],
   "license": "Apache-2.0",
   "private": true,
@@ -27,6 +28,8 @@
     "@biconomy/modules": "^4.1.1",
     "@biconomy/particle-auth": "^3.1.4",
     "@biconomy/paymaster": "^4.1.1",
+    "@capacitor/android": "^8.3.0",
+    "@capacitor/core": "^8.3.0",
     "@huddle01/react": "^2.6.4",
     "@rainbow-me/rainbowkit": "^2.2.10",
     "@react-three/drei": "^9.102.6",
@@ -56,6 +59,7 @@
     "wagmi": "^2.19.5"
   },
   "devDependencies": {
+    "@capacitor/cli": "^7.6.1",
     "@eslint/js": "^9.9.1",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.5.0",

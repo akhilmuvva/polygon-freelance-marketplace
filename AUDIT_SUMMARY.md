@@ -1,6 +1,6 @@
 # PolyLance Zenith: Security & Audit Summary
 
-**Protocol Maintenance:** [Akhil Muvva](mailto:akhilmuvva@polylance.codes) & [Jhansi Kupireddy](mailto:jhansi.kupireddy@polylance.codes)  
+**Protocol Maintenance:** [Akhil Muvva](mailto:akhilmuvva@polylance.codes) & [Balram Taddi](mailto:balramtaddi@polylance.codes)
 **Status:** **Sovereign Success (Mainnet-Anchored)**
 
 ---

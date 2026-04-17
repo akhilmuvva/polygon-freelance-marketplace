@@ -38,7 +38,7 @@ error SurplusLockedByTimelock();
 
 /**
  * @title  YieldManager
- * @author Akhil Muvva & Jhansi Kupireddy
+ * @author Akhil Muvva & Balram Taddi
  * @notice Orchestrates multi-protocol yield strategies for escrowed PolyLance funds.
  *         The "gravityFactor" constants define how accrued interest is partitioned
  *         across three sovereign destinations: Safety Module, Protocol Treasury, and

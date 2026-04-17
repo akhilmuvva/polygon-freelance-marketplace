@@ -1,6 +1,6 @@
 # PolyLance — Project Status
 
-Engineers: Akhil Muvva · Jhansi Kupireddy
+Engineers: Akhil Muvva · Balram Taddi
 Updated: 2026-04-02
 Network: Polygon Mainnet (Matic)
 Live app: https://polylance.codes

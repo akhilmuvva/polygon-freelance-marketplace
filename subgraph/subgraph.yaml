@@ -6,9 +6,9 @@ dataSources:
     name: FreelanceEscrow
     network: matic
     source:
-      address: "0x5Ff3E1223B5c37f1C18CC279dfC9C181bF22BEf9"
+      address: "0x38c76A767d45Fc390160449948aF80569E2C4217"
       abi: FreelanceEscrow
-      startBlock: 8560000
+      startBlock: 56000000
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -49,9 +49,9 @@ dataSources:
     name: FreelancerReputation
     network: matic
     source:
-      address: "0x6976ED34702D29e8605C4b57752a61FeAaC14eeF"
+      address: "0xDC57724Ea354ec925BaFfCA0cCf8A1248a8E5CF1"
       abi: FreelancerReputation
-      startBlock: 8560000
+      startBlock: 56000000
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -94,9 +94,9 @@ dataSources:
     name: SovereignRegistry
     network: matic
     source:
-      address: "0x5Ff3E1223B5c37f1C18CC279dfC9C181bF22BEf9"
+      address: "0x38c76A767d45Fc390160449948aF80569E2C4217"
       abi: SovereignRegistry
-      startBlock: 8560000
+      startBlock: 56000000
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7

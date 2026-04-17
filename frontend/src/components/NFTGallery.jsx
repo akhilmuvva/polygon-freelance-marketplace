@@ -3,7 +3,7 @@ import { useAccount, useReadContract } from 'wagmi';
 import { motion } from 'framer-motion';
 import { Award, ExternalLink, ShieldCheck, Cpu } from 'lucide-react';
 import FreelanceEscrowABI from '../contracts/FreelanceEscrow.json';
-import { CONTRACT_ADDRESS } from '../constants';
+import { CONTRACT_ADDRESS, SCANNER_URL } from '../constants';
 import { useAnimeAnimations } from '../hooks/useAnimeAnimations';
 
 const st = {
@@ -106,7 +106,7 @@ function NFTCard({ balanceIndex, owner }) {
                     Successfully completed and verified on-chain.
                 </p>
                 <button
-                    onClick={() => window.open(`https://amoy.polygonscan.com/token/${CONTRACT_ADDRESS}?a=${tokenId}`, '_blank')}
+                    onClick={() => window.open(`${SCANNER_URL}/token/${CONTRACT_ADDRESS}?a=${tokenId}`, '_blank')}
                     className="btn btn-primary"
                     style={{ width: '100%', height: 42, borderRadius: 12, fontSize: '0.8rem', justifyContent: 'center' }}
                 >

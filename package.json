@@ -4,7 +4,8 @@
     "version": "1.0.0",
     "author": "Akhil Muvva",
     "contributors": [
-        "Jhansi Kupireddy"
+        "Akhil Muvva <akhilmuvva@polylance.codes>",
+        "Balram Taddi <balramtaddi@polylance.codes>"
     ],
     "private": true,
     "scripts": {
