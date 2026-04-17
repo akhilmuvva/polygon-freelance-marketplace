@@ -9,7 +9,7 @@ import "./interfaces/IERC5192.sol";
 
 /**
  * @title FreelanceSBT
- * @author Akhil Muvva
+ * @author Akhil Muvva & Balram Taddi
  * @notice Soulbound Token (non-transferable) for freelancer reputation and ratings.
  * @dev Implements ERC-721 with non-transferability (Soulbound) and ERC-5192 locking events.
  * Tokens represent completed jobs and their associated persistent ratings.

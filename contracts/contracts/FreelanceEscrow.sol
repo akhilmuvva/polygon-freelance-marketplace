@@ -18,7 +18,7 @@ import "./PrivacyShield.sol";
 
 /**
  * @title FreelanceEscrow
- * @author Akhil Muvva
+ * @author Akhil Muvva & Balram Taddi
  * @notice Refactored for Antigravity's EVM with Zenith protocol enhancements.
  * @dev Implements a milestone-based escrow system with yield strategies, decentralized dispute resolution, 
  * and Soulbound Identity (SBT) for freelancers. Inherits from FreelanceEscrowBase and integrates 

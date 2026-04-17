@@ -5,7 +5,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 /**
  * @title PrivacyShield
- * @author Akhil Muvva
+ * @author Akhil Muvva & Balram Taddi
  * @notice A specialized contract for managing private identity commitments and reputation proofs.
  * @dev This serves as a placeholder for a full Zero-Knowledge (ZK) verification system.
  * It allows users to commit to an identity hash and for an authorized verifier (the owner)
