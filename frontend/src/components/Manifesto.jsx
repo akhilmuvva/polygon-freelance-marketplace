@@ -68,6 +68,31 @@ const Manifesto = () => {
 
 
 
+            {/* CO-FOUNDER: Jhansi */}
+            <div 
+              itemScope itemType="https://schema.org/Person"
+              style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 20, padding: 32 }}
+            >
+              <address style={{ fontStyle: 'normal' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 20 }}>
+                  <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'linear-gradient(135deg, #f472b6, #ec4899)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: '1.25rem' }}>JK</div>
+                  <div>
+                    <div itemProp="name" style={{ fontSize: '1.25rem', fontWeight: 900 }}>Jhansi Kupireddy</div>
+                    <div itemProp="jobTitle" style={{ fontSize: '0.75rem', fontWeight: 800, color: 'rgba(0,245,212,0.6)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Co-Founder</div>
+                    <meta itemProp="funder" content="PolyLance Zenith" />
+                    <meta itemProp="colleague" content="Akhil Muvva" />
+                  </div>
+                </div>
+                <p style={{ fontSize: '0.88rem', color: 'rgba(255,255,255,0.5)', lineHeight: 1.6, marginBottom: 20 }}>
+                  Community & Growth Lead. Building the bridges between Web3 talent and real-world opportunity across the PolyLance ecosystem.
+                </p>
+                <div style={{ display: 'flex', gap: 12 }}>
+                  <a href="https://github.com/jhansikupireddy-lang" itemProp="url" target="_blank" rel="noopener noreferrer" style={{ color: 'rgba(255,255,255,0.4)' }}><Github size={18} /></a>
+                  <a href="https://www.linkedin.com/in/jhansi-kupireddy-54393235a/" target="_blank" rel="noopener noreferrer" style={{ color: 'rgba(255,255,255,0.4)' }}><Linkedin size={18} /></a>
+                </div>
+              </address>
+            </div>
+
             {/* CO-FOUNDER: Balram Taddi */}
             <div 
               itemScope itemType="https://schema.org/Person"

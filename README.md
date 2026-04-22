@@ -16,7 +16,7 @@
 PolyLance is a decentralized alternative to traditional freelance platforms. It replaces centralized intermediaries and high fees with smart contract escrow and on-chain professional identity. 
 
 - **Official Website:** [https://polylance.codes](https://polylance.codes)
-- **Engineers:** [Akhil Muvva](mailto:akhilmuvva@polylance.codes) · [Balram Taddi](mailto:balramtaddi@polylance.codes)
+- **Engineers:** [Akhil Muvva](mailto:akhilmuvva@polylance.codes) · [Jhansi Kupireddy](https://www.linkedin.com/in/jhansi-kupireddy-54393235a/) · [Balram Taddi](mailto:balramtaddi@polylance.codes)
 - **Security:** [security@polylance.codes](mailto:security@polylance.codes)
 
 ---
@@ -75,4 +75,4 @@ The protocol is built on a modular stack:
 
 ---
 
-© 2026 PolyLance. Created by [Akhil Muvva](https://github.com/akhilmuvva) & [Balram Taddi](https://github.com/balramtaddi).
+© 2026 PolyLance. Created by [Akhil Muvva](https://github.com/akhilmuvva), [Jhansi Kupireddy](https://github.com/jhansikupireddy-lang) & [Balram Taddi](https://github.com/balramtaddi).
