@@ -1,56 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { useAccount, useWalletClient, useWriteContract } from 'wagmi';
 import { parseUnits } from 'viem';
 import { toast as hotToast } from 'react-hot-toast';
-import { Loader2, PlusCircle, Rocket, Shield, Clock, DollarSign, Briefcase } from 'lucide-react';
+import { 
+  Loader2, Rocket, Shield, Clock, DollarSign, Briefcase, 
+  Cpu, Zap, Plus, Hash, Terminal, Box, ChevronRight,
+  Eye, FileText, Activity
+} from 'lucide-react';
 import { SUPPORTED_TOKENS, CONTRACT_ADDRESS } from '../constants';
 import FreelanceEscrowABI from '../contracts/FreelanceEscrow.json';
 import { createJobGasless } from '../utils/biconomy';
 import StorageService from '../services/StorageService';
-
-const styles = {
-    card: {
-        background: 'rgba(255, 255, 255, 0.02)',
-        borderRadius: '24px',
-        border: '1px solid var(--border)',
-        padding: '32px',
-        position: 'relative',
-        overflow: 'hidden'
-    },
-    label: {
-        fontSize: '0.75rem',
-        fontWeight: 700,
-        textTransform: 'uppercase',
-        letterSpacing: '0.05em',
-        color: 'var(--text-tertiary)',
-        marginBottom: '10px',
-        display: 'block'
-    },
-    input: {
-        width: '100%',
-        padding: '14px 18px',
-        background: 'rgba(0,0,0,0.2)',
-        border: '1px solid var(--border)',
-        borderRadius: '12px',
-        color: 'var(--text-primary)',
-        fontSize: '0.95rem',
-        marginBottom: '20px',
-        outline: 'none',
-        transition: 'border-color 0.2s'
-    },
-    grid: {
-        display: 'grid',
-        gridTemplateColumns: '1fr 1fr',
-        gap: '20px'
-    }
-};
+import './CreateJob.css';
 
 const CreateJob = ({ onJobCreated, gasless, smartAccount: propSmartAccount }) => {
     const { address: activeAddress, isConnected } = useAccount();
     const { writeContract, isPending } = useWriteContract();
-    const { data: walletClient } = useWalletClient();
-    const [smartAccount, setSmartAccount] = useState(propSmartAccount || null);
-
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [amount, setAmount] = useState('');
@@ -58,31 +24,32 @@ const CreateJob = ({ onJobCreated, gasless, smartAccount: propSmartAccount }) =>
     const [durationDays, setDurationDays] = useState('30');
     const [freelancer, setFreelancer] = useState('');
     const [selectedToken, setSelectedToken] = useState(SUPPORTED_TOKENS[0]);
-    const [milestones, setMilestones] = useState([{ amount: '', description: '' }]);
-    const [yieldStrategy, setYieldStrategy] = useState(0); // 0 = Aave, 1 = Compound, etc
+    const [milestones, setMilestones] = useState([{ amount: '', description: 'Initial Milestone' }]);
     const [isProcessingGasless, setIsProcessingGasless] = useState(false);
 
     const addMilestone = () => setMilestones([...milestones, { amount: '', description: '' }]);
+    const updateMilestone = (index, field, value) => {
+        const newMilestones = [...milestones];
+        newMilestones[index][field] = value;
+        setMilestones(newMilestones);
+    };
 
     const handleCreateJob = async () => {
         if (!isConnected) {
-            hotToast.error('Please connect your sovereign identity first.');
+            hotToast.error('Identity required. Connect wallet to proceed.');
             return;
         }
 
-        // Safety Verification: Ensure the actor has defined the economic parameters.
         if (!amount || !title) {
-            hotToast.error('Incomplete Intent: Title and Budget required.');
+            hotToast.error('Critical parameters missing: Title and Budget required.');
             return;
         }
 
         setIsProcessingGasless(true); 
 
         try {
-            const rawAmount = parseUnits(amount, selectedToken.decimals);
-            let ipfshash = ''; // Changed ipfsHash to ipfshash
-
-            // Pack job details
+            const rawAmount = parseUnits(amount || "0", selectedToken.decimals);
+            
             const metadata = {
                 title,
                 description,
@@ -100,7 +67,6 @@ const CreateJob = ({ onJobCreated, gasless, smartAccount: propSmartAccount }) =>
             };
 
             const { cid } = await StorageService.uploadMetadata(metadata);
-            ipfshash = cid; 
             
             const resolvedFreelancer = (freelancer && freelancer.startsWith('0x') && freelancer.length === 42)
                 ? freelancer
@@ -110,47 +76,28 @@ const CreateJob = ({ onJobCreated, gasless, smartAccount: propSmartAccount }) =>
             const resolvedCategoryId = categoryMap[category] || 1n;
             const deadline = Math.floor(Date.now() / 1000) + (Number(durationDays) * 86400);
 
-            // Directive 14: Optimistic Intent Anchoring
-            const optimisticJob = {
-                id: `PENDING-${Date.now()}`,
-                jobId: `PENDING-${Math.random().toString(36).substring(7).toUpperCase()}`,
-                title,
-                category,
-                client: activeAddress, 
-                freelancer: resolvedFreelancer,
-                amount: rawAmount.toString(),
-                token: selectedToken.symbol,
-                status: '0', 
-                deadline: deadline.toString(),
-                ipfsHash: ipfshash, 
-                isOptimistic: true,
-                createdAt: Math.floor(Date.now() / 1000).toString()
-            };
-
-            const existingIntents = JSON.parse(localStorage.getItem('zenith_pending_jobs') || '[]');
-            localStorage.setItem('zenith_pending_jobs', JSON.stringify([optimisticJob, ...existingIntents]));
-            
-            hotToast.success('Data Anchored: Intent Broadcasted', { id: 'job-creation-success' });
-
             const params = {
                 categoryId: resolvedCategoryId,
                 freelancer: resolvedFreelancer,
                 token: selectedToken.address,
                 amount: rawAmount,
-                ipfsHash: ipfshash, 
+                ipfsHash: cid, 
                 deadline: BigInt(deadline),
                 mAmounts: milestones.filter(m => m.amount).map(m => parseUnits(m.amount, selectedToken.decimals)),
                 mHashes: milestones.filter(m => m.amount).map(m => m.description || ""),
                 mIsUpfront: milestones.filter(m => m.amount).map(() => false),
-                yieldStrategy: BigInt(yieldStrategy),
+                yieldStrategy: 0n,
                 paymentToken: selectedToken.address,
                 paymentAmount: rawAmount,
                 minAmountOut: 0n
             };
 
-            if (gasless && smartAccount) {
-                const res = await createJobGasless(smartAccount, CONTRACT_ADDRESS, FreelanceEscrowABI.abi, params);
-                if (res) onJobCreated?.();
+            if (gasless && propSmartAccount) {
+                const res = await createJobGasless(propSmartAccount, CONTRACT_ADDRESS, FreelanceEscrowABI.abi, params);
+                if (res) {
+                    hotToast.success('Protocol Initialized Gaslessly');
+                    onJobCreated?.();
+                }
                 return;
             }
 
@@ -162,122 +109,226 @@ const CreateJob = ({ onJobCreated, gasless, smartAccount: propSmartAccount }) =>
                 gas: 1000000n,
                 value: selectedToken.address === '0x0000000000000000000000000000000000000000' ? rawAmount : 0n
             });
+            
+            hotToast.success('Broadcast sequence initiated.');
         } catch (err) {
             console.error('[GRAVITY] Actuation failure:', err);
-            hotToast.error("Actuation sequence failed."); // Changed error message
+            hotToast.error("Actuation sequence failed.");
         } finally {
             setIsProcessingGasless(false);
         }
     };
 
+    const containerVariants = {
+        hidden: { opacity: 0 },
+        visible: { 
+            opacity: 1, 
+            transition: { staggerChildren: 0.1 }
+        }
+    };
+
+    const itemVariants = {
+        hidden: { opacity: 0, y: 20 },
+        visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] } }
+    };
+
     return (
-        <div style={styles.card}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 32 }}>
-                <PlusCircle color="var(--accent)" size={28} />
-                <h2 style={{ fontSize: '1.75rem', fontWeight: 900, letterSpacing: '-0.02em' }}>Initialize Contract</h2>
-            </div>
+        <motion.div 
+            className="mission-control-container"
+            initial="hidden"
+            animate="visible"
+            variants={containerVariants}
+        >
+            <div className="mission-grid">
+                {/* --- Left Column: Configuration --- */}
+                <div className="config-pane">
+                    <motion.header className="pane-header" variants={itemVariants}>
+                        <div className="status-orb pulse"></div>
+                        <h2 className="pane-title">Initiate Mission</h2>
+                        <p className="pane-subtitle">Configure sovereign work protocol parameters.</p>
+                    </motion.header>
 
-            <div style={styles.grid}>
-                <div>
-                    <label style={styles.label}>Contract Title</label>
-                    <input 
-                        style={styles.input} 
-                        placeholder="e.g. Zenith Interface Development" 
-                        value={title}
-                        onChange={(e) => setTitle(e.target.value)}
-                    />
-                </div>
-                <div>
-                    <label style={styles.label}>Category</label>
-                    <select 
-                        style={styles.input} 
-                        value={category}
-                        onChange={(e) => setCategory(e.target.value)}
-                    >
-                        <option>Development</option>
-                        <option>Design</option>
-                        <option>Marketing</option>
-                        <option>Writing</option>
-                    </select>
-                </div>
-            </div>
+                    <div className="config-form">
+                        <motion.div className="input-row" variants={itemVariants}>
+                            <div className="input-group full">
+                                <label><Hash size={14} /> Mission Identifier</label>
+                                <input 
+                                    placeholder="e.g. Protocol Interface Overhaul" 
+                                    value={title}
+                                    onChange={(e) => setTitle(e.target.value)}
+                                />
+                            </div>
+                        </motion.div>
 
-            <label style={styles.label}>Description & Requirements</label>
-            <textarea 
-                style={{ ...styles.input, height: '120px', resize: 'none' }} 
-                placeholder="Detail the weightless deliverables..."
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-            />
+                        <motion.div className="input-row" variants={itemVariants}>
+                            <div className="input-group">
+                                <label><Cpu size={14} /> Domain</label>
+                                <select value={category} onChange={(e) => setCategory(e.target.value)}>
+                                    <option>Development</option>
+                                    <option>Design</option>
+                                    <option>Marketing</option>
+                                    <option>Writing</option>
+                                </select>
+                            </div>
+                            <div className="input-group">
+                                <label><Clock size={14} /> Duration (Days)</label>
+                                <input 
+                                    type="number" 
+                                    value={durationDays}
+                                    onChange={(e) => setDurationDays(e.target.value)}
+                                />
+                            </div>
+                        </motion.div>
 
-            <div style={styles.grid}>
-                <div>
-                    <label style={styles.label}>Budget Amount</label>
-                    <div style={{ position: 'relative' }}>
-                        <DollarSign 
-                            size={16} 
-                            style={{ position: 'absolute', left: 14, top: 16, color: 'var(--text-tertiary)' }} 
-                        />
-                        <input 
-                            style={{ ...styles.input, paddingLeft: 38 }} 
-                            placeholder="0.00"
-                            value={amount}
-                            onChange={(e) => setAmount(e.target.value)}
-                        />
+                        <motion.div className="input-group full" variants={itemVariants}>
+                            <label><FileText size={14} /> Mission Parameters</label>
+                            <textarea 
+                                placeholder="Outline objectives and success criteria..."
+                                value={description}
+                                onChange={(e) => setDescription(e.target.value)}
+                            />
+                        </motion.div>
+
+                        <motion.div className="input-row" variants={itemVariants}>
+                            <div className="input-group">
+                                <label><DollarSign size={14} /> Economic Weight</label>
+                                <input 
+                                    placeholder="0.00" 
+                                    value={amount}
+                                    onChange={(e) => setAmount(e.target.value)}
+                                />
+                            </div>
+                            <div className="input-group">
+                                <label><Box size={14} /> Asset Type</label>
+                                <select 
+                                    value={selectedToken.symbol}
+                                    onChange={(e) => setSelectedToken(SUPPORTED_TOKENS.find(t => t.symbol === e.target.value))}
+                                >
+                                    {SUPPORTED_TOKENS.map(t => <option key={t.symbol}>{t.symbol}</option>)}
+                                </select>
+                            </div>
+                        </motion.div>
+
+                        <motion.div className="input-group full" variants={itemVariants}>
+                            <label><Shield size={14} /> Designated Specialist (Optional)</label>
+                            <input 
+                                placeholder="0x... (Leave empty for open marketplace)" 
+                                value={freelancer}
+                                onChange={(e) => setFreelancer(e.target.value)}
+                            />
+                        </motion.div>
+
+                        <motion.div className="milestone-section" variants={itemVariants}>
+                            <div className="section-header">
+                                <label><Activity size={14} /> Settlement Milestones</label>
+                                <button className="add-milestone-btn" onClick={addMilestone}>
+                                    <Plus size={14} /> Add
+                                </button>
+                            </div>
+                            {milestones.map((m, idx) => (
+                                <div key={idx} className="milestone-row">
+                                    <input 
+                                        className="m-desc" 
+                                        placeholder="Deliverable..." 
+                                        value={m.description}
+                                        onChange={(e) => updateMilestone(idx, 'description', e.target.value)}
+                                    />
+                                    <input 
+                                        className="m-amt" 
+                                        placeholder="Amt" 
+                                        value={m.amount}
+                                        onChange={(e) => updateMilestone(idx, 'amount', e.target.value)}
+                                    />
+                                </div>
+                            ))}
+                        </motion.div>
+
+                        <motion.button 
+                            className="btn-initiate"
+                            variants={itemVariants}
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                            onClick={handleCreateJob}
+                            disabled={isPending || isProcessingGasless}
+                        >
+                            {isPending || isProcessingGasless ? (
+                                <Loader2 className="animate-spin" />
+                            ) : (
+                                <>
+                                    <Rocket size={18} />
+                                    <span>Deploy Protocol</span>
+                                </>
+                            )}
+                        </motion.button>
                     </div>
                 </div>
-                <div>
-                    <label style={styles.label}>Payment Token</label>
-                    <select 
-                        style={styles.input}
-                        value={selectedToken.symbol}
-                        onChange={(e) => setSelectedToken(SUPPORTED_TOKENS.find(t => t.symbol === e.target.value))}
-                    >
-                        {SUPPORTED_TOKENS.map(t => <option key={t.symbol}>{t.symbol}</option>)}
-                    </select>
-                </div>
-            </div>
 
-            <div style={styles.grid}>
-                <div>
-                    <label style={styles.label}>Freelancer Address (Optional)</label>
-                    <input 
-                        style={styles.input} 
-                        placeholder="0x..." 
-                        value={freelancer}
-                        onChange={(e) => setFreelancer(e.target.value)}
-                    />
-                </div>
-                <div>
-                    <label style={styles.label}>Duration (Days)</label>
-                    <input 
-                        style={styles.input} 
-                        type="number"
-                        value={durationDays}
-                        onChange={(e) => setDurationDays(e.target.value)}
-                    />
-                </div>
-            </div>
+                {/* --- Right Column: Preview --- */}
+                <div className="preview-pane">
+                    <motion.div className="browser-frame" variants={itemVariants}>
+                        <div className="browser-header">
+                            <div className="dot red"></div>
+                            <div className="dot yellow"></div>
+                            <div className="dot green"></div>
+                            <div className="browser-address">polylance.zenith/protocol/preview</div>
+                        </div>
+                        <div className="browser-content">
+                            <div className="preview-hero">
+                                <span className="preview-category">{category}</span>
+                                <h1 className="preview-title">{title || "Untitled Mission"}</h1>
+                                <div className="preview-budget">
+                                    {amount || "0"} {selectedToken.symbol}
+                                </div>
+                            </div>
+                            
+                            <div className="preview-details">
+                                <div className="preview-card">
+                                    <label>Specialist</label>
+                                    <div className="value truncate">{freelancer || "Open Access"}</div>
+                                </div>
+                                <div className="preview-card">
+                                    <label>Timeline</label>
+                                    <div className="value">{durationDays} Days</div>
+                                </div>
+                            </div>
 
-            <div style={{ marginTop: 20 }}>
-                <button 
-                    disabled={isPending || isProcessingGasless}
-                    onClick={handleCreateJob}
-                    className="btn btn-primary" 
-                    style={{ width: '100%', padding: '16px', borderRadius: '14px', fontSize: '1rem' }}
-                >
-                    {isPending || isProcessingGasless ? (
-                        <Loader2 className="animate-spin" />
-                    ) : (
-                        <>
-                            <Rocket size={18} style={{ marginRight: 8 }} />
-                            Actuate Contract
-                        </>
-                    )}
-                </button>
+                            <div className="preview-milestones">
+                                <label>Protocol Settlement Layers</label>
+                                {milestones.map((m, i) => (
+                                    <div key={i} className="preview-m-item">
+                                        <div className="m-idx">{i + 1}</div>
+                                        <div className="m-info">
+                                            <div className="m-label">{m.description || "Deliverable"}</div>
+                                            <div className="m-val">{m.amount || "0"} {selectedToken.symbol}</div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            <div className="preview-terminal">
+                                <div className="term-line">&gt; INITIALIZING ACTUATION SEQUENCE...</div>
+                                <div className="term-line">&gt; NETWORK: POLYGON AMOY</div>
+                                <div className="term-line">&gt; IPFS METADATA: READY</div>
+                                <div className="term-line anim">&gt; AWAITING SIGNATURE...</div>
+                            </div>
+                        </div>
+                    </motion.div>
+
+                    <motion.div className="preview-telemetry" variants={itemVariants}>
+                        <div className="telemetry-item">
+                            <span className="tel-label">Network Fee</span>
+                            <span className="tel-val">{gasless ? '0.00 MATIC' : 'Estimate...'}</span>
+                        </div>
+                        <div className="telemetry-item">
+                            <span className="tel-label">Security Protocol</span>
+                            <span className="tel-val">UUPS Proxy v2</span>
+                        </div>
+                    </motion.div>
+                </div>
             </div>
-        </div>
+        </motion.div>
     );
 };
 
 export default CreateJob;
+

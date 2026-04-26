@@ -1,40 +1,25 @@
 # Security Policy
 
-## Supported Versions
+## 🛡️ Responsible Disclosure
+We take the security of PolyLance seriously. If you discover a vulnerability, please report it to us responsibly.
 
-Only the latest version of PolyLance is supported for security updates.
+**DO NOT open a public GitHub issue for security vulnerabilities.**
 
-| Version | Supported          |
-| ------- | ------------------ |
-| 1.0.x   | :white_check_mark: |
-| < 1.0   | :x:                |
+### Reporting a Vulnerability
+Please email [security@polylance.codes](mailto:security@polylance.codes) with the following details:
+1. **Description:** Clear summary of the vulnerability.
+2. **Impact:** What is the potential risk (e.g., fund theft, DoS).
+3. **PoC:** Steps to reproduce or a sample exploit script.
 
-## Reporting a Vulnerability
+### Audit Infrastructure
+Detailed information about our security posture and previous audit findings can be found here:
+- [Audit Summary](docs/security/AUDIT_SUMMARY.md)
+- [Static Analysis Reports](docs/security/slither-report.md)
 
-We take the security of PolyLance seriously. If you believe you have found a security vulnerability, please report it to us responsibly.
+---
 
-**Do not open a public GitHub issue for security vulnerabilities.**
-
-Instead, please send an email to [security@polylance.codes](mailto:security@polylance.codes) with a detailed description of the vulnerability, steps to reproduce, and a Proof of Concept (PoC) if possible.
-
-### What to expect
-
-- We will acknowledge receipt of your report within 48 hours.
-- We will provide an estimated timeline for a fix.
-- We will keep you updated on our progress.
-- Once the vulnerability is fixed, we will coordinate a public disclosure.
-
-### Scope
-
-The scope of this policy includes:
-- All smart contracts in the `contracts` directory.
-- The frontend application in the `frontend` directory (Sovereign P2P Stack).
-
-### Out of Scope
-
-- Third-party dependencies (unless the vulnerability is caused by our misconfiguration).
-- Problems with the Polygon network itself.
-- Social engineering or phishing attacks.
-
-Thank you for helping keep PolyLance secure!
-- **Security Leads:** Akhil Muvva & Balram Taddi
+## 🛠️ Security Architecture
+PolyLance follows best practices for smart contract security:
+- **Checks-Effects-Interactions:** Enforced on all fund-moving functions.
+- **Pull-over-Push Payments:** Users withdraw funds; the protocol does not push.
+- **Role-Based Access Control:** Granular permissions via OpenZeppelin `AccessControl`.

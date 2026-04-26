@@ -1,0 +1,335 @@
+/* JobsList.css - Zenith Marketplace Aesthetics */
+
+.jobs-container {
+    position: relative;
+    padding: 80px 0;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* Header Section */
+.jobs-header {
+    margin-bottom: 80px;
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+    position: relative;
+}
+
+@media (min-width: 768px) {
+    .jobs-header {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: flex-end;
+    }
+}
+
+.jobs-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: clamp(3.5rem, 8vw, 6rem);
+    font-weight: 800;
+    letter-spacing: -0.06em;
+    line-height: 0.85;
+    margin: 0;
+    color: #fff;
+}
+
+.jobs-subtitle {
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 1.25rem;
+    max-width: 600px;
+    margin-top: 24px;
+    line-height: 1.4;
+    font-family: 'Inter', sans-serif;
+}
+
+.jobs-actions {
+    display: flex;
+    gap: 16px;
+}
+
+/* Filter Bar - Premium Bento Style */
+.filter-bar {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+    padding: 16px;
+    background: rgba(5, 5, 5, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 24px;
+    backdrop-filter: blur(40px);
+    -webkit-backdrop-filter: blur(40px);
+    margin-bottom: 80px;
+    position: sticky;
+    top: 100px;
+    z-index: 100;
+    box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5);
+}
+
+@media (min-width: 1024px) {
+    .filter-bar {
+        grid-template-columns: 2fr 1.2fr 1.2fr 1.2fr;
+    }
+}
+
+.filter-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.filter-icon {
+    position: absolute;
+    left: 20px;
+    color: rgba(255, 255, 255, 0.3);
+    pointer-events: none;
+    z-index: 2;
+}
+
+.filter-input, .filter-select {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 16px;
+    padding: 14px 16px 14px 52px;
+    color: #fff;
+    font-size: 0.9rem;
+    outline: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+}
+
+.filter-input:focus, .filter-select:focus {
+    border-color: #8b5cf6;
+    background: rgba(139, 92, 246, 0.05);
+    box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.1);
+}
+
+.filter-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 16px;
+    height: 100%;
+}
+
+.toggle-label {
+    font-size: 0.65rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: rgba(255, 255, 255, 0.3);
+}
+
+/* Job Grid */
+.job-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 32px;
+}
+
+@media (min-width: 1024px) {
+    .job-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* Job Card - Sovereign Mesh Aesthetic */
+.job-card {
+    position: relative;
+    background: #080808;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 32px;
+    padding: 48px;
+    display: flex;
+    flex-direction: column;
+    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    overflow: hidden;
+    height: 100%;
+}
+
+.job-card:hover {
+    border-color: rgba(139, 92, 246, 0.4);
+    background: #0a0a0a;
+    transform: translateY(-8px) scale(1.01);
+    box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.5);
+}
+
+.job-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(800px circle at var(--mouse-x) var(--mouse-y), rgba(139, 92, 246, 0.06), transparent 40%);
+    z-index: 0;
+    opacity: 0;
+    transition: opacity 0.5s;
+}
+
+.job-card:hover::before {
+    opacity: 1;
+}
+
+.card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 32px;
+    position: relative;
+    z-index: 2;
+}
+
+.status-badge {
+    padding: 8px 16px;
+    border-radius: 12px;
+    font-size: 0.65rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    border: 1px solid currentColor;
+}
+
+.budget-wrap {
+    text-align: right;
+}
+
+.budget-amount {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: #fff;
+    display: block;
+    line-height: 1;
+    letter-spacing: -0.04em;
+}
+
+.budget-symbol {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.3);
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    margin-top: 4px;
+    display: block;
+}
+
+.card-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 16px;
+    color: #fff;
+    line-height: 1;
+    letter-spacing: -0.03em;
+    position: relative;
+    z-index: 2;
+}
+
+.job-card:hover .card-title {
+    color: #8b5cf6;
+}
+
+.card-desc {
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 1.05rem;
+    line-height: 1.6;
+    margin-bottom: 40px;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    position: relative;
+    z-index: 2;
+}
+
+.card-meta {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    margin-bottom: 40px;
+    padding-top: 32px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    position: relative;
+    z-index: 2;
+}
+
+.meta-item {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.meta-label {
+    font-size: 0.6rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: rgba(255, 255, 255, 0.2);
+}
+
+.meta-value {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.card-footer {
+    margin-top: auto;
+    display: flex;
+    gap: 16px;
+    position: relative;
+    z-index: 2;
+}
+
+.btn-sm {
+    padding: 12px 20px;
+    font-size: 0.8rem;
+    border-radius: 14px;
+}
+
+.shimmer-text {
+  background: linear-gradient(90deg, #fff 0%, #8b5cf6 50%, #fff 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shimmer-text-anim 4s linear infinite;
+}
+
+@keyframes shimmer-text-anim {
+  to { background-position: 200% center; }
+}
+
+/* Empty State */
+.empty-missions-state {
+    padding: 100px;
+    text-align: center;
+    background: rgba(255, 255, 255, 0.01);
+    border: 1px dashed rgba(255, 255, 255, 0.1);
+    border-radius: 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
+
+.empty-missions-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 2rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.3);
+}
+
+.empty-missions-desc {
+    color: rgba(255, 255, 255, 0.15);
+    max-width: 320px;
+    line-height: 1.5;
+}
+

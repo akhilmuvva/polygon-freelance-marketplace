@@ -2,13 +2,14 @@
 
 import React, { useState, Suspense, lazy, useEffect, useRef, useContext } from 'react';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
-import {
-  Briefcase, PlusCircle, LayoutDashboard, MessageSquare,
-  Trophy, Gavel, Activity, Globe, BarChart3, Menu, X,
-  Award, Zap, CreditCard, Shield, ShieldCheck, Mail, User,
-  LogOut, Cpu, Ticket, ChevronDown, Loader2, Flame, Brain, Landmark, ShoppingBag
+import { motion, AnimatePresence } from 'framer-motion';
+import CommandPalette from './components/CommandPalette';
+import { 
+  Home, Briefcase, User, Trophy, Layout, Shield, Search, Terminal, Zap, 
+  Menu, X, Bell, LogOut, ChevronRight, Fuel, Globe, Cpu, CreditCard, PieChart,
+  LayoutDashboard, Flame, PlusCircle, Gavel, Brain, Landmark, BarChart3,
+  Activity, MessageSquare, ShieldCheck, Mail
 } from 'lucide-react';
-import { AnimatePresence, motion } from 'framer-motion';
 import { useAnimeAnimations } from './hooks/useAnimeAnimations';
 import { AuthContext } from './Web3Provider';
 
@@ -52,49 +53,59 @@ import { createWalletClient, custom } from 'viem';
 import { polygon } from 'viem/chains';
 import { ZENITH_JUDGES } from './constants';
 
-/* ── Inline styles for the shell — 8PM AUTHENTIC ── */
 const styles = {
   shell: {
-    display: 'flex', minHeight: '100vh', width: '100%',
-    background: 'var(--bg-base)',
+    display: 'flex', minHeight: '100vh', background: '#010204', color: '#fff',
+    fontFamily: "'Inter', system-ui, sans-serif", overflowX: 'hidden',
   },
-  sidebar: (open) => ({
-    width: 260, height: '100vh', position: 'fixed', left: 0, top: 0,
-    background: 'var(--bg-sidebar)', borderRight: '1px solid var(--border)',
-    display: 'flex', flexDirection: 'column', zIndex: 3000,
-    overflowY: 'auto', overflowX: 'hidden',
-    transition: 'transform 0.25s ease',
+  sidebar: (isOpen) => ({
+    width: 260, background: 'rgba(5,6,8,0.8)', borderRight: '1px solid var(--border)',
+    display: 'flex', flexDirection: 'column', height: '100vh', position: 'fixed',
+    left: 0, top: 0, zIndex: 1000, transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+    transform: isOpen ? 'translateX(0)' : 'translateX(-100%)',
+    backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
   }),
+  sidebarHeader: {
+    padding: '24px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+  },
   sidebarLogo: {
-    padding: '20px 18px 16px', borderBottom: '1px solid var(--border)',
-    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+    display: 'flex', alignItems: 'center', gap: 12, textDecoration: 'none', color: '#fff',
+  },
+  logoIcon: {
+    width: 32, height: 32, borderRadius: 8,
+    background: 'linear-gradient(135deg, var(--accent), var(--secondary))',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    boxShadow: '0 0 20px var(--accent-glow)',
   },
   logoText: {
-    fontSize: '1.25rem', fontWeight: 900, letterSpacing: '-0.04em', color: '#fff',
-    textTransform: 'uppercase'
+    fontSize: '1.1rem', fontWeight: 900, letterSpacing: '-0.03em',
+    background: 'linear-gradient(to right, #fff, rgba(255,255,255,0.5))',
+    WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
   },
-  logoAccent: { color: '#00f5d4', textShadow: '0 0 20px rgba(0,245,212,0.4)' },
   logoSub: {
-    fontSize: '0.55rem', fontWeight: 700, textTransform: 'uppercase',
-    letterSpacing: '0.12em', color: 'var(--text-tertiary)', marginTop: 1,
+    fontSize: '0.6rem', fontWeight: 800, textTransform: 'uppercase',
+    letterSpacing: '0.2em', color: 'var(--accent)', marginTop: -2,
   },
   closeBtn: {
-    display: 'none', background: 'none', border: 'none',
-    color: 'var(--text-secondary)', cursor: 'pointer', padding: 4,
+    display: 'none', background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)',
+    cursor: 'pointer',
   },
-  sidebarNav: { flex: 1, padding: '12px 10px', overflowY: 'auto', display: 'flex', flexDirection: 'column' },
+  sidebarNav: {
+    flex: 1, padding: '10px 14px', overflowY: 'auto',
+  },
   sectionLabel: {
-    padding: '6px 14px', fontSize: '0.6rem', fontWeight: 700,
-    textTransform: 'uppercase', letterSpacing: '0.1em',
-    color: 'var(--text-tertiary)', opacity: 0.6, marginTop: 12, marginBottom: 4,
+    fontSize: '0.6rem', fontWeight: 800, textTransform: 'uppercase',
+    letterSpacing: '0.15em', color: 'rgba(255,255,255,0.25)',
+    margin: '24px 14px 12px',
+  },
+  logoAccent: {
+    color: 'var(--accent)', fontWeight: 900,
   },
   navItem: (active) => ({
-    display: 'flex', alignItems: 'center', gap: 12, width: '100%',
-    padding: '12px 18px', borderRadius: 12, border: '1px solid transparent',
-    background: active ? 'rgba(0, 245, 212, 0.04)' : 'transparent',
-    borderColor: active ? 'rgba(0, 245, 212, 0.15)' : 'transparent',
-    color: active ? '#00f5d4' : 'rgba(255,255,255,0.4)',
-    fontSize: '0.88rem', fontWeight: active ? 800 : 700,
+    display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px',
+    borderRadius: 10, background: active ? 'rgba(0,245,212,0.06)' : 'transparent',
+    color: active ? '#fff' : 'rgba(255,255,255,0.4)',
+    fontSize: '0.82rem', fontWeight: 600, border: 'none',
     cursor: 'pointer', transition: 'all 0.2s ease',
     textAlign: 'left', marginBottom: 4,
   }),
@@ -278,6 +289,7 @@ function App() {
   const [isHydrated, setIsHydrated] = useState(false);
   const [activeTab, setActiveTab] = useState('dashboard');
   const [activeTabParams, setActiveTabParams] = useState({});
+  const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
 
   useEffect(() => {
     setIsHydrated(true);
@@ -536,8 +548,14 @@ function App() {
           <NotificationManager />
           {isSidebarOpen && <div className="sidebar-overlay" style={styles.overlay} onClick={() => setIsSidebarOpen(false)} />}
           <aside ref={sidebarRef} className={`app-sidebar ${isSidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`} style={styles.sidebar(isSidebarOpen)}>
-            <div style={styles.sidebarLogo}>
-              <div style={styles.logoText}>POLY<span style={styles.logoAccent}>LANCE</span></div>
+            <div style={styles.sidebarHeader}>
+              <div style={styles.sidebarLogo}>
+                <div style={styles.logoIcon}><Zap size={18} fill="currentColor" /></div>
+                <div>
+                  <div style={styles.logoText}>POLY<span style={styles.logoAccent}>LANCE</span></div>
+                  <div style={styles.logoSub}>Zenith Protocol</div>
+                </div>
+              </div>
               <button className="close-toggle" style={styles.closeBtn} onClick={() => setIsSidebarOpen(false)}><X size={20} /></button>
             </div>
             <nav style={styles.sidebarNav} className="custom-scrollbar">

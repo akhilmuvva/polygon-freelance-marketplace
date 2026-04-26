@@ -1,12 +1,17 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Client } from '@xmtp/browser-sdk';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'motion/react';
 import { useAccount, useWalletClient } from 'wagmi';
-import { MessageSquare, Send, User, Loader2, FileText, DollarSign, Clock, CheckCircle2, PlusCircle, Video, Gavel } from 'lucide-react';
+import { 
+    MessageSquare, Send, User, Loader2, FileText, 
+    DollarSign, Clock, CheckCircle2, PlusCircle, 
+    Video, Gavel, ShieldCheck, Zap, Activity,
+    Globe, Lock, Shield
+} from 'lucide-react';
 import UserLink from './UserLink';
-import { hexToBytes } from 'viem';
 import { useArbitration } from '../hooks/useArbitration';
 import messagingService from '../services/MessagingService';
+import './Chat.css';
 
 export default function Chat({ initialPeerAddress }) {
     const { address } = useAccount();
@@ -30,7 +35,6 @@ export default function Chat({ initialPeerAddress }) {
 
     useEffect(() => {
         if (client) {
-            // XMTP V3: sync conversations first before listing
             client.conversations.sync()
                 .then(() => client.conversations.list())
                 .then(setConversations)
@@ -107,139 +111,187 @@ export default function Chat({ initialPeerAddress }) {
         return () => { isCancelled = true; };
     }, [client]);
 
-    // Show secure context warning on HTTP (non-localhost)
     const isLocal = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
     const needsHttps = typeof window !== 'undefined' && !window.isSecureContext && !isLocal;
 
     if (!client) {
         return (
-            <div style={{
-                textAlign: 'center', padding: '80px 20px', maxWidth: 520, margin: '0 auto',
-                borderRadius: 16, background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border)',
-            }}>
-                <div style={{
-                    width: 72, height: 72, borderRadius: 20,
-                    background: 'rgba(124,92,252,0.08)', border: '1px solid rgba(124,92,252,0.15)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    margin: '0 auto 28px',
-                }}>
-                    <MessageSquare size={32} style={{ color: 'var(--accent-light)' }} />
-                </div>
-                <h3 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: 12 }}>Enable Decentralized Messaging</h3>
-                <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', maxWidth: 400, margin: '0 auto 32px', lineHeight: 1.6 }}>
-                    PolyLance uses XMTP V3 for secure, end-to-end encrypted messaging between partners.
-                </p>
-                {needsHttps && (
-                    <div style={{ padding: '12px 16px', borderRadius: 10, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', marginBottom: 20, fontSize: '0.82rem', color: '#f87171' }}>
-                        ⚠️ XMTP requires a secure connection. Please access the app over <strong>https://</strong>.
+            <motion.div 
+                className="zenith-onboarding-container"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+            >
+                <div className="onboarding-orb-bg" />
+                
+                <motion.div 
+                    className="onboarding-card"
+                    initial={{ opacity: 0, y: 40 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ type: 'spring', damping: 20 }}
+                >
+                    <div className="onboarding-header">
+                        <div className="resonance-icon-wrapper">
+                            <Activity size={32} className="pulse-icon" />
+                        </div>
+                        <h2 className="onboarding-title">Sovereign Resonance</h2>
+                        <p className="onboarding-pitch">
+                            Establish a cryptographically secure frequency. All transmissions are end-to-end encrypted via XMTP V3, ensuring your collaboration remains sovereign and private.
+                        </p>
                     </div>
-                )}
-                <button onClick={handleInitialize} className="btn btn-primary"
-                    disabled={isInitializing || !walletClient || needsHttps}
-                    style={{ padding: '14px 36px', borderRadius: 12, fontSize: '0.95rem' }}>
-                    {isInitializing
-                        ? <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                            <Loader2 size={16} className="animate-spin" /> 
-                            <span>Establishing Sovereign Resonance...</span>
-                          </div>
-                        : walletClient ? 'Initialize Secure Channel' : 'Connect Wallet First'
-                    }
-                </button>
-                {!walletClient && (
-                    <p style={{ color: 'var(--warning)', marginTop: 20, fontWeight: 700, fontSize: '0.82rem' }}>
-                        Please connect your wallet in the dashboard to enable messaging.
-                    </p>
-                )}
-                {error && <p style={{ color: 'var(--danger)', marginTop: 20, fontSize: '0.82rem' }}>{error.message}</p>}
-            </div>
+
+                    <div className="onboarding-features">
+                        <div className="feature-pill">
+                            <Lock size={14} /> <span>E2E ENCRYPTED</span>
+                        </div>
+                        <div className="feature-pill">
+                            <Shield size={14} /> <span>P2P NETWORK</span>
+                        </div>
+                        <div className="feature-pill">
+                            <Globe size={14} /> <span>CROSS-CHAIN ID</span>
+                        </div>
+                    </div>
+
+                    {needsHttps && (
+                        <div className="security-alert">
+                            <Zap size={16} />
+                            <span>XMTP requires a secure context (HTTPS). Localhost is exempt.</span>
+                        </div>
+                    )}
+
+                    <button 
+                        onClick={handleInitialize} 
+                        className="btn-initiate-resonance"
+                        disabled={isInitializing || !walletClient || needsHttps}
+                    >
+                        {isInitializing ? (
+                            <>
+                                <Loader2 size={18} className="animate-spin" />
+                                <span>SYNCING FREQUENCY...</span>
+                            </>
+                        ) : (
+                            <>
+                                <Activity size={18} />
+                                <span>{walletClient ? 'INITIALIZE SECURE CHANNEL' : 'CONNECT WALLET TO SYNC'}</span>
+                            </>
+                        )}
+                    </button>
+
+                    {!walletClient && (
+                        <p className="wallet-hint">Connect your digital identity to begin resonance.</p>
+                    )}
+                    
+                    {error && (
+                        <motion.p 
+                            className="error-log"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                        >
+                            [ERROR]: {error.message}
+                        </motion.p>
+                    )}
+                </motion.div>
+            </motion.div>
         );
     }
 
     return (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 3fr', gap: 20, height: '75vh' }}>
-            {/* Conversations sidebar */}
-            <div style={{
-                display: 'flex', flexDirection: 'column', gap: 16, padding: 20,
-                borderRadius: 16, background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border)',
-                overflow: 'hidden',
-            }}>
-                <h3 style={{ fontSize: '1.1rem', fontWeight: 700 }}>Conversations</h3>
-                <form style={{ display: 'flex', gap: 8 }}
+        <div className="zenith-chat-container">
+            {/* Sidebar */}
+            <motion.div 
+                className="chat-sidebar-sovereign"
+                initial={{ opacity: 0, x: -30 }}
+                animate={{ opacity: 1, x: 0 }}
+            >
+                <div className="sidebar-header">
+                    <h3 className="sidebar-title">Frequencies</h3>
+                    <div className="active-dot-indicator">
+                        <span className="dot pulse" />
+                        <span className="dot-label">XMTP ACTIVE</span>
+                    </div>
+                </div>
+
+                <form className="resonance-connect-form"
                     onSubmit={async (e) => {
                         e.preventDefault();
                         if (peerAddress && client) {
                             try {
-                                // V3: check if address can receive XMTP messages
                                 const canMsg = await Client.canMessage(
                                     [{ identifier: peerAddress.toLowerCase(), identifierKind: 'Ethereum' }],
                                     { env: 'production' }
                                 );
                                 const canReceive = canMsg.get(peerAddress.toLowerCase());
                                 if (!canReceive) {
-                                    alert('This address has not activated XMTP. They need to initialize messaging first.');
+                                    alert('Address not active on XMTP network.');
                                     return;
                                 }
-                                // V3: use newDm instead of newConversation
                                 const conversation = await client.conversations.newDm(peerAddress);
                                 setSelectedConversation(conversation);
                                 setPeerAddress('');
-                            } catch (err) { alert('Error starting conversation: ' + err.message); }
+                            } catch (err) { alert('Error starting resonance: ' + err.message); }
                         }
                     }}>
-                    <label htmlFor="peer-address-input" style={{ display: 'none' }}>Peer Address</label>
-                    <input 
-                        id="peer-address-input"
-                        name="peerAddress"
-                        type="text" 
-                        className="form-input" 
-                        placeholder="0x..." 
-                        style={{ fontSize: '0.85rem' }}
-                        value={peerAddress} 
-                        onChange={(e) => setPeerAddress(e.target.value)} 
-                    />
-                    <button type="submit" className="btn btn-primary" style={{ borderRadius: 10, padding: '8px 12px' }}>
-                        <PlusCircle size={18} />
-                    </button>
+                    <div className="input-with-action">
+                        <input 
+                            type="text" 
+                            className="resonance-input" 
+                            placeholder="Address (0x...)" 
+                            value={peerAddress} 
+                            onChange={(e) => setPeerAddress(e.target.value)} 
+                        />
+                        <button type="submit" className="resonance-add-btn">
+                            <PlusCircle size={20} />
+                        </button>
+                    </div>
                 </form>
-                <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 8 }}>
+
+                <div className="frequency-list">
                     {conversations.length === 0 ? (
-                        <p style={{ color: 'var(--text-tertiary)', fontSize: '0.82rem', textAlign: 'center', padding: '40px 0', fontStyle: 'italic' }}>
-                            No message history.
-                        </p>
+                        <div className="empty-frequencies">
+                            <MessageSquare size={32} />
+                            <p>No active frequencies</p>
+                        </div>
                     ) : (
                         conversations.map((conv, i) => {
-                            // XMTP V3: DMs expose peerInboxId; get address from members
                             const peerAddr = conv.peerAddress
                                 || conv.members?.find(m => m.inboxId !== client?.inboxId)?.addresses?.[0]
                                 || 'Unknown';
                             const convId = conv.id || conv.topic;
+                            const isActive = selectedConversation?.id === convId;
+
                             return (
-                                <motion.div key={convId}
-                                    initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}
+                                <motion.div 
+                                    key={convId}
+                                    className={`frequency-item ${isActive ? 'active' : ''}`}
+                                    initial={{ opacity: 0, y: 10 }} 
+                                    animate={{ opacity: 1, y: 0 }}
                                     transition={{ delay: i * 0.05 }}
                                     onClick={() => setSelectedConversation(conv)}
-                                    style={{
-                                        padding: 14, borderRadius: 12, cursor: 'pointer',
-                                        border: '1px solid',
-                                        borderColor: selectedConversation?.id === convId ? 'var(--accent-light)' : 'transparent',
-                                        background: selectedConversation?.id === convId ? 'rgba(124,92,252,0.06)' : 'rgba(255,255,255,0.03)',
-                                        transition: 'all 0.2s ease',
-                                    }}>
-                                    <div style={{ fontSize: '0.82rem', fontWeight: 800 }}>
-                                        {peerAddr.slice(0, 8)}...{peerAddr.slice(-6)}
+                                >
+                                    <div className="freq-avatar">
+                                        <div className="avatar-inner">
+                                            {peerAddr.slice(2, 4).toUpperCase()}
+                                        </div>
                                     </div>
+                                    <div className="freq-info">
+                                        <div className="freq-addr">
+                                            {peerAddr.slice(0, 8)}...{peerAddr.slice(-6)}
+                                        </div>
+                                        <div className="freq-status">SECURE TRANSMISSION</div>
+                                    </div>
+                                    {isActive && <motion.div layoutId="active-indicator" className="active-line" />}
                                 </motion.div>
                             );
                         })
                     )}
                 </div>
-            </div>
+            </motion.div>
 
-            {/* Message Area */}
-            <div style={{
-                display: 'flex', flexDirection: 'column', overflow: 'hidden',
-                borderRadius: 16, background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border)',
-            }}>
+            {/* Main Chat Area */}
+            <motion.div 
+                className="chat-workspace-sovereign"
+                initial={{ opacity: 0, scale: 0.98 }}
+                animate={{ opacity: 1, scale: 1 }}
+            >
                 {selectedConversation ? (
                     <MessageContainer
                         conversation={selectedConversation}
@@ -251,12 +303,13 @@ export default function Chat({ initialPeerAddress }) {
                         client={client}
                     />
                 ) : (
-                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--text-tertiary)' }}>
-                        <MessageSquare size={48} style={{ opacity: 0.08, marginBottom: 20 }} />
-                        <p>Select a conversation to start chatting</p>
+                    <div className="no-frequency-selected">
+                        <div className="orb-flicker" />
+                        <Activity size={48} className="floating-icon" />
+                        <p>Select a digital frequency to initiate resonance</p>
                     </div>
                 )}
-            </div>
+            </motion.div>
         </div>
     );
 }
@@ -279,16 +332,6 @@ function MessageContainer({ conversation, address, contractContext, loadingConte
     };
 
     const scrollToBottom = () => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-
-    const getStatusColor = (status) => {
-        const colors = { 'Created': '#6366f1', 'Accepted': '#8b5cf6', 'Ongoing': '#f59e0b', 'Completed': '#10b981', 'Disputed': '#ef4444', 'Cancelled': '#6b7280' };
-        return colors[status] || '#6b7280';
-    };
-
-    const formatDeadline = (timestamp) => {
-        if (!timestamp) return 'No deadline';
-        return new Date(parseInt(timestamp) * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-    };
 
     useEffect(() => {
         const fetchMessages = async () => {
@@ -315,10 +358,8 @@ function MessageContainer({ conversation, address, contractContext, loadingConte
 
     useEffect(() => { scrollToBottom(); }, [messages]);
 
-    // V3: sender is identified by inboxId, not address
     const getSenderAddress = (msg) => msg.senderAddress || msg.senderInboxId || '';
     const getMsgTime = (msg) => {
-        // V3 uses sentAtNs (nanoseconds BigInt), fallback to sentAt
         if (msg.sentAtNs) return new Date(Number(msg.sentAtNs) / 1_000_000);
         return msg.sentAt ? new Date(msg.sentAt) : new Date();
     };
@@ -327,16 +368,11 @@ function MessageContainer({ conversation, address, contractContext, loadingConte
         e.preventDefault();
         if (inputValue.trim()) {
             try { await conversation.send(inputValue); setInputValue(''); }
-            catch (err) { alert('Failed to send message: ' + err.message); }
+            catch (err) { alert('Transmission failed: ' + err.message); }
         }
     };
 
-    const ctxItem = { display: 'flex', alignItems: 'center', gap: 10 };
-    const ctxIcon = (bg) => ({ padding: 8, borderRadius: 10, background: bg });
-    const ctxLabel = { fontSize: '0.7rem', color: 'var(--text-tertiary)', fontWeight: 700, textTransform: 'uppercase' };
-
     const handleGenerateAgreementIntent = () => {
-        // Step 2: Extract recipient address and pre-fill form
         window.dispatchEvent(new CustomEvent('PREFILL_JOB_DATA', { 
             detail: { 
                 freelancer: conversation.peerAddress,
@@ -347,105 +383,102 @@ function MessageContainer({ conversation, address, contractContext, loadingConte
     };
 
     return (
-        <>
-            {/* Header */}
-            <div style={{ padding: 16, borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'linear-gradient(45deg, #6366f1, #a855f7)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <User size={14} color="white" />
+        <div className="message-container-inner">
+            <div className="resonance-header">
+                <div className="peer-dossier">
+                    <div className="dossier-avatar">
+                        <User size={18} />
+                        <div className="status-indicator online" />
                     </div>
-                    <strong><UserLink address={conversation.peerAddress} /></strong>
+                    <div className="dossier-info">
+                        <h4 className="peer-name">
+                            <UserLink address={conversation.peerAddress} />
+                        </h4>
+                        <div className="connection-status">
+                            <Lock size={10} /> <span>ENCRYPTED_CHANNEL_ACTIVE</span>
+                        </div>
+                    </div>
                 </div>
-                <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+                <div className="resonance-actions">
                     {isSyncing && (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.65rem', color: 'var(--accent-light)', marginRight: 12 }}>
-                            <Loader2 size={12} className="animate-spin" /> Syncing with Peer...
+                        <div className="sync-status">
+                            <Loader2 size={12} className="animate-spin" />
+                            <span>SYNCING...</span>
                         </div>
                     )}
-                    <button onClick={handleGenerateAgreementIntent}
-                        className="btn btn-primary btn-sm" style={{
-                            borderRadius: 10, gap: 6, fontSize: '0.75rem', fontWeight: 800
-                        }}>
-                        <FileText size={14} /> Hire This Freelancer
+                    <button onClick={handleGenerateAgreementIntent} className="btn-hire-action">
+                        <FileText size={14} /> <span>INITIALIZE_CONTRACT</span>
                     </button>
-                    <button onClick={() => window.open(`https://app.huddle01.com/${conversation.topic?.slice(0, 8)}`, '_blank')}
-                        className="btn btn-ghost btn-sm" style={{
-                            borderRadius: 10, gap: 6, color: 'var(--accent-light)',
-                            background: 'rgba(124,92,252,0.06)', borderColor: 'rgba(124,92,252,0.15)',
-                        }}>
-                        <Video size={14} /> Video Interview
+                    <button 
+                        onClick={() => window.open(`https://app.huddle01.com/${conversation.topic?.slice(0, 8)}`, '_blank')}
+                        className="btn-video-action"
+                    >
+                        <Video size={14} />
                     </button>
                 </div>
             </div>
 
-            {/* Contract Context */}
             <AnimatePresence>
                 {contractContext && (
-                    <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
-                        style={{
-                            margin: '12px 16px', padding: '14px 20px', borderRadius: 14,
-                            background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border)',
-                            display: 'flex', gap: 20, alignItems: 'center', flexWrap: 'wrap',
-                        }}>
-                        <div style={ctxItem}>
-                            <div style={ctxIcon('rgba(124,92,252,0.08)')}><FileText size={16} style={{ color: 'var(--accent-light)' }} /></div>
-                            <div><div style={ctxLabel}>Active Project</div><div style={{ fontWeight: 700, fontSize: '0.88rem' }}>#{contractContext.jobId}</div></div>
-                        </div>
-                        <div style={ctxItem}>
-                            <div style={ctxIcon('rgba(16,185,129,0.08)')}><DollarSign size={16} style={{ color: '#10b981' }} /></div>
-                            <div><div style={ctxLabel}>Budget</div><div style={{ fontWeight: 700, fontSize: '0.88rem' }}>{(parseFloat(contractContext.amount) / 1e18).toFixed(2)} MATIC</div></div>
-                        </div>
-                        <div style={ctxItem}>
-                            <div style={ctxIcon(`${getStatusColor(contractContext.status)}15`)}><CheckCircle2 size={16} style={{ color: getStatusColor(contractContext.status) }} /></div>
-                            <div><div style={ctxLabel}>Status</div><div style={{ fontWeight: 700, color: getStatusColor(contractContext.status), fontSize: '0.88rem' }}>{contractContext.status}</div></div>
+                    <motion.div 
+                        className="context-dashboard-widget"
+                        initial={{ opacity: 0, y: -20 }} 
+                        animate={{ opacity: 1, y: 0 }} 
+                        exit={{ opacity: 0, y: -20 }}
+                    >
+                        <div className="widget-grid">
+                            <div className="widget-item">
+                                <label>ACTIVE_MISSION</label>
+                                <div className="val">#{contractContext.jobId}</div>
+                            </div>
+                            <div className="widget-item">
+                                <label>PROTOCOL_ESCROW</label>
+                                <div className="val highlight">{(parseFloat(contractContext.amount) / 1e18).toFixed(2)} MATIC</div>
+                            </div>
+                            <div className="widget-item">
+                                <label>DEPLOYMENT_STATUS</label>
+                                <div className="val status-tag" data-status={contractContext.status.toLowerCase()}>
+                                    {contractContext.status}
+                                </div>
+                            </div>
                         </div>
                         {contractContext.status === 'Disputed' && (
-                            <button onClick={handleExportEvidence} disabled={isExporting}
-                                className="btn btn-ghost btn-sm" style={{
-                                    borderRadius: 10, background: 'rgba(239,68,68,0.06)',
-                                    color: '#ef4444', borderColor: 'rgba(239,68,68,0.15)', gap: 6,
-                                }}>
-                                {isExporting ? <Loader2 size={12} style={{ animation: 'spin 1s linear infinite' }} /> : <Gavel size={12} />}
-                                {isExporting ? 'UPLOADING...' : 'SUBMIT CHAT AS EVIDENCE'}
+                            <button onClick={handleExportEvidence} disabled={isExporting} className="btn-dispute-action">
+                                {isExporting ? <Loader2 size={12} className="animate-spin" /> : <Gavel size={14} />}
+                                <span>{isExporting ? 'UPLOADING...' : 'PUSH EVIDENCE'}</span>
                             </button>
                         )}
-                        <div style={{ ...ctxItem, marginLeft: 'auto' }}>
-                            <div style={ctxIcon('rgba(245,158,11,0.08)')}><Clock size={16} style={{ color: '#f59e0b' }} /></div>
-                            <div><div style={ctxLabel}>Deadline</div><div style={{ fontWeight: 700, fontSize: '0.88rem' }}>{formatDeadline(contractContext.deadline)}</div></div>
-                        </div>
                     </motion.div>
-                )}
-                {loadingContext && (
-                    <div style={{ padding: '10px 20px', textAlign: 'center', borderBottom: '1px solid var(--border)' }}>
-                        <Loader2 size={14} style={{ display: 'inline-block', animation: 'spin 1s linear infinite' }} />
-                        <span style={{ marginLeft: 8, fontSize: '0.82rem', color: 'var(--text-tertiary)' }}>Loading contract context...</span>
-                    </div>
                 )}
             </AnimatePresence>
 
-            {/* Messages */}
-            <div style={{ flex: 1, overflowY: 'auto', padding: 20, display: 'flex', flexDirection: 'column', gap: 10 }}>
-                {messages.map((msg) => {
+            <div className="resonance-viewport">
+                <div className="encryption-banner">
+                    <ShieldCheck size={14} />
+                    <span>Transmissions are secured via XMTP End-to-End Encryption. Only intended recipients can decrypt.</span>
+                </div>
+                
+                {messages.map((msg, i) => {
                     const sender = getSenderAddress(msg);
                     const isMe = sender?.toLowerCase() === address?.toLowerCase()
                         || (client?.inboxId && sender === client.inboxId);
+                    
                     return (
-                        <motion.div key={msg.id}
-                            initial={{ opacity: 0, y: 10, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }}
-                            transition={{ duration: 0.2 }}
-                            style={{
-                                alignSelf: isMe ? 'flex-end' : 'flex-start',
-                                background: isMe ? 'linear-gradient(135deg, var(--accent), var(--accent-light))' : 'rgba(255,255,255,0.03)',
-                                padding: '12px 18px', maxWidth: '70%', fontSize: '0.92rem',
-                                borderRadius: isMe ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
-                                border: isMe ? 'none' : '1px solid var(--border)',
-                                color: isMe ? 'white' : 'var(--text-primary)',
-                                boxShadow: isMe ? '0 8px 20px -5px rgba(124,92,252,0.3)' : 'none',
-                            }}>
-                            <div style={{ wordBreak: 'break-word', lineHeight: 1.5, fontWeight: 500 }}>{msg.content}</div>
-                            <div style={{ fontSize: '0.62rem', opacity: 0.6, marginTop: 5, textAlign: isMe ? 'right' : 'left', fontWeight: 700 }}>
-                                {getMsgTime(msg).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                {isMe && ' · Sent'}
+                        <motion.div 
+                            key={msg.id}
+                            className={`message-row ${isMe ? 'outgoing' : 'incoming'}`}
+                            initial={{ opacity: 0, x: isMe ? 20 : -20, scale: 0.9 }} 
+                            animate={{ opacity: 1, x: 0, scale: 1 }}
+                            transition={{ delay: i * 0.02, type: 'spring', damping: 20 }}
+                        >
+                            <div className="bubble-wrapper">
+                                <div className="message-bubble-sovereign">
+                                    {msg.content}
+                                </div>
+                                <div className="message-meta">
+                                    {getMsgTime(msg).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                    {isMe && <CheckCircle2 size={10} className="status-check" />}
+                                </div>
                             </div>
                         </motion.div>
                     );
@@ -453,24 +486,22 @@ function MessageContainer({ conversation, address, contractContext, loadingConte
                 <div ref={messagesEndRef} />
             </div>
 
-            {/* Input */}
-            <form onSubmit={handleSend} style={{ padding: 14, display: 'flex', gap: 10, borderTop: '1px solid var(--border)' }}>
-                <label htmlFor="chat-message-input" style={{ display: 'none' }}>Message</label>
-                <input 
-                    id="chat-message-input"
-                    name="message"
-                    type="text" 
-                    className="form-input" 
-                    placeholder="Type a message..."
-                    style={{ flex: 1, borderRadius: 20 }}
-                    value={inputValue} 
-                    onChange={(e) => setInputValue(e.target.value)} 
-                />
-                <button type="submit" className="btn btn-primary"
-                    style={{ borderRadius: '50%', width: 42, height: 42, padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <Send size={16} />
-                </button>
+            <form className="resonance-input-area" onSubmit={handleSend}>
+                <div className="input-glass-container">
+                    <input 
+                        type="text" 
+                        className="broadcast-input" 
+                        placeholder="Push message to frequency..."
+                        value={inputValue} 
+                        onChange={(e) => setInputValue(e.target.value)} 
+                    />
+                    <button type="submit" className="broadcast-btn" disabled={!inputValue.trim()}>
+                        <Send size={18} />
+                    </button>
+                </div>
             </form>
-        </>
+        </div>
     );
 }
+
+

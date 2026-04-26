@@ -1,0 +1,359 @@
+/* PolyLance Zenith - Manifesto Sovereign Design System */
+
+.manifesto-zenith {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 8rem 4rem 12rem;
+    color: var(--text-primary);
+    position: relative;
+    overflow: hidden;
+}
+
+.ambient-glow-top {
+    position: absolute;
+    top: -10%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100vw;
+    height: 60vh;
+    background: radial-gradient(circle at center, rgba(139, 92, 246, 0.08) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* --- HERO SECTION --- */
+.manifesto-hero-zenith {
+    text-align: center;
+    margin-bottom: 12rem;
+    position: relative;
+    z-index: 10;
+}
+
+.sovereign-badge {
+    display: inline-flex;
+    padding: 0.75rem 2rem;
+    border-radius: 100px;
+    border: 1px solid var(--accent-border);
+    background: var(--accent-subtle);
+    color: var(--accent-light);
+    font-size: 0.75rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.4em;
+    margin-bottom: 4rem;
+}
+
+.hero-display-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: clamp(4rem, 10vw, 9rem);
+    font-weight: 900;
+    line-height: 0.85;
+    letter-spacing: -0.06em;
+    text-transform: uppercase;
+    color: #fff;
+    margin-bottom: 3rem;
+}
+
+.italic-title {
+    font-style: italic;
+    color: var(--accent);
+}
+
+.accent-text-glow {
+    text-shadow: 0 0 40px rgba(139, 92, 246, 0.3);
+}
+
+.hero-divider {
+    width: 120px;
+    height: 4px;
+    background: var(--accent);
+    margin: 4rem auto;
+}
+
+.hero-description {
+    font-size: 1.5rem;
+    color: var(--text-secondary);
+    max-width: 800px;
+    margin: 0 auto;
+    line-height: 1.5;
+    font-weight: 500;
+}
+
+/* --- CONTENT GRID --- */
+.manifesto-content-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 4rem;
+    margin-bottom: 12rem;
+    position: relative;
+    z-index: 10;
+}
+
+.manifesto-card {
+    padding: 5rem;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 4rem;
+    display: flex;
+    flex-direction: column;
+    gap: 3rem;
+}
+
+.card-header {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+}
+
+.card-icon-accent {
+    color: var(--accent);
+}
+
+.card-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 2.5rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    font-style: italic;
+    letter-spacing: -0.02em;
+}
+
+.card-body p {
+    font-size: 1.15rem;
+    line-height: 1.7;
+    color: var(--text-secondary);
+    margin-bottom: 2rem;
+}
+
+.highlight-para {
+    padding-left: 2rem;
+    border-left: 2px solid var(--accent);
+    font-style: italic;
+    color: #fff !important;
+}
+
+/* --- COUNCIL SECTION --- */
+.council-section {
+    margin-bottom: 12rem;
+    position: relative;
+    z-index: 10;
+}
+
+.section-header-centered {
+    text-align: center;
+    margin-bottom: 6rem;
+}
+
+.section-icon {
+    color: var(--accent-light);
+    margin-bottom: 2rem;
+    opacity: 0.5;
+}
+
+.display-subtitle {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 4rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    font-style: italic;
+    letter-spacing: -0.04em;
+    margin-bottom: 1rem;
+}
+
+.section-intro {
+    font-size: 1.1rem;
+    color: var(--text-tertiary);
+    font-weight: 600;
+    letter-spacing: 0.05em;
+}
+
+.council-bento {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2.5rem;
+}
+
+.architect-dossier {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 3.5rem;
+    overflow: hidden;
+    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.architect-dossier:hover {
+    border-color: var(--accent-border);
+    background: var(--bg-hover);
+    box-shadow: 0 40px 80px -20px rgba(0, 0, 0, 0.6);
+}
+
+.dossier-inner {
+    padding: 4rem;
+}
+
+.dossier-header {
+    display: flex;
+    flex-direction: column;
+    gap: 2.5rem;
+    margin-bottom: 3rem;
+}
+
+.dossier-avatar-large {
+    width: 7rem;
+    height: 7rem;
+    border-radius: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 900;
+    font-size: 2.5rem;
+    color: #fff;
+    position: relative;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+
+.featured-ring {
+    position: absolute;
+    inset: -6px;
+    border-radius: 3rem;
+    border: 2px dashed var(--accent);
+    animation: rotate 10s linear infinite;
+}
+
+@keyframes rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.specialty-tag {
+    font-size: 0.65rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--accent);
+    margin-bottom: 1rem;
+}
+
+.architect-name-display {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 2.25rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    font-style: italic;
+    line-height: 1;
+    margin-bottom: 0.5rem;
+}
+
+.architect-role-display {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.architect-bio-text {
+    font-size: 1rem;
+    line-height: 1.6;
+    color: var(--text-secondary);
+    margin-bottom: 4rem;
+}
+
+.social-cluster {
+    display: flex;
+    gap: 1.5rem;
+}
+
+.zenith-social-link {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1.25rem;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border);
+    border-radius: 1rem;
+    color: var(--text-tertiary);
+    font-size: 0.7rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    transition: all 0.3s;
+}
+
+.zenith-social-link:hover {
+    background: #fff;
+    color: #000;
+    border-color: #fff;
+}
+
+/* Featured Member highlight */
+.featured-architect {
+    border: 1px solid var(--accent-border);
+    background: linear-gradient(180deg, rgba(139, 92, 246, 0.05) 0%, transparent 100%);
+}
+
+/* --- FOOTER --- */
+.manifesto-footer-zenith {
+    text-align: center;
+    padding: 8rem 0;
+    position: relative;
+    border-top: 1px solid var(--border);
+}
+
+.footer-glow {
+    position: absolute;
+    bottom: -50%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at center, rgba(139, 92, 246, 0.1) 0%, transparent 70%);
+}
+
+.final-seal-icon {
+    color: var(--accent);
+    margin-bottom: 4rem;
+    filter: drop-shadow(0 0 20px var(--accent-glow));
+}
+
+.final-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 5rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    font-style: italic;
+    letter-spacing: -0.04em;
+    margin-bottom: 2rem;
+}
+
+.final-subtitle {
+    font-size: 1.25rem;
+    color: var(--text-tertiary);
+    max-width: 600px;
+    margin: 0 auto 6rem;
+    line-height: 1.6;
+}
+
+.signature-line {
+    width: 200px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    margin: 0 auto;
+}
+
+/* --- RESPONSIVE --- */
+@media (max-width: 1200px) {
+    .manifesto-content-grid { grid-template-columns: 1fr; }
+    .council-bento { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 768px) {
+    .manifesto-zenith { padding: 4rem 2rem; }
+    .hero-display-title { font-size: 4rem; }
+    .display-subtitle { font-size: 3rem; }
+    .council-bento { grid-template-columns: 1fr; }
+    .manifesto-card { padding: 3rem; }
+    .final-title { font-size: 3rem; }
+}
+

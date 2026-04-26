@@ -1,0 +1,49 @@
+name: Zenith Protocol Security Audit
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'contracts/**'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'contracts/**'
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run Slither Audit
+        uses: crytic/slither-action@v0.4.0
+        id: slither
+        with:
+          target: 'contracts/'
+          sarif: results.sarif
+          fail-on: medium
+        continue-on-error: true
+
+      - name: Upload SARIF file
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: results.sarif
+
+      - name: Zenith Oracle Signal
+        if: always()
+        run: |
+          echo "Processing audit results for Zenith Oracle..."
+          if [ "${{ steps.slither.outcome }}" == "success" ]; then
+            echo "STATUS=SECURE" >> $GITHUB_ENV
+          else
+            echo "STATUS=VULNERABLE" >> $GITHUB_ENV
+          fi
+          # In a real production environment, this would call the SecurityOracle contract
+          # via a defender relayer or a custom script.
+          echo "Audit complete. Status: $STATUS"

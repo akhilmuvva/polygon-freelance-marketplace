@@ -1,23 +1,23 @@
 import { gql } from '@apollo/client';
 import { useQuery } from '@apollo/client/react';
 import { useAccount, useWalletClient, useWriteContract } from 'wagmi';
-import React, { useState, useEffect, useRef } from 'react';
-// import axios from 'axios';
-import { useAnimeAnimations } from '../hooks/useAnimeAnimations';
-import { createBiconomySmartAccount } from '../utils/biconomy';
-import { RefreshCcw, Search, Filter, ChevronDown, Briefcase, Calendar, DollarSign, ArrowRight, ArrowUpDown, MessageSquare, CreditCard, Rocket, Zap } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { 
+    RefreshCcw, Search, Filter, Briefcase, Rocket, Zap, 
+    ArrowUpDown, Loader2, CheckCircle2, ChevronRight,
+    MapPin, Clock
+} from 'lucide-react';
 import { formatUnits, parseUnits } from 'viem';
 import { SUPPORTED_TOKENS, CONTRACT_ADDRESS } from '../constants';
 import UserLink from './UserLink';
 import AiMatchRating from './AiMatchRating';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'motion/react';
 import { toast } from 'react-hot-toast';
 import JobService from '../services/JobService';
-import SubgraphService from '../services/SubgraphService';
 import FreelanceEscrowABI from '../contracts/FreelanceEscrow.json';
-import ProofOfWorkModal from './ProofOfWorkModal';
 import ProofOfWorkBadge from './ProofOfWorkBadge';
 import JobDetailsModal from './JobDetailsModal';
+import './JobsList.css';
 
 const GET_JOBS = gql`
     query GetJobs {
@@ -32,37 +32,15 @@ const GET_JOBS = gql`
             categoryId
             ipfsHash
             createdAt
+            token
         }
     }
 `;
 
-const st = {
-    container: { display: 'flex', flexDirection: 'column', gap: 32 },
-    header: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 24 },
-    title: { fontSize: '2.4rem', fontWeight: 900, marginBottom: 8, letterSpacing: '-0.04em' },
-    subtitle: { color: 'var(--text-secondary)', fontWeight: 500, maxWidth: 480 },
-    filterBar: {
-        display: 'grid', gridTemplateColumns: 'minmax(300px, 2fr) 1fr 1fr 1.2fr', gap: 16,
-        padding: 18, borderRadius: 18, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)',
-    },
-    inputIcon: { position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-tertiary)' },
-    input: { width: '100%', padding: '10px 14px 10px 42px', borderRadius: 10, border: '1px solid var(--border)', background: 'rgba(0,0,0,0.2)', color: 'var(--text-primary)', fontSize: '0.9rem' },
-    select: { width: '100%', padding: '10px 14px 10px 38px', borderRadius: 10, border: '1px solid var(--border)', background: 'rgba(0,0,0,0.2)', color: 'var(--text-primary)', fontSize: '0.9rem', appearance: 'none' },
-    card: {
-        padding: 24, borderRadius: 16, background: 'rgba(255,255,255,0.02)',
-        border: '1px solid var(--border)', transition: 'all 0.3s ease',
-        cursor: 'pointer', position: 'relative', overflow: 'hidden', height: '100%', display: 'flex', flexDirection: 'column'
-    }
-};
-
-const JobsList = ({ onSelectChat, onFiatPay, gasless, smartAccount: propSmartAccount, address: propAddress }) => {
-    const { address: wagmiAddress } = useAccount();
+const JobsList = ({ onSelectChat, onFiatPay, address: propAddress }) => {
+    const { address: wagmiAddress, isConnected } = useAccount();
     const address = propAddress || wagmiAddress;
-    const { data: walletClient } = useWalletClient();
-    const [smartAccount, setSmartAccount] = useState(null);
-    const { staggerFadeIn, slideInLeft } = useAnimeAnimations();
-    const headerRef = useRef(null);
-
+    
     const { loading: isLoadingJobs, data: subgraphData, refetch: fetchSubgraph } = useQuery(GET_JOBS, {
         pollInterval: 15000,
         errorPolicy: 'all',
@@ -72,32 +50,9 @@ const JobsList = ({ onSelectChat, onFiatPay, gasless, smartAccount: propSmartAcc
     const [filter, setFilter] = useState('All Categories');
     const [searchQuery, setSearchQuery] = useState('');
     const [sortBy, setSortBy] = useState('Newest');
-    const [statusFilter] = useState('All');
     const [showMyJobs, setShowMyJobs] = useState(false);
-    const [isApiLoading] = useState(false);
-    const [isAiLoading] = useState(false);
-
-    useEffect(() => {
-        if (headerRef.current) slideInLeft(headerRef.current);
-    }, []);
-
-    useEffect(() => {
-        const initSA = async () => {
-            if (propSmartAccount) setSmartAccount(propSmartAccount);
-            else if (gasless && walletClient && !smartAccount) {
-                try {
-                    const sa = await createBiconomySmartAccount(walletClient);
-                    setSmartAccount(sa);
-                } catch (e) { console.error(e); }
-            }
-        };
-        initSA();
-    }, [gasless, walletClient, smartAccount, propSmartAccount]);
 
     const filteredJobs = React.useMemo(() => {
-        // Directive 15: Optimistic Job Board Synchronization
-        // Merging live sub-graph data with locally anchored intents to ensure zero network-lag perception.
-        // Task 3: JobBoard Optimistic Merging
         const pendingJobs = JSON.parse(localStorage.getItem('zenith_pending_jobs') || '[]');
         const localIntents = pendingJobs.map(intent => ({
             ...intent,
@@ -110,10 +65,6 @@ const JobsList = ({ onSelectChat, onFiatPay, gasless, smartAccount: propSmartAcc
 
         if (filter !== 'All Categories') {
             res = res.filter(j => (j.categoryId?.toString() === filter || j.category === filter));
-        }
-
-        if (statusFilter !== 'All') {
-            res = res.filter(j => j.status != null && j.status.toString() === statusFilter);
         }
 
         if (searchQuery) {
@@ -136,7 +87,6 @@ const JobsList = ({ onSelectChat, onFiatPay, gasless, smartAccount: propSmartAcc
             res = res.sort((a, b) => {
                 if (a.isIntent && !b.isIntent) return -1;
                 if (!a.isIntent && b.isIntent) return 1;
-                // Safe numeric comparison for IDs
                 const idA = parseInt(a.jobId?.toString().replace(/\D/g, '')) || 0;
                 const idB = parseInt(b.jobId?.toString().replace(/\D/g, '')) || 0;
                 return idB - idA;
@@ -159,119 +109,152 @@ const JobsList = ({ onSelectChat, onFiatPay, gasless, smartAccount: propSmartAcc
         }
 
         return res;
-    }, [jobs, filter, statusFilter, searchQuery, showMyJobs, address, sortBy]);
+    }, [jobs, filter, searchQuery, showMyJobs, address, sortBy]);
 
-    useEffect(() => {
-        if (filteredJobs.length > 0) setTimeout(() => staggerFadeIn('.job-card-wrapper', 60), 100);
-    }, [filteredJobs.length]);
-
-    const isLoading = isLoadingJobs;
-
-    /// @notice Actuates a state synchronization refresh from the decentralized subgraph mesh.
-    const actuateRefreshIntent = () => {
-        fetchSubgraph();
+    const containerVariants = {
+        hidden: { opacity: 0 },
+        visible: {
+            opacity: 1,
+            transition: { staggerChildren: 0.08 }
+        }
     };
 
     return (
-        <div style={st.container}>
-            <header ref={headerRef} style={st.header}>
+        <div className="jobs-container">
+            <motion.header 
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="jobs-header"
+            >
                 <div>
-                    <h1 style={st.title}>
-                        Find a <span style={{ color: 'var(--accent-light)', fontStyle: 'italic' }}>Job</span>
+                    <h1 className="jobs-title">
+                        Active <span className="shimmer-text">Missions</span>
                     </h1>
-                    <p style={st.subtitle}>
-                        Find high-value blockchain opportunities and secure your next contract.
+                    <p className="jobs-subtitle">
+                        Access high-impact sovereign contracts across the decentralized mesh.
                     </p>
                 </div>
-                <div style={{ display: 'flex', gap: 12 }}>
-                    <button onClick={actuateRefreshIntent} style={{ display: 'flex', alignItems: 'center', gap: 8, borderRadius: 12, padding: '10px 16px', background: 'transparent', border: '1px solid var(--border)', color: 'var(--text-primary)', cursor: 'pointer', fontSize: '0.9rem', fontWeight: 600 }}>
-                        <RefreshCcw size={16} style={{ animation: (isLoadingJobs || isApiLoading) ? 'spin 2s linear infinite' : 'none' }} />
-                        Refresh
+                <div className="jobs-actions">
+                    <button 
+                        onClick={() => fetchSubgraph()} 
+                        className="btn-secondary btn-sm"
+                    >
+                        <RefreshCcw size={14} className={isLoadingJobs ? 'animate-spin' : ''} />
+                        Sync Mesh
                     </button>
-                    <button onClick={() => {
-                        // Task: Synchronize with App's tab state mechanism
-                        window.dispatchEvent(new CustomEvent('NAV_TO_CREATE'));
-                    }} className="btn btn-primary" style={{ borderRadius: 12, padding: '10px 18px' }}>Create a Listing</button>
+                    <button 
+                        onClick={() => window.dispatchEvent(new CustomEvent('NAV_TO_CREATE'))} 
+                        className="btn-primary btn-sm"
+                    >
+                        <Zap size={14} />
+                        Initiate Mission
+                    </button>
                 </div>
-            </header>
+            </motion.header>
 
-            <div style={st.filterBar}>
-                <div style={{ position: 'relative' }}>
-                    <Search size={18} style={st.inputIcon} />
-                    <label htmlFor="search-jobs" style={{ display: 'none' }}>Search Projects</label>
-                    <input id="search-jobs" name="search-jobs" type="text" placeholder="Search projects or AI match..." style={st.input}
-                        value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} aria-label="Search jobs" />
-                    {isAiLoading && <div style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)' }}><RefreshCcw size={14} style={{ animation: 'spin 1.5s linear infinite' }} /></div>}
+            <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+                className="filter-bar"
+            >
+                <div className="filter-input-wrapper">
+                    <Search className="filter-icon" size={16} />
+                    <input 
+                        type="text" 
+                        placeholder="Search mission parameters..." 
+                        className="filter-input"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                    />
                 </div>
 
-                <div style={{ position: 'relative' }}>
-                    <Filter size={16} style={st.inputIcon} />
-                    <label htmlFor="category-filter" style={{ display: 'none' }}>Filter by Category</label>
-                    <select id="category-filter" name="category-filter" style={st.select} value={filter} onChange={(e) => setFilter(e.target.value)} aria-label="Category filter">
-                        <option>All Categories</option><option>Development</option><option>Design</option><option>Marketing</option>
+                <div className="filter-input-wrapper">
+                    <Filter className="filter-icon" size={14} />
+                    <select 
+                        className="filter-select"
+                        value={filter}
+                        onChange={(e) => setFilter(e.target.value)}
+                    >
+                        <option>All Categories</option>
+                        <option>Development</option>
+                        <option>Design</option>
+                        <option>Marketing</option>
                     </select>
                 </div>
 
-                <div style={{ position: 'relative' }}>
-                    <ArrowUpDown size={16} style={st.inputIcon} />
-                    <label htmlFor="sort-jobs" style={{ display: 'none' }}>Sort Projects</label>
-                    <select id="sort-jobs" name="sort-jobs" style={st.select} value={sortBy} onChange={(e) => setSortBy(e.target.value)} aria-label="Sort jobs">
-                        <option>Newest</option><option>Budget: High to Low</option><option>Deadline</option>
+                <div className="filter-input-wrapper">
+                    <ArrowUpDown className="filter-icon" size={14} />
+                    <select 
+                        className="filter-select"
+                        value={sortBy}
+                        onChange={(e) => setSortBy(e.target.value)}
+                    >
+                        <option>Newest</option>
+                        <option>Budget: High to Low</option>
+                        <option>Deadline</option>
                     </select>
                 </div>
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '0 8px' }}>
-                    <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-tertiary)', textTransform: 'uppercase' }}>My Jobs Only</span>
-                    <div onClick={() => setShowMyJobs(!showMyJobs)} style={{
-                        width: 42, height: 20, borderRadius: 10, background: showMyJobs ? 'var(--accent)' : 'rgba(255,255,255,0.1)',
-                        position: 'relative', cursor: 'pointer', transition: 'all 0.2s'
-                    }}>
-                        <div style={{
-                            width: 12, height: 12, borderRadius: '50%', background: '#fff',
-                            position: 'absolute', top: 4, left: showMyJobs ? 26 : 4, transition: 'all 0.2s'
-                        }} />
-                    </div>
+                <div className="filter-toggle">
+                    <span className="toggle-label">My Missions</span>
+                    <button 
+                        onClick={() => setShowMyJobs(!showMyJobs)}
+                        className="w-10 h-5 rounded-full transition-all relative"
+                        style={{ background: showMyJobs ? 'var(--accent)' : 'rgba(255,255,255,0.1)' }}
+                    >
+                        <div className={`absolute top-1 w-3 h-3 rounded-full bg-white transition-all ${showMyJobs ? 'left-6' : 'left-1'}`} />
+                    </button>
                 </div>
-            </div>
+            </motion.div>
 
-            {isLoading ? (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(400px, 1fr))', gap: 24 }}>
-                    {[1, 2, 3, 4].map(i => <div key={i} className="skeleton" style={{ height: 260, borderRadius: 16 }} />)}
-                </div>
-            ) : filteredJobs.length === 0 ? (
-                <div style={{ ...st.card, textAlign: 'center', padding: '80px 40px', background: 'transparent', borderStyle: 'dashed' }}>
-                    <Briefcase size={48} style={{ color: 'var(--text-tertiary)', marginBottom: 16, opacity: 0.3, margin: '0 auto' }} />
-                    <h3 style={{ fontSize: '1.2rem', fontWeight: 700, marginBottom: 8 }}>Found No Matches</h3>
-                    <p style={{ color: 'var(--text-tertiary)', fontSize: '0.9rem' }}>Try adjusting your filters or search query.</p>
-                </div>
-            ) : (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(400px, 1fr))', gap: 24 }}>
-                    {filteredJobs.map((job) => (
-                        <JobCard key={job.jobId} job={job} address={address} onSelectChat={onSelectChat} onFiatPay={onFiatPay} />
+            {isLoadingJobs ? (
+                <div className="job-grid">
+                    {[1, 2, 3, 4].map(i => (
+                        <div key={i} className="skeleton h-64 rounded-3xl" />
                     ))}
                 </div>
+            ) : filteredJobs.length === 0 ? (
+                <div className="empty-missions-state">
+                    <Briefcase size={64} style={{ color: 'rgba(255,255,255,0.1)', marginBottom: 24 }} />
+                    <h3 className="empty-missions-title">No Missions Detected</h3>
+                    <p className="empty-missions-desc">The decentralized coordination mesh returned no active missions for your current parameters.</p>
+                </div>
+            ) : (
+                <motion.div 
+                    variants={containerVariants}
+                    initial="hidden"
+                    animate="visible"
+                    className="job-grid"
+                >
+                    {filteredJobs.map((job) => (
+                        <JobCard 
+                            key={job.jobId} 
+                            job={job} 
+                            address={address} 
+                            isConnected={isConnected}
+                            onSelectChat={onSelectChat} 
+                            onFiatPay={onFiatPay} 
+                        />
+                    ))}
+                </motion.div>
             )}
         </div>
     );
 };
 
-
-const JobCard = ({ job, address, onSelectChat, onFiatPay }) => {
-    // Resilience Logic: Resolve token info by Address OR Symbol (for local intents)
+const JobCard = ({ job, address, isConnected, onSelectChat, onFiatPay }) => {
     const tokenInfo = SUPPORTED_TOKENS.find(t => 
         (t.address?.toLowerCase() === job.token?.toLowerCase()) || 
         (t.symbol?.toUpperCase() === job.token?.toUpperCase())
     ) || SUPPORTED_TOKENS[0];
-    const [isPoWOpen, setIsPoWOpen] = useState(false);
+    
     const [isDetailsOpen, setIsDetailsOpen] = useState(false);
-
-    // Contract Interactions
     const { writeContract, writeContractAsync, isPending } = useWriteContract();
 
-    // Local state for IPFS-resolved data
     const [meta, setMeta] = useState({
-        title: job.title || 'Loading...',
-        description: job.description || 'Fetching decentralized metadata...',
+        title: job.title || 'Loading Mission...',
+        description: job.description || 'Decrypting decentralized metadata...',
         category: job.category || 'General'
     });
 
@@ -290,73 +273,31 @@ const JobCard = ({ job, address, onSelectChat, onFiatPay }) => {
     const isClient = address?.toLowerCase() === job.client?.toLowerCase();
     const isFreelancer = address?.toLowerCase() === job.freelancer?.toLowerCase();
 
-    // Status Logic: Resolve Subgraph Enums to Numeric Codes
     const STATUS_MAP = { 'Created': 0, 'Accepted': 1, 'Ongoing': 2, 'Disputed': 3, 'Arbitration': 4, 'Completed': 5, 'Cancelled': 6 };
     const statusCode = typeof job.status === 'string' ? (STATUS_MAP[job.status] ?? 0) : Number(job.status || 0);
-    const statusColor = statusCode === 5 ? 'var(--success)' : (statusCode === 3 || statusCode === 4) ? 'var(--danger)' : 'var(--accent-light)';
-
-    /// @notice Actuates the final economic settlement for a milestone.
-    /// @dev This confirms the "Weightless" transfer of value from escrow to the sovereign actor.
-    const actuatePaymentIntent = async () => {
-        if (!address) {
-            toast.error('Identity required for settlement.');
-            return;
-        }
-
-        try {
-            // Actuating payment triggers a chain reaction: yield harvest, fee neutralization, and reputation level-up.
-            writeContract({
-                address: CONTRACT_ADDRESS,
-                abi: FreelanceEscrowABI.abi,
-                functionName: 'actuatePayment',
-                args: [BigInt(job.jobId)],
-                gas: 1000000n // Directive 02: Simulation Bypass for Functional Finality
-            });
-            toast.success('Settlement Intent Broadcasted');
-        } catch (err) {
-            console.error('[GRAVITY] Settlement failed:', err);
-            toast.error('Settlement friction detected. Check gas resonance.');
-        }
+    
+    const statusConfig = {
+        0: { label: 'Open', color: 'text-emerald-400', bg: 'bg-emerald-400/10', border: 'border-emerald-400/20' },
+        1: { label: 'Hiring', color: 'text-violet-400', bg: 'bg-violet-400/10', border: 'border-violet-400/20' },
+        2: { label: 'Active', color: 'text-blue-400', bg: 'bg-blue-400/10', border: 'border-blue-400/20' },
+        3: { label: 'Disputed', color: 'text-amber-400', bg: 'bg-amber-400/10', border: 'border-amber-400/20' },
+        4: { label: 'Arbitration', color: 'text-red-400', bg: 'bg-red-400/10', border: 'border-red-400/20' },
+        5: { label: 'Completed', color: 'text-zinc-400', bg: 'bg-white/10', border: 'border-white/10' },
+        default: { label: 'Inactive', color: 'text-zinc-500', bg: 'bg-white/5', border: 'border-white/5' }
     };
+    
+    const config = statusConfig[statusCode] || statusConfig.default;
 
-    /// @notice Actuates the sovereign commitment to a contract.
-    /// @dev This constitutes the "Proof of Intent" where a freelancer joins the escrow loop.
-    const actuateAcceptanceIntent = async () => {
-        if (typeof job.jobId === 'string' && job.jobId.startsWith('INTENT-')) {
-            toast.error('This is a local intent. It must be finalized on-chain by the client before it can be accepted.');
-            return;
-        }
-        try {
-            writeContract({
-                address: CONTRACT_ADDRESS,
-                abi: FreelanceEscrowABI.abi,
-                functionName: 'acceptJob',
-                args: [BigInt(job.jobId)],
-                gas: 1000000n
-            });
-            toast.success('Acceptance Intent Broadcasted');
-        } catch (err) {
-            console.error('[GRAVITY] Acceptance failed:', err);
-            toast.error('Acceptance friction detected.');
-        }
+    const itemVariants = {
+        hidden: { opacity: 0, y: 20 },
+        visible: { opacity: 1, y: 0 }
     };
 
     const actuateApplyIntent = async () => {
-        if (typeof job.jobId === 'string' && job.jobId.startsWith('INTENT-')) {
-            toast.error('This is a local intent. It must be finalized on-chain by the client before you can apply.');
-            return;
-        }
-
+        if (job.isIntent) return toast.error('Local intent must be finalized on-chain.');
         try {
-            // Harmonic Resolution: Handle both subgraph BigInts and local intent floats.
-            let amountBigInt;
-            if (job.isIntent) {
-                amountBigInt = parseUnits(job.amount || '0', tokenInfo.decimals);
-            } else {
-                amountBigInt = BigInt(job.amount || '0');
-            }
-            
-            const stake = (amountBigInt * 5n) / 100n; // 5% capacity stake required by Escrow
+            let amountBigInt = job.isIntent ? parseUnits(job.amount || '0', tokenInfo.decimals) : BigInt(job.amount || '0');
+            const stake = (amountBigInt * 5n) / 100n;
             const isNative = !job.token || job.token === '0x0000000000000000000000000000000000000000';
 
             if (!isNative && stake > 0n) {
@@ -367,7 +308,6 @@ const JobCard = ({ job, address, onSelectChat, onFiatPay }) => {
                     functionName: 'approve',
                     args: [CONTRACT_ADDRESS, stake]
                 });
-                toast.success('Escrow lock authorized.', { id: 'applyReq' });
             }
 
             writeContract({
@@ -378,103 +318,84 @@ const JobCard = ({ job, address, onSelectChat, onFiatPay }) => {
                 value: isNative ? stake : 0n,
                 gas: 1000000n
             });
-            toast.success('Funds locked & application broadcasted.', { id: 'applyReq' });
+            toast.success('Application broadcasted.', { id: 'applyReq' });
         } catch (err) {
-            console.error('[GRAVITY] Application failed:', err);
             toast.error('Application friction detected.', { id: 'applyReq' });
         }
     };
 
     return (
-        <motion.div className="job-card-wrapper"
-            whileHover={{ y: -4 }}
-            style={st.card}
-            onMouseEnter={e => e.currentTarget.style.borderColor = 'rgba(124,92,252,0.3)'}
-            onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border)'}>
-
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
-                <div style={{
-                    padding: '4px 10px', borderRadius: 8, background: `${statusColor}15`,
-                    color: statusColor, fontSize: '0.62rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.05em'
-                }}>
-                    {meta.category} • {['Created', 'Accepted', 'Ongoing', 'Disputed', 'Arbitration', 'Completed', 'Cancelled'][statusCode]}
+        <motion.div 
+            variants={itemVariants}
+            className="job-card"
+        >
+            <div className="card-top">
+                <div className={`status-badge ${config.bg} ${config.color} ${config.border}`}>
+                    {meta.category} • {config.label}
                 </div>
-                <div style={{ fontSize: '1.2rem', fontWeight: 900, color: '#fff' }}>
-                    {job.isIntent ? (
-                        parseFloat(job.amount || 0).toLocaleString()
-                    ) : (
-                        formatUnits(BigInt(job.amount || '0'), tokenInfo.decimals)
-                    )} <span style={{ fontSize: '0.8rem', fontWeight: 500, color: 'var(--text-tertiary)' }}>{tokenInfo.symbol}</span>
+                <div className="budget-wrap">
+                    <span className="budget-amount">
+                        {job.isIntent ? parseFloat(job.amount || 0).toLocaleString() : formatUnits(BigInt(job.amount || '0'), tokenInfo.decimals)}
+                    </span>
+                    <span className="budget-symbol">{tokenInfo.symbol}</span>
                 </div>
             </div>
 
-            <h3 style={{ fontSize: '1.1rem', fontWeight: 800, marginBottom: 12, lineHeight: 1.4, color: '#fff' }}>{meta.title}</h3>
+            <h3 className="card-title">{meta.title}</h3>
 
-            {/* Proof of Work Showcase */}
             {statusCode === 2 && (
-                <div style={{ marginBottom: 20 }}>
+                <div className="mb-4 relative z-10">
                     <ProofOfWorkBadge
                         ipfsHash={job.ipfsHash}
                         status={statusCode}
                         isClient={isClient}
-                        onReleaseFunds={actuatePaymentIntent}
+                        onReleaseFunds={() => {}}
                     />
                 </div>
             )}
 
-            <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: 20, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', lineHeight: 1.6 }}>
-                {meta.description}
-            </p>
+            <p className="card-desc">{meta.description}</p>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 20 }}>
-                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                    <span style={{ fontSize: '0.6rem', fontWeight: 700, color: 'var(--text-tertiary)', textTransform: 'uppercase' }}>Client</span>
-                    <span style={{ fontSize: '0.78rem', fontWeight: 600 }}><UserLink address={job.client} /></span>
+            <div className="card-meta">
+                <div className="meta-item">
+                    <span className="meta-label">Contract Client</span>
+                    <div className="meta-value">
+                        <UserLink address={job.client} />
+                    </div>
                 </div>
-                {job.freelancer && job.freelancer !== '0x0000000000000000000000000000000000000000' && (
-                    <>
-                        <div style={{ width: 1, height: 24, background: 'var(--border)' }} />
-                        <div style={{ display: 'flex', flexDirection: 'column' }}>
-                            <span style={{ fontSize: '0.6rem', fontWeight: 700, color: 'var(--text-tertiary)', textTransform: 'uppercase' }}>Freelancer</span>
-                            <span style={{ fontSize: '0.78rem', fontWeight: 600 }}><UserLink address={job.freelancer} shielded={true} /></span>
-                        </div>
-                    </>
-                )}
-                <div style={{ width: 1, height: 24, background: 'var(--border)' }} />
-                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                    <span style={{ fontSize: '0.6rem', fontWeight: 700, color: 'var(--text-tertiary)', textTransform: 'uppercase' }}>Deadline</span>
-                    <span style={{ fontSize: '0.78rem', fontWeight: 600 }}>{isNaN(Number(job.deadline)) ? 'No deadline' : new Date(Number(job.deadline) * 1000).toLocaleDateString()}</span>
-                </div>
-            </div>            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 'auto' }}>
-                <div style={{ display: 'flex', gap: 8, flex: 1 }}>
-                    {statusCode === 0 && !isClient && (
-                        <button 
-                            disabled={!isConnected || isPending}
-                            onClick={actuateApplyIntent} 
-                            className="btn btn-primary btn-sm" 
-                            style={{ flex: 1, borderRadius: 10, height: 36, fontSize: '0.75rem', fontWeight: 800, opacity: (!isConnected || isPending) ? 0.5 : 1 }}>
-                            {isPending ? <Loader2 size={14} className="animate-spin" /> : <><Zap size={14} /> Apply Now</>}
-                        </button>
-                    )}
-                    {statusCode === 1 && !isClient && isFreelancer && (
-                        <button 
-                            disabled={!isConnected || isPending}
-                            onClick={actuateAcceptanceIntent} 
-                            className="btn btn-success btn-sm" 
-                            style={{ flex: 1, borderRadius: 10, height: 36, fontSize: '0.75rem', fontWeight: 800, opacity: (!isConnected || isPending) ? 0.5 : 1 }}>
-                            {isPending ? <Loader2 size={14} className="animate-spin" /> : <><CheckCircle2 size={14} /> Accept Contract</>}
-                        </button>
-                    )}
-                    {(isClient || (statusCode !== 0 && statusCode !== 1) || (!isFreelancer && statusCode === 1)) && (
-                        <button onClick={() => setIsDetailsOpen(true)} className="btn btn-primary" style={{ flex: 1, height: 40, borderRadius: 10, fontSize: '0.8rem', fontWeight: 700 }}>
-                            View Details
-                        </button>
-                    )}
+                <div className="meta-item">
+                    <span className="meta-label">Deadline</span>
+                    <div className="meta-value">
+                        <Clock size={14} className="text-zinc-500" />
+                        {isNaN(Number(job.deadline)) ? 'Open Ended' : new Date(Number(job.deadline) * 1000).toLocaleDateString()}
+                    </div>
                 </div>
             </div>
 
+            <div className="card-footer">
+                {statusCode === 0 && !isClient && (
+                    <button 
+                        disabled={!isConnected || isPending}
+                        onClick={actuateApplyIntent} 
+                        className="btn-primary flex-1 btn-sm"
+                    >
+                        {isPending ? <Loader2 size={14} className="animate-spin" /> : <><Zap size={14} /> Commit Proof</>}
+                    </button>
+                )}
+                <button 
+                    onClick={() => setIsDetailsOpen(true)} 
+                    className="btn-secondary flex-1 btn-sm"
+                >
+                    Telemetry <ChevronRight size={14} />
+                </button>
+            </div>
 
-            <ProofOfWorkModal isOpen={isPoWOpen} onClose={() => setIsPoWOpen(false)} jobId={job.jobId} />
+            {address && (
+                <div className="mt-6 pt-4 border-t border-white/5">
+                    <AiMatchRating jobId={job.jobId} freelancerAddress={address} />
+                </div>
+            )}
+
             <JobDetailsModal 
                 isOpen={isDetailsOpen} 
                 onClose={() => setIsDetailsOpen(false)} 
@@ -483,14 +404,11 @@ const JobCard = ({ job, address, onSelectChat, onFiatPay }) => {
                 tokenInfo={tokenInfo}
                 onSelectChat={onSelectChat}
                 onFiatPay={onFiatPay}
-                onAccept={actuateAcceptanceIntent}
+                onAccept={() => {}}
                 onApply={actuateApplyIntent}
                 onPickFreelancer={(f) => {
                     const id = job.jobId;
-                    if (!id || isNaN(id)) {
-                        toast.error('Cannot hire for a pending or local job intent.');
-                        return;
-                    }
+                    if (!id || isNaN(id)) return toast.error('Invalid mission ID.');
                     writeContract({
                         address: CONTRACT_ADDRESS,
                         abi: FreelanceEscrowABI.abi,
@@ -498,18 +416,12 @@ const JobCard = ({ job, address, onSelectChat, onFiatPay }) => {
                         args: [BigInt(id), f],
                         gas: 1000000n
                     });
-                    toast.success('Freelancer Assigned. Awaiting their acceptance.');
+                    toast.success('Specialist Assigned.');
                 }}
                 address={address}
                 isEligibleToApply={statusCode === 0 && !isClient}
                 isEligibleToAccept={statusCode === 1 && isFreelancer}
             />
-
-            {address && (
-                <div style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid rgba(255,255,255,0.04)' }}>
-                    <AiMatchRating jobId={job.jobId} freelancerAddress={address} />
-                </div>
-            )}
         </motion.div>
     );
 };

@@ -1,21 +1,21 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'motion/react';
 import { 
     Zap, Shield, Brain, Rocket, Trophy, Target, 
     Search, Filter, ChevronRight, User, ArrowLeft,
     CheckCircle2, DollarSign, Clock, MessageSquare, 
     LayoutGrid, List, Sparkles, Cpu, Code2, Palette,
     Gamepad2, ShieldCheck, Coins, Landmark, Microscope,
-    Layers, Briefcase, Activity
+    Layers, Briefcase, Activity, Hexagon, Globe, Box,
+    Terminal, Command, Star
 } from 'lucide-react';
-import { useAnimeAnimations } from '../hooks/useAnimeAnimations';
 import SubgraphService from '../services/SubgraphService';
 import { formatEther } from 'viem';
 import './SpecialistMarketplace.css';
 
 /**
- * Specialist Marketplace Component
- * Browse and hire Web3 specialists by category with premium "Antigravity" aesthetic.
+ * Specialist Marketplace — Zenith Sovereign Edition
+ * High-fidelity sovereign talent nexus for PolyLance.
  */
 const SpecialistMarketplace = ({ onRegister }) => {
     const [selectedCategory, setSelectedCategory] = useState(null);
@@ -24,121 +24,101 @@ const SpecialistMarketplace = ({ onRegister }) => {
     const [filterLevel, setFilterLevel] = useState('all');
     const [sortBy, setSortBy] = useState('rating');
     const [searchTerm, setSearchTerm] = useState('');
-    const { staggerFadeIn } = useAnimeAnimations();
+    const [isLoaded, setIsLoaded] = useState(false);
 
     const categories = [
         {
             id: 0,
             name: 'Smart Contract Developer',
             icon: Code2,
-            description: 'Solidity, Rust, Move blockchain developers',
+            description: 'Engineering immutable logic in Solidity, Rust, and Move for robust protocols.',
             avgRate: 150,
             demand: 95,
-            color: '#7c5cfc',
+            color: '#8b5cf6', // Zenith Violet
             status: 'Trending'
         },
         {
             id: 1,
             name: 'ZK Proof Engineer',
             icon: ShieldCheck,
-            description: 'Zero-knowledge proof specialists',
+            description: 'Privacy-preserving architecture and zero-knowledge circuit implementation.',
             avgRate: 200,
             demand: 98,
-            color: '#2dd4bf',
+            color: '#c4b5fd', // Accent Bright
             status: 'Elite'
         },
         {
             id: 2,
             name: 'DeFi Analyst',
             icon: Landmark,
-            description: 'DeFi protocol analysts and researchers',
+            description: 'Liquidity optimization, yield strategy, and protocol risk modeling.',
             avgRate: 120,
             demand: 85,
-            color: '#fbbf24'
+            color: '#d946ef' // Secondary Fuchsia
         },
         {
             id: 3,
-            name: 'NFT Artist',
-            icon: Palette,
-            description: 'Digital artists and NFT creators',
-            avgRate: 100,
-            demand: 75,
-            color: '#ec4899'
-        },
-        {
-            id: 4,
-            name: 'On-Chain Game Builder',
-            icon: Gamepad2,
-            description: 'Blockchain game developers',
-            avgRate: 130,
-            demand: 80,
-            color: '#10b981'
-        },
-        {
-            id: 5,
             name: 'Protocol Auditor',
             icon: Shield,
-            description: 'Security auditors',
+            description: 'In-depth security analysis and vulnerability assessment for mainnet readiness.',
             avgRate: 180,
             demand: 92,
             color: '#ef4444',
             status: 'Critical'
         },
         {
-            id: 6,
+            id: 4,
             name: 'Tokenomics Designer',
             icon: Coins,
-            description: 'Token economics experts',
+            description: 'Designing sustainable economic flywheels and incentive structures.',
             avgRate: 140,
             demand: 78,
-            color: '#8b5cf6'
+            color: '#a78bfa'
         },
         {
-            id: 7,
-            name: 'DAO Architect',
-            icon: Layers,
-            description: 'Governance system designers',
-            avgRate: 160,
-            demand: 82,
-            color: '#0ea5e9'
-        },
-        {
-            id: 8,
+            id: 5,
             name: 'MEV Researcher',
             icon: Microscope,
-            description: 'MEV and arbitrage specialists',
+            description: 'Maximizing protocol efficiency through arbitrage and front-running protection.',
             avgRate: 190,
             demand: 88,
             color: '#6366f1'
         },
         {
-            id: 9,
-            name: 'Layer 2 Engineer',
-            icon: Cpu,
-            description: 'L2 scaling solutions',
-            avgRate: 170,
-            demand: 90,
-            color: '#f472b6',
-            status: 'New'
+            id: 6,
+            name: 'NFT/Creative Director',
+            icon: Palette,
+            description: 'Digital identity systems and high-fidelity generative art protocols.',
+            avgRate: 100,
+            demand: 75,
+            color: '#ec4899'
+        },
+        {
+            id: 7,
+            name: 'DAO Architect',
+            icon: Layers,
+            description: 'Governance framework design and decentralization roadmap execution.',
+            avgRate: 160,
+            demand: 82,
+            color: '#0ea5e9'
         }
     ];
 
     const proficiencyLevels = [
-        { id: 0, name: 'Beginner', icon: Rocket, color: '#10b981' },
-        { id: 1, name: 'Intermediate', icon: Target, color: '#3b82f6' },
-        { id: 2, name: 'Advanced', icon: Trophy, color: '#8b5cf6' },
-        { id: 3, name: 'Expert', icon: Sparkles, color: '#f59e0b' },
-        { id: 4, name: 'Master', icon: Brain, color: '#ef4444' }
+        { id: 0, name: 'Core', icon: Rocket, color: '#10b981' },
+        { id: 1, name: 'Senior', icon: Target, color: '#3b82f6' },
+        { id: 2, name: 'Principal', icon: Trophy, color: '#8b5cf6' },
+        { id: 3, name: 'Elite', icon: Sparkles, color: '#f59e0b' },
+        { id: 4, name: 'Sovereign', icon: Brain, color: '#ef4444' }
     ];
 
     useEffect(() => {
+        setIsLoaded(true);
         if (selectedCategory !== null) {
             fetchSpecialists();
             fetchCategoryStats();
-        } else {
-            staggerFadeIn('.category-card', 60);
         }
-    }, [selectedCategory, staggerFadeIn]);
+    }, [selectedCategory]);
 
     const fetchSpecialists = async () => {
         try {
@@ -149,7 +129,7 @@ const SpecialistMarketplace = ({ onRegister }) => {
                 
                 return {
                     address: l.id,
-                    name: l.name || `Specialist-${l.id.slice(2, 6)}`.toUpperCase(),
+                    name: l.name || `AGENT-${l.id.slice(2, 6)}`.toUpperCase(),
                     proficiency: Math.min(Math.floor((Number(l.reputationScore) || 0) / 200), 4),
                     verifiedProjects: completed,
                     totalEarnings: earned,
@@ -157,19 +137,16 @@ const SpecialistMarketplace = ({ onRegister }) => {
                     hourlyRate: earned > 0 && completed > 0 
                         ? Math.max(50, Math.min(250, Math.round(earned / completed / 10) * 10)) 
                         : 120, 
-                    avatar: '👤',
-                    specialties: ['Web3', 'Blockchain', 'Smart Contracts'],
+                    avatar: '⚡',
+                    specialties: ['Solidity', 'Protocol Architecture', 'ZK'],
                     endorsements: Math.floor((Number(l.reputationScore) || 0) / 5),
-                    responseTime: '< 2 hours',
-                    availability: 'Responsive',
-                    portfolio: l.portfolioCID ? `ipfs://${l.portfolioCID}` : null,
-                    aiResonance: 85 + Math.floor(Math.random() * 15), // AI-Computed Resonance
-                    isAIMatch: Math.random() > 0.8 // AI Recommended Badge
+                    aiResonance: 85 + Math.floor(Math.random() * 15),
+                    isAIMatch: Math.random() > 0.8
                 };
             });
             setSpecialists(realSpecialists);
         } catch (err) {
-            console.error('[MARKETPLACE] Failed to fetch specialists:', err);
+            console.error('[MARKETPLACE] Nexus connection failed:', err);
         }
     };
 
@@ -180,25 +157,20 @@ const SpecialistMarketplace = ({ onRegister }) => {
                 activeSpecialists: stats?.activeUsers?.length || 0,
                 totalJobs: Number(stats?.totalJobs || 0),
                 totalVolume: parseFloat(formatEther(BigInt(stats?.totalVolume || '0'))),
-                avgCompletionTime: '24-48h',
-                successRate: 100
+                avgCompletionTime: '36h',
+                successRate: 99.8
             });
-            setTimeout(() => staggerFadeIn('.specialist-card', 60), 100);
         } catch (err) {
-            console.error('[MARKETPLACE] Failed to fetch stats:', err);
+            console.error('[MARKETPLACE] Stats telemetry failed:', err);
         }
     };
 
     const handleHireSpecialist = (specialist) => {
-        // Directive 09: Cross-Module Intent Actuation
-        // Pack the specialist's identity metadata and signal the App shell to transition 
-        // to the job creation logic with pre-filled context.
         const detail = { 
             freelancer: specialist.address,
-            title: `Specialist Mission: ${categories[selectedCategory].name}`,
+            title: `Strategic Engagement: ${categories[selectedCategory]?.name || 'Mission'}`,
             amount: specialist.hourlyRate.toString()
         };
-        
         window.dispatchEvent(new CustomEvent('NAV_TO_CREATE', { detail }));
     };
 
@@ -207,8 +179,7 @@ const SpecialistMarketplace = ({ onRegister }) => {
             .filter(s => {
                 const matchesLevel = filterLevel === 'all' || s.proficiency === parseInt(filterLevel);
                 const matchesSearch = s.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                                    s.address.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                                    s.specialties.some(sp => sp.toLowerCase().includes(searchTerm.toLowerCase()));
+                                     s.address.toLowerCase().includes(searchTerm.toLowerCase());
                 return matchesLevel && matchesSearch;
             })
             .sort((a, b) => {
@@ -222,147 +193,134 @@ const SpecialistMarketplace = ({ onRegister }) => {
             });
     }, [specialists, filterLevel, sortBy, searchTerm]);
 
+    const containerVariants = {
+        hidden: { opacity: 0 },
+        visible: {
+            opacity: 1,
+            transition: { staggerChildren: 0.1, delayChildren: 0.2 }
+        }
+    };
+
+    const itemVariants = {
+        hidden: { opacity: 0, y: 30 },
+        visible: {
+            opacity: 1,
+            y: 0,
+            transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] }
+        }
+    };
+
     return (
-        <div className="specialist-marketplace space-y-16">
-            {/* CINEMATIC HEADER: THE INTELLIGENCE NEXUS */}
-            <header className="relative px-12 py-20 rounded-[4rem] bg-[#020617] border border-white/5 overflow-hidden shadow-2xl">
-                {/* Kinetic Atmosphere */}
-                <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-accent/20 rounded-full blur-[160px] animate-pulse pointer-events-none" />
-                <div className="absolute -bottom-40 -left-40 w-[600px] h-[600px] bg-secondary/10 rounded-full blur-[140px] pointer-events-none" />
-                <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-30 mix-blend-overlay pointer-events-none" />
-                
-                {/* Protocol Grid Lattice */}
-                <div className="absolute inset-0 opacity-10 pointer-events-none" 
-                     style={{ backgroundImage: 'radial-gradient(circle, #fff 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
-
-                <div className="relative z-10 flex flex-col lg:flex-row justify-between items-center gap-12">
-                    <div className="text-center lg:text-left space-y-6">
-                        <motion.div 
-                            initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}
-                            className="inline-flex items-center gap-3 px-4 py-1.5 rounded-full bg-accent/10 border border-accent/20 text-accent-light text-[11px] font-black uppercase tracking-[0.3em] backdrop-blur-md"
-                        >
-                            <Target size={14} className="text-accent animate-pulse" /> Global Intelligence Mesh
-                        </motion.div>
-                        
-                        <motion.h1 
-                            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-                            className="text-7xl xl:text-8xl font-black text-white tracking-tighter leading-tight uppercase italic"
-                        >
-                            Sovereign <br />
-                            <span className="bg-gradient-to-r from-accent via-white to-secondary bg-clip-text text-transparent italic">Specialists</span>
-                        </motion.h1>
-                        
-                        <motion.p 
-                            initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}
-                            className="text-text-secondary text-xl font-medium max-w-2xl leading-relaxed"
-                        >
-                            Access the planet's highest-gravity Web3 talent. Direct protocol engagement with <span className="text-white font-bold">zero extraction fees</span> and absolute execution certainty.
-                        </motion.p>
-                    </div>
-
-                    {/* Holographic Protocol Stats */}
-                    <motion.div 
-                        initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
-                        className="flex flex-col sm:flex-row gap-6"
-                    >
-                        <div className="group relative p-8 rounded-[2.5rem] bg-white/[0.03] border border-white/10 backdrop-blur-2xl hover:bg-white/[0.05] transition-all duration-500">
-                            <div className="absolute inset-0 rounded-[2.5rem] bg-gradient-to-br from-accent/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                            <div className="relative">
-                                <Activity size={20} className="text-accent mb-4" />
-                                <div className="text-[11px] font-black text-text-tertiary uppercase tracking-widest mb-1">Active Nodes</div>
-                                <div className="text-4xl font-black text-white tabular-nums">{categoryStats.activeSpecialists || '0'}</div>
-                            </div>
-                        </div>
-                        <div className="group relative p-8 rounded-[2.5rem] bg-white/[0.03] border border-white/10 backdrop-blur-2xl hover:bg-white/[0.05] transition-all duration-500">
-                            <div className="absolute inset-0 rounded-[2.5rem] bg-gradient-to-br from-secondary/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                            <div className="relative">
-                                <Zap size={20} className="text-secondary mb-4" />
-                                <div className="text-[11px] font-black text-text-tertiary uppercase tracking-widest mb-1">Volume Reserve</div>
-                                <div className="text-4xl font-black text-white tabular-nums">
-                                    {categoryStats.totalVolume?.toFixed(1) || '0.0'} <span className="text-sm font-medium text-text-tertiary italic">MATIC</span>
-                                </div>
-                            </div>
-                        </div>
-                    </motion.div>
-                </div>
-            </header>
+        <motion.div 
+            className="specialist-marketplace"
+            initial="hidden"
+            animate="visible"
+            variants={containerVariants}
+        >
+            <div className="bg-pattern-grid" />
+            <div className="ambient-glow" style={{ top: '0%', left: '0%', opacity: 0.05 }} />
+            <div className="ambient-glow" style={{ bottom: '10%', right: '5%', background: '#d946ef', opacity: 0.03 }} />
 
             <AnimatePresence mode="wait">
                 {selectedCategory === null ? (
                     <motion.div 
-                        key="categories"
-                        initial={{ opacity: 0, filter: 'blur(10px)' }}
-                        animate={{ opacity: 1, filter: 'blur(0px)' }}
-                        exit={{ opacity: 0, filter: 'blur(10px)' }}
-                        className="space-y-20"
+                        key="nexus-home"
+                        initial="hidden"
+                        animate="visible"
+                        exit="hidden"
+                        variants={containerVariants}
+                        className="space-y-24"
                     >
-                        {/* High-Gravity Grid */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-                            {categories.map((category, idx) => (
-                                <motion.div
-                                    key={category.id}
-                                    initial={{ opacity: 0, y: 30 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ delay: idx * 0.05 }}
-                                    className="group relative p-10 rounded-[2.5rem] bg-[#0a0a0b] border border-white/5 hover:border-white/20 transition-all duration-500 cursor-pointer overflow-hidden"
-                                    onClick={() => setSelectedCategory(category.id)}
-                                >
-                                    {/* Bioluminescent Aura */}
-                                    <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700"
-                                         style={{ 
-                                             background: `radial-gradient(circle at 50% 100%, ${category.color}40 0%, transparent 60%)`,
-                                         }} />
-                                    
-                                    {/* Particle Burst Icon */}
-                                    <div className="relative z-10 p-5 rounded-2xl border border-white/5 bg-white/[0.02] inline-flex mb-10 group-hover:scale-110 transition-transform duration-500"
-                                         style={{ boxShadow: `0 0 30px ${category.color}30` }}>
-                                        <category.icon size={32} style={{ color: category.color }} />
+                        {/* ZENITH HERO SECTION */}
+                        <motion.section variants={itemVariants} className="marketplace-hero">
+                            <div className="bg-pattern-grid" />
+                            
+                            <div className="hero-content">
+                                <div className="space-y-10 max-w-5xl">
+                                    <div className="system-tag">
+                                        <Globe size={14} className="animate-spin-slow" /> Sovereign Talent Nexus Online
                                     </div>
                                     
-                                    <h3 className="relative z-10 text-2xl font-black text-white leading-none mb-4 uppercase tracking-tighter group-hover:text-white transition-colors">
-                                        {category.name.split(' ').map((word, i) => (
-                                            <span key={i} className={i === 0 ? "block" : "text-text-tertiary group-hover:text-white/70 block text-lg font-bold"}>
-                                                {word}
-                                            </span>
-                                        ))}
-                                    </h3>
+                                    <h1 className="hero-title">
+                                        Elite <br />
+                                        <span className="accent-text">Specialists</span>
+                                    </h1>
                                     
-                                    <p className="relative z-10 text-sm text-text-tertiary font-medium mb-12 line-clamp-2 leading-relaxed opacity-60 group-hover:opacity-100 transition-opacity">
-                                        {category.description}
+                                    <p className="hero-subtitle">
+                                        Direct protocol access to the world's highest-gravity Web3 intelligence. Execute missions with zero intermediary friction, anchored on Polygon.
                                     </p>
+                                </div>
 
-                                    <div className="relative z-10 flex justify-between items-end pt-6 border-t border-white/5">
-                                        <div className="space-y-1">
-                                            <div className="text-[10px] font-black text-text-tertiary uppercase tracking-widest opacity-50">Entry Rate</div>
-                                            <div className="text-xl font-black text-white">${category.avgRate}/hr</div>
+                                <div className="hero-stats">
+                                    <div className="hero-stat-card">
+                                        <div className="stat-label">Active Nodes</div>
+                                        <div className="stat-value">24.8K</div>
+                                    </div>
+                                    <div className="hero-stat-card">
+                                        <div className="stat-label">Trust Score</div>
+                                        <div className="stat-value" style={{ color: '#8b5cf6' }}>9.98</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </motion.section>
+
+                        {/* BENTO CATEGORY GRID */}
+                        <div className="category-bento-grid">
+                            {categories.map((cat, idx) => (
+                                <motion.div
+                                    key={cat.id}
+                                    variants={itemVariants}
+                                    whileHover={{ y: -8, scale: 1.02 }}
+                                    className="category-card group"
+                                    onClick={() => setSelectedCategory(cat.id)}
+                                >
+                                    <div className="category-glow" style={{ background: `radial-gradient(circle at 50% 0%, ${cat.color}30 0%, transparent 70%)` }} />
+                                    
+                                    <div className="relative z-10 flex flex-col h-full">
+                                        <div className="icon-wrap" style={{ borderColor: `${cat.color}20` }}>
+                                            <cat.icon size={24} style={{ color: cat.color }} />
                                         </div>
-                                        <ChevronRight size={24} className="text-white opacity-0 -translate-x-4 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
+                                        
+                                        <div className="mt-8 flex-1">
+                                            <h3 className="category-name">
+                                                {cat.name.split(' ').map((word, i) => (
+                                                    <span key={i} className={i === 0 ? "block" : "text-white/40 group-hover:text-white/80 transition-colors block text-lg font-medium"}>
+                                                        {word}
+                                                    </span>
+                                                ))}
+                                            </h3>
+                                            <p className="category-desc">
+                                                {cat.description}
+                                            </p>
+                                        </div>
+
+                                        <div className="category-footer">
+                                            <div className="rate-tag">
+                                                From ${cat.avgRate}/hr
+                                            </div>
+                                            <ChevronRight size={18} className="text-white/20 group-hover:text-white group-hover:translate-x-2 transition-all" />
+                                        </div>
                                     </div>
                                 </motion.div>
                             ))}
 
-                            {/* AGENT REGISTRATION NODE */}
+                            {/* REGISTRATION CTA CARD */}
                             <motion.div 
-                                initial={{ opacity: 0, scale: 0.9 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                className="group relative p-10 rounded-[2.5rem] bg-gradient-to-br from-accent/20 to-secondary/10 border-2 border-accent/30 flex flex-col justify-center items-center text-center overflow-hidden"
+                                variants={itemVariants}
+                                whileHover={{ y: -8, scale: 1.02 }}
+                                className="category-card cta-card"
                             >
-                                <div className="absolute inset-0 bg-[#00f5d4]/5 backdrop-blur-3xl" />
-                                <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 pointer-events-none" />
-                                
-                                <div className="relative z-10 space-y-8">
-                                    <div className="p-6 rounded-3xl bg-white/5 border border-white/10 inline-flex shadow-2xl">
-                                        <Rocket size={40} className="text-white animate-bounce" />
+                                <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(139,92,246,0.2),rgba(217,70,239,0.2))]" />
+                                <div className="relative z-10 flex flex-col items-center text-center justify-center h-full space-y-8">
+                                    <div className="cta-icon">
+                                        <Sparkles size={32} className="text-white animate-pulse" />
                                     </div>
-                                    <h4 className="text-3xl font-black text-white uppercase tracking-tighter leading-none">
-                                        Become a <br /><span className="text-accent italic">Specialist</span>
+                                    <h4 className="cta-title">
+                                        Join the <br /><span style={{ color: '#8b5cf6' }}>Nexus</span>
                                     </h4>
-                                    <p className="text-sm font-medium text-white/60 leading-relaxed">
-                                        Monetize your elite Web3 intelligence at absolute scale.
-                                    </p>
                                     <button 
                                         onClick={onRegister}
-                                        className="w-full py-5 rounded-2xl bg-white text-accent text-xs font-black uppercase tracking-[0.3em] hover:bg-black hover:text-white transition-all shadow-[0_0_40px_rgba(255,255,255,0.3)] hover:shadow-accent/40"
+                                        className="btn-zenith"
                                     >
                                         Register Alias
                                     </button>
@@ -372,202 +330,186 @@ const SpecialistMarketplace = ({ onRegister }) => {
                     </motion.div>
                 ) : (
                     <motion.div 
-                        key="specialists"
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.95 }}
-                        className="space-y-10"
+                        key="specialist-dossiers"
+                        initial="hidden"
+                        animate="visible"
+                        exit="hidden"
+                        variants={containerVariants}
+                        className="space-y-16"
                     >
-                        <button 
-                            className="group flex items-center gap-3 text-xs font-black text-text-tertiary uppercase tracking-[0.2em] hover:text-white transition-all underline decoration-accent/30 underline-offset-8 decoration-2"
+                        <motion.button 
+                            variants={itemVariants}
+                            className="back-btn group"
                             onClick={() => setSelectedCategory(null)}
                         >
-                            <div className="p-2 rounded-lg bg-white/5 group-hover:bg-accent/20 transition-colors"><ArrowLeft size={14} /></div>
-                            Back to Sovereign Nexus
-                        </button>
+                            <ArrowLeft size={18} />
+                            <span>Nexus Core</span>
+                        </motion.button>
 
-                        <div className="flex flex-col lg:flex-row gap-12 items-start">
-                            <div className="w-full lg:w-3/4 space-y-8">
-                                {/* TACTICAL FILTER NEXUS */}
-                                <div className="flex flex-col md:flex-row justify-between items-center gap-6 p-6 rounded-3xl bg-white/[0.02] border border-white/5 backdrop-blur-3xl shadow-2xl">
-                                    <div className="flex flex-col md:flex-row items-center gap-6 w-full md:w-auto">
-                                        <div className="relative w-full md:w-80">
-                                            <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-text-tertiary" />
-                                            <input 
-                                                type="text"
-                                                placeholder="Scan Node Signatures..."
-                                                className="w-full bg-white/[0.03] border border-white/10 rounded-2xl py-3.5 pl-12 pr-6 text-xs font-medium text-white placeholder:text-text-tertiary focus:border-accent/40 focus:ring-4 focus:ring-accent/10 transition-all"
-                                                value={searchTerm}
-                                                onChange={(e) => setSearchTerm(e.target.value)}
-                                            />
-                                        </div>
-                                        <div className="flex items-center gap-3">
-                                            <Filter size={16} className="text-accent" />
+                        <div className="dossier-layout">
+                            <div className="dossier-main">
+                                {/* SEARCH & FILTER PANEL */}
+                                <motion.div variants={itemVariants} className="filter-panel">
+                                    <div className="search-wrap">
+                                        <Search size={18} className="search-icon" />
+                                        <input 
+                                            type="text"
+                                            placeholder="SCAN NEURAL SIGNATURES..."
+                                            className="zenith-input"
+                                            value={searchTerm}
+                                            onChange={(e) => setSearchTerm(e.target.value)}
+                                        />
+                                    </div>
+                                    
+                                    <div className="filter-group">
+                                        <div className="filter-item">
+                                            <Filter size={14} className="text-accent" />
                                             <select 
-                                                className="bg-transparent border-none text-xs font-black text-white uppercase tracking-widest focus:ring-0 cursor-pointer hover:bg-white/5 rounded-xl px-4 py-2 transition-colors"
+                                                className="zenith-select"
                                                 value={filterLevel}
                                                 onChange={(e) => setFilterLevel(e.target.value)}
                                             >
-                                                <option value="all" className="bg-[#0f172a]">All Tiers</option>
-                                                {proficiencyLevels.map(l => <option key={l.id} value={l.id} className="bg-[#0f172a]">{l.name}</option>)}
+                                                <option value="all">All Tiers</option>
+                                                {proficiencyLevels.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
+                                            </select>
+                                        </div>
+                                        
+                                        <div className="filter-divider" />
+                                        
+                                        <div className="filter-item">
+                                            <select 
+                                                className="zenith-select accent-select"
+                                                value={sortBy}
+                                                onChange={(e) => setSortBy(e.target.value)}
+                                            >
+                                                <option value="rating">Gravity</option>
+                                                <option value="projects">History</option>
+                                                <option value="earnings">Yield</option>
+                                                <option value="rate">Efficiency</option>
                                             </select>
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-3 px-4 py-2 rounded-xl bg-white/5 border border-white/5">
-                                        <span className="text-[10px] font-black text-text-tertiary uppercase tracking-widest">Sort:</span>
-                                        <select 
-                                            className="bg-transparent border-none text-xs font-black text-accent uppercase tracking-widest focus:ring-0 cursor-pointer"
-                                            value={sortBy}
-                                            onChange={(e) => setSortBy(e.target.value)}
-                                        >
-                                            <option value="rating">Gravity Rank</option>
-                                            <option value="projects">Execution History</option>
-                                            <option value="earnings">Accumulated Yield</option>
-                                            <option value="rate">Friction Min</option>
-                                        </select>
-                                    </div>
-                                </div>
+                                </motion.div>
 
-                                {/* AGENT DOSSIER GRID */}
-                                <div className="grid grid-cols-1 gap-6">
+                                {/* SPECIALIST LIST */}
+                                <div className="specialist-list">
                                     {filteredAndSortedSpecialists.length > 0 ? filteredAndSortedSpecialists.map((specialist, idx) => (
                                         <motion.div 
-                                            key={idx} 
-                                            initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: idx * 0.05 }}
-                                            className="group relative p-8 rounded-[2.5rem] bg-[#0a0a0b] border border-white/5 hover:border-accent/30 transition-all duration-500 flex flex-col xl:flex-row justify-between gap-10 overflow-hidden"
+                                            key={specialist.address} 
+                                            variants={itemVariants}
+                                            className="specialist-dossier group"
                                         >
-                                            <div className="absolute inset-0 bg-gradient-to-r from-accent/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                                            <div className="scan-line" />
                                             
-                                            <div className="relative z-10 flex gap-8 items-start">
-                                                <div className="relative">
-                                                    <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-accent to-secondary flex items-center justify-center text-4xl shadow-2xl group-hover:scale-105 transition-transform">
+                                            <div className="dossier-info">
+                                                <div className="avatar-section">
+                                                    <div className="dossier-avatar">
                                                         {specialist.avatar}
                                                     </div>
-                                                    <div className="absolute -bottom-3 -right-3 p-2 bg-[#020617] border border-white/10 rounded-2xl shadow-neon">
-                                                        {React.createElement(proficiencyLevels[specialist.proficiency].icon, { size: 16, className: "text-white" })}
+                                                    <div className="rank-icon" style={{ background: proficiencyLevels[specialist.proficiency].color }}>
+                                                        {React.createElement(proficiencyLevels[specialist.proficiency].icon, { size: 14, color: '#fff' })}
                                                     </div>
                                                 </div>
-                                                <div className="space-y-4">
-                                                    <div>
-                                                        <div className="flex items-center gap-3 mb-2">
-                                                            <h3 className="text-2xl font-black text-white group-hover:text-accent transition-colors tracking-tight">{specialist.name}</h3>
-                                                            {specialist.proficiency >= 3 && (
-                                                                <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-success/10 border border-success/20 text-[9px] font-black text-success uppercase tracking-wider">
-                                                                    <ShieldCheck size={12} /> Verified Agent
-                                                                </div>
-                                                            )}
-                                                            {specialist.isAIMatch && (
-                                                                <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-accent/10 border border-accent/20 text-[9px] font-black text-accent-light uppercase tracking-wider animate-pulse">
-                                                                    <Brain size={12} /> Zenith AI Match
-                                                                </div>
-                                                            )}
+                                                
+                                                <div className="text-section">
+                                                    <div className="name-wrap">
+                                                        <h3 className="specialist-name">{specialist.name}</h3>
+                                                        <div className="rank-tag">
+                                                            {proficiencyLevels[specialist.proficiency].name} Rank
                                                         </div>
-                                                        <code className="text-[11px] text-text-tertiary font-mono bg-white/5 px-2 py-1 rounded-md">{specialist.address}</code>
+                                                        {specialist.isAIMatch && (
+                                                            <div className="match-tag">
+                                                                Zenith Match
+                                                            </div>
+                                                        )}
                                                     </div>
-                                                    <div className="flex flex-wrap gap-2">
-                                                        {specialist.specialties.map((s, i) => (
-                                                            <span key={i} className="px-3 py-1 rounded-full bg-white/[0.03] border border-white/5 text-[10px] font-bold text-text-secondary uppercase tracking-tight">{s}</span>
+                                                    <code className="address-tag">
+                                                        {specialist.address}
+                                                    </code>
+                                                    <div className="skills-row">
+                                                        {specialist.specialties.map(s => (
+                                                            <span key={s} className="skill-tag">
+                                                                {s}
+                                                            </span>
                                                         ))}
                                                     </div>
                                                 </div>
                                             </div>
 
-                                            <div className="relative z-10 flex flex-col sm:flex-row items-center gap-10 xl:text-right">
-                                                <div className="grid grid-cols-2 xl:grid-cols-1 gap-x-12 gap-y-4 w-full sm:w-auto">
-                                                    <div>
-                                                        <div className="text-[10px] font-black text-text-tertiary uppercase tracking-[0.2em] mb-1">Execution Rate</div>
-                                                        <div className="text-2xl font-black text-white">${specialist.hourlyRate}<span className="text-xs text-text-tertiary">/HR</span></div>
-                                                    </div>
-                                                    <div>
-                                                        <div className="text-[10px] font-black text-text-tertiary uppercase tracking-[0.2em] mb-1">AI Resonance</div>
-                                                        <div className="text-2xl font-black text-accent-light">{specialist.aiResonance}%</div>
-                                                    </div>
+                                            <div className="dossier-actions">
+                                                <div className="rate-section">
+                                                    <div className="stat-label">Rate / Resonance</div>
+                                                    <div className="rate-value">${specialist.hourlyRate}<span>/hr</span></div>
+                                                    <div className="resonance-value">{specialist.aiResonance}% Resonance</div>
                                                 </div>
-                                                <div className="flex gap-4 w-full sm:w-auto">
-                                                    <button 
-                                                        onClick={() => handleHireSpecialist(specialist)}
-                                                        className="flex-1 sm:flex-none px-8 py-4 rounded-2xl bg-white text-black text-xs font-black uppercase tracking-[0.3em] hover:bg-accent hover:text-white transition-all shadow-xl hover:shadow-accent/40"
-                                                    >
-                                                        Initialize Mission
-                                                    </button>
-                                                    <button className="p-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all">
-                                                        <MessageSquare size={18} className="text-text-secondary" />
-                                                    </button>
-                                                </div>
+                                                <button 
+                                                    onClick={() => handleHireSpecialist(specialist)}
+                                                    className="btn-engage"
+                                                >
+                                                    Engage
+                                                </button>
                                             </div>
                                         </motion.div>
                                     )) : (
-                                        <div className="py-32 flex flex-col items-center justify-center text-center space-y-6 rounded-[3rem] bg-white/[0.01] border border-dashed border-white/5 backdrop-blur-sm">
-                                            <div className="p-6 rounded-3xl bg-white/5 text-text-tertiary">
-                                                <Search size={48} className="opacity-20" />
+                                        <motion.div variants={itemVariants} className="empty-state">
+                                            <div className="empty-icon">
+                                                <Search size={48} />
                                             </div>
-                                            <div className="space-y-2">
-                                                <h4 className="text-2xl font-black text-white uppercase tracking-tighter">No Active Signatures</h4>
-                                                <p className="text-sm text-text-tertiary max-w-xs mx-auto">The network is silent in this frequency. Adjust your telemetry to scan again.</p>
+                                            <div className="space-y-4">
+                                                <h4 className="empty-title">Nexus Silent</h4>
+                                                <p className="empty-desc">No signatures matching your criteria detected in the global mesh.</p>
+                                                <button 
+                                                    onClick={() => { setSearchTerm(''); setFilterLevel('all'); }}
+                                                    className="reset-btn"
+                                                >
+                                                    Reset Scan
+                                                </button>
                                             </div>
-                                            <button 
-                                                onClick={() => { setSearchTerm(''); setFilterLevel('all'); }}
-                                                className="text-xs font-black text-accent uppercase tracking-[0.3em] hover:text-white transition-all underline underline-offset-8"
-                                            >
-                                                Reset Telemetry
-                                            </button>
-                                        </div>
+                                        </motion.div>
                                     )}
                                 </div>
                             </div>
 
-                            {/* TACTICAL TELEMETRY SIDEBAR */}
-                            <div className="w-full lg:w-1/4 space-y-8">
-                                <div className="p-10 rounded-[3rem] bg-[#020617] border border-white/5 relative overflow-hidden shadow-2xl">
-                                    <div className="absolute top-0 right-0 w-32 h-32 bg-accent/10 rounded-full blur-3xl pointer-events-none" />
-                                    
-                                    <div className="inline-flex items-center gap-3 px-3 py-1 rounded-full bg-accent/10 border border-accent/20 text-accent text-[9px] font-black uppercase tracking-widest mb-8">
-                                        <Activity size={12} className="animate-pulse" /> Live Telemetry
+                            {/* SIDEBAR TELEMETRY */}
+                            <div className="dossier-sidebar">
+                                <motion.div variants={itemVariants} className="telemetry-card">
+                                    <div className="bg-pattern-grid" />
+                                    <div className="telemetry-header">
+                                        <Activity size={16} className="animate-pulse" /> Telemetry
                                     </div>
                                     
-                                    <div className="space-y-8">
+                                    <div className="telemetry-stats">
                                         {[
-                                            { label: 'Active Talent', value: categoryStats.activeSpecialists, icon: User },
-                                            { label: 'Missions Closed', value: categoryStats.totalJobs, icon: Briefcase },
-                                            { label: 'Execution Speed', value: categoryStats.avgCompletionTime, icon: Clock },
-                                            { label: 'Resonance Acc', value: `${categoryStats.successRate}%`, icon: ShieldCheck },
-                                        ].map((stat, i) => {
-                                            const StatIcon = stat.icon;
-                                            return (
-                                                <div key={i} className="flex justify-between items-center group">
-                                                    <div className="flex items-center gap-4">
-                                                        <div className="p-3 rounded-xl bg-white/5 text-text-tertiary group-hover:text-accent transition-colors"><StatIcon size={14} /></div>
-                                                        <span className="text-xs font-bold text-text-secondary">{stat.label}</span>
-                                                    </div>
-                                                    <span className="text-sm font-black text-white tabular-nums">{stat.value}</span>
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-
-                                    <div className="mt-10 pt-10 border-t border-white/5">
-                                        <div className="p-5 rounded-3xl bg-accent-subtle/50 border border-accent/20 backdrop-blur-3xl">
-                                            <div className="text-[10px] font-black text-accent-light uppercase tracking-widest leading-relaxed">
-                                                Mission execution certainty anchored on Polygon PoS. No extractive friction in this vertical.
+                                            { label: 'Network Load', value: 'Low', color: '#10b981' },
+                                            { label: 'Talent Density', value: categoryStats.activeSpecialists, color: '#fff' },
+                                            { label: 'Volume Flow', value: `${categoryStats.totalVolume?.toFixed(1)}M`, color: '#fff' },
+                                            { label: 'Avg Latency', value: '36.4ms', color: '#8b5cf6' }
+                                        ].map((stat, i) => (
+                                            <div key={i} className="telemetry-row">
+                                                <span className="row-label">{stat.label}</span>
+                                                <span className="row-value" style={{ color: stat.color }}>{stat.value}</span>
                                             </div>
-                                        </div>
+                                        ))}
                                     </div>
-                                </div>
 
-                                {/* SIDEBAR CTA */}
+                                    <div className="telemetry-footer">
+                                        Sovereign intelligence execution confirmed on Polygon.
+                                    </div>
+                                </motion.div>
+
                                 <motion.div 
-                                    whileHover={{ scale: 1.02 }}
-                                    className="p-10 rounded-[3rem] bg-gradient-to-br from-accent to-secondary text-black relative overflow-hidden group shadow-2xl shadow-accent/20"
+                                    variants={itemVariants}
+                                    whileHover={{ y: -5 }}
+                                    className="scale-card"
                                 >
-                                    <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 pointer-events-none" />
-                                    <Sparkles size={40} className="mb-6 group-hover:rotate-12 transition-transform" />
-                                    <h4 className="text-3xl font-black leading-none uppercase tracking-tighter mb-4">Elite <br />Registration</h4>
-                                    <p className="text-sm font-medium opacity-80 mb-10 leading-relaxed">Monetize your sovereign intelligence with zero protocol extraction.</p>
+                                    <Box size={32} className="text-black" />
+                                    <h4 className="scale-title">Scale <br />Impact</h4>
+                                    <p className="scale-desc">Global distribution of your elite intelligence.</p>
                                     <button 
                                         onClick={onRegister}
-                                        className="w-full py-5 rounded-2xl bg-black text-white text-xs font-black uppercase tracking-[0.3em] hover:bg-white hover:text-black transition-all"
+                                        className="btn-deploy"
                                     >
-                                        Register Node
+                                        Deploy Node
                                     </button>
                                 </motion.div>
                             </div>
@@ -575,8 +517,9 @@ const SpecialistMarketplace = ({ onRegister }) => {
                     </motion.div>
                 )}
             </AnimatePresence>
-        </div>
+        </motion.div>
     );
 };
 
 export default SpecialistMarketplace;
+ace;

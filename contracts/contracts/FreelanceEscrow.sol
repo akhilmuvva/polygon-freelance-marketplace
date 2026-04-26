@@ -53,6 +53,8 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
     address public reviewSBT;
     /// @notice Address of the privacy shield contract
     address public privacyShield;
+    /// @notice Address of the Zenith Security Oracle
+    address public securityOracle;
     /// @notice Flag for emergency mode (pauses most functions)
     bool public emergencyMode; 
 
@@ -225,6 +227,12 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
         emit PrivacyShieldUpdated(_ps);
     }
 
+    event SecurityOracleUpdated(address indexed newOracle);
+    function setSecurityOracle(address _so) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        securityOracle = _so;
+        emit SecurityOracleUpdated(_so);
+    }
+
     /**
      * @notice Mapping to manually mark users as 'Supreme Members'.
      */
@@ -315,7 +323,7 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
      * @param jobId The unique ID of the job.
      * @param freelancer The address of the selected freelancer.
      */
-    function pickFreelancer(uint256 jobId, address freelancer) external whenNotPaused {
+    function pickFreelancer(uint256 jobId, address freelancer) external whenNotPaused nonReentrant {
         Job storage job = jobs[jobId];
         if (_msgSender() != job.client) revert NotAuthorized();
         if (job.status != JobStatus.Created) revert InvalidStatus();
@@ -327,10 +335,11 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
         Application[] storage apps = jobApplications[jobId];
         for (uint256 i = 0; i < apps.length; i++) {
             if (apps[i].freelancer != freelancer) {
+                uint256 stake = apps[i].stake;
                 if (yieldManager != address(0) && job.yieldStrategy != IYieldManager.Strategy.NONE && job.token != address(0)) {
-                    IYieldManager(yieldManager).withdraw(job.yieldStrategy, job.token, apps[i].stake, address(this));
+                    IYieldManager(yieldManager).withdraw(job.yieldStrategy, job.token, stake, address(this));
                 }
-                balances[apps[i].freelancer][job.token] += apps[i].stake;
+                balances[apps[i].freelancer][job.token] += stake;
             } else {
                 job.freelancerStake = apps[i].stake;
             }
@@ -643,6 +652,16 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
         if (_msgSender() != job.client) revert NotAuthorized();
         if (job.status != JobStatus.Ongoing && job.status != JobStatus.Accepted) revert InvalidStatus();
         if (mId >= job.milestoneCount) revert InvalidMilestone();
+        
+        // Zenith Security Gate
+        if (job.zkRequired && securityOracle != address(0)) {
+            // Require a passing security report for the milestone
+            (bool success, bytes memory data) = securityOracle.staticcall(
+                abi.encodeWithSignature("isMilestoneSecure(uint256,uint256)", jobId, mId)
+            );
+            if (!success || !abi.decode(data, (bool))) revert NotAuthorized(); // Or a custom "SecurityGateFailed" error
+        }
+
         _releaseMilestoneInternal(jobId, mId);
     }
 
@@ -672,7 +691,7 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
      */
     function completeJob(uint256 jobId, uint8 rating) public whenNotPaused nonReentrant {
         Job storage job = jobs[jobId];
-        if (_msgSender() != job.client) revert NotAuthorized();
+        if (_msgSender() != job.client && !hasRole(ARBITRATOR_ROLE, _msgSender())) revert NotAuthorized();
         if (job.status != JobStatus.Ongoing) revert InvalidStatus();
         if (job.paid) revert AlreadyPaid();
 
@@ -684,18 +703,23 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
 
         // Supreme Level Check: 0% Fee for Elite Veterans or Private Verified Users
         bool isSupremeMember = _checkSupremeStatus(job.freelancer, uint256(job.categoryId));
-
         if (isSupremeMember) fee = 0;
         
         uint256 freelancerNet = payout - fee;
 
-        // State updates
+        // 1. Effects: Update state BEFORE any external interactions (CEI)
         job.paid = true;
         job.status = JobStatus.Completed;
         job.rating = rating;
         job.totalPaidOut += payout;
 
-        // Mint SBTs
+        // Update balances before external calls
+        balances[job.freelancer][job.token] += (freelancerNet + job.freelancerStake);
+        if (fee > 0 && vault != address(0)) {
+            balances[vault][job.token] += fee;
+        }
+
+        // 2. Interactions: Mint SBTs (External contract calls)
         _mintSBT(job.freelancer, jobId);
 
         if (completionCertContract != address(0)) {
@@ -704,38 +728,23 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
 
         if (reputationContract != address(0)) {
             (bool success, ) = reputationContract.call(abi.encodeWithSignature("levelUp(address,uint256,uint256)", job.freelancer, job.categoryId, 1));
-            success;
             (success, ) = reputationContract.call(abi.encodeWithSignature("updateRating(address,uint8)", job.freelancer, rating));
-            success;
         }
 
         if (rating == 5 && reviewSBT != address(0)) {
             (bool success, ) = reviewSBT.call(abi.encodeWithSignature("mint(address)", job.freelancer));
-            success;
         }
 
         if (polyToken != address(0)) {
             uint256 baseReward = REWARD_BASE;
-            
-            // Apply Multipliers
             if (isSupremeMember) baseReward *= SUPREME_REWARD_BOOST;
-            if (job.token == polyToken) baseReward *= 2; // Extra multiplier for ecosystem token utility (POL_MULTIPLIER)
-
+            if (job.token == polyToken) baseReward *= 2; 
             (bool success, ) = polyToken.call(abi.encodeWithSignature("mint(address,uint256)", job.freelancer, baseReward));
-            success;
         }
 
-        // Finalize payout by withdrawing from yield manager if active
+        // 3. Interactions: Finalize payout by withdrawing from yield manager
         if (yieldManager != address(0) && job.yieldStrategy != IYieldManager.Strategy.NONE) {
             IYieldManager(yieldManager).withdraw(job.yieldStrategy, job.token, payout + job.freelancerStake, address(this));
-        }
-
-        // Payout freelancer (net) + stake return
-        balances[job.freelancer][job.token] += (freelancerNet + job.freelancerStake);
-        
-        // Payout vault (fee)
-        if (fee > 0 && vault != address(0)) {
-            balances[vault][job.token] += fee;
         }
 
         emit FundsReleased(jobId, job.freelancer, payout, jobId, block.timestamp);
@@ -771,6 +780,8 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
      * @param jobId The unique ID of the job.
      */
     function actuatePayment(uint256 jobId) external {
+        Job storage job = jobs[jobId];
+        if (_msgSender() != job.client && !hasRole(ARBITRATOR_ROLE, _msgSender()) && !hasRole(AGENT_ROLE, _msgSender())) revert NotAuthorized();
         completeJob(jobId, 5);
     }
 
@@ -907,24 +918,26 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
      */
     function resolveDisputeManual(uint256 jobId, uint256 freelancerBps) external onlyRole(ARBITRATOR_ROLE) whenNotPaused nonReentrant {
         Job storage job = jobs[jobId];
-        if (job.status != JobStatus.Disputed) revert InvalidStatus();
+        if (job.status != JobStatus.Disputed && job.status != JobStatus.Ongoing) revert InvalidStatus();
         
         uint256 remaining = job.amount - job.totalPaidOut;
         uint256 freelancerAmt = (remaining * freelancerBps) / 10000;
         uint256 clientAmt = remaining - freelancerAmt;
 
+        // 1. Effects: Update state BEFORE any external interactions (CEI)
         job.totalPaidOut += remaining;
         job.status = (freelancerBps > 5000) ? JobStatus.Completed : JobStatus.Cancelled;
-
-        // Withdraw from yield manager if active
-        if (yieldManager != address(0) && job.yieldStrategy != IYieldManager.Strategy.NONE) {
-            IYieldManager(yieldManager).withdraw(job.yieldStrategy, job.token, remaining + job.freelancerStake, address(this));
-        }
+        job.paid = true;
 
         if (freelancerAmt > 0) balances[job.freelancer][job.token] += (freelancerAmt + job.freelancerStake);
         else balances[job.freelancer][job.token] += job.freelancerStake;
 
         if (clientAmt > 0) balances[job.client][job.token] += clientAmt;
+
+        // 2. Interactions: Yield manager withdrawal
+        if (yieldManager != address(0) && job.yieldStrategy != IYieldManager.Strategy.NONE) {
+            IYieldManager(yieldManager).withdraw(job.yieldStrategy, job.token, remaining + job.freelancerStake, address(this));
+        }
         
         emit DisputeResolved(jobId, freelancerBps, block.timestamp);
     }

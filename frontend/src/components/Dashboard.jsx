@@ -1,14 +1,13 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
-// Resonance Calibration Log: [2026-03-14] - Triggering Vite re-sync.
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState, useEffect, useMemo } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { useAccount } from 'wagmi';
 import { formatEther } from 'viem';
 import { 
-    Shield, Award, Zap, Brain, Rocket, Clock, Database, 
-    Terminal, Layers, TrendingUp, Cpu, Flame, CheckCircle2,
-    ArrowRight, MessageSquare, ChevronRight, Gavel, Sparkles,
-    Activity, Globe, Lock, Diamond, User, Wallet, ShieldCheck, Trophy,
-    ArrowUpRight, Star, Search, Filter, AlertCircle, Info, Loader2
+    Shield, Award, Zap, Rocket, Clock, TrendingUp, Cpu, Flame,
+    CheckCircle2, ArrowUpRight, Trophy, Star, Activity, Globe,
+    ChevronRight, Layout, PieChart, Wallet, Plus, ZapOff,
+    Target, BarChart3, Fingerprint, Layers, ExternalLink,
+    Lock, Unlock, Radio, Server
 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import SubgraphService from '../services/SubgraphService';
@@ -16,80 +15,39 @@ import ProfileService from '../services/ProfileService';
 import { useSovereignLogic } from '../hooks/useSovereignLogic';
 import ReasoningProofModal from './ReasoningProofModal';
 import DemoProtocol from '../services/DemoProtocol';
-import { TreasuryButlerService } from '../services/TreasuryButlerService';
-import { GravityScoreService } from '../services/GravityScoreService';
-import { useAnimeAnimations } from '../hooks/useAnimeAnimations';
-import hotToast from 'react-hot-toast';
 import { parseProtocolValue } from '../utils/protocolUtils';
+import './Dashboard.css';
 
 const Dashboard = ({ address: propAddress }) => {
     const { address: wagmiAddress } = useAccount();
     const address = propAddress || wagmiAddress;
     const isConnected = !!address;
     const { calculateGravity } = useSovereignLogic();
-    const { staggerFadeIn } = useAnimeAnimations();
     
-    // State
     const [selectedProof, setSelectedProof] = useState(null);
     const [isProofModalOpen, setIsProofModalOpen] = useState(false);
+    const [tbaInfo, setTbaInfo] = useState(null);
+
     const { data: qStats } = useQuery({
         queryKey: ['protocolStats'],
         queryFn: () => SubgraphService.getProtocolStats(),
     });
-    const surplus = useMemo(() => {
-        try {
-            if (!qStats?.totalYieldGenerated) return 0;
-            const weiVal = parseProtocolValue(qStats.totalYieldGenerated);
-            return parseFloat(formatEther(weiVal * 20n / 100n));
-        } catch (e) {
-            return 0;
-        }
-    }, [qStats]);
-    const [tbaInfo, setTbaInfo] = useState(null);
-    
-    // Queries
-    const { data: pData, refetch: refetchProfile } = useQuery({
+
+    const { data: pData } = useQuery({
         queryKey: ['profile', address],
         queryFn: () => ProfileService.getProfile(address),
         enabled: !!address
     });
 
-    const { data: aData, refetch: refetchEcosystem } = useQuery({
+    const { data: aData } = useQuery({
         queryKey: ['ecosystem-stats'],
         queryFn: () => SubgraphService.getEcosystemStats(),
     });
 
-    const refetchAll = React.useCallback(() => {
-        refetchProfile();
-        refetchEcosystem();
-        // Task 2: Component Cleanup
-        // Rely exclusively on the useQuery hooks for data visibility. 
-        // No manual state updates or redundant subgraph calls.
-        if (address) {
-            DemoProtocol.getTBAVisualProof(address).then(setTbaInfo);
-        }
-    }, [address, refetchProfile, refetchEcosystem]);
-
-    useEffect(() => {
-        const handleUpdate = (e) => {
-            if (e.detail === address) {
-                console.info('[DASHBOARD] Identity update detected. Re-calibrating hub...');
-                refetchAll();
-            }
-        };
-        window.addEventListener('IDENTITY_UPDATED', handleUpdate);
-        return () => window.removeEventListener('IDENTITY_UPDATED', handleUpdate);
-    }, [address, refetchAll]);
-
-    // Surplus dynamic logic disabled per liquidity reset directive — re-enable in v1.6
-    // useEffect(() => { setSurplus(prev => prev + (Math.random() * 0.00001)); }, []);
-
-    // Task 3: Dashboard Optimistic State Merging
     const { data: portfolioRaw } = useQuery({
         queryKey: ['portfolio', address],
         queryFn: () => SubgraphService.getUserPortfolio(address),
-        enabled: !!address,
-        staleTime: 30000 
+        enabled: !!address
     });
 
     const activeEscrows = useMemo(() => {
@@ -100,41 +58,18 @@ const Dashboard = ({ address: propAddress }) => {
         
         const STATUS_MAP = { 'Created': 0, 'Accepted': 1, 'Ongoing': 2, 'Disputed': 3, 'Arbitration': 4, 'Completed': 5, 'Cancelled': 6 };
         
-        // Remove duplicates and map to unified structure
         const jobIds = new Set();
-        const live = allJobsRaw.filter(j => {
+        return allJobsRaw.filter(j => {
             if (jobIds.has(j.jobId)) return false;
             jobIds.add(j.jobId);
             return (STATUS_MAP[j.status] ?? 0) < 5;
         }).map(j => ({
             id: j.jobId,
             title: `Contract #${j.jobId}`,
-            status: STATUS_MAP[j.status] ?? 0,
             statusLabel: j.status || 'Active',
-            amount: formatEther(parseProtocolValue(j.amount)),
-            applicantCount: j.applicantCount || 0 // This will be hydrated below
+            amount: formatEther(parseProtocolValue(j.amount))
         }));
-
-        return live;
     }, [address, portfolioRaw]);
-
-    // Hydrate applicant counts in Dashboard for real-time visibility
-    const [hydratedEscrows, setHydratedEscrows] = useState([]);
-    useEffect(() => {
-        const hydrate = async () => {
-            if (activeEscrows.length === 0) return;
-            const updated = await Promise.all(activeEscrows.map(async (job) => {
-                try {
-                    const applications = await SubgraphService.getJobApplications?.(job.id) || [];
-                    // Note: If Subgraph doesn't have applications, we'd need SovereignService
-                    // For now, let's assume it's indexed or uses the same service pattern
-                    return { ...job, applicantCount: applications.length };
-                } catch { return job; }
-            }));
-            setHydratedEscrows(updated);
-        };
-        hydrate();
-    }, [activeEscrows]);
 
     useEffect(() => {
         if (address) {
@@ -142,7 +77,6 @@ const Dashboard = ({ address: propAddress }) => {
         }
     }, [address]);
 
-    // Derived Stats: Calculated via useMemo for absolute zero-gravity render cycles.
     const gravityStats = useMemo(() => {
         return calculateGravity({
             averageRating: pData?.averageRating || 0,
@@ -151,301 +85,247 @@ const Dashboard = ({ address: propAddress }) => {
         });
     }, [pData, aData, calculateGravity]);
 
-    useEffect(() => {
-        staggerFadeIn('.bento-tile', 60);
-    }, [staggerFadeIn]);
-
-    const handleViewProof = (escrow) => {
-        setSelectedProof({
-            agent: 'LogicStabilizer-Agent',
-            timestamp: Date.now(),
-            cid: escrow.id || 'not-yet-indexed',
-            decision: {
-                rationale: `Actuating ${escrow.title} milestone release logic via yield-sharing offset. Protocol confirms 0% extractive friction detected.`
-            },
-            sensoryInputs: {
-                milestone_status: escrow.status || 'ACTIVE',
-                yield_adjustment: gravityStats.equilibriumAdjustment,
-                gravity_tier: gravityStats.orbitCategory,
-                progress: `${escrow.progress}%`,
-                budget: `${escrow.budget} MATIC`
-            }
-        });
-        setIsProofModalOpen(true);
+    const containerVariants = {
+        hidden: { opacity: 0 },
+        visible: {
+            opacity: 1,
+            transition: { staggerChildren: 0.1, delayChildren: 0.2 }
+        }
     };
 
-    // Shell handles non-connection state, but we show a loader if address is transiently missing
-    if (!isConnected) return (
-        <div style={{ height: '70vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '24px' }}>
-            <Loader2 size={32} className="animate-spin text-accent" />
-            <div style={{ color: 'rgba(255,255,255,0.2)', fontSize: '10px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.4em' }}>Synchronizing Node</div>
-        </div>
-    );
+    const itemVariants = {
+        hidden: { opacity: 0, y: 30 },
+        visible: { 
+            opacity: 1, 
+            y: 0, 
+            transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] } 
+        }
+    };
 
     return (
-        <div className="px-4 py-8 md:p-[60px] mx-auto text-white" style={{ 
-            maxWidth: '1800px', 
-            fontFamily: "'Outfit', sans-serif"
-        }}>
-            {/* ── Background Atmos ── */}
-            <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-[#00f5d4]/5 rounded-full blur-[160px] pointer-events-none opacity-40" />
-            
-            {/* ── Tactical Header ── */}
-            <motion.header 
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                style={{ marginBottom: '60px' }}
-            >
-                <div className="flex flex-wrap items-center gap-3 mb-5">
-                    <div className="px-4 py-1.5 bg-white/5 border border-white/10 rounded-full flex items-center gap-2">
-                        <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#00f5d4', boxShadow: '0 0 10px #00f5d4' }} />
-                        <span style={{ fontSize: '9px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.3em', color: 'rgba(255,255,255,0.4)' }}>
-                            Node: {address?.slice(0, 10)}... // Status: Active
-                        </span>
+        <motion.div 
+            className="dashboard-container"
+            initial="hidden"
+            animate="visible"
+            variants={containerVariants}
+        >
+            {/* Background Aesthetic */}
+            <div className="bg-pattern-grid" />
+            <div className="ambient-glow" style={{ top: '10%', left: '20%', opacity: 0.1 }} />
+            <div className="ambient-glow" style={{ bottom: '20%', right: '10%', background: '#d946ef', opacity: 0.05 }} />
+
+            {/* Header Section */}
+            <motion.div variants={itemVariants} className="dashboard-header">
+                <div>
+                    <div className="system-status">
+                        <div className="status-dot" />
+                        <span className="status-text">Sovereign Node: Online</span>
                     </div>
+                    <h1 className="dashboard-title">
+                        Command <span className="accent-text">Center</span>
+                    </h1>
+                    <p className="dashboard-subtitle">
+                        Orchestrating trustless coordination for <span style={{ color: '#fff', fontWeight: 700 }}>{pData?.name || (address ? `${address.slice(0,6)}...${address.slice(-4)}` : 'Operator')}</span>. 
+                    </p>
                 </div>
-                
-                <h1 className="text-[2.5rem] md:text-[4.5rem] font-black tracking-tight leading-[1.1] m-0 break-words">
-                    <span style={{ color: 'rgba(255,255,255,0.1)' }}>/</span> {address?.slice(2, 6).toUpperCase()} <span style={{ color: '#00f5d4', textShadow: '0 0 30px rgba(0,245,212,0.2)' }}>Control Hub</span>
-                </h1>
-                <p style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.4em', color: 'rgba(255,255,255,0.2)', marginTop: '8px' }}>
-                    Authorized Operator: {pData?.name || 'Sovereign Node'}
-                </p>
-            </motion.header>
+                <div className="header-actions flex gap-4">
+                    <button className="btn btn-ghost" style={{ padding: '12px 24px', gap: '10px' }}>
+                        <BarChart3 size={18} />
+                        <span>Intelligence</span>
+                    </button>
+                    <button 
+                        className="btn btn-primary" 
+                        style={{ padding: '14px 32px', gap: '10px' }}
+                        onClick={() => window.dispatchEvent(new CustomEvent('NAV_TO_TAB', { detail: 'jobs' }))}
+                    >
+                        <Plus size={20} />
+                        <span>New Mission</span>
+                    </button>
+                </div>
+            </motion.div>
 
-            {/* ── Main Operations Grid ── */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-[30px] relative z-10">
+            {/* Bento Grid */}
+            <div className="bento-grid">
                 
-                {/* 1. Protocol Reputation Tile */}
-                <motion.div 
-                    whileHover={{ y: -5 }}
-                    className="col-span-1 lg:col-span-8 p-6 lg:p-[40px]"
-                    style={{ 
-                        background: '#0a0b0e', 
-                        border: '1px solid rgba(255,255,255,0.05)', 
-                        borderRadius: '32px',
-                        position: 'relative',
-                        overflow: 'hidden'
-                    }}
-                >
-                    <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-[radial-gradient(circle,rgba(0,245,212,0.05)_0%,transparent_70%)] pointer-events-none" />
-                    
-                    <div className="flex flex-col lg:flex-row justify-between lg:items-center mb-8 lg:mb-[80px] gap-4 relative z-10">
+                {/* 1. Reputation Mastery */}
+                <motion.div variants={itemVariants} className="bento-card card-rep">
+                    <div className="bg-pattern-grid" />
+                    <div className="rep-header">
                         <div>
-                            <h3 className="text-xl lg:text-2xl font-black uppercase tracking-tight m-0">Protocol Reputation</h3>
-                            <p style={{ fontSize: '10px', fontWeight: 700, color: 'rgba(255,255,255,0.2)', textTransform: 'uppercase', letterSpacing: '0.3em', marginTop: '4px' }}>Identity Alignment Mesh</p>
-                        </div>
-                        <div className="px-4 py-2 self-start lg:self-auto" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px' }}>
-                            <span style={{ fontSize: '9px', fontWeight: 900, color: '#00f5d4', textTransform: 'uppercase', letterSpacing: '0.2em' }}>SBT-6551 Ready</span>
-                        </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-[40px] items-end relative z-10">
-                        <div>
-                            <div style={{ fontSize: '9px', fontWeight: 900, color: 'rgba(255,255,255,0.2)', textTransform: 'uppercase', letterSpacing: '0.2em', marginBottom: '12px' }}>Root Address</div>
-                            <div style={{ padding: '16px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '16px', fontSize: '10px', fontFamily: 'monospace', color: 'rgba(0,245,212,0.7)', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                {tbaInfo?.tbaAddress || 'Resolving...'}
+                            <span className="text-label"><Trophy size={14} style={{ display: 'inline', marginRight: '8px' }} /> Reputation Frequency</span>
+                            <div className="rep-score">
+                                {pData?.reputationScore || '0'}<span className="rep-unit">RP</span>
                             </div>
                         </div>
-
-                        <div style={{ textAlign: 'center' }}>
-                            <div style={{ fontSize: '9px', fontWeight: 900, color: 'rgba(255,255,255,0.2)', textTransform: 'uppercase', letterSpacing: '0.2em', marginBottom: '8px' }}>Reputation Score</div>
-                            <div style={{ fontSize: '64px', fontWeight: 900, lineHeight: 1 }}>{pData?.reputationScore || '0'}</div>
-                            <div style={{ height: '4px', background: 'rgba(255,255,255,0.05)', borderRadius: '100px', marginTop: '16px', overflow: 'hidden' }}>
-                                <div style={{ width: `${(pData?.reputationScore || 0) / 10}%`, height: '100%', background: '#00f5d4', boxShadow: '0 0 10px #00f5d4' }} />
-                            </div>
-                        </div>
-
                         <div style={{ textAlign: 'right' }}>
-                            <div style={{ fontSize: '9px', fontWeight: 900, color: 'rgba(255,255,255,0.2)', textTransform: 'uppercase', letterSpacing: '0.2em', marginBottom: '4px' }}>Current Rank</div>
-                            <div style={{ fontSize: '24px', fontWeight: 900, color: '#00f5d4', textTransform: 'uppercase', letterSpacing: '-0.02em' }}>{gravityStats.orbitCategory?.split('(')[0].trim()}</div>
-                            <div style={{ fontSize: '9px', fontWeight: 700, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: '8px' }}>{gravityStats.equilibriumAdjustment} Boost</div>
-                        </div>
-                    </div>
-                </motion.div>
-
-                {/* 2. Protocol Stats Side Card (Mirroring Reference) */}
-                <motion.div 
-                    whileHover={{ scale: 1.02 }}
-                    className="col-span-1 lg:col-span-4 p-6 lg:p-[40px] flex flex-col justify-between"
-                    style={{ 
-                        background: '#0d0e12', 
-                        border: '1px solid rgba(255,255,255,0.08)', 
-                        borderRadius: '32px',
-                        boxShadow: '0 20px 50px rgba(0,0,0,0.5)'
-                    }}
-                >
-                    <div className="flex justify-between items-center mb-6 lg:mb-0">
-                        <span style={{ fontSize: '10px', fontWeight: 900, color: 'rgba(255,255,255,0.2)', textTransform: 'uppercase', letterSpacing: '0.3em' }}>Protocol Stats</span>
-                        <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#00f5d4', boxShadow: '0 0 10px #00f5d4' }} />
-                    </div>
-
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '24px', padding: '30px 0' }}>
-                        <div style={{ 
-                            width: '80px', 
-                            height: '80px', 
-                            borderRadius: '50%', 
-                            background: 'linear-gradient(135deg, #00f5d4, #6366f1)',
-                            boxShadow: '0 0 30px rgba(0,245,212,0.3)'
-                        }} />
-                        <div>
-                            <div style={{ fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase' }}>Current Resonance</div>
-                            <div style={{ fontSize: '32px', fontWeight: 900, color: '#fff' }}>v1.5.1-Z</div>
-                        </div>
-                    </div>
-
-                    <div style={{ spaceY: '20px' }}>
-                        <div style={{ 
-                            display: 'flex', 
-                            justifyContent: 'space-between', 
-                            background: 'rgba(0,0,0,0.4)', 
-                            padding: '16px 20px', 
-                            borderRadius: '16px',
-                            border: '1px solid rgba(255,255,255,0.05)',
-                            marginBottom: '20px'
-                        }}>
-                            <span style={{ fontSize: '10px', fontWeight: 900, color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase' }}>Friction Level</span>
-                            <span style={{ fontSize: '18px', fontWeight: 900, color: '#00f5d4' }}>{gravityStats.frictionLevel}</span>
-                        </div>
-                        <button style={{ 
-                            width: '100%', 
-                            padding: '16px', 
-                            background: '#fff', 
-                            color: '#000', 
-                            border: 'none', 
-                            borderRadius: '16px', 
-                            fontSize: '10px', 
-                            fontWeight: 900, 
-                            textTransform: 'uppercase', 
-                            letterSpacing: '0.3em',
-                            cursor: 'pointer'
-                        }}>
-                            Calibrate Node
-                        </button>
-                    </div>
-                </motion.div>
-
-                {/* 3. Global Stats Grid */}
-                <div className="col-span-1 lg:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-[20px]">
-                    <div className="flex items-center gap-6 p-6 lg:p-[32px]" style={{ background: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '24px' }}>
-                        <div style={{ width: '56px', height: '56px', borderRadius: '16px', background: 'rgba(0,245,212,0.05)', border: '1px solid rgba(0,245,212,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#00f5d4', flexShrink: 0 }}>
-                            <Flame size={24} />
-                        </div>
-                        <div>
-                            <div style={{ fontSize: '9px', fontWeight: 900, color: 'rgba(255,255,255,0.2)', textTransform: 'uppercase', letterSpacing: '0.2em' }}>Earned Yield</div>
-                            <div className="text-2xl lg:text-[28px] font-black mt-1">{surplus.toFixed(4)} <span style={{ fontSize: '10px', color: '#00f5d4' }}>MATIC</span></div>
-                        </div>
-                    </div>
-                    <div className="flex items-center gap-6 p-6 lg:p-[32px]" style={{ background: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '24px' }}>
-                        <div style={{ width: '56px', height: '56px', borderRadius: '16px', background: 'rgba(0,245,212,0.05)', border: '1px solid rgba(0,245,212,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#00f5d4', flexShrink: 0 }}>
-                            <Zap size={24} />
-                        </div>
-                        <div>
-                            <div style={{ fontSize: '9px', fontWeight: 900, color: 'rgba(255,255,255,0.2)', textTransform: 'uppercase', letterSpacing: '0.2em' }}>Active Pipelines</div>
-                            <div className="text-2xl lg:text-[28px] font-black mt-1">{activeEscrows.length} <span style={{ fontSize: '10px', color: '#00f5d4' }}>UNITS</span></div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* 4. Telemetry Tile */}
-                <motion.div className="col-span-1 lg:col-span-4 p-6 lg:p-[32px]" style={{ background: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '24px' }}>
-                    <h4 style={{ fontSize: '10px', fontWeight: 900, color: 'rgba(255,255,255,0.2)', textTransform: 'uppercase', letterSpacing: '0.4em', marginBottom: '24px' }}>Telemetry</h4>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                        {[
-                            { label: 'Network Integrity', val: 'SECURE', color: '#00f5d4' },
-                            { label: 'Zenith Mesh Sync', val: 'ACTIVE', color: '#00f5d4' },
-                            { label: 'Protocol Equilibrium', val: 'STABLE', color: 'rgba(255,255,255,0.6)' },
-                        ].map((s, i) => (
-                            <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <span style={{ fontSize: '10px', fontWeight: 700, color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase' }}>{s.label}</span>
-                                <span style={{ fontSize: '10px', fontWeight: 900, color: s.color, letterSpacing: '0.1em' }}>{s.val}</span>
+                            <div className="status-pill" style={{ color: '#8b5cf6', borderColor: 'rgba(139,92,246,0.3)', background: 'rgba(139,92,246,0.1)' }}>
+                                {gravityStats.orbitCategory?.split('(')[0].trim() || 'Unranked'}
                             </div>
-                        ))}
+                        </div>
+                    </div>
+                    
+                    <div className="rep-footer">
+                        <div>
+                            <span className="text-label">Network Gravity</span>
+                            <div className="text-value flex items-center gap-3">
+                                {(pData?.averageRating || 0).toFixed(1)}
+                                <div className="flex gap-1">
+                                    {[...Array(5)].map((_, i) => (
+                                        <Star key={i} size={12} fill={i < Math.floor(pData?.averageRating || 0) ? '#8b5cf6' : 'none'} color={i < Math.floor(pData?.averageRating || 0) ? '#8b5cf6' : 'rgba(255,255,255,0.1)'} />
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <span className="text-label">Equilibrium</span>
+                            <div className="text-value accent-text">
+                                {gravityStats.equilibriumAdjustment || '+0.0'}
+                            </div>
+                        </div>
+                        <div>
+                            <span className="text-label">Total Missions</span>
+                            <div className="text-value">
+                                {aData?.totalJobs || '0'} <span style={{ fontSize: '14px', opacity: 0.3, fontWeight: 500 }}>UNITS</span>
+                            </div>
+                        </div>
                     </div>
                 </motion.div>
 
-                {/* 5. Active Operations Table */}
-                <motion.div 
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="col-span-1 lg:col-span-12 mt-4 lg:mt-[30px]"
-                    style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '32px', overflow: 'hidden' }}
-                >
-                    <div className="flex justify-between items-center p-6 lg:p-[32px] border-b border-white/5">
-                        <div>
-                            <h4 style={{ fontSize: '11px', fontWeight: 900, color: 'rgba(255,255,255,0.2)', textTransform: 'uppercase', letterSpacing: '0.3em', margin: 0 }}>Active Operations</h4>
-                            <p style={{ fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.4)', marginTop: '4px' }}>Real-time Escrow Tracking</p>
+                {/* 2. Identity Anchor */}
+                <motion.div variants={itemVariants} className="bento-card card-identity">
+                    <div>
+                        <div className="flex justify-between items-center">
+                            <span className="text-label flex items-center gap-2"><Fingerprint size={16} /> Identity Anchor</span>
+                            <div className="status-pill">ERC-6551</div>
                         </div>
-                        <button style={{ padding: '8px 16px', background: 'rgba(255,255,255,0.04)', border: 'none', borderRadius: '12px', fontSize: '10px', fontWeight: 900, color: 'var(--accent-light)', cursor: 'pointer' }}>
-                            View All
+                        
+                        <div className="identity-avatar-container">
+                            <div className="avatar-glow" />
+                            <div className="avatar-frame">
+                                <div className="avatar-inner">
+                                    <img 
+                                        src={`https://api.dicebear.com/7.x/shapes/svg?seed=${address}&backgroundColor=050505`} 
+                                        alt="Sovereign Identity" 
+                                        style={{ width: '100%', height: '100%' }}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style={{ textAlign: 'center' }}>
+                        <span className="text-label" style={{ marginBottom: '16px' }}>Binding Hash</span>
+                        <div style={{ background: 'rgba(255,255,255,0.03)', padding: '14px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)', fontFamily: 'monospace', fontSize: '12px', color: 'rgba(255,255,255,0.4)', wordBreak: 'break-all' }}>
+                            {tbaInfo?.tbaAddress ? `${tbaInfo.tbaAddress.slice(0, 18)}...${tbaInfo.tbaAddress.slice(-16)}` : 'Synchronizing...'}
+                        </div>
+                        <button className="btn btn-ghost" style={{ width: '100%', marginTop: '24px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.15em', fontWeight: 800 }}>
+                            View Proof of Identity
                         </button>
                     </div>
-                    <div style={{ overflowX: 'auto' }}>
-                        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                            <thead>
-                                <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', background: 'rgba(0,0,0,0.2)' }}>
-                                    <th style={{ padding: '20px 32px', textAlign: 'left', fontSize: '9px', fontWeight: 900, textTransform: 'uppercase', color: 'rgba(255,255,255,0.2)' }}>Mission ID</th>
-                                    <th style={{ padding: '20px 32px', textAlign: 'left', fontSize: '9px', fontWeight: 900, textTransform: 'uppercase', color: 'rgba(255,255,255,0.2)' }}>Status</th>
-                                    <th style={{ padding: '20px 32px', textAlign: 'left', fontSize: '9px', fontWeight: 900, textTransform: 'uppercase', color: 'rgba(255,255,255,0.2)' }}>Applicants</th>
-                                    <th style={{ padding: '20px 32px', textAlign: 'left', fontSize: '9px', fontWeight: 900, textTransform: 'uppercase', color: 'rgba(255,255,255,0.2)' }}>Value</th>
-                                    <th style={{ padding: '20px 32px', textAlign: 'right', fontSize: '9px', fontWeight: 900, textTransform: 'uppercase', color: 'rgba(255,255,255,0.2)' }}>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {hydratedEscrows.map((job) => (
-                                    <tr key={job.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
-                                        <td style={{ padding: '24px 32px' }}>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                                <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#00f5d4' }} />
-                                                <span style={{ fontSize: '12px', fontWeight: 700, fontFamily: 'monospace' }}>#{job.id}</span>
-                                            </div>
-                                        </td>
-                                        <td style={{ padding: '24px 32px' }}>
-                                            <span style={{ fontSize: '9px', fontWeight: 900, textTransform: 'uppercase', padding: '4px 8px', borderRadius: '6px', background: 'rgba(255,255,255,0.03)', color: '#00f5d4' }}>
-                                                {job.statusLabel}
-                                            </span>
-                                        </td>
-                                        <td style={{ padding: '24px 32px' }}>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                <div style={{ padding: '4px 10px', borderRadius: '100px', background: 'rgba(0,245,212,0.1)', border: '1px solid rgba(0,245,212,0.2)', fontSize: '10px', fontWeight: 900, color: '#00f5d4' }}>
-                                                    {job.applicantCount || 0} Specialists
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td style={{ padding: '24px 32px' }}>
-                                            <span style={{ fontSize: '13px', fontWeight: 900 }}>{job.amount} MATIC</span>
-                                        </td>
-                                        <td style={{ padding: '24px 32px', textAlign: 'right' }}>
-                                            <button 
-                                                onClick={() => handleViewProof(job)}
-                                                style={{ border: 'none', background: 'none', color: 'rgba(255,255,255,0.2)', cursor: 'pointer' }}>
-                                                <ChevronRight size={18} />
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
-                                {hydratedEscrows.length === 0 && (
+                </motion.div>
+
+                {/* 3. Stats Blocks */}
+                <motion.div 
+                    variants={itemVariants} 
+                    className="bento-card card-stats"
+                    whileHover={{ scale: 1.02 }}
+                >
+                    <div className="flex items-center gap-3">
+                        <div style={{ padding: '10px', borderRadius: '12px', background: 'rgba(16,185,129,0.1)', color: '#10b981' }}>
+                            <Activity size={20} />
+                        </div>
+                        <span className="text-label">Active Missions</span>
+                    </div>
+                    <div>
+                        <div className="text-value" style={{ fontSize: '3rem' }}>{activeEscrows.length}</div>
+                        <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)', fontWeight: 800, textTransform: 'uppercase' }}>In Orbit</p>
+                    </div>
+                </motion.div>
+
+                <motion.div 
+                    variants={itemVariants} 
+                    className="bento-card card-stats"
+                    whileHover={{ scale: 1.02 }}
+                >
+                    <div className="flex items-center gap-3">
+                        <div style={{ padding: '10px', borderRadius: '12px', background: 'rgba(139,92,246,0.1)', color: '#8b5cf6' }}>
+                            <Globe size={20} />
+                        </div>
+                        <span className="text-label">Mesh Sync</span>
+                    </div>
+                    <div>
+                        <div className="text-value" style={{ fontSize: '3rem' }}>99.9%</div>
+                        <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)', fontWeight: 800, textTransform: 'uppercase' }}>Protocol Health</p>
+                    </div>
+                </motion.div>
+
+                {/* 4. Telemetry Grid */}
+                <motion.div variants={itemVariants} className="bento-card card-telemetry">
+                    <div className="telemetry-header">
+                        <div className="flex items-center gap-3">
+                            <Radio size={18} className="accent-text" />
+                            <span className="text-label" style={{ margin: 0 }}>Mission Telemetry</span>
+                        </div>
+                        <div style={{ fontSize: '10px', fontWeight: 900, color: '#8b5cf6', display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(139,92,246,0.1)', padding: '6px 12px', borderRadius: '20px' }}>
+                            LIVE SIGNAL <motion.div animate={{ opacity: [1, 0.4, 1] }} transition={{ duration: 1.5, repeat: Infinity }} className="status-dot" style={{ width: '6px', height: '6px', background: '#8b5cf6', margin: 0 }} />
+                        </div>
+                    </div>
+                    
+                    <div className="telemetry-body">
+                        {activeEscrows.length > 0 ? (
+                            <table className="telemetry-table">
+                                <thead>
                                     <tr>
-                                        <td colSpan="5" style={{ padding: '60px', textAlign: 'center', fontSize: '10px', color: 'rgba(255,255,255,0.1)', textTransform: 'uppercase', letterSpacing: '0.2em' }}>
-                                            No active missions detected on this node
-                                        </td>
+                                        <th>Vector</th>
+                                        <th>Protocol State</th>
+                                        <th style={{ textAlign: 'right' }}>Value</th>
                                     </tr>
-                                )}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    {activeEscrows.map((job) => (
+                                        <tr key={job.id} className="telemetry-row">
+                                            <td>
+                                                <div className="flex items-center gap-4">
+                                                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#8b5cf6', boxShadow: '0 0 10px rgba(139,92,246,0.5)' }} />
+                                                    <span style={{ fontFamily: 'monospace', color: '#fff', fontWeight: 600 }}>MISSION_{job.id}</span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span className="status-pill">{job.statusLabel}</span>
+                                            </td>
+                                            <td style={{ textAlign: 'right', fontWeight: 800, color: '#fff', fontFamily: 'Space Grotesk' }}>
+                                                {parseFloat(job.amount).toFixed(2)} <span style={{ fontSize: '10px', opacity: 0.5 }}>POL</span>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        ) : (
+                            <div style={{ padding: '100px 40px', textAlign: 'center', opacity: 0.3 }}>
+                                <ZapOff size={48} style={{ margin: '0 auto 24px' }} />
+                                <p style={{ fontSize: '14px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em' }}>No active missions detected</p>
+                                <p style={{ fontSize: '12px', marginTop: '8px' }}>Initiate a mission to begin orchestration</p>
+                            </div>
+                        )}
+                    </div>
+                    
+                    <div style={{ padding: '24px', borderTop: '1px solid rgba(255,255,255,0.05)', textAlign: 'center' }}>
+                        <button className="btn btn-ghost" style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', gap: '10px', width: '100%', justifyContent: 'center' }}>
+                            Access Archived Coordinates <ExternalLink size={14} />
+                        </button>
                     </div>
                 </motion.div>
 
             </div>
 
-            {/* Modal */}
             <ReasoningProofModal 
                 isOpen={isProofModalOpen} 
                 onClose={() => setIsProofModalOpen(false)} 
                 proof={selectedProof} 
             />
-        </div>
+        </motion.div>
     );
 };
 
 export default Dashboard;
+

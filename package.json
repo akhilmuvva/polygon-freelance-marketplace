@@ -33,6 +33,7 @@
     "node": ">=18.0.0"
   },
   "devDependencies": {
-    "concurrently": "^8.2.2"
+    "concurrently": "^8.2.2",
+    "solhint": "^4.1.1"
   }
 }

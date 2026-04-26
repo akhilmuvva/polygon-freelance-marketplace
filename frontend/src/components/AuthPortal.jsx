@@ -1,250 +1,140 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Mail, Wallet, ShieldCheck, Globe, Zap, Cpu, Sparkles } from 'lucide-react';
+import { Mail, Wallet, ShieldCheck, Globe, Zap, Sparkles, Loader2, ArrowRight } from 'lucide-react';
 import { useConnectModal } from '@rainbow-me/rainbowkit';
-
-const st = {
-    page: {
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        minHeight: '80vh', padding: '40px 20px',
-    },
-    wrap: { maxWidth: 960, width: '100%' },
-    grid: {
-        display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 60,
-        alignItems: 'center',
-    },
-    // Left column
-    badge: {
-        display: 'inline-flex', alignItems: 'center', gap: 6,
-        padding: '6px 14px', borderRadius: 20,
-        background: 'rgba(124,92,252,0.08)',
-        border: '1px solid rgba(124,92,252,0.18)',
-        marginBottom: 28,
-    },
-    badgeText: {
-        fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase',
-        letterSpacing: '0.12em', color: 'var(--accent-light)',
-    },
-    heading: {
-        fontSize: '3.2rem', fontWeight: 900, lineHeight: 1,
-        letterSpacing: '-0.04em', marginBottom: 20, color: '#fff',
-    },
-    headingAccent: {
-        background: 'linear-gradient(135deg, var(--accent-light), var(--accent))',
-        WebkitBackgroundClip: 'text', backgroundClip: 'text',
-        WebkitTextFillColor: 'transparent',
-    },
-    desc: {
-        fontSize: '1rem', color: 'var(--text-secondary)', lineHeight: 1.7,
-        maxWidth: 420, marginBottom: 32,
-    },
-    features: {
-        display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20,
-    },
-    featureItem: {
-        display: 'flex', alignItems: 'center', gap: 12,
-    },
-    featureIcon: {
-        width: 44, height: 44, borderRadius: 12,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        flexShrink: 0,
-    },
-    featureLabel: {
-        fontSize: '0.62rem', fontWeight: 700, textTransform: 'uppercase',
-        letterSpacing: '0.06em', color: 'var(--text-tertiary)', marginBottom: 2,
-    },
-    featureValue: {
-        fontSize: '0.85rem', fontWeight: 700, color: '#fff',
-    },
-    // Right column — auth card
-    authCard: {
-        background: 'var(--bg-card)',
-        border: '1px solid var(--border)',
-        borderRadius: 20, padding: 36, position: 'relative', overflow: 'hidden',
-    },
-    authGlow: {
-        position: 'absolute', top: -60, right: -60, width: 180, height: 180,
-        borderRadius: '50%',
-        background: 'radial-gradient(circle, var(--accent-subtle) 0%, transparent 70%)',
-        pointerEvents: 'none',
-    },
-    authTitle: {
-        fontSize: '1.5rem', fontWeight: 800, marginBottom: 6,
-        letterSpacing: '-0.02em', color: '#fff',
-    },
-    authSub: {
-        fontSize: '0.75rem', color: 'var(--text-tertiary)', marginBottom: 28,
-    },
-    btnGroup: {
-        display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 28,
-    },
-    authBtn: (accent) => ({
-        display: 'flex', alignItems: 'center', gap: 14, width: '100%',
-        padding: '16px 20px', borderRadius: 14,
-        background: 'rgba(255,255,255,0.03)',
-        border: `1px solid ${accent === 'purple' ? 'var(--accent-border)' : 'var(--secondary-subtle)'}`,
-        cursor: 'pointer', transition: 'all 0.2s ease', textAlign: 'left',
-        color: '#fff', position: 'relative', overflow: 'hidden',
-    }),
-    authBtnIcon: (accent) => ({
-        width: 44, height: 44, borderRadius: 12,
-        background: accent === 'purple'
-            ? 'linear-gradient(135deg, var(--accent-subtle), transparent)'
-            : 'linear-gradient(135deg, var(--secondary-subtle), transparent)',
-        border: `1px solid ${accent === 'purple' ? 'var(--accent-border)' : 'var(--secondary-subtle)'}`,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        flexShrink: 0,
-    }),
-    authBtnTitle: {
-        fontSize: '0.85rem', fontWeight: 700, marginBottom: 2, color: '#fff',
-    },
-    authBtnSub: {
-        fontSize: '0.68rem', color: 'var(--text-tertiary)',
-    },
-    authFooter: {
-        borderTop: '1px solid var(--border)', paddingTop: 20,
-        textAlign: 'center',
-    },
-    statusRow: {
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        gap: 6, marginBottom: 8,
-    },
-    statusDot: {
-        width: 6, height: 6, borderRadius: '50%', background: '#34d399',
-        boxShadow: '0 0 8px rgba(52,211,153,0.5)',
-    },
-    statusText: {
-        fontSize: '0.62rem', fontWeight: 700, textTransform: 'uppercase',
-        letterSpacing: '0.08em', color: 'var(--text-tertiary)',
-    },
-    securedBy: {
-        fontSize: '0.62rem', color: 'var(--text-tertiary)', opacity: 0.5,
-    },
-};
+import './AuthPortal.css';
 
 const AuthPortal = ({ actuateOnSocialLoginIntent, isLoggingIn }) => {
     const { openConnectModal } = useConnectModal();
 
+    const containerVariants = {
+        hidden: { opacity: 0 },
+        visible: {
+            opacity: 1,
+            transition: { staggerChildren: 0.15 }
+        }
+    };
+
+    const itemVariants = {
+        hidden: { opacity: 0, y: 30 },
+        visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] } }
+    };
+
     return (
-        <div style={st.page}>
+        <div className="auth-portal-container">
+            {/* Background Layers */}
+            <div className="auth-bg-orb orb-1" />
+            <div className="auth-bg-orb orb-2" />
+            <div className="auth-mesh-grid" />
+
             <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, ease: 'easeOut' }}
-                style={st.wrap}
+                variants={containerVariants}
+                initial="hidden"
+                animate="visible"
+                className="auth-content-wrap"
             >
-                <div style={st.grid}>
-                    {/* ── Left: Branding ── */}
-                    <div>
-                        <div style={st.badge}>
-                            <Sparkles size={13} style={{ color: 'var(--accent)' }} />
-                            <span style={st.badgeText}>Decentralized Freelancing</span>
-                        </div>
+                {/* ── Left: Branding ── */}
+                <div className="auth-brand-section">
+                    <motion.div variants={itemVariants} className="auth-badge">
+                        <Sparkles size={14} />
+                        <span className="auth-badge-text">Sovereign Coordination Protocol</span>
+                    </motion.div>
 
-                        <h1 style={st.heading}>
-                            Your Work,<br />
-                            <span style={st.headingAccent}>Your Income</span><br />
-                            Your Rules.
-                        </h1>
+                    <motion.h1 variants={itemVariants} className="auth-hero-title">
+                        Your Work,<br />
+                        <span className="title-shimmer">Your Destiny.</span>
+                    </motion.h1>
 
-                        <p style={st.desc}>
-                            Join a trustless marketplace for developers and designers. Secure contracts, fast payments, and on-chain verification.
-                        </p>
+                    <motion.p variants={itemVariants} className="auth-hero-desc">
+                        PolyLance Zenith is the trustless layer for professional coordination. 
+                        No intermediaries, no friction, just sovereign smart contracts.
+                    </motion.p>
 
-                        <div style={st.features}>
-                            <div style={st.featureItem}>
-                                <div style={{ ...st.featureIcon, background: 'rgba(124,92,252,0.08)', border: '1px solid rgba(124,92,252,0.12)' }}>
-                                    <ShieldCheck size={20} style={{ color: 'var(--accent-light)' }} />
-                                </div>
-                                <div>
-                                    <div style={st.featureLabel}>Security</div>
-                                    <div style={st.featureValue}>On-chain Escrow</div>
-                                </div>
+                    <motion.div variants={itemVariants} className="auth-features-bento">
+                        <div className="auth-feature-card">
+                            <div className="feature-card-icon">
+                                <ShieldCheck size={20} />
                             </div>
-                            <div style={st.featureItem}>
-                                <div style={{ ...st.featureIcon, background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.12)' }}>
-                                    <Globe size={20} style={{ color: 'var(--success)' }} />
-                                </div>
-                                <div>
-                                    <div style={st.featureLabel}>Network</div>
-                                    <div style={st.featureValue}>Multi-Chain</div>
-                                </div>
+                            <div>
+                                <div className="feature-card-label">Security</div>
+                                <div className="feature-card-value">On-chain Escrow</div>
                             </div>
                         </div>
-                    </div>
-
-                    {/* ── Right: Auth Card ── */}
-                    <div style={st.authCard}>
-                        <div style={st.authGlow} />
-
-                        <div style={{ position: 'relative', zIndex: 1 }}>
-                            <h3 style={st.authTitle}>Seamless Access</h3>
-                            <p style={st.authSub}>Secure, decentralized access to the workspace.</p>
-
-                            <div style={st.btnGroup}>
-                                <motion.button
-                                    whileHover={{ scale: 1.01, y: -2 }}
-                                    whileTap={{ scale: 0.99 }}
-                                    onClick={actuateOnSocialLoginIntent}
-                                    disabled={isLoggingIn}
-                                    aria-label="Login with Google, Email, or X"
-                                    aria-busy={isLoggingIn}
-                                    style={st.authBtn('purple')}
-                                    onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(124,92,252,0.45)'; e.currentTarget.style.background = 'rgba(124,92,252,0.08)'; }}
-                                    onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(124,92,252,0.15)'; e.currentTarget.style.background = 'rgba(255,255,255,0.03)'; }}
-                                >
-                                    <div style={st.authBtnIcon('purple')}>
-                                        {isLoggingIn
-                                            ? <div className="loading-spinner" role="status" style={{ width: 22, height: 22, border: '2px solid rgba(255,255,255,0.1)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }}>
-                                                <span style={{ position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', border: 0 }}>Loading...</span>
-                                            </div>
-                                            : <Mail size={20} style={{ color: 'var(--accent)' }} />
-                                        }
-                                    </div>
-                                    <div style={{ flex: 1 }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                                            <div style={st.authBtnTitle}>Google / Email / X</div>
-                                            <span style={{ fontSize: '0.55rem', fontWeight: 900, background: 'var(--success)', color: '#000', padding: '2px 6px', borderRadius: 4 }}>RECOMMENDED</span>
-                                        </div>
-                                        <div style={st.authBtnSub}>Instant Smart Wallet · Zero Gas Fees</div>
-                                    </div>
-                                </motion.button>
-
-                                <motion.button
-                                    whileHover={{ scale: 1.01, y: -2 }}
-                                    whileTap={{ scale: 0.99 }}
-                                    onClick={openConnectModal}
-                                    aria-label="Connect traditional Web3 wallet"
-                                    style={st.authBtn('pink')}
-                                    onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(236,72,153,0.45)'; e.currentTarget.style.background = 'rgba(236,72,153,0.08)'; }}
-                                    onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(236,72,153,0.15)'; e.currentTarget.style.background = 'rgba(255,255,255,0.03)'; }}
-                                >
-                                    <div style={st.authBtnIcon('pink')}>
-                                        <Wallet size={20} style={{ color: 'var(--secondary)' }} />
-                                    </div>
-                                    <div>
-                                        <div style={st.authBtnTitle}>Web3 Foundation</div>
-                                        <div style={st.authBtnSub}>MetaMask · WalletConnect · Ledger</div>
-                                    </div>
-                                </motion.button>
+                        <div className="auth-feature-card">
+                            <div className="feature-card-icon">
+                                <Globe size={20} />
                             </div>
-
-                            <div style={st.authFooter}>
-                                <div style={{ marginBottom: 16, padding: '10px 14px', borderRadius: 10, background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: 10 }}>
-                                    <Zap size={14} style={{ color: 'var(--warning)', fill: 'var(--warning)' }} />
-                                    <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', textAlign: 'left', lineHeight: 1.4 }}>
-                                        <strong>Gasless Mode:</strong> New users get 10 free transactions upon account activation.
-                                    </span>
-                                </div>
-                                <div style={st.statusRow}>
-                                    <div style={st.statusDot} />
-                                    <span style={st.statusText}>Network: Polygon Mainnet</span>
-                                </div>
-                                <p style={st.securedBy}>Secured by Chainlink & Biconomy</p>
+                            <div>
+                                <div className="feature-card-label">Network</div>
+                                <div className="feature-card-value">Polygon Zenith Mesh</div>
                             </div>
                         </div>
-                    </div>
+                    </motion.div>
                 </div>
+
+                {/* ── Right: Auth Card ── */}
+                <motion.div variants={itemVariants} className="protocol-gateway-card">
+                    <div className="gateway-glow" />
+
+                    <div className="gateway-header">
+                        <h3 className="gateway-title">Protocol Gateway</h3>
+                        <p className="gateway-subtitle">Synchronize your identity with the mesh.</p>
+                    </div>
+
+                    <div className="auth-actions-group">
+                        <motion.button
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                            onClick={actuateOnSocialLoginIntent}
+                            disabled={isLoggingIn}
+                            className="gateway-btn primary"
+                        >
+                            <span className="recommended-tag">OPTIMIZED</span>
+                            <div className="btn-icon-box">
+                                {isLoggingIn ? (
+                                    <Loader2 size={24} className="animate-spin" />
+                                ) : (
+                                    <Mail size={24} />
+                                )}
+                            </div>
+                            <div className="btn-content">
+                                <span className="btn-label">Social Induction</span>
+                                <span className="btn-subtext">Google · Email · X · Gasless</span>
+                            </div>
+                            <ArrowRight size={16} className="opacity-20" />
+                        </motion.button>
+
+                        <motion.button
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                            onClick={openConnectModal}
+                            className="gateway-btn"
+                        >
+                            <div className="btn-icon-box">
+                                <Wallet size={24} />
+                            </div>
+                            <div className="btn-content">
+                                <span className="btn-label">Web3 Sync</span>
+                                <span className="btn-subtext">MetaMask · WalletConnect · Ledger</span>
+                            </div>
+                            <ArrowRight size={16} className="opacity-20" />
+                        </motion.button>
+                    </div>
+
+                    <div className="gateway-footer">
+                        <div className="gasless-banner">
+                            <Zap size={16} style={{ color: '#fbbf24', flexShrink: 0 }} />
+                            <span className="banner-text">
+                                <strong>High-Performance UX:</strong> Account Abstraction enabled. New entities receive a gas stipend upon induction.
+                            </span>
+                        </div>
+                        <div className="network-status">
+                            <div className="status-indicator" />
+                            <span className="status-label">Polygon Amoy Testnet • v2.1.0-zenith</span>
+                        </div>
+                        <p className="secured-by">Secured by Biconomy & XMTP V3</p>
+                    </div>
+                </motion.div>
             </motion.div>
         </div>
     );

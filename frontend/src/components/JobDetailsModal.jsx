@@ -1,28 +1,27 @@
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState, useMemo } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { 
     X, Briefcase, Calendar, DollarSign, Target, User, 
     Shield, ArrowRight, MessageSquare, ExternalLink,
-    Clock, Cpu, Zap, CreditCard, Rocket, Loader2
+    Clock, Cpu, Zap, CreditCard, Rocket, Loader2,
+    Activity, ShieldCheck, Terminal, Fingerprint,
+    ChevronRight, Info, FileText, Hash
 } from 'lucide-react';
 import UserLink from './UserLink';
 import { formatUnits } from 'viem';
-import { SUPPORTED_TOKENS } from '../constants';
-
 import { useReadContract } from 'wagmi';
 import FreelanceEscrowABI from '../contracts/FreelanceEscrow.json';
 import { CONTRACT_ADDRESS } from '../constants';
-import toast from 'react-hot-toast';
+import './MissionDossier.css';
 
 const JobDetailsModal = ({ 
     isOpen, onClose, job, meta, tokenInfo, onSelectChat, onFiatPay, onAccept, onApply, onPickFreelancer,
     isEligibleToAccept, isEligibleToApply, address 
 }) => {
-    const [directFreelancer, setDirectFreelancer] = useState('');
+    const [activeSection, setActiveSection] = useState('parameters');
     
     const isValidJobId = job?.jobId && !job.isIntent && !isNaN(job.jobId);
     
-    // Fetch Applicants from the Sovereign Escrow Mesh
     const { data: applicants, isLoading: isLoadingApps } = useReadContract({
         address: CONTRACT_ADDRESS,
         abi: FreelanceEscrowABI.abi,
@@ -33,330 +32,248 @@ const JobDetailsModal = ({
         }
     });
 
+    // Evidence/Submissions - Simulation for UI
+    const evidenceLogs = useMemo(() => [
+        { id: 1, type: 'System', message: 'Mission Initialized', timestamp: 'T-00:00:00' },
+        { id: 2, type: 'Network', message: 'Escrow Locked on Polygon', timestamp: 'T-00:01:24' },
+        ...(job.status >= 2 ? [{ id: 3, type: 'Specialist', message: 'Work Signal Detected', timestamp: 'T-02:14:00' }] : [])
+    ], [job.status]);
+
     if (!isOpen || !job) return null;
 
     const isClient = address?.toLowerCase() === job.client?.toLowerCase();
     const statusCode = Number(job.status || 0);
-    const statusLabels = ['Created', 'Accepted', 'Ongoing', 'Disputed', 'Arbitration', 'Completed', 'Cancelled'];
-    const statusColor = statusCode === 5 ? '#10b981' : (statusCode === 3 || statusCode === 4) ? '#f87171' : '#7c5cfc';
+    
+    const statusConfig = {
+        0: { color: '#10b981', label: 'Open' },
+        1: { color: '#8b5cf6', label: 'Hiring' },
+        2: { color: '#3b82f6', label: 'Active' },
+        3: { color: '#f59e0b', label: 'Disputed' },
+        4: { color: '#ef4444', label: 'Arbitration' },
+        5: { color: '#a1a1aa', label: 'Completed' },
+        default: { color: '#71717a', label: 'Inactive' }
+    };
 
-    const handlePick = (f) => {
-        if (!f) return;
-        onPickFreelancer(f);
+    const config = statusConfig[statusCode] || statusConfig.default;
+
+    const overlayVariants = {
+        hidden: { opacity: 0 },
+        visible: { opacity: 1 }
+    };
+
+    const modalVariants = {
+        hidden: { opacity: 0, scale: 0.95, y: 20 },
+        visible: { 
+            opacity: 1, 
+            scale: 1, 
+            y: 0,
+            transition: { type: 'spring', damping: 25, stiffness: 300 }
+        }
     };
 
     return (
         <AnimatePresence>
-            <div style={styles.overlay} onClick={onClose}>
-                <motion.div
-                    initial={{ opacity: 0, scale: 0.95, y: 20 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                    style={styles.modal}
-                    onClick={e => e.stopPropagation()}
+            {isOpen && (
+                <motion.div 
+                    className="mission-dossier-overlay" 
+                    initial="hidden"
+                    animate="visible"
+                    exit="hidden"
+                    variants={overlayVariants}
+                    onClick={onClose}
                 >
-                    {/* Header */}
-                    <header style={{ ...styles.header, borderBottomColor: `${statusColor}20` }}>
-                        <div style={styles.headerTitleWrap}>
-                            <div style={{ ...styles.statusBadge, background: `${statusColor}15`, color: statusColor }}>
-                                <Briefcase size={12} />
-                                {statusLabels[statusCode] || 'Open Intent'}
-                            </div>
-                            <h2 style={styles.title}>{meta.title}</h2>
-                            <p style={styles.jobId}>Job ID: {job.jobId}</p>
-                        </div>
-                        <button onClick={onClose} style={styles.closeBtn}>
-                            <X size={20} />
-                        </button>
-                    </header>
-
-                    {/* Content Scrollable */}
-                    <div style={styles.content} className="custom-scrollbar">
-                        {/* Summary Cards */}
-                        <div style={styles.summaryGrid}>
-                            <div style={styles.summaryCard}>
-                                <div style={styles.summaryIcon}>
-                                    <DollarSign size={18} color="var(--success)" />
-                                </div>
-                                <div>
-                                    <label style={styles.summaryLabel}>Total Budget</label>
-                                    <div style={styles.summaryValue}>
-                                        {job.isIntent ? parseFloat(job.amount || 0).toLocaleString() : formatUnits(BigInt(job.amount || '0'), tokenInfo.decimals)} {tokenInfo.symbol}
+                    <motion.div
+                        className="mission-dossier-modal"
+                        variants={modalVariants}
+                        onClick={e => e.stopPropagation()}
+                    >
+                        {/* Dossier Header */}
+                        <header className="dossier-header">
+                            <div>
+                                <div className="dossier-id">Mission Identifier: {job.jobId}</div>
+                                <h2 className="dossier-header-title">{meta.title || `Protocol Vector #${job.jobId}`}</h2>
+                                <div className="flex items-center gap-4 mt-4">
+                                    <div className="status-indicator">
+                                        <div className="status-ping" style={{ background: config.color }} />
+                                        <span style={{ color: config.color }}>{config.label}</span>
+                                    </div>
+                                    <div className="flex items-center gap-2 px-3 py-1 bg-white/5 border border-white/10 rounded-full text-[10px] font-bold text-zinc-400">
+                                        <Hash size={10} />
+                                        <span>{job.ipfsHash?.slice(0, 8)}...{job.ipfsHash?.slice(-8)}</span>
                                     </div>
                                 </div>
                             </div>
-                            <div style={styles.summaryCard}>
-                                <div style={styles.summaryIcon}>
-                                    <Calendar size={18} color="var(--accent-light)" />
+                            <button onClick={onClose} className="btn-dossier-secondary !p-3 rounded-full border-none">
+                                <X size={24} />
+                            </button>
+                        </header>
+
+                        {/* Dossier Body */}
+                        <div className="dossier-body custom-scrollbar">
+                            
+                            {/* Mission Vital Signs */}
+                            <section>
+                                <div className="dossier-section-label">
+                                    <Activity size={14} /> Mission Vital Signs
                                 </div>
-                                <div>
-                                    <label style={styles.summaryLabel}>Deadline</label>
-                                    <div style={styles.summaryValue}>
-                                        {isNaN(Number(job.deadline)) ? 'No Fixed Deadline' : new Date(Number(job.deadline) * 1000).toLocaleDateString()}
+                                <div className="dossier-info-grid">
+                                    <div className="info-stat-card">
+                                        <span className="stat-label">Budget Allocation</span>
+                                        <div className="stat-value">
+                                            {job.isIntent ? parseFloat(job.amount || 0).toLocaleString() : formatUnits(BigInt(job.amount || '0'), tokenInfo.decimals)} <span className="text-[0.6em] opacity-40">{tokenInfo.symbol}</span>
+                                        </div>
+                                    </div>
+                                    <div className="info-stat-card">
+                                        <span className="stat-label">Temporal Deadline</span>
+                                        <div className="stat-value">
+                                            {isNaN(Number(job.deadline)) ? 'Indefinite' : new Date(Number(job.deadline) * 1000).toLocaleDateString()}
+                                        </div>
+                                    </div>
+                                    <div className="info-stat-card">
+                                        <span className="stat-label">Network Consensus</span>
+                                        <div className="stat-value text-emerald-400">Verified</div>
                                     </div>
                                 </div>
-                            </div>
-                        </div>
+                            </section>
 
-                        {/* Description */}
-                        <section style={styles.section}>
-                            <h3 style={styles.sectionTitle}>Project Description</h3>
-                            <div style={styles.descriptionBox}>
-                                {meta.description}
-                            </div>
-                        </section>
+                            {/* Mission Parameters */}
+                            <section>
+                                <div className="dossier-section-label">
+                                    <Terminal size={14} /> Mission Parameters
+                                </div>
+                                <div className="dossier-manifesto">
+                                    {meta.description || "No tactical instructions provided for this mission."}
+                                </div>
+                            </section>
 
-                        {/* Applicant Management (Sovereign Context) */}
-                        {isClient && statusCode === 0 && (
-                            <section style={styles.section}>
-                                <h3 style={styles.sectionTitle}>Manage Applicants</h3>
-                                <div style={styles.applicantsBox}>
-                                    {isLoadingApps ? (
-                                        <div style={{ padding: 20, textAlign: 'center' }}><Loader2 size={24} className="animate-spin" /></div>
-                                    ) : (applicants && applicants.length > 0) ? (
-                                        <div style={styles.applicantList}>
-                                            {applicants.map((app, idx) => (
-                                                <div key={idx} style={styles.applicantRow}>
-                                                    <div style={{ flex: 1 }}>
-                                                        <UserLink address={app.freelancer} />
-                                                        <div style={{ fontSize: '0.7rem', color: 'var(--text-tertiary)', marginTop: 2 }}>
-                                                            Stake: {formatUnits(app.stake, tokenInfo.decimals)} {tokenInfo.symbol}
-                                                        </div>
+                            {/* Specialists & Intelligence */}
+                            <div className="grid grid-cols-5 gap-12">
+                                <div className="col-span-3">
+                                    {isClient && statusCode === 0 ? (
+                                        <section>
+                                            <div className="dossier-section-label">
+                                                <Target size={14} /> Candidate Specialists
+                                            </div>
+                                            <div className="specialist-list">
+                                                {isLoadingApps ? (
+                                                    <div className="flex items-center justify-center p-12 bg-white/2 rounded-2xl border border-dashed border-white/10">
+                                                        <Loader2 size={24} className="animate-spin text-violet-500" />
                                                     </div>
-                                                    <div style={{ display: 'flex', gap: 8 }}>
-                                                        <button onClick={() => onSelectChat(app.freelancer)} style={styles.rowBtnSec} title="Contact">
-                                                            <MessageSquare size={14} />
-                                                        </button>
-                                                        <button onClick={() => handlePick(app.freelancer)} className="btn btn-primary" style={styles.rowBtn}>
-                                                            Hire
-                                                        </button>
+                                                ) : (applicants && applicants.length > 0) ? (
+                                                    applicants.map((app, idx) => (
+                                                        <div key={idx} className="specialist-card">
+                                                            <div className="flex items-center gap-4">
+                                                                <div className="w-12 h-12 rounded-xl bg-violet-500/10 flex items-center justify-center border border-violet-500/20">
+                                                                    <User size={20} className="text-violet-400" />
+                                                                </div>
+                                                                <div>
+                                                                    <UserLink address={app.freelancer} className="font-bold text-white text-sm" />
+                                                                    <div className="text-[10px] text-zinc-500 font-bold mt-1">
+                                                                        Stake Commit: {formatUnits(app.stake, tokenInfo.decimals)} {tokenInfo.symbol}
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div className="flex gap-2">
+                                                                <button onClick={() => onSelectChat(app.freelancer)} className="p-2 bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 text-zinc-400 transition-colors">
+                                                                    <MessageSquare size={16} />
+                                                                </button>
+                                                                <button onClick={() => onPickFreelancer(app.freelancer)} className="btn-dossier-primary !py-2 !px-4 !text-[10px]">
+                                                                    Assign Specialist
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    ))
+                                                ) : (
+                                                    <div className="p-12 text-center bg-white/2 rounded-2xl border border-dashed border-white/10 text-zinc-500 text-sm italic">
+                                                        No specialist signatures detected.
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </section>
+                                    ) : (
+                                        <section>
+                                            <div className="dossier-section-label">
+                                                <ShieldCheck size={14} /> Sovereign Trace
+                                            </div>
+                                            <div className="flex flex-col gap-4">
+                                                <div className="flex items-center justify-between p-6 bg-white/2 rounded-2xl border border-white/5">
+                                                    <div>
+                                                        <span className="text-[10px] uppercase font-black text-zinc-500 block mb-2 tracking-widest">Initiator</span>
+                                                        <UserLink address={job.client} className="text-sm font-bold text-white" />
+                                                    </div>
+                                                    <div className="h-10 w-[1px] bg-white/5" />
+                                                    <div>
+                                                        <span className="text-[10px] uppercase font-black text-zinc-500 block mb-2 tracking-widest">Specialist</span>
+                                                        {job.freelancer && job.freelancer !== '0x0000000000000000000000000000000000000000' ? (
+                                                            <UserLink address={job.freelancer} className="text-sm font-bold text-white" />
+                                                        ) : (
+                                                            <div className="text-sm font-bold text-zinc-600 italic">Unassigned</div>
+                                                        )}
                                                     </div>
                                                 </div>
-                                            ))}
-                                        </div>
-                                    ) : (
-                                        <div style={{ textAlign: 'center', padding: '16px 0', color: 'var(--text-tertiary)', fontSize: '0.85rem' }}>
-                                            No applicants yet. Share this job to find specialists!
-                                        </div>
-                                    )}
-
-                                    <div style={{ marginTop: 16, borderTop: '1px solid var(--border)', paddingTop: 16, textAlign: 'center' }}>
-                                        <p style={{ ...styles.summaryLabel, marginBottom: 0, textTransform: 'none' }}>
-                                            Direct Assign is disabled. Specialists must apply with their <span style={{ color: 'var(--accent-light)' }}>Sovereign ID</span> to join this mission.
-                                        </p>
-                                    </div>
-                                </div>
-                            </section>
-                        )}
-
-                        {/* Milestones */}
-                        {meta.milestones && meta.milestones.length > 0 && (
-                            <section style={styles.section}>
-                                <div style={styles.sectionHeader}>
-                                    <Target size={16} color="var(--accent-light)" />
-                                    <h3 style={styles.sectionTitleMuted}>Contract Milestones</h3>
-                                </div>
-                                <div style={styles.milestoneList}>
-                                    {meta.milestones.map((m, i) => (
-                                        <div key={i} style={styles.milestoneItem}>
-                                            <div style={styles.milestoneIndex}>{i + 1}</div>
-                                            <div style={styles.milestoneInfo}>
-                                                <div style={styles.milestoneDesc}>{m.description}</div>
-                                                <div style={styles.milestoneAmount}>{m.amount} {tokenInfo.symbol}</div>
                                             </div>
-                                            <div style={styles.milestoneStatus}>
-                                                <Shield size={12} opacity={0.5} />
-                                                Escrow Locked
+                                        </section>
+                                    )}
+                                </div>
+                                
+                                <div className="col-span-2">
+                                    <section>
+                                        <div className="dossier-section-label">
+                                            <FileText size={14} /> Intel Logs
+                                        </div>
+                                        <div className="bg-white/2 rounded-2xl border border-white/5 overflow-hidden">
+                                            <div className="p-4 bg-white/2 border-bottom border-white/5">
+                                                <div className="flex items-center gap-2 text-[10px] font-black text-violet-400">
+                                                    <Activity size={12} /> REAL-TIME TELEMETRY
+                                                </div>
+                                            </div>
+                                            <div className="p-4 flex flex-col gap-4">
+                                                {evidenceLogs.map(log => (
+                                                    <div key={log.id} className="flex gap-3 text-[11px]">
+                                                        <span className="text-zinc-600 font-mono">{log.timestamp}</span>
+                                                        <span className="text-zinc-400 font-bold">[{log.type}]</span>
+                                                        <span className="text-zinc-500">{log.message}</span>
+                                                    </div>
+                                                ))}
                                             </div>
                                         </div>
-                                    ))}
-                                </div>
-                            </section>
-                        )}
-
-                        {/* Identity Trace */}
-                        <section style={styles.section}>
-                            <h3 style={styles.sectionTitle}>Sovereign Identity Trace</h3>
-                            <div style={styles.identityRow}>
-                                <div style={styles.idCard}>
-                                    <label style={styles.summaryLabel}>Client</label>
-                                    <UserLink address={job.client} style={styles.idLink} />
-                                </div>
-                                <ArrowRight size={16} color="var(--text-tertiary)" />
-                                <div style={styles.idCard}>
-                                    <label style={styles.summaryLabel}>Freelancer</label>
-                                    {job.freelancer && job.freelancer !== '0x0000000000000000000000000000000000000000' ? (
-                                        <UserLink address={job.freelancer} style={styles.idLink} />
-                                    ) : (
-                                        <div style={styles.waitingText}>Awaiting Selection</div>
-                                    )}
+                                    </section>
                                 </div>
                             </div>
-                        </section>
-
-                        {/* IPFS Hash */}
-                        <div style={styles.hashBox}>
-                            <div style={styles.hashLabel}>IPFS Anchor CID:</div>
-                            <div style={styles.hashValue}>{job.ipfsHash}</div>
                         </div>
-                    </div>
 
-                    {/* Footer Actions */}
-                    <footer style={styles.footer}>
-                        {!isClient && (
-                            <button onClick={() => onSelectChat(job.client)} style={styles.btnSecondary}>
-                                <MessageSquare size={16} /> Contact Client
-                            </button>
-                        )}
-                        {isClient && job.freelancer && job.freelancer !== '0x00...0' && (
-                            <button onClick={() => onSelectChat(job.freelancer)} style={styles.btnSecondary}>
-                                <MessageSquare size={16} /> Chat with Freelancer
-                            </button>
-                        )}
-                        {isClient && onFiatPay && (
-                            <button onClick={() => onFiatPay(job.freelancer || job.client)} style={styles.btnSecondary}>
-                                <CreditCard size={16} /> Fiat Pay
-                            </button>
-                        )}
-                        <button onClick={onClose} className="btn btn-secondary" style={styles.btnMain}>
-                            Close
-                        </button>
-                        {isEligibleToApply && !isClient && (
-                            <div style={{ display: 'flex', gap: 10, flex: 1 }}>
-                                <input 
-                                    type="text" 
-                                    placeholder="Verify Wallet ID (0x...)" 
-                                    className="form-input"
-                                    style={{ flex: 1, height: 40, background: 'rgba(255,255,255,0.05)', borderRadius: 12, border: '1px solid var(--border)', padding: '0 16px', color: '#fff', fontSize: '0.8rem' }}
-                                    value={directFreelancer}
-                                    onChange={(e) => setDirectFreelancer(e.target.value)}
-                                />
-                                <button 
-                                    disabled={!directFreelancer || directFreelancer.toLowerCase() !== address?.toLowerCase()}
-                                    onClick={() => { onApply(); onClose(); }} 
-                                    className="btn btn-primary" 
-                                    style={{ ...styles.btnMain, background: 'linear-gradient(135deg, #10b981, #3b82f6)', opacity: (!directFreelancer || directFreelancer.toLowerCase() !== address?.toLowerCase()) ? 0.5 : 1 }}
-                                >
-                                    <Rocket size={16} /> Apply
+                        {/* Dossier Footer */}
+                        <footer className="dossier-footer">
+                            {!isClient && (
+                                <button onClick={() => onSelectChat(job.client)} className="btn-dossier btn-dossier-secondary">
+                                    <MessageSquare size={16} /> Signal Initiator
                                 </button>
-                            </div>
-                        )}
-                        {isEligibleToAccept && !isClient && job.freelancer?.toLowerCase() === address?.toLowerCase() && (
-                            <button onClick={() => { onAccept(); onClose(); }} className="btn btn-secondary" style={{ ...styles.btnSecondary, borderColor: 'var(--accent-light)', color: 'var(--accent-light)' }}>
-                                <Zap size={16} /> Accept & Start
+                            )}
+                            {isEligibleToApply && !isClient && (
+                                <button 
+                                    onClick={() => { onApply(); onClose(); }} 
+                                    className="btn-dossier btn-dossier-primary"
+                                >
+                                    <Fingerprint size={16} /> Commit Signature
+                                </button>
+                            )}
+                            {isEligibleToAccept && !isClient && (
+                                <button 
+                                    onClick={() => { onAccept(); onClose(); }} 
+                                    className="btn-dossier btn-dossier-primary !bg-emerald-600 !shadow-emerald-900/20"
+                                >
+                                    <Zap size={16} /> Actuate Escrow
+                                </button>
+                            )}
+                            <button onClick={onClose} className="btn-dossier btn-dossier-secondary">
+                                Exit Terminal
                             </button>
-                        )}
-                    </footer>
+                        </footer>
+                    </motion.div>
                 </motion.div>
-            </div>
+            )}
         </AnimatePresence>
     );
-};
-
-const styles = {
-    overlay: {
-        position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-        background: 'rgba(2, 3, 6, 0.85)', backdropFilter: 'blur(10px)',
-        zIndex: 2500, display: 'flex', alignItems: 'center', justifyContent: 'center',
-        padding: 20
-    },
-    modal: {
-        width: '100%', maxWidth: 640, background: 'var(--bg-surface)',
-        border: '1px solid var(--border-strong)', borderRadius: 24,
-        boxShadow: '0 40px 80px rgba(0,0,0,0.8)', maxHeight: '90vh',
-        display: 'flex', flexDirection: 'column', overflow: 'hidden'
-    },
-    header: {
-        padding: '24px 32px', borderBottom: '1px solid transparent',
-        display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start'
-    },
-    headerTitleWrap: { flex: 1 },
-    statusBadge: {
-        display: 'inline-flex', alignItems: 'center', gap: 6,
-        padding: '4px 10px', borderRadius: 8, fontSize: '0.62rem',
-        fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.06em',
-        marginBottom: 12
-    },
-    title: { fontSize: '1.4rem', fontWeight: 900, margin: 0, letterSpacing: '-0.02em', color: '#fff' },
-    jobId: { fontSize: '0.7rem', color: 'var(--text-tertiary)', margin: '4px 0 0', fontFamily: 'monospace' },
-    closeBtn: {
-        background: 'transparent', border: 'none', color: 'var(--text-tertiary)',
-        padding: 8, borderRadius: 10, cursor: 'pointer', display: 'flex'
-    },
-    content: { padding: '0 32px 32px', overflowY: 'auto' },
-    summaryGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 32 },
-    summaryCard: {
-        padding: 16, background: 'rgba(255,255,255,0.02)', borderRadius: 16,
-        border: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: 14
-    },
-    summaryIcon: {
-        width: 36, height: 36, borderRadius: 10, background: 'rgba(255,255,255,0.04)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center'
-    },
-    summaryLabel: { fontSize: '0.6rem', fontWeight: 700, color: 'var(--text-tertiary)', textTransform: 'uppercase', marginBottom: 4, display: 'block' },
-    summaryValue: { fontSize: '0.95rem', fontWeight: 800, color: '#fff' },
-    section: { marginBottom: 32 },
-    sectionTitle: { fontSize: '0.85rem', fontWeight: 800, color: '#fff', marginBottom: 14 },
-    sectionTitleMuted: { fontSize: '0.8rem', fontWeight: 800, color: 'var(--text-secondary)', margin: 0 },
-    sectionHeader: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 },
-    descriptionBox: {
-        padding: 20, borderRadius: 16, background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border)',
-        color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: 1.6
-    },
-    milestoneList: { display: 'flex', flexDirection: 'column', gap: 10 },
-    milestoneItem: {
-        display: 'flex', alignItems: 'center', gap: 16, padding: '12px 18px',
-        borderRadius: 14, background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border)'
-    },
-    milestoneIndex: {
-        width: 24, height: 24, borderRadius: '50%', background: 'var(--accent-light)',
-        color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontSize: '0.7rem', fontWeight: 900
-    },
-    milestoneInfo: { flex: 1 },
-    milestoneDesc: { fontSize: '0.85rem', fontWeight: 700, color: '#fff' },
-    milestoneAmount: { fontSize: '0.72rem', color: 'var(--text-tertiary)', marginTop: 2 },
-    milestoneStatus: {
-        display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.65rem',
-        fontWeight: 700, color: 'var(--text-tertiary)', textTransform: 'uppercase'
-    },
-    identityRow: {
-        display: 'flex', alignItems: 'center', gap: 20, background: 'rgba(255,255,255,0.02)',
-        padding: 20, borderRadius: 18, border: '1px solid var(--border)'
-    },
-    idCard: { flex: 1 },
-    idLink: { fontSize: '0.9rem' },
-    waitingText: { fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-tertiary)', fontStyle: 'italic' },
-    hashBox: {
-        marginTop: 16, padding: 12, borderRadius: 10, background: 'rgba(0,0,0,0.3)',
-        border: '1px dotted var(--border)', fontSize: '0.62rem', color: 'var(--text-tertiary)',
-        display: 'flex', gap: 8
-    },
-    hashLabel: { fontWeight: 800, whiteSpace: 'nowrap' },
-    hashValue: { wordBreak: 'break-all', fontFamily: 'monospace', opacity: 0.8 },
-    footer: {
-        padding: '24px 32px', background: 'rgba(1,2,4,0.5)',
-        borderTop: '1px solid var(--border)', display: 'flex', gap: 12, justifyContent: 'flex-end'
-    },
-    btnSecondary: {
-        display: 'flex', alignItems: 'center', gap: 8, padding: '10px 16px', borderRadius: 12,
-        background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border)',
-        color: 'var(--text-primary)', fontSize: '0.85rem', fontWeight: 700, cursor: 'pointer'
-    },
-    btnMain: { padding: '10px 24px', borderRadius: 12, fontSize: '0.85rem', fontWeight: 800, height: 'auto' },
-    applicantsBox: {
-        padding: 20, borderRadius: 16, background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border)'
-    },
-    applicantList: { display: 'flex', flexDirection: 'column', gap: 12 },
-    applicantRow: {
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '12px 14px', borderRadius: 12, background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border)'
-    },
-    rowBtn: { padding: '6px 14px', borderRadius: 8, fontSize: '0.72rem', fontWeight: 800, height: 'auto' },
-    rowBtnSec: {
-        padding: 8, borderRadius: 8, background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)',
-        color: 'var(--text-secondary)', cursor: 'pointer', display: 'flex', alignItems: 'center'
-    }
 };
 
 export default JobDetailsModal;

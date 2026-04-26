@@ -1,10 +1,29 @@
 import React, { useState, useEffect } from 'react';
 import { useAccount } from 'wagmi';
+import { motion, AnimatePresence } from 'motion/react';
+import { 
+    Shield, 
+    Lock, 
+    FileText, 
+    Database, 
+    AlertTriangle, 
+    CheckCircle2, 
+    Download, 
+    Trash2, 
+    Edit3,
+    Fingerprint,
+    Scale,
+    ExternalLink,
+    Clock,
+    Globe,
+    ChevronRight,
+    Briefcase
+} from 'lucide-react';
 import './ComplianceCenter.css';
 
 /**
- * Compliance Center Component
- * Manages KYC verification, GDPR data rights, and tax reporting
+ * PolyLance Zenith Compliance Center
+ * A sovereign interface for Legal Engineering, KYC, and Tax Sovereignty.
  */
 const ComplianceCenter = () => {
     const { address } = useAccount();
@@ -25,6 +44,17 @@ const ComplianceCenter = () => {
             setKycStatus(data);
         } catch (error) {
             console.error('Error fetching compliance status:', error);
+            // Mock data for UI demonstration if API fails
+            setKycStatus({
+                kyc_level: 0,
+                status: 'Not Verified',
+                provider: 'None',
+                limits: {
+                    daily_limit: 1000,
+                    monthly_limit: 5000,
+                    transaction_limit: 500
+                }
+            });
         }
     };
 
@@ -41,9 +71,7 @@ const ComplianceCenter = () => {
             });
 
             const data = await response.json();
-
             if (data.inquiry_url) {
-                // Open KYC verification in new window
                 window.open(data.inquiry_url, '_blank');
             }
         } catch (error) {
@@ -53,397 +81,372 @@ const ComplianceCenter = () => {
         }
     };
 
-    const requestDataExport = async () => {
-        setLoading(true);
-        try {
-            const response = await fetch(`/api/gdpr/export/${address}`, {
-                method: 'POST'
-            });
-
-            const blob = await response.blob();
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `polylance-data-${address}.json`;
-            a.click();
-        } catch (error) {
-            console.error('Error exporting data:', error);
-        } finally {
-            setLoading(false);
+    const containerVariants = {
+        hidden: { opacity: 0 },
+        visible: {
+            opacity: 1,
+            transition: {
+                staggerChildren: 0.1
+            }
         }
     };
 
-    const requestDataDeletion = async () => {
-        if (!confirm('Are you sure you want to delete all your data? This action cannot be undone.')) {
-            return;
-        }
-
-        setLoading(true);
-        try {
-            await fetch(`/api/gdpr/delete/${address}`, {
-                method: 'DELETE'
-            });
-
-            alert('Your data deletion request has been submitted. You will receive confirmation within 30 days.');
-        } catch (error) {
-            console.error('Error deleting data:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const downloadTaxReport = async (year, reportType) => {
-        setLoading(true);
-        try {
-            const response = await fetch(`/api/tax/report/${address}/${year}/${reportType}`);
-            const blob = await response.blob();
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `tax-report-${year}-${reportType}.csv`;
-            a.click();
-        } catch (error) {
-            console.error('Error downloading tax report:', error);
-        } finally {
-            setLoading(false);
+    const itemVariants = {
+        hidden: { y: 20, opacity: 0 },
+        visible: {
+            y: 0,
+            opacity: 1,
+            transition: {
+                type: 'spring',
+                stiffness: 100,
+                damping: 15
+            }
         }
     };
 
     const renderKYCTab = () => (
-        <div className="tab-content">
-            <h2>🔐 Identity Verification (KYC/AML)</h2>
+        <motion.div 
+            className="tab-content"
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+        >
+            <motion.div variants={itemVariants} className="section-header">
+                <Fingerprint className="header-icon" />
+                <div>
+                    <h2>Identity Verification</h2>
+                    <p>Unlock sovereign tiers and institutional-grade transaction limits.</p>
+                </div>
+            </motion.div>
 
-            {kycStatus ? (
-                <div className="kyc-status-card">
-                    <div className="status-badge" data-level={kycStatus.kyc_level}>
-                        {getKYCLevelName(kycStatus.kyc_level)}
+            {kycStatus && kycStatus.kyc_level > 0 ? (
+                <motion.div variants={itemVariants} className="kyc-status-card glass">
+                    <div className="status-header">
+                        <div className="status-badge-container">
+                            <div className="pulse-dot"></div>
+                            <span className="status-badge" data-level={kycStatus.kyc_level}>
+                                Tier {kycStatus.kyc_level}: {getKYCLevelName(kycStatus.kyc_level)}
+                            </span>
+                        </div>
+                        <CheckCircle2 className="verified-icon" />
                     </div>
 
-                    <div className="status-details">
-                        <p><strong>Status:</strong> {kycStatus.status}</p>
-                        <p><strong>Provider:</strong> {kycStatus.provider}</p>
-                        <p><strong>Verified:</strong> {new Date(kycStatus.verified_at * 1000).toLocaleDateString()}</p>
-                        <p><strong>Expires:</strong> {new Date(kycStatus.expires_at * 1000).toLocaleDateString()}</p>
-                        <p><strong>Jurisdiction:</strong> {kycStatus.jurisdiction}</p>
+                    <div className="status-details-grid">
+                        <div className="detail-item">
+                            <Clock size={16} />
+                            <span>Verified: {new Date(kycStatus.verified_at * 1000).toLocaleDateString()}</span>
+                        </div>
+                        <div className="detail-item">
+                            <Globe size={16} />
+                            <span>Jurisdiction: {kycStatus.jurisdiction || 'Global'}</span>
+                        </div>
+                        <div className="detail-item">
+                            <Shield size={16} />
+                            <span>Provider: {kycStatus.provider}</span>
+                        </div>
                     </div>
 
-                    <div className="transaction-limits">
-                        <h3>Transaction Limits</h3>
+                    <div className="limits-section">
+                        <h3>Neural Transaction Limits</h3>
                         <div className="limits-grid">
-                            <div className="limit-item">
-                                <span className="limit-label">Daily Limit:</span>
+                            <div className="limit-box">
+                                <span className="limit-label">Daily</span>
                                 <span className="limit-value">${kycStatus.limits?.daily_limit?.toLocaleString()}</span>
                             </div>
-                            <div className="limit-item">
-                                <span className="limit-label">Monthly Limit:</span>
+                            <div className="limit-box">
+                                <span className="limit-label">Monthly</span>
                                 <span className="limit-value">${kycStatus.limits?.monthly_limit?.toLocaleString()}</span>
                             </div>
-                            <div className="limit-item">
-                                <span className="limit-label">Per Transaction:</span>
+                            <div className="limit-box">
+                                <span className="limit-label">Per TX</span>
                                 <span className="limit-value">${kycStatus.limits?.transaction_limit?.toLocaleString()}</span>
                             </div>
                         </div>
                     </div>
-                </div>
+                </motion.div>
             ) : (
                 <div className="kyc-onboarding">
-                    <p className="info-text">
-                        Complete identity verification to unlock higher transaction limits and access premium features.
-                    </p>
-
-                    <div className="kyc-levels">
-                        <div className="level-card">
-                            <h3>📧 Basic</h3>
-                            <p>Email + Phone Verification</p>
-                            <ul>
-                                <li>$500 per transaction</li>
-                                <li>$1,000 daily limit</li>
-                                <li>$5,000 monthly limit</li>
-                            </ul>
-                            <button onClick={() => initiateKYC('persona')} disabled={loading}>
-                                Start Basic KYC
-                            </button>
-                        </div>
-
-                        <div className="level-card featured">
-                            <h3>🆔 Intermediate</h3>
-                            <p>Government ID Verification</p>
-                            <ul>
-                                <li>$5,000 per transaction</li>
-                                <li>$10,000 daily limit</li>
-                                <li>$50,000 monthly limit</li>
-                            </ul>
-                            <button onClick={() => initiateKYC('persona')} disabled={loading}>
-                                Start Intermediate KYC
-                            </button>
-                        </div>
-
-                        <div className="level-card">
-                            <h3>✅ Advanced</h3>
-                            <p>Full KYC + Proof of Address</p>
-                            <ul>
-                                <li>$50,000 per transaction</li>
-                                <li>$100,000 daily limit</li>
-                                <li>$500,000 monthly limit</li>
-                            </ul>
-                            <button onClick={() => initiateKYC('sumsub')} disabled={loading}>
-                                Start Advanced KYC
-                            </button>
-                        </div>
-
-                        <div className="level-card">
-                            <h3>🏢 Institutional</h3>
-                            <p>Business Verification</p>
-                            <ul>
-                                <li>$500,000 per transaction</li>
-                                <li>$1,000,000 daily limit</li>
-                                <li>$10,000,000 monthly limit</li>
-                            </ul>
-                            <button onClick={() => initiateKYC('sumsub')} disabled={loading}>
-                                Contact Sales
-                            </button>
-                        </div>
-                    </div>
-
-                    <div className="provider-logos">
-                        <p>Powered by:</p>
-                        <img src="/assets/persona-logo.png" alt="Persona" />
-                        <img src="/assets/sumsub-logo.png" alt="Sumsub" />
+                    <div className="kyc-grid">
+                        <KYCLevelCard 
+                            level="Basic" 
+                            subtitle="Email + Phone"
+                            limits={["$500 Per TX", "$1K Daily", "$5K Monthly"]}
+                            icon={<Lock size={24} />}
+                            onAction={() => initiateKYC('persona')}
+                            loading={loading}
+                        />
+                        <KYCLevelCard 
+                            level="Intermediate" 
+                            subtitle="Government ID"
+                            limits={["$5K Per TX", "$10K Daily", "$50K Monthly"]}
+                            icon={<Fingerprint size={24} />}
+                            featured={true}
+                            onAction={() => initiateKYC('persona')}
+                            loading={loading}
+                        />
+                        <KYCLevelCard 
+                            level="Advanced" 
+                            subtitle="Full Proof"
+                            limits={["$50K Per TX", "$100K Daily", "$500K Monthly"]}
+                            icon={<Shield size={24} />}
+                            onAction={() => initiateKYC('sumsub')}
+                            loading={loading}
+                        />
+                        <KYCLevelCard 
+                            level="Institutional" 
+                            subtitle="Business Vetting"
+                            limits={["$500K Per TX", "$1M Daily", "Unlimited Monthly"]}
+                            icon={<Briefcase size={24} />}
+                            onAction={() => alert('Redirecting to Institutional Onboarding...')}
+                            loading={loading}
+                            actionLabel="Contact Sales"
+                        />
                     </div>
                 </div>
             )}
-        </div>
+        </motion.div>
     );
 
     const renderGDPRTab = () => (
-        <div className="tab-content">
-            <h2>🛡️ Data Privacy (GDPR)</h2>
-
-            <div className="gdpr-rights">
-                <div className="right-card">
-                    <h3>📥 Right to Access</h3>
-                    <p>Download all your personal data in machine-readable format.</p>
-                    <button onClick={requestDataExport} disabled={loading}>
-                        Export My Data
-                    </button>
+        <motion.div 
+            className="tab-content"
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+        >
+            <motion.div variants={itemVariants} className="section-header">
+                <Database className="header-icon" />
+                <div>
+                    <h2>Sovereign Data Rights</h2>
+                    <p>Exercise your GDPR and privacy rights over your decentralized footprint.</p>
                 </div>
+            </motion.div>
 
-                <div className="right-card">
-                    <h3>✏️ Right to Rectification</h3>
-                    <p>Update or correct your personal information.</p>
-                    <button onClick={() => setActiveTab('profile')}>
-                        Update Profile
-                    </button>
-                </div>
-
-                <div className="right-card">
-                    <h3>🗑️ Right to Erasure</h3>
-                    <p>Request permanent deletion of your personal data.</p>
-                    <button onClick={requestDataDeletion} disabled={loading} className="danger">
-                        Delete My Data
-                    </button>
-                </div>
-
-                <div className="right-card">
-                    <h3>📤 Right to Portability</h3>
-                    <p>Transfer your data to another service provider.</p>
-                    <button onClick={requestDataExport} disabled={loading}>
-                        Export for Transfer
-                    </button>
-                </div>
+            <div className="privacy-grid">
+                <PrivacyRightCard 
+                    title="Right to Access"
+                    desc="Download a full machine-readable archive of your platform data."
+                    icon={<Download size={20} />}
+                    actionLabel="Export Archive"
+                />
+                <PrivacyRightCard 
+                    title="Right to Rectification"
+                    desc="Correct or update your identified personal information."
+                    icon={<Edit3 size={20} />}
+                    actionLabel="Edit Profile"
+                />
+                <PrivacyRightCard 
+                    title="Right to Erasure"
+                    desc="Request permanent deletion of all off-chain personal data."
+                    icon={<Trash2 size={20} />}
+                    actionLabel="Purge Identity"
+                    danger={true}
+                />
+                <PrivacyRightCard 
+                    title="Right to Portability"
+                    desc="Transfer your verified reputation to other compliant protocols."
+                    icon={<ExternalLink size={20} />}
+                    actionLabel="Initialize Port"
+                />
             </div>
 
-            <div className="consent-management">
-                <h3>Consent Management</h3>
+            <motion.div variants={itemVariants} className="consent-section glass">
+                <h3>Consent Management Engine</h3>
                 <div className="consent-list">
-                    <ConsentItem
-                        category="Marketing Communications"
-                        description="Receive updates about new features and promotions"
-                        defaultValue={true}
+                    <ConsentItem 
+                        title="Marketing Intelligence"
+                        desc="Receive updates on protocol evolutions and Zenith signals."
+                        defaultOn={true}
                     />
-                    <ConsentItem
-                        category="Analytics"
-                        description="Help us improve the platform with usage analytics"
-                        defaultValue={true}
+                    <ConsentItem 
+                        title="Behavioral Analytics"
+                        desc="Help us optimize the neural interface with anonymous usage data."
+                        defaultOn={true}
                     />
-                    <ConsentItem
-                        category="Third-Party Sharing"
-                        description="Share data with KYC providers for verification"
-                        defaultValue={true}
+                    <ConsentItem 
+                        title="Oracle Verification"
+                        desc="Share limited data with verified KYC nodes for trust building."
+                        defaultOn={true}
                         required={true}
                     />
                 </div>
-            </div>
-
-            <div className="privacy-info">
-                <p>
-                    <strong>Data Controller:</strong> PolyLance Ltd.<br />
-                    <strong>DPO Contact:</strong> privacy@polylance.io<br />
-                    <strong>Supervisory Authority:</strong> ICO (UK)
-                </p>
-            </div>
-        </div>
+            </motion.div>
+        </motion.div>
     );
 
     const renderTaxTab = () => (
-        <div className="tab-content">
-            <h2>💰 Tax Reporting</h2>
+        <motion.div 
+            className="tab-content"
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+        >
+            <motion.div variants={itemVariants} className="section-header">
+                <Scale className="header-icon" />
+                <div>
+                    <h2>Tax Sovereignty</h2>
+                    <p>Institutional reporting and capital gains tracking for the 2025 cycle.</p>
+                </div>
+            </motion.div>
 
-            <div className="tax-summary">
-                <h3>2025 Tax Year Summary</h3>
-                <div className="summary-grid">
-                    <div className="summary-item">
-                        <span className="label">Total Earnings:</span>
-                        <span className="value">$45,230.00</span>
+            <motion.div variants={itemVariants} className="tax-summary-box glass">
+                <div className="summary-stats">
+                    <div className="stat-item">
+                        <span className="label">Total Gross</span>
+                        <span className="value text-gradient">$45,230.00</span>
                     </div>
-                    <div className="summary-item">
-                        <span className="label">Platform Fees Paid:</span>
+                    <div className="stat-item">
+                        <span className="label">Platform Fees</span>
                         <span className="value">$1,130.75</span>
                     </div>
-                    <div className="summary-item">
-                        <span className="label">Gas Fees:</span>
+                    <div className="stat-item">
+                        <span className="label">Gas Burn</span>
                         <span className="value">$234.50</span>
                     </div>
-                    <div className="summary-item">
-                        <span className="label">Net Income:</span>
-                        <span className="value">$43,864.75</span>
+                    <div className="stat-item">
+                        <span className="label">Net Sovereignty</span>
+                        <span className="value text-accent">$43,864.75</span>
                     </div>
                 </div>
+            </motion.div>
+
+            <div className="report-grid">
+                <ReportCard 
+                    title="Annual Ledger" 
+                    desc="Full CSV of every on-chain interaction and payment." 
+                />
+                <ReportCard 
+                    title="1099-NEC (Digital)" 
+                    desc="Standard US non-employee compensation filing." 
+                />
+                <ReportCard 
+                    title="W-8BEN Certification" 
+                    desc="Foreign status certificate for global freelancers." 
+                />
+                <ReportCard 
+                    title="Crypto Gains Engine" 
+                    desc="Calculated cost-basis for multiple currency payouts." 
+                />
             </div>
 
-            <div className="tax-reports">
-                <h3>Available Reports</h3>
-
-                <div className="report-card">
-                    <h4>📄 Annual Transaction Report</h4>
-                    <p>Complete list of all transactions for tax filing</p>
-                    <button onClick={() => downloadTaxReport(2025, 'transactions')}>
-                        Download CSV
-                    </button>
-                </div>
-
-                <div className="report-card">
-                    <h4>📊 1099-NEC Forms</h4>
-                    <p>Non-employee compensation forms (US only)</p>
-                    <button onClick={() => downloadTaxReport(2025, '1099-nec')}>
-                        Download PDF
-                    </button>
-                </div>
-
-                <div className="report-card">
-                    <h4>🌍 W-8BEN Form</h4>
-                    <p>Certificate of foreign status (Non-US freelancers)</p>
-                    <button onClick={() => downloadTaxReport(2025, 'w8ben')}>
-                        Download PDF
-                    </button>
-                </div>
-
-                <div className="report-card">
-                    <h4>📈 Quarterly Estimates</h4>
-                    <p>Estimated tax payments for self-employed</p>
-                    <button onClick={() => downloadTaxReport(2025, 'quarterly')}>
-                        Download All Quarters
-                    </button>
-                </div>
-
-                <div className="report-card">
-                    <h4>💸 Expense Report</h4>
-                    <p>Deductible business expenses</p>
-                    <button onClick={() => downloadTaxReport(2025, 'expenses')}>
-                        Download CSV
-                    </button>
-                </div>
-
-                <div className="report-card">
-                    <h4>₿ Crypto Tax Report</h4>
-                    <p>Capital gains/losses for cryptocurrency</p>
-                    <button onClick={() => downloadTaxReport(2025, 'crypto')}>
-                        Download CSV
-                    </button>
-                </div>
-            </div>
-
-            <div className="tax-disclaimer">
+            <motion.div variants={itemVariants} className="tax-disclaimer glass">
+                <AlertTriangle size={20} className="warning-icon" />
                 <p>
-                    ⚠️ <strong>Disclaimer:</strong> These reports are provided for informational purposes only.
-                    Please consult with a qualified tax professional for advice specific to your situation.
+                    <strong>Sovereign Disclaimer:</strong> PolyLance provides these calculations as raw data. 
+                    Consult with a Jurisdictional Tax Architect before final submission.
                 </p>
-            </div>
-        </div>
+            </motion.div>
+        </motion.div>
     );
 
     return (
-        <div className="compliance-center">
-            <div className="compliance-header">
+        <div className="compliance-container">
+            <motion.div 
+                className="compliance-header"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.6 }}
+            >
                 <h1>Compliance Center</h1>
-                <p>Manage your identity verification, data privacy, and tax reporting</p>
-            </div>
+                <p>Advanced legal engineering for identity, privacy, and fiscal sovereignty.</p>
+            </motion.div>
 
             <div className="compliance-tabs">
-                <button
-                    className={activeTab === 'kyc' ? 'active' : ''}
-                    onClick={() => setActiveTab('kyc')}
-                >
-                    🔐 KYC/AML
-                </button>
-                <button
-                    className={activeTab === 'gdpr' ? 'active' : ''}
-                    onClick={() => setActiveTab('gdpr')}
-                >
-                    🛡️ Data Privacy
-                </button>
-                <button
-                    className={activeTab === 'tax' ? 'active' : ''}
-                    onClick={() => setActiveTab('tax')}
-                >
-                    💰 Tax Reports
-                </button>
+                {['kyc', 'gdpr', 'tax'].map((tab) => (
+                    <button
+                        key={tab}
+                        className={`compliance-tab ${activeTab === tab ? 'active' : ''}`}
+                        onClick={() => setActiveTab(tab)}
+                    >
+                        {tab === 'kyc' && <Shield size={16} />}
+                        {tab === 'gdpr' && <Database size={16} />}
+                        {tab === 'tax' && <Scale size={16} />}
+                        {tab.toUpperCase()}
+                    </button>
+                ))}
             </div>
 
             <div className="compliance-content">
-                {activeTab === 'kyc' && renderKYCTab()}
-                {activeTab === 'gdpr' && renderGDPRTab()}
-                {activeTab === 'tax' && renderTaxTab()}
+                <AnimatePresence mode="wait">
+                    <motion.div
+                        key={activeTab}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        transition={{ duration: 0.3 }}
+                    >
+                        {activeTab === 'kyc' && renderKYCTab()}
+                        {activeTab === 'gdpr' && renderGDPRTab()}
+                        {activeTab === 'tax' && renderTaxTab()}
+                    </motion.div>
+                </AnimatePresence>
             </div>
         </div>
     );
 };
 
-const ConsentItem = ({ category, description, defaultValue, required }) => {
-    const [consented, setConsented] = useState(defaultValue);
+const KYCLevelCard = ({ level, subtitle, limits, icon, featured, onAction, loading, actionLabel = "Initiate Verification" }) => (
+    <motion.div 
+        className={`level-card ${featured ? 'featured' : 'glass'}`}
+        whileHover={{ scale: 1.02, translateY: -5 }}
+    >
+        <div className="level-icon">{icon}</div>
+        <h3>{level}</h3>
+        <span className="subtitle">{subtitle}</span>
+        <ul>
+            {limits.map((l, i) => <li key={i}>{l}</li>)}
+        </ul>
+        <button className={`zenith-btn ${featured ? 'primary' : 'outline'}`} onClick={onAction} disabled={loading}>
+            {loading ? 'Processing...' : actionLabel}
+        </button>
+    </motion.div>
+);
 
-    const handleToggle = async () => {
-        if (required) return;
+const PrivacyRightCard = ({ title, desc, icon, actionLabel, danger }) => (
+    <motion.div className="right-card glass" whileHover={{ scale: 1.02 }}>
+        <div className="right-header">
+            {icon}
+            <h3>{title}</h3>
+        </div>
+        <p>{desc}</p>
+        <button className={`action-link ${danger ? 'danger' : ''}`}>
+            {actionLabel} <ChevronRight size={14} />
+        </button>
+    </motion.div>
+);
 
-        setConsented(!consented);
+const ReportCard = ({ title, desc }) => (
+    <motion.div className="report-card glass" whileHover={{ scale: 1.02 }}>
+        <div className="report-info">
+            <div className="report-type-icon"><FileText size={18} /></div>
+            <div>
+                <h4>{title}</h4>
+                <p>{desc}</p>
+            </div>
+        </div>
+        <button className="icon-btn">
+            <Download size={18} />
+        </button>
+    </motion.div>
+);
 
-        // Update consent in backend
-        await fetch('/api/gdpr/consent', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                category,
-                consented: !consented
-            })
-        });
-    };
-
+const ConsentItem = ({ title, desc, defaultOn, required }) => {
+    const [active, setActive] = useState(defaultOn);
     return (
         <div className="consent-item">
             <div className="consent-info">
-                <h4>{category}</h4>
-                <p>{description}</p>
-                {required && <span className="required-badge">Required</span>}
+                <div className="title-row">
+                    <h4>{title}</h4>
+                    {required && <span className="required-badge">Required</span>}
+                </div>
+                <p>{desc}</p>
             </div>
-            <label className="toggle-switch">
-                <input
-                    type="checkbox"
-                    checked={consented}
-                    onChange={handleToggle}
-                    disabled={required}
-                />
-                <span className="slider"></span>
-            </label>
+            <div 
+                className={`zenith-toggle ${active ? 'active' : ''} ${required ? 'disabled' : ''}`}
+                onClick={() => !required && setActive(!active)}
+            >
+                <div className="toggle-handle"></div>
+            </div>
         </div>
     );
 };

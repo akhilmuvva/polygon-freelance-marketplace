@@ -1,0 +1,301 @@
+.landing-portal {
+    min-height: 100vh;
+    background: #050505;
+    color: #ffffff;
+    font-family: 'Inter', sans-serif;
+    overflow-x: hidden;
+    position: relative;
+}
+
+/* Background Neural Mesh Effect */
+.neural-background {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    background: 
+        radial-gradient(circle at 50% -20%, rgba(139, 92, 246, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 100% 100%, rgba(139, 92, 246, 0.05) 0%, transparent 40%);
+    pointer-events: none;
+}
+
+.neural-grid {
+    position: absolute;
+    inset: 0;
+    background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    background-size: 60px 60px;
+    mask-image: radial-gradient(circle at 50% 50%, black, transparent 90%);
+}
+
+/* Header */
+.landing-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 40px 80px;
+    position: relative;
+    z-index: 100;
+    max-width: 1600px;
+    margin: 0 auto;
+}
+
+@media (max-width: 768px) {
+    .landing-nav {
+        padding: 30px 24px;
+    }
+}
+
+.landing-logo {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1.75rem;
+    font-weight: 800;
+    letter-spacing: -0.06em;
+    display: flex;
+    flex-direction: column;
+}
+
+.logo-sub {
+    font-size: 0.65rem;
+    font-weight: 900;
+    color: #8b5cf6;
+    text-transform: uppercase;
+    letter-spacing: 0.4em;
+    margin-top: -4px;
+}
+
+/* Hero Section */
+.landing-hero {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    align-items: center;
+    gap: 80px;
+    padding: 80px;
+    max-width: 1600px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 50;
+    min-height: calc(100vh - 200px);
+}
+
+.hero-content h1 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: clamp(4rem, 10vw, 8.5rem);
+    line-height: 0.8;
+    font-weight: 800;
+    letter-spacing: -0.07em;
+    margin-bottom: 40px;
+    color: #fff;
+}
+
+.text-gradient {
+    background: linear-gradient(135deg, #fff 30%, #8b5cf6 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.hero-description {
+    font-size: 1.35rem;
+    color: rgba(255, 255, 255, 0.4);
+    line-height: 1.5;
+    max-width: 600px;
+    margin-bottom: 60px;
+}
+
+/* Auth Card */
+.auth-container {
+    background: rgba(255, 255, 255, 0.02);
+    backdrop-filter: blur(32px);
+    -webkit-backdrop-filter: blur(32px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 48px;
+    padding: 64px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 50px 100px -20px rgba(0, 0, 0, 0.7);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.auth-container:hover {
+    border-color: rgba(139, 92, 246, 0.3);
+    background: rgba(139, 92, 246, 0.02);
+}
+
+.auth-glow {
+    position: absolute;
+    top: -100px;
+    right: -100px;
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, rgba(139, 92, 246, 0.2) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+.auth-header h2 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 12px;
+    letter-spacing: -0.04em;
+}
+
+.auth-header p {
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 1rem;
+    margin-bottom: 48px;
+    line-height: 1.5;
+}
+
+.auth-button {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    padding: 24px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 24px;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    text-align: left;
+    margin-bottom: 16px;
+    position: relative;
+}
+
+.auth-button:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.15);
+    transform: translateX(8px);
+}
+
+.auth-icon {
+    width: 64px;
+    height: 64px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255, 255, 255, 0.3);
+    transition: all 0.3s ease;
+}
+
+.auth-button:hover .auth-icon {
+    color: #8b5cf6;
+    background: rgba(139, 92, 246, 0.1);
+    border-color: rgba(139, 92, 246, 0.2);
+}
+
+.auth-text-main {
+    font-weight: 700;
+    color: #ffffff;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 1.15rem;
+    margin-bottom: 4px;
+}
+
+.auth-badge {
+    font-size: 0.65rem;
+    font-weight: 900;
+    padding: 4px 10px;
+    background: #8b5cf6;
+    color: #ffffff;
+    border-radius: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.auth-text-sub {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.3);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+}
+
+/* Feature Grid */
+.landing-features {
+    padding: 120px 80px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 32px;
+    max-width: 1600px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 50;
+}
+
+.feature-card {
+    background: rgba(255, 255, 255, 0.02);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 40px;
+    padding: 48px;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.feature-card:hover {
+    border-color: rgba(139, 92, 246, 0.2);
+    background: rgba(139, 92, 246, 0.02);
+    transform: translateY(-8px);
+}
+
+.feature-icon {
+    width: 64px;
+    height: 64px;
+    background: rgba(139, 92, 246, 0.1);
+    color: #8b5cf6;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 32px;
+}
+
+.feature-card h3 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin-bottom: 16px;
+    letter-spacing: -0.02em;
+}
+
+.feature-card p {
+    color: rgba(255, 255, 255, 0.4);
+    line-height: 1.6;
+    font-size: 1.05rem;
+}
+
+@media (max-width: 1280px) {
+    .landing-hero {
+        gap: 40px;
+        padding: 40px;
+    }
+}
+
+@media (max-width: 1024px) {
+    .landing-hero {
+        grid-template-columns: 1fr;
+        padding: 60px 24px;
+        text-align: center;
+    }
+    .hero-content h1 {
+        font-size: clamp(3.5rem, 12vw, 6rem);
+    }
+    .hero-description {
+        margin: 0 auto 48px;
+    }
+    .auth-container {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 48px 32px;
+    }
+    .landing-features {
+        grid-template-columns: 1fr;
+        padding: 60px 24px;
+    }
+}
+
