@@ -94,9 +94,9 @@ jobs:
       - name: Build production bundle
         run: cd frontend && npm run build
         env:
-          VITE_ESCROW_ADDRESS: ${{ vars.VITE_ESCROW_ADDRESS }}
-          VITE_REPUTATION_ADDRESS: ${{ vars.VITE_REPUTATION_ADDRESS }}
-          VITE_POLY_TOKEN_ADDRESS: ${{ vars.VITE_POLY_TOKEN_ADDRESS }}
-          VITE_SBT_ADDRESS: ${{ vars.VITE_SBT_ADDRESS }}
-          VITE_GRAPH_URL: ${{ vars.VITE_GRAPH_URL }}
           VITE_CHAIN_ID: "80002"
+          VITE_ESCROW_ADDRESS: "0x25F6C8ed995C811E6c0ADb1D66A60830E8115e9A"
+          VITE_REPUTATION_ADDRESS: "0x89791A9A3210667c828492DB98DCa3e2076cc373"
+          VITE_POLY_TOKEN_ADDRESS: "0xd3b893cd083f07Fe371c1a87393576e7B01C52C6"
+          VITE_SBT_ADDRESS: "0xb4e9A5BC64DC07f890367F72941403EEd7faDCbB"
+          VITE_GRAPH_URL: "https://api.studio.thegraph.com/query/poly-lance-studio/poly-lance/v0.0.1"
