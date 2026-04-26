@@ -1,38 +1,102 @@
-name: PolyLance Zenith CI
+name: CI
+
 on:
   push:
-    branches: [main, master]
+    branches: [master, main]
   pull_request:
-    branches: [main, master]
+    branches: [master, main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  test-contracts:
+  lint-contracts:
+    name: Solidity Lint (Solhint)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: '18'
           cache: 'npm'
           cache-dependency-path: contracts/package-lock.json
-      - name: Install contract deps
-        run: cd contracts && npm ci
-      - name: Compile and Test
-        run: |
-          cd contracts
-          npx hardhat compile
-          npx hardhat test
-      - name: Coverage
-        run: cd contracts && npx hardhat coverage
 
-  test-frontend:
+      - name: Install contract dependencies
+        run: cd contracts && npm ci
+
+      - name: Run Solhint
+        run: cd contracts && npx solhint 'contracts/**/*.sol' --max-warnings 0
+
+  test-contracts:
+    name: Smart Contract Tests (Hardhat)
     runs-on: ubuntu-latest
+    needs: lint-contracts
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: '18'
-      - name: Install frontend deps
+          cache: 'npm'
+          cache-dependency-path: contracts/package-lock.json
+
+      - name: Install contract dependencies
+        run: cd contracts && npm ci
+
+      - name: Compile contracts
+        run: cd contracts && npx hardhat compile
+
+      - name: Run tests
+        run: cd contracts && npx hardhat test
+        env:
+          REPORT_GAS: true
+
+  lint-frontend:
+    name: Frontend Lint (ESLint)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
         run: cd frontend && npm ci
-      - name: Build frontend
+
+      - name: Run ESLint
+        run: cd frontend && npm run lint
+
+  build-frontend:
+    name: Frontend Build
+    runs-on: ubuntu-latest
+    needs: lint-frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        run: cd frontend && npm ci
+
+      - name: Build production bundle
         run: cd frontend && npm run build
+        env:
+          VITE_ESCROW_ADDRESS: ${{ vars.VITE_ESCROW_ADDRESS }}
+          VITE_REPUTATION_ADDRESS: ${{ vars.VITE_REPUTATION_ADDRESS }}
+          VITE_POLY_TOKEN_ADDRESS: ${{ vars.VITE_POLY_TOKEN_ADDRESS }}
+          VITE_SBT_ADDRESS: ${{ vars.VITE_SBT_ADDRESS }}
+          VITE_GRAPH_URL: ${{ vars.VITE_GRAPH_URL }}
+          VITE_CHAIN_ID: "80002"

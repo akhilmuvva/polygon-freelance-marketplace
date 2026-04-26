@@ -1,0 +1,53 @@
+name: Deploy Preview
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  deploy-preview:
+    name: Vercel Preview Deployment
+    runs-on: ubuntu-latest
+    environment:
+      name: preview
+      url: ${{ steps.deploy.outputs.url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: Pull Vercel Environment Information
+        run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Build Project Artifacts
+        run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          VITE_ESCROW_ADDRESS: ${{ vars.VITE_ESCROW_ADDRESS }}
+          VITE_REPUTATION_ADDRESS: ${{ vars.VITE_REPUTATION_ADDRESS }}
+          VITE_POLY_TOKEN_ADDRESS: ${{ vars.VITE_POLY_TOKEN_ADDRESS }}
+          VITE_SBT_ADDRESS: ${{ vars.VITE_SBT_ADDRESS }}
+          VITE_GRAPH_URL: ${{ vars.VITE_GRAPH_URL }}
+          VITE_CHAIN_ID: "80002"
+
+      - name: Deploy Project Artifacts to Vercel
+        id: deploy
+        run: echo "url=$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }})" >> $GITHUB_OUTPUT
+
+      - name: Comment Preview URL on PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `### 🔍 Preview Deployment\n\n**URL:** ${{ steps.deploy.outputs.url }}\n\nDeployed from commit \`${{ github.sha }}\`.`
+            })
