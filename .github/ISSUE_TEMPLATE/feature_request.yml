@@ -1,0 +1,81 @@
+name: feature_request
+description: Propose a new feature or protocol improvement
+labels: ["enhancement"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Before submitting, check if there is an existing issue or PR addressing this. Feature requests without clear motivation may be closed.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem Statement
+      description: What problem does this feature solve? Who is affected and how often?
+      placeholder: "As a freelancer, I can't easily see which milestones are due soon, which leads to missed deadlines and disputes."
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution
+      description: Describe the feature you'd like. Be specific — include function signatures, UI flows, or contract changes if relevant.
+      placeholder: "Add a `deadlineBefore(uint256 timestamp)` filter to the subgraph schema and a 'Due Soon' filter tab in JobsList.jsx."
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: Have you considered any alternative solutions or workarounds?
+    validations:
+      required: false
+
+  - type: dropdown
+    id: scope
+    attributes:
+      label: Scope
+      options:
+        - Smart Contract (new function or contract)
+        - Smart Contract (security improvement)
+        - Frontend (new page or component)
+        - Frontend (UX improvement)
+        - The Graph (subgraph schema / mapping)
+        - Documentation
+        - Developer experience / CI
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority (your estimate)
+      options:
+        - Critical — blocks core use case
+        - High — significantly improves UX or security
+        - Medium — nice to have
+        - Low — minor improvement
+    validations:
+      required: false
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional Context
+      description: Links to relevant specs, research, or related protocols.
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Pre-submission Checklist
+      options:
+        - label: I searched existing issues and this feature has not been requested before.
+          required: true
+        - label: I am willing to implement this or help with implementation.
+          required: false

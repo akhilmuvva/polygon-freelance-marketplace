@@ -1,24 +1,38 @@
 {
-    "$schema": "./v-schema.json",
-    "name": "polylance-root",
-    "version": "1.0.0",
-    "author": "Akhil Muvva",
-    "contributors": [
-        "Akhil Muvva <akhilmuvva@polylance.codes>",
-        "Balram Taddi <balramtaddi@polylance.codes>"
-    ],
-    "private": true,
-    "scripts": {
-        "install:all": "cd contracts && npm install && cd ../frontend && npm install",
-        "build": "npm run build --prefix frontend",
-        "build:frontend": "npm run build --prefix frontend",
-        "build:contracts": "npm run compile --prefix contracts",
-        "start": "npm run dev --prefix frontend",
-        "dev": "npm run dev --prefix frontend",
-        "test:contracts": "npm test --prefix contracts",
-        "lint:all": "npm run lint --prefix frontend"
-    },
-    "engines": {
-        "node": ">=22.0.0"
-    }
-}
+  "name": "polylance-root",
+  "version": "2.0.0",
+  "description": "Decentralized freelance marketplace on Polygon with trustless escrow, RWA tokenization, and gasless onboarding via Account Abstraction.",
+  "author": "Akhil Muvva <akhilmuvva@polylance.codes>",
+  "contributors": [
+    "Akhil Muvva <akhilmuvva@polylance.codes>",
+    "Jhansi Kupireddy",
+    "Balram Taddi <balramtaddi@polylance.codes>"
+  ],
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/akhilmuvva/polygon-freelance-marketplace"
+  },
+  "homepage": "https://polylance.codes",
+  "scripts": {
+    "dev": "npm run dev:frontend",
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev:backend": "echo 'No backend server — relayer runs on Render'",
+    "build": "cd frontend && npm run build",
+    "test": "cd contracts && npx hardhat test",
+    "test:coverage": "cd contracts && npx hardhat coverage",
+    "lint": "npm run lint:contracts && npm run lint:frontend",
+    "lint:contracts": "cd contracts && npx solhint 'contracts/**/*.sol'",
+    "lint:frontend": "cd frontend && npm run lint",
+    "compile": "cd contracts && npx hardhat compile",
+    "deploy:contracts": "cd contracts && npx hardhat run scripts/deploy.js --network polygon_amoy",
+    "verify:contracts": "cd contracts && npx hardhat verify --network polygon_amoy",
+    "install:all": "npm install && cd contracts && npm install && cd ../frontend && npm install"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

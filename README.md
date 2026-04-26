@@ -217,6 +217,18 @@ Do not open public issues for security vulnerabilities. See [SECURITY.md](SECURI
 
 ---
 
+## Repository Setup
+
+> **For the repository owner:** Set the following on the GitHub repository settings page to maximize discoverability.
+>
+> **Description:** `Decentralized freelance marketplace on Polygon with trustless escrow, RWA tokenization, and gasless onboarding via Account Abstraction.`
+>
+> **Topics:** `polygon` `solidity` `defi` `web3` `freelance` `smart-contracts` `ethereum` `hardhat` `ipfs` `the-graph` `account-abstraction` `kleros` `nft` `react` `uups-proxy`
+>
+> **Website:** `https://polylance.codes`
+
+---
+
 ## License
 
 MIT © 2024 PolyLance Contributors. See [LICENSE](LICENSE).
