@@ -1,31 +1,32 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
-    AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-    PieChart, Pie, Cell
-} from 'recharts';
+    Card,
+    AreaChart,
+    BarList,
+    Title,
+    Text,
+    Flex,
+    Grid,
+    Metric,
+    Icon,
+    BadgeDelta,
+} from "@tremor/react";
 import {
-    Activity, Users, Briefcase, DollarSign, TrendingUp,
-    PieChart as PieIcon, Loader2, Globe, Shield, Zap
+    Activity, Users, Briefcase, DollarSign, BarChart3, Loader2, Shield
 } from 'lucide-react';
 import SubgraphService from '../services/SubgraphService';
-import { useAnimeAnimations } from '../hooks/useAnimeAnimations';
 import { formatEther } from 'viem';
 
-const COLORS = ['#8b5cf6', '#a855f7', '#d946ef', '#ec4899', '#f43f5e', '#f97316'];
-const cardBg = { padding: 32, borderRadius: 14, background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border)' };
-const dimLabel = { fontSize: '0.62rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--text-tertiary)', marginBottom: 4 };
-
-export default function AnalyticsDashboard() {
+export default function AnalyticsDashboard({ address, isAdmin }) {
     const [data, setData] = useState({
         totalJobs: 0, totalVolume: 0, avgReputation: 0, totalUsers: 0, tvl: 0,
         trends: [], categoryDistribution: []
     });
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const statRefs = useRef([]);
-    const { countUp, staggerFadeIn, revealOnScroll } = useAnimeAnimations();
 
     useEffect(() => { fetchAnalytics(); }, []);
+
     const fetchAnalytics = async () => {
         try {
             const [stats, leaderboard, allJobs] = await Promise.all([
@@ -35,7 +36,6 @@ export default function AnalyticsDashboard() {
             ]);
 
             if (stats) {
-                // Compute category distribution from latest jobs
                 const categoryNames = ['Fullstack', 'Frontend', 'Backend', 'UI/UX', 'Marketing', 'Legal'];
                 const distributionMap = {};
                 allJobs.forEach(j => {
@@ -45,19 +45,14 @@ export default function AnalyticsDashboard() {
                 });
                 const categoryDistribution = Object.entries(distributionMap).map(([name, value]) => ({ name, value }));
 
-                // Compute growth trends (group by day)
                 const trendsMap = {};
                 allJobs.forEach(j => {
-                    const day = new Date(Number(j.createdAt || 0) * 1000).toISOString().split('T')[0];
-                    trendsMap[day] = (trendsMap[day] || 0) + 1;
+                    const date = new Date(Number(j.createdAt || 0) * 1000).toLocaleDateString();
+                    trendsMap[date] = (trendsMap[date] || 0) + 1;
                 });
                 const trends = Object.entries(trendsMap)
-                    .map(([date, count]) => ({ date, count }))
-                    .sort((a, b) => a.date.localeCompare(b.date));
-
-                // Compute average reputation
-                const totalRep = leaderboard?.reduce((acc, curr) => acc + (Number(curr.reputationScore) || 0), 0) || 0;
-                const avgRep = leaderboard?.length ? totalRep / leaderboard.length : 0;
+                    .map(([date, count]) => ({ date, "Active Jobs": count }))
+                    .sort((a, b) => new Date(a.date) - new Date(b.date));
 
                 setData({
                     totalJobs: Number(stats.totalJobs),

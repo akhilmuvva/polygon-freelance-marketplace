@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { useQueryClient } from '@tanstack/react-query';
+
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
     User, Brain, Sparkles, Save, Shield, 
     Cpu, Zap, CheckCircle2, AlertCircle, 
     ChevronRight, Search, Target, Award,
     Fingerprint, Globe, Layers, Hexagon,
     ShieldCheck, QrCode, ScanFace, Activity,
-    ExternalLink, Command, ShieldAlert
+    ExternalLink, Command, ShieldAlert, Gavel
 } from 'lucide-react';
 import hotToast from 'react-hot-toast';
 import ProfileService from '../services/ProfileService';
@@ -19,37 +21,47 @@ import './IdentityManager.css';
  * Identity Manager — Sovereign Identity Edition
  * Manage decentralized professional identity with premium Zenith aesthetics.
  */
-const IdentityManager = ({ address }) => {
-    const [activeSection, setActiveSection] = useState('profile'); 
+const IdentityManager = (props) => {
+    const { address, gaslessEnabled, isAdmin } = props;
+    const [activeTab, setActiveTab] = useState('SOVEREIGN_ID'); 
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
+    const queryClient = useQueryClient();
     const [profile, setProfile] = useState({
         name: '',
         bio: '',
-        skills: ''
+        skills: '',
+        reputationScore: 0,
+        totalEarned: 0,
+        totalJobs: 0
     });
     const [matches, setMatches] = useState([]);
     const [isMatching, setIsMatching] = useState(false);
 
     useEffect(() => {
+        if (!address) return;
+
         const fetchProfile = async () => {
             setIsLoading(true);
             try {
+                console.info('[IDENTITY] Fetching profile for:', address);
                 const [data, stats] = await Promise.all([
                     ProfileService.getProfile(address),
-                    SubgraphService.getUserStats(address)
+                    SubgraphService.getUserStats(address).catch(e => {
+                        console.warn('[IDENTITY] Subgraph stats unavailable:', e.message);
+                        return null;
+                    })
                 ]);
                 
                 if (data) {
-                    setProfile(prev => ({
-                        ...prev,
+                    setProfile({
                         name: data.name || '',
                         bio: data.bio || '',
                         skills: Array.isArray(data.skills) ? data.skills.join(', ') : (data.skills || ''),
                         reputationScore: stats?.freelancer?.reputationScore || data.reputationScore || 0,
                         totalEarned: stats?.freelancer?.totalEarned || data.totalEarned || 0,
-                        totalJobs: stats?.freelancer?.jobsCompleted || stats?.client?.activeEscrows || 0
-                    }));
+                        totalJobs: (stats?.freelancer?.jobsCompleted || 0) + (stats?.client?.activeEscrows || 0)
+                    });
                 }
             } catch (err) {
                 console.error('[IDENTITY] Initialization failed:', err);
@@ -61,47 +73,86 @@ const IdentityManager = ({ address }) => {
     }, [address]);
 
     const handleSaveProfile = async () => {
+        if (!address) {
+            hotToast.error('Identity Anchoring requires an active address');
+            return;
+        }
+
         setIsSaving(true);
         try {
-            const skillsArray = profile.skills.split(',').map(s => s.trim()).filter(Boolean);
-            await ProfileService.updateProfile(address, {
-                ...profile,
-                skills: skillsArray
-            });
+            // Directive 15: Input Normalization. Convert skills string to array before persisting.
+            const skillsArray = typeof profile.skills === 'string' 
+                ? profile.skills.split(',').map(s => s.trim()).filter(s => s !== '') 
+                : profile.skills;
 
-            // Local cache update for instant rendering
-            const cacheKey = `POLYLANCE_PROFILE_CACHE_${address.toLowerCase()}`;
-            localStorage.setItem(cacheKey, JSON.stringify({
-                address: address.toLowerCase(),
+            const updatePayload = {
                 ...profile,
                 skills: skillsArray,
-                source: 'local-update'
-            }));
+                updatedAt: Date.now()
+            };
 
-            setProfile(prev => ({
-                ...prev,
-                skills: skillsArray.join(', ')
-            }));
-            hotToast.success('Identity Anchored Successfully');
+            console.info('[IDENTITY] Persisting sovereign state:', updatePayload);
+            
+            await ProfileService.updateProfile(address, updatePayload);
+            
+            // Sync the state back to the local profile so the UI stays consistent
+            setProfile({
+                ...profile,
+                skills: typeof profile.skills === 'string' ? profile.skills : skillsArray.join(', ')
+            });
+
+            // Directive 16: Cross-Component Resonance. Broadcast update to other dashboard modules.
             window.dispatchEvent(new CustomEvent('IDENTITY_UPDATED', { detail: address }));
+            window.dispatchEvent(new CustomEvent('REFRESH_DASHBOARD'));
+            
+            hotToast.success('Sovereign Identity Anchored');
         } catch (err) {
-            hotToast.error('Identity Propagation Failed');
+            console.error('[IDENTITY] Persistence failure:', err);
+            hotToast.error('Failed to anchor identity to decentralized network');
         } finally {
             setIsSaving(false);
         }
     };
 
+    const handleShadowBan = async () => {
+        if (!isAdmin) return;
+        
+        const targetAddress = prompt("Enter the address to Shadow Ban (Ghost Moderator Mode):");
+        if (!targetAddress) return;
+
+        const reason = prompt("Enter reason for shadow ban:");
+        if (!reason) return;
+
+        try {
+            await ProfileService.shadowBan(targetAddress, reason);
+            hotToast.success(`Ghost Protocol: ${targetAddress.slice(0,6)}... has been restricted.`);
+            
+            // Log it locally for the audit trail
+            const auditLog = JSON.parse(localStorage.getItem('ZENITH_AUDIT_LOG') || '[]');
+            auditLog.unshift({
+                action: 'SHADOW_BAN',
+                target: targetAddress,
+                reason,
+                moderator: address,
+                timestamp: Date.now()
+            });
+            localStorage.setItem('ZENITH_AUDIT_LOG', JSON.stringify(auditLog.slice(0, 50)));
+        } catch (err) {
+            hotToast.error('Ghost Moderator operation failed');
+        }
+    };
+
     const runNeuralMatching = async () => {
         setIsMatching(true);
-        setActiveSection('matcher');
+        setActiveTab('NEXUS_VALENCE');
         try {
             const allJobs = await SubgraphService.getJobs(20);
             const skills = profile.skills.toLowerCase().split(',').map(s => s.trim());
             const scoredMatches = allJobs.map(job => {
                 let score = 0;
-                const text = (job.ipfsHash + (job.title || '')).toLowerCase();
+                const text = ((job.title || '') + (job.ipfsHash || '')).toLowerCase();
                 skills.forEach(skill => {
-                    if (text.includes(skill)) score += 33;
+                    if (skill && text.includes(skill)) score += 33;
                 });
                 if (score > 100) score = 100;
                 return { ...job, matchScore: score };
@@ -146,64 +197,97 @@ const IdentityManager = ({ address }) => {
             <div className="bg-pattern-grid" />
             <div className="ambient-glow" style={{ top: '5%', left: '10%', opacity: 0.08 }} />
             <div className="ambient-glow" style={{ bottom: '15%', right: '5%', background: '#d946ef', opacity: 0.05 }} />
-
-            {/* SOVEREIGN HEADER */}
-            <motion.header variants={itemVariants} className="identity-header">
-                <div>
-                    <div className="system-tag">
-                        <Fingerprint size={12} className="animate-pulse" /> Protocol v2.5 Online
+            
+            <motion.header 
+                className="identity-header"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8 }}
+            >
+                <div style={{ position: 'absolute', top: 0, right: 0, width: '400px', height: '400px', background: 'radial-gradient(circle, rgba(139, 92, 246, 0.05) 0%, transparent 70%)', zIndex: 0 }}></div>
+                <div className="header-top">
+                    <div className="header-title-group">
+                        <motion.span 
+                            className="label-pill"
+                            initial={{ opacity: 0, x: -10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: 0.2 }}
+                        >
+                            SYSTEM_CORE / IDENTITY_VALENCE
+                        </motion.span>
+                        <h1 className="main-title">ZENITH IDENTITY_ANCHOR</h1>
+                        <p className="subtitle">Sovereign identity management with zero-knowledge personhood verification.</p>
                     </div>
-                    
-                    <h1 className="identity-title">
-                        Sovereign <br />
-                        <span className="accent-text">Identity</span>
-                    </h1>
-                    <p className="identity-subtitle">
-                        Establishing your professional gravity on the Polygon network. Manage your reputation, skills, and autonomous matching parameters.
-                    </p>
+                    <div className="header-actions">
+                        <motion.div 
+                            className={`shield-status ${gaslessEnabled ? 'active' : ''}`}
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                        >
+                            <div className="status-orb"></div>
+                            <span className="status-label">{gaslessEnabled ? 'SHIELD_ACTIVE' : 'SHIELD_OFFLINE'}</span>
+                        </motion.div>
+                    </div>
                 </div>
 
-                <div className="nav-capsule">
-                    <button 
-                        onClick={() => setActiveSection('profile')}
-                        className={`nav-btn ${activeSection === 'profile' ? 'active' : ''}`}
-                    >
-                        <User size={16} /> Profile
-                    </button>
-                    <button 
-                        onClick={() => setActiveSection('matcher')}
-                        className={`nav-btn ${activeSection === 'matcher' ? 'active' : ''}`}
-                    >
-                        <Brain size={16} /> AI Nexus
-                    </button>
+                <div className="tab-navigation">
+                    {['SOVEREIGN_ID', 'NEXUS_VALENCE', 'ZK_PROOFS', ...(isAdmin ? ['MODERATOR_CONTROLS'] : [])].map((tab) => (
+                        <motion.button
+                            key={tab}
+                            className={`nav-tab ${activeTab === tab ? 'active' : ''}`}
+                            onClick={() => setActiveTab(tab)}
+                            whileHover={{ y: -2 }}
+                            whileTap={{ scale: 0.98 }}
+                        >
+                            {activeTab === tab && (
+                                <motion.div 
+                                    layoutId="activeTab"
+                                    className="active-indicator"
+                                    transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                                />
+                            )}
+                            <div className="flex items-center gap-2 px-1">
+                                {tab === 'SOVEREIGN_ID' && <User size={14} />}
+                                {tab === 'NEXUS_VALENCE' && <Brain size={14} />}
+                                {tab === 'ZK_PROOFS' && <ShieldCheck size={14} />}
+                                {tab === 'MODERATOR_CONTROLS' && <Gavel size={14} className="text-red-400" />}
+                                <span className="tab-text">{tab.replace(/_/g, ' ')}</span>
+                            </div>
+                        </motion.button>
+                    ))}
                 </div>
             </motion.header>
 
             <AnimatePresence mode="wait">
-                {activeSection === 'profile' ? (
+                {activeTab === 'SOVEREIGN_ID' && (
                     <motion.div 
-                        key="profile-section"
-                        initial="hidden" animate="visible" exit="hidden"
-                        variants={containerVariants}
-                        className="identity-grid"
+                        key="sovereign-id-tab"
+                        className="identity-main-grid"
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: 20 }}
+                        transition={{ duration: 0.5 }}
                     >
-                        {/* LEFT: FORM PANEL */}
-                        <motion.div variants={itemVariants} className="sovereign-card">
-                            <div className="bg-pattern-grid" />
-                            <div className="absolute top-0 right-0 p-12 opacity-5 pointer-events-none">
-                                <Hexagon size={300} className="text-white" />
+                        <div className="sovereign-card">
+                            <div className="card-dot-pattern"></div>
+                            <div className="card-header">
+                                <h2 className="card-title">IDENTITY_SPECIFICATION</h2>
+                                <p className="card-subtitle">Define your profile for the decentralized marketplace.</p>
                             </div>
-                            
-                            <div className="relative z-10">
+
+                            <div className="profile-form">
                                 <div className="input-group">
-                                    <label className="input-label">Signature Alias</label>
-                                    <input 
-                                        type="text" 
-                                        value={profile.name}
-                                        onChange={(e) => setProfile(prev => ({ ...prev, name: e.target.value }))}
-                                        placeholder="Enter Professional Alias..."
-                                        className="zenith-input"
-                                    />
+                                    <label className="input-label">HANDLE_ID</label>
+                                    <div className="input-wrapper">
+                                        <input 
+                                            type="text" 
+                                            placeholder="Enter username..." 
+                                            className="zenith-input"
+                                            value={profile.name}
+                                            onChange={(e) => setProfile(prev => ({ ...prev, name: e.target.value }))}
+                                        />
+                                        <div className="input-glow"></div>
+                                    </div>
                                 </div>
 
                                 <div className="input-group">
@@ -226,9 +310,6 @@ const IdentityManager = ({ address }) => {
                                         placeholder="Solidity, React, Rust, ZK..."
                                         className="zenith-input"
                                     />
-                                    <p style={{ fontSize: '10px', fontWeight: 800, opacity: 0.3, textTransform: 'uppercase', marginTop: '14px', letterSpacing: '0.15em' }}>
-                                        Comma separated values for neural resonance matching.
-                                    </p>
                                 </div>
                             </div>
 
@@ -240,11 +321,9 @@ const IdentityManager = ({ address }) => {
                                 {isSaving ? <Activity className="animate-spin" size={20} /> : <Save size={20} />}
                                 {isSaving ? 'Anchoring...' : 'Anchor Identity'}
                             </button>
-                        </motion.div>
+                        </div>
 
-                        {/* RIGHT: PREVIEW & VERIFICATION */}
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
-                            {/* PREVIEW CARD */}
                             <motion.div variants={itemVariants} className="preview-card">
                                 <div className="preview-avatar-wrap">
                                     <div className="preview-avatar">
@@ -252,168 +331,198 @@ const IdentityManager = ({ address }) => {
                                             {profile.name ? profile.name[0].toUpperCase() : <Command size={40} />}
                                         </div>
                                     </div>
-                                    <div style={{ position: 'absolute', bottom: '-12px', left: '50%', transform: 'translateX(-50%)', background: '#050505', padding: '6px 16px', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.1)', fontSize: '9px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.15em', whiteSpace: 'nowrap', color: '#8b5cf6' }}>
-                                        Signal Active
-                                    </div>
+                                    <div className="avatar-glow"></div>
                                 </div>
 
                                 <div className="space-y-6">
                                     <h3 className="preview-name">{profile.name || 'Anonymous Node'}</h3>
                                     <div className="skill-pills">
-                                        {(profile.skills.split(',') || []).map((skill, i) => skill.trim() && (
+                                        {(typeof profile.skills === 'string' ? profile.skills.split(',') : []).map((skill, i) => skill.trim() && (
                                             <span key={i} className="skill-pill">
                                                 {skill.trim()}
                                             </span>
                                         ))}
                                     </div>
-                                    <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '1rem', fontStyle: 'italic', maxWidth: '320px', margin: '0 auto 40px', lineHeight: 1.6 }}>
-                                        "{profile.bio || 'Initial bio state: Pending identity propagation.'}"
-                                    </p>
-                                </div>
-
-                                <div className="stats-bar">
-                                    <div className="stat-item">
-                                        <div className="stat-num">{profile.totalJobs || '0'}</div>
-                                        <div className="stat-lab">Activity</div>
-                                    </div>
-                                    <div className="stat-item">
-                                        <div className="stat-num">{profile.reputationScore || '0'}</div>
-                                        <div className="stat-lab">Gravity</div>
-                                    </div>
-                                    <div className="stat-item">
-                                        <div className="stat-num">{parseFloat(formatEther(parseProtocolValue(profile.totalEarned))).toFixed(1)}</div>
-                                        <div className="stat-lab">Yield</div>
-                                    </div>
-                                </div>
-                            </motion.div>
-
-                            {/* PRIVADO ID VERIFICATION */}
-                            <motion.div variants={itemVariants} className="verif-card">
-                                <div className="verif-header">
-                                    <div className="flex items-center gap-5">
-                                        <div style={{ background: '#8b5cf6', color: '#fff', padding: '14px', borderRadius: '18px', boxShadow: '0 10px 20px rgba(139,92,246,0.3)' }}>
-                                            <ShieldCheck size={28} />
+                                    
+                                    <div className="preview-stats">
+                                        <div className="stat-item">
+                                            <span className="stat-label">REPUTATION</span>
+                                            <span className="stat-value">{profile.reputationScore}</span>
                                         </div>
-                                        <div>
-                                            <div style={{ fontSize: '11px', fontWeight: 900, color: '#8b5cf6', textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: '4px' }}>Privado ID</div>
-                                            <div className="verif-title">ZK-Personhood</div>
+                                        <div className="stat-item">
+                                            <span className="stat-label">TOTAL_EARNED</span>
+                                            <span className="stat-value">{Number(profile.totalEarned).toFixed(2)} MATIC</span>
                                         </div>
                                     </div>
-                                    <div style={{ background: 'rgba(255,255,255,0.05)', padding: '6px 14px', borderRadius: '24px', fontSize: '10px', fontWeight: 900, textTransform: 'uppercase', border: '1px solid rgba(255,255,255,0.1)' }}>Unverified</div>
-                                </div>
-                                
-                                <p style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.5)', lineHeight: 1.7, marginBottom: '32px' }}>
-                                    Zero-knowledge proof of personhood ensures your sovereign identity is unique across the mesh without compromising your core data privacy.
-                                </p>
-
-                                <div className="flex gap-4">
-                                    <button 
-                                        className="btn btn-ghost" 
-                                        style={{ flex: 1, background: '#fff', color: '#000', fontSize: '11px', fontWeight: 900, textTransform: 'uppercase', padding: '20px', borderRadius: '18px' }}
-                                        onClick={() => hotToast('Initiating ZK Proof Sequence...')}
-                                    >
-                                        Initiate Proof
-                                    </button>
-                                    <button className="btn btn-ghost" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '20px', borderRadius: '18px' }}>
-                                        <QrCode size={22} />
-                                    </button>
                                 </div>
                             </motion.div>
                         </div>
                     </motion.div>
-                ) : (
+                )}
+
+                {activeTab === 'NEXUS_VALENCE' && (
                     <motion.div 
-                        key="matcher-section"
-                        initial="hidden" animate="visible" exit="hidden"
-                        variants={containerVariants}
-                        className="space-y-16"
+                        key="nexus-valence-tab"
+                        className="nexus-valence-container"
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        transition={{ duration: 0.5 }}
                     >
-                        {/* MATCHING ENGINE HERO */}
-                        <motion.div variants={itemVariants} className="resonance-hero">
-                            <div className="bg-pattern-grid" />
-                            <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(circle_at_100%_0%,rgba(217,70,239,0.1),transparent_60%)]" />
-                            
-                            <div className="relative z-10 flex flex-col items-center max-w-2xl mx-auto">
-                                <div className={`resonance-icon ${isMatching ? 'animate-pulse' : ''}`}>
-                                    <Brain size={60} />
-                                </div>
-                                <div className="space-y-6 mb-12">
-                                    <h2 className="identity-title" style={{ fontSize: '4.5rem' }}>Neural <br /><span style={{ color: '#d946ef' }}>Matching</span></h2>
-                                    <p className="identity-subtitle" style={{ margin: '0 auto' }}>
-                                        Our autonomous engine scans global mission signatures and cross-references them with your neural profile to identify high-resonance opportunities.
-                                    </p>
-                                </div>
-                                
-                                <button 
-                                    onClick={runNeuralMatching}
-                                    disabled={isMatching}
-                                    className="btn-anchor"
-                                    style={{ background: 'linear-gradient(135deg, #d946ef, #8b5cf6)', width: 'auto', padding: '24px 60px' }}
-                                >
-                                    {isMatching ? <Activity className="animate-spin" size={24} /> : <Target size={24} />}
-                                    {isMatching ? 'Calculating Resonance...' : 'Initiate Deep Scan'}
-                                </button>
+                        <div className="sovereign-card">
+                            <div className="card-header">
+                                <h2 className="card-title">NEURAL_RESONANCE_CONFIG</h2>
+                                <p className="card-subtitle">Calibrate the AI agent's autonomous matching parameters.</p>
                             </div>
-                        </motion.div>
 
-                        {/* MATCH RESULTS GRID */}
-                        <div className="match-grid">
-                            {isMatching ? (
-                                [1, 2, 3].map(i => (
-                                    <div key={i} style={{ height: '350px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '48px' }} className="animate-pulse" />
-                                ))
-                            ) : matches.length > 0 ? (
-                                matches.map((job, i) => (
-                                    <motion.div 
-                                        key={i} 
-                                        variants={itemVariants}
-                                        className="match-card"
+                            <div className="nexus-controls">
+                                <div className="control-card">
+                                    <div className="control-info">
+                                        <label className="input-label">MATCH_SENSITIVITY</label>
+                                        <span className="value-display">85%</span>
+                                    </div>
+                                    <div className="slider-wrapper">
+                                        <div className="slider-track">
+                                            <motion.div 
+                                                className="slider-fill"
+                                                initial={{ width: 0 }}
+                                                animate={{ width: '85%' }}
+                                            />
+                                            <div className="slider-thumb" style={{ left: '85%' }}></div>
+                                        </div>
+                                    </div>
+                                    <p className="control-desc">Higher values prioritize exact skill matches over semantic overlap.</p>
+                                </div>
+
+                                <div className="control-card">
+                                    <div className="control-info">
+                                        <label className="input-label">AUTONOMOUS_BIDDING</label>
+                                        <div className="toggle-pill active">
+                                            <div className="toggle-thumb"></div>
+                                        </div>
+                                    </div>
+                                    <p className="control-desc">Allow AI Nexus to prepare bid drafts for matching opportunities.</p>
+                                </div>
+                            </div>
+
+                            <div className="nexus-visualization">
+                                <div className="resonance-wave"></div>
+                                <div className="resonance-wave"></div>
+                                <div className="resonance-wave"></div>
+                                <div className="nexus-status-overlay">
+                                    <Brain size={32} className="pulse-icon" />
+                                    <span>NEURAL_ENGINE_ACTIVE</span>
+                                </div>
+                            </div>
+
+                            <button 
+                                onClick={runNeuralMatching}
+                                disabled={isMatching}
+                                className="btn-anchor"
+                                style={{ marginTop: '48px', width: 'auto' }}
+                            >
+                                {isMatching ? <Activity className="animate-spin" size={20} /> : <Target size={20} />}
+                                {isMatching ? 'SCALPING_MESH...' : 'INITIATE_RESONANCE_SCAN'}
+                            </button>
+                        </div>
+                    </motion.div>
+                )}
+
+                {activeTab === 'ZK_PROOFS' && (
+                    <motion.div 
+                        key="zk-proofs-tab"
+                        className="zk-proofs-container"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                        transition={{ duration: 0.5 }}
+                    >
+                        <div className="sovereign-card">
+                            <div className="card-header">
+                                <h2 className="card-title">ZK_PERSONHOOD_VERIFICATION</h2>
+                                <p className="card-subtitle">Verify your unique identity without revealing personal data.</p>
+                            </div>
+
+                            <div className="zk-content">
+                                <div className="verification-status-card">
+                                    <div className="status-header">
+                                        <div className="provider-logo">PRIVADO_ID</div>
+                                        <div className="status-badge unverified">UNVERIFIED</div>
+                                    </div>
+                                    <div className="status-details">
+                                        <div className="detail-item">
+                                            <span className="detail-label">STARK_ROOT</span>
+                                            <span className="detail-value">0x0...000</span>
+                                        </div>
+                                        <div className="detail-item">
+                                            <span className="detail-label">PROOFER_ENGINE</span>
+                                            <span className="detail-value">ZENITH_ZK_v1</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="zk-action-grid">
+                                    <button className="btn-verify-zk">
+                                        <Fingerprint size={20} />
+                                        <span>START_ZK_VERIFICATION</span>
+                                    </button>
+                                    <div className="security-notice">
+                                        <Shield size={14} />
+                                        <span>Proofs generated locally via WASM backend.</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </motion.div>
+                )}
+
+                {activeTab === 'MODERATOR_CONTROLS' && isAdmin && (
+                    <motion.div 
+                        key="moderator-controls-tab"
+                        className="moderator-controls-container"
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        transition={{ duration: 0.5 }}
+                    >
+                        <div className="sovereign-card moderator-card" style={{ borderColor: 'rgba(239, 68, 68, 0.3)' }}>
+                            <div className="card-header">
+                                <div className="flex justify-between items-center w-full">
+                                    <div>
+                                        <h2 className="card-title" style={{ color: '#f87171' }}>MODERATOR_OVERRIDE_PANEL</h2>
+                                        <p className="card-subtitle">Privileged access for Protocol Judges. Handle with caution.</p>
+                                    </div>
+                                    <div className="badge-judicial">JUDICIAL_CLEARANCE_L3</div>
+                                </div>
+                            </div>
+
+                            <div className="moderator-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '24px', marginTop: '32px' }}>
+                                <div className="control-card danger-zone" style={{ background: 'rgba(239, 68, 68, 0.05)', border: '1px solid rgba(239, 68, 68, 0.1)', padding: '24px', borderRadius: '16px' }}>
+                                    <div className="flex items-center gap-3 mb-4">
+                                        <ShieldAlert className="text-red-400" />
+                                    <p className="text-xs text-slate-400 mb-6">Hide suspicious profiles from the marketplace index across all nodes.</p>
+                                    <button 
+                                        onClick={handleShadowBan}
+                                        className="btn-anchor" 
+                                        style={{ background: 'rgba(239, 68, 68, 0.2)', color: '#f87171', border: '1px solid rgba(239, 68, 68, 0.3)' }}
                                     >
-                                        <div className="match-score-wrap">
-                                            <div className="match-label">Resonance</div>
-                                            <div className="match-score">{job.matchScore}%</div>
-                                        </div>
+                                        <Gavel size={18} />
+                                        <span>INITIATE_SHADOW_BAN</span>
+                                    </button>
+                                </div>
 
-                                        <div className="system-tag">
-                                            <Sparkles size={14} /> Signature Detected
-                                        </div>
-
-                                        <h4 style={{ fontFamily: 'Space Grotesk', fontSize: '1.8rem', fontWeight: 800, textTransform: 'uppercase', marginBottom: '32px', lineHeight: 1.1, letterSpacing: '-0.02em' }}>
-                                            {job.title || 'Autonomous Intent'}
-                                        </h4>
-                                        
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto', paddingTop: '32px', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
-                                            <div className="stat-item">
-                                                <div className="stat-lab">Protocol Reward</div>
-                                                <div className="stat-num" style={{ fontSize: '1.5rem' }}>
-                                                    {formatEther(job.amount || 0n)} <span style={{ fontSize: '11px', opacity: 0.3 }}>POL</span>
-                                                </div>
-                                            </div>
-                                            <button style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '20px', borderRadius: '20px', cursor: 'pointer', color: '#fff' }}>
-                                                <ChevronRight size={24} />
-                                            </button>
-                                        </div>
-                                    </motion.div>
-                                ))
-                            ) : !isMatching && activeSection === 'matcher' ? (
-                                <motion.div variants={itemVariants} style={{ gridColumn: '1 / -1', padding: '100px 48px', textAlign: 'center', background: 'rgba(255,255,255,0.01)', borderRadius: '60px', border: '2px dashed rgba(255,255,255,0.05)' }}>
-                                    <div style={{ width: '100px', height: '100px', background: 'rgba(255,255,255,0.03)', borderRadius: '50%', margin: '0 auto 32px', display: 'flex', alignItems: 'center', justify-content: 'center', color: 'rgba(255,255,255,0.2)' }}>
-                                        <ShieldAlert size={48} />
+                                <div className="control-card" style={{ background: 'rgba(59, 130, 246, 0.05)', border: '1px solid rgba(59, 130, 246, 0.1)' }}>
+                                    <div className="flex items-center gap-3 mb-4">
+                                        <Activity className="text-blue-400" />
+                                        <span className="font-bold text-blue-400">TELEMETRY_DUMP</span>
                                     </div>
-                                    <div className="space-y-6">
-                                        <h4 style={{ fontFamily: 'Space Grotesk', fontSize: '1.8rem', fontWeight: 800, textTransform: 'uppercase' }}>Resonance Null</h4>
-                                        <p style={{ fontSize: '1rem', color: 'rgba(255,255,255,0.4)', maxWidth: '350px', margin: '0 auto 32px', lineHeight: 1.6 }}>Neural patterns are not yet aligned with active protocol intents in the current mesh segment.</p>
-                                        <button 
-                                            onClick={() => setActiveSection('profile')}
-                                            style={{ background: 'none', border: 'none', color: '#8b5cf6', fontSize: '11px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.25em', cursor: 'pointer', borderBottom: '2px solid rgba(139,92,246,0.3)', paddingBottom: '6px', transition: 'all 0.3s ease' }}
-                                            onMouseOver={(e) => e.target.style.borderColor = '#8b5cf6'}
-                                            onMouseOut={(e) => e.target.style.borderColor = 'rgba(139,92,246,0.3)'}
-                                        >
-                                            Update Neural Profile
-                                        </button>
-                                    </div>
-                                </motion.div>
-                            ) : null}
+                                    <p className="text-xs text-slate-400 mb-6">Export all decentralized identity resonance logs for forensic audit.</p>
+                                    <button className="btn-anchor" style={{ background: 'rgba(59, 130, 246, 0.2)', color: '#60a5fa', border: '1px solid rgba(59, 130, 246, 0.3)' }}>
+                                        <ExternalLink size={18} />
+                                        <span>EXPORT_LOGS</span>
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </motion.div>
                 )}
@@ -423,4 +532,3 @@ const IdentityManager = ({ address }) => {
 };
 
 export default IdentityManager;
-

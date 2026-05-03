@@ -60,6 +60,23 @@ export const ProfileService = {
         try {
             // Check Ceramic first
             const ceramicProfile = await CeramicService.getProfile(addr);
+            
+            // Check if we already have a local-update that we should preserve
+            const existing = localStorage.getItem(cacheKey);
+            if (existing) {
+                const parsed = JSON.parse(existing);
+                // If we have a local-update and the network data is identical or hasn't updated yet, keep local
+                if (parsed.source === 'local-update' && ceramicProfile) {
+                    const isIdentical = JSON.stringify(parsed.name) === JSON.stringify(ceramicProfile.name) && 
+                                      JSON.stringify(parsed.bio) === JSON.stringify(ceramicProfile.bio);
+                    if (!isIdentical) {
+                        console.info('[PROFILE] Network data diverged from local-update. Reconciling...');
+                    } else {
+                        return parsed;
+                    }
+                }
+            }
+
             if (ceramicProfile) {
                 const updated = { address: addr, ...ceramicProfile, source: 'ceramic' };
                 localStorage.setItem(cacheKey, JSON.stringify(updated));
@@ -84,6 +101,15 @@ export const ProfileService = {
                 }
             }
 
+            // Check if we already have a local-update that we should preserve (already fetched at top of try)
+            if (existing) {
+                const parsed = JSON.parse(existing);
+                if (parsed.source === 'local-update') {
+                    console.info('[PROFILE] Preserving local-update state as network resolution is null.');
+                    return parsed;
+                }
+            }
+
             const defaultProfile = {
                 address: addr,
                 name: 'Professional Pioneer',
@@ -97,6 +123,11 @@ export const ProfileService = {
 
         } catch (err) {
             console.warn('[PROFILE] Identity resolution friction:', err.message);
+            
+            // On error, try to return existing cache if available
+            const existing = localStorage.getItem(cacheKey);
+            if (existing) return JSON.parse(existing);
+
             return {
                 address: addr,
                 name: 'Loading Profile...',

@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
     X, Briefcase, Calendar, DollarSign, Target, User, 
     Shield, ArrowRight, MessageSquare, ExternalLink,

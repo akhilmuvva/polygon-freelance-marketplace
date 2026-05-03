@@ -83,8 +83,11 @@ export const ZenithAI = ({ missionData }: { missionData?: any }) => {
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            className="fixed bottom-28 right-8 w-[400px] h-[550px] bg-[#050505] border border-white/10 rounded-[32px] shadow-2xl z-50 flex flex-col overflow-hidden backdrop-blur-3xl"
+            className="fixed bottom-28 right-8 w-[400px] h-[550px] bg-[#080808]/90 border border-white/10 rounded-[32px] shadow-2xl z-50 flex flex-col overflow-hidden backdrop-blur-3xl"
           >
+            <div className="absolute inset-0 zenith-grid opacity-5 pointer-events-none" />
+            <div className="scanline opacity-[0.03]" />
+
             {/* Header */}
             <div className="p-6 border-b border-white/5 bg-white/5 flex justify-between items-center">
               <div className="flex items-center gap-3">

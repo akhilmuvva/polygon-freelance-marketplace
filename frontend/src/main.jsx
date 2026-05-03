@@ -34,8 +34,12 @@ import './index.css';
 import './App.css';
 import { Web3Provider } from './Web3Provider.jsx';
 
+import { SaasProvider } from '@saas-ui/react';
+
 ReactDOM.createRoot(document.getElementById('root')).render(
   <Web3Provider>
-    <App />
+    <SaasProvider>
+      <App />
+    </SaasProvider>
   </Web3Provider>
 );

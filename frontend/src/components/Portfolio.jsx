@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'motion/react';
+import { motion } from 'framer-motion';
 import { 
     User, Briefcase, MapPin, Link as LinkIcon, Award, 
     ExternalLink, Globe, Github, Twitter, Zap, Coins, 
@@ -213,7 +213,7 @@ function Portfolio({ address, onBack, onFiatPay }) {
                                         <p className="artifact-desc">{job.description}</p>
                                         <div className="artifact-meta">
                                             <span className="flex items-center gap-2"><Award size={14} className="text-violet-500" /> Soulbound NFT Minted</span>
-                                            <a href={`https://amoy.polygonscan.com/address/${CONTRACT_ADDRESS}`} target="_blank" className="flex items-center gap-1 hover:text-white transition-colors">
+                                            <a href={`https://amoy.polygonscan.com/address/${CONTRACT_ADDRESS}`} target="_blank" rel="noreferrer" className="flex items-center gap-1 hover:text-white transition-colors">
                                                 View Ledger <ExternalLink size={12} />
                                             </a>
                                         </div>

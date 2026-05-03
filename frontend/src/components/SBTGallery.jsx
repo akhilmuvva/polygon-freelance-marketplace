@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 import { Shield, CheckCircle, ExternalLink, Hash, Wallet, Award, Clock, FileCheck, Star, Trash2, Zap, Lock, EyeOff, Landmark, FileDigit, Smartphone, Fingerprint } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAccount } from 'wagmi';

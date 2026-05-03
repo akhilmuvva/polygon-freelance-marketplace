@@ -55,6 +55,7 @@ Leverages EIP-2771 and Biconomy Smart Accounts for social login and gasless tran
 
 ## 🔬 Research & Academic Foundation
 The protocol logic is supported by academic research in blockchain-based identity and security.
+- **White Paper:** [PolyLance White Paper](docs/WHITE_PAPER.md)
 - **IEEE Publication:** [10.1109/ISSSC63660.2025.11389114](https://doi.org/10.1109/ISSSC63660.2025.11389114)
 - **Focus:** Decentralized Trust Frameworks & Smart Contract Vulnerability Mitigation.
 

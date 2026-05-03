@@ -5,7 +5,7 @@ import {
     Layers, Award, CheckCircle2, Info, X, Wallet, ArrowRight,
     Search as SearchIcon
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-hot-toast';
 import { useAccount, useWalletClient } from 'wagmi';
 import MarketplaceService from '../services/MarketplaceService';

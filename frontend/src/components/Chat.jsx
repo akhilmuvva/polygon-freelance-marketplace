@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Client } from '@xmtp/browser-sdk';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAccount, useWalletClient } from 'wagmi';
 import { 
     MessageSquare, Send, User, Loader2, FileText, 

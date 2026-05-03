@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
     Zap, Shield, Brain, Rocket, Trophy, Target, 
     Search, Filter, ChevronRight, User, ArrowLeft,
@@ -522,4 +522,3 @@ const SpecialistMarketplace = ({ onRegister }) => {
 };
 
 export default SpecialistMarketplace;
-ace;

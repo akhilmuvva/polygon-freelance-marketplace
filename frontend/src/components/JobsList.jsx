@@ -11,7 +11,7 @@ import { formatUnits, parseUnits } from 'viem';
 import { SUPPORTED_TOKENS, CONTRACT_ADDRESS } from '../constants';
 import UserLink from './UserLink';
 import AiMatchRating from './AiMatchRating';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-hot-toast';
 import JobService from '../services/JobService';
 import FreelanceEscrowABI from '../contracts/FreelanceEscrow.json';

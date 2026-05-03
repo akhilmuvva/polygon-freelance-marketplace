@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Gavel, AlertTriangle, ShieldCheck, Scale, Cpu, Search, FileText, ChevronRight, Clock, Banknote, Shield, Award, Zap, TrendingUp, Loader2 } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAccount, useWriteContract } from 'wagmi';
 import FreelanceEscrowABI from '../contracts/FreelanceEscrow.json';
 import { formatEther } from 'viem';
@@ -12,8 +12,9 @@ import JurorService from '../services/JurorService';
 import { useIdentity } from '../hooks/useIdentity';
 import './ArbitrationDashboard.css';
 
-const ZenithCourt = () => {
-    const { address, isConnected } = useAccount();
+const ZenithCourt = ({ address: propAddress, isAdmin: propIsAdmin }) => {
+    const { address: wagmiAddress, isConnected } = useAccount();
+    const address = propAddress || wagmiAddress;
     const identity = useIdentity(address);
     const [disputes, setDisputes] = useState([]);
     const [selectedJob, setSelectedJob] = useState(null);
@@ -21,8 +22,7 @@ const ZenithCourt = () => {
     const [viewMode, setViewMode] = useState('COURT'); // COURT | JUROR_DASH
     const [jurorStats, setJurorStats] = useState(null);
     const [isStaking, setIsStaking] = useState(false);
-
-    const isAdmin = address && ZENITH_JUDGES.some(j => j.toLowerCase() === address.toLowerCase());
+    const isAdmin = propIsAdmin ?? (address && ZENITH_JUDGES.some(j => j.toLowerCase() === address.toLowerCase()));
     const { writeContract, isPending } = useWriteContract();
 
     useEffect(() => {

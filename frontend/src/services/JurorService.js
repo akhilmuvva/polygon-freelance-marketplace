@@ -5,6 +5,7 @@
  * In a production environment, this would interact with a Court Contract.
  */
 import { ZENITH_JUDGES } from '../constants';
+import GravityScoreService from './GravityScoreService';
 
 const JUROR_STAKE_REQUIREMENT = 500; // POL
 

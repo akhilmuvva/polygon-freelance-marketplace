@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAccount, useWalletClient, useWriteContract } from 'wagmi';
 import { parseUnits } from 'viem';
 import { toast as hotToast } from 'react-hot-toast';

@@ -8,7 +8,7 @@ import {
   Home, Briefcase, User, Trophy, Layout, Shield, Search, Terminal, Zap, 
   Menu, X, Bell, LogOut, ChevronRight, Fuel, Globe, Cpu, CreditCard, PieChart,
   LayoutDashboard, Flame, PlusCircle, Gavel, Brain, Landmark, BarChart3,
-  Activity, MessageSquare, ShieldCheck, Mail
+  Activity, MessageSquare, ShieldCheck, Mail, Loader2
 } from 'lucide-react';
 import { useAnimeAnimations } from './hooks/useAnimeAnimations';
 import { AuthContext } from './Web3Provider';
@@ -55,197 +55,329 @@ import { ZENITH_JUDGES } from './constants';
 
 const styles = {
   shell: {
-    display: 'flex', minHeight: '100vh', background: '#010204', color: '#fff',
-    fontFamily: "'Inter', system-ui, sans-serif", overflowX: 'hidden',
+    display: 'flex',
+    flexDirection: 'column',
+    minHeight: '100vh',
+    background: '#080b0e',
+    color: '#fff',
+    fontFamily: "'Inter', system-ui, sans-serif",
   },
-  sidebar: (isOpen) => ({
-    width: 260, background: 'rgba(5,6,8,0.8)', borderRight: '1px solid var(--border)',
-    display: 'flex', flexDirection: 'column', height: '100vh', position: 'fixed',
-    left: 0, top: 0, zIndex: 1000, transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-    transform: isOpen ? 'translateX(0)' : 'translateX(-100%)',
-    backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
-  }),
-  sidebarHeader: {
-    padding: '24px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+  // ── Horizontal Top Navbar ──
+  topbar: {
+    height: 56,
+    background: 'rgba(8,11,14,0.97)',
+    borderBottom: '1px solid rgba(255,255,255,0.07)',
+    backdropFilter: 'blur(24px)',
+    WebkitBackdropFilter: 'blur(24px)',
+    display: 'flex',
+    alignItems: 'center',
+    position: 'sticky',
+    top: 0,
+    zIndex: 1000,
+    width: '100%',
+    gap: 0,
+    paddingRight: 16,
   },
-  sidebarLogo: {
-    display: 'flex', alignItems: 'center', gap: 12, textDecoration: 'none', color: '#fff',
+  topbarLogo: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 10,
+    padding: '0 20px',
+    borderRight: '1px solid rgba(255,255,255,0.07)',
+    height: '100%',
+    flexShrink: 0,
+    minWidth: 180,
   },
   logoIcon: {
-    width: 32, height: 32, borderRadius: 8,
-    background: 'linear-gradient(135deg, var(--accent), var(--secondary))',
-    display: 'flex', alignItems: 'center', justifyContent: 'center',
-    boxShadow: '0 0 20px var(--accent-glow)',
+    width: 30,
+    height: 30,
+    borderRadius: 7,
+    background: '#00c896',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    boxShadow: '0 0 14px rgba(0,200,150,0.35)',
+    color: '#000',
+    flexShrink: 0,
   },
   logoText: {
-    fontSize: '1.1rem', fontWeight: 900, letterSpacing: '-0.03em',
-    background: 'linear-gradient(to right, #fff, rgba(255,255,255,0.5))',
-    WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-  },
-  logoSub: {
-    fontSize: '0.6rem', fontWeight: 800, textTransform: 'uppercase',
-    letterSpacing: '0.2em', color: 'var(--accent)', marginTop: -2,
-  },
-  closeBtn: {
-    display: 'none', background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)',
-    cursor: 'pointer',
-  },
-  sidebarNav: {
-    flex: 1, padding: '10px 14px', overflowY: 'auto',
-  },
-  sectionLabel: {
-    fontSize: '0.6rem', fontWeight: 800, textTransform: 'uppercase',
-    letterSpacing: '0.15em', color: 'rgba(255,255,255,0.25)',
-    margin: '24px 14px 12px',
+    fontSize: '0.92rem',
+    fontWeight: 900,
+    letterSpacing: '-0.03em',
+    color: '#fff',
   },
   logoAccent: {
-    color: 'var(--accent)', fontWeight: 900,
+    color: '#00c896',
+    fontWeight: 900,
+  },
+  logoSub: {
+    fontSize: '0.48rem',
+    fontWeight: 800,
+    textTransform: 'uppercase',
+    letterSpacing: '0.18em',
+    color: 'rgba(255,255,255,0.28)',
+    display: 'block',
+    marginTop: -1,
+  },
+  // Nav items in the top bar (scrollable)
+  topNav: {
+    flex: 1,
+    display: 'flex',
+    alignItems: 'center',
+    gap: 4,
+    overflowX: 'auto',
+    padding: '0 24px',
+    height: '100%',
+    scrollbarWidth: 'none',
+    msOverflowStyle: 'none',
+    maskImage: 'linear-gradient(to right, transparent, black 40px, black calc(100% - 40px), transparent)',
+    WebkitMaskImage: 'linear-gradient(to right, transparent, black 40px, black calc(100% - 40px), transparent)',
+  },
+  navDivider: {
+    width: 1,
+    height: 20,
+    background: 'rgba(255,255,255,0.07)',
+    margin: '0 6px',
+    flexShrink: 0,
   },
   navItem: (active) => ({
-    display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px',
-    borderRadius: 10, background: active ? 'rgba(0,245,212,0.06)' : 'transparent',
+    display: 'flex',
+    alignItems: 'center',
+    gap: 7,
+    padding: '6px 12px',
+    borderRadius: 8,
+    background: active ? 'rgba(0,200,150,0.1)' : 'transparent',
     color: active ? '#fff' : 'rgba(255,255,255,0.4)',
-    fontSize: '0.82rem', fontWeight: 600, border: 'none',
-    cursor: 'pointer', transition: 'all 0.2s ease',
-    textAlign: 'left', marginBottom: 4,
+    fontSize: '0.74rem',
+    fontWeight: active ? 700 : 500,
+    border: active ? '1px solid rgba(0,200,150,0.2)' : '1px solid transparent',
+    cursor: 'pointer',
+    transition: 'all 0.18s ease',
+    whiteSpace: 'nowrap',
+    flexShrink: 0,
+    letterSpacing: '-0.01em',
   }),
-  sidebarBottom: {
-    padding: '12px 14px 16px', borderTop: '1px solid var(--border)',
-    marginTop: 'auto',
+  // Right side controls
+  topbarRight: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 8,
+    flexShrink: 0,
+    paddingLeft: 12,
+    borderLeft: '1px solid rgba(255,255,255,0.07)',
   },
-  networkBox: {
-    background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border)',
-    borderRadius: 14, padding: 14,
+  gasBtn: (on) => ({
+    display: 'flex',
+    alignItems: 'center',
+    gap: 6,
+    padding: '6px 12px',
+    borderRadius: 8,
+    background: on ? 'rgba(0,200,150,0.08)' : 'rgba(255,255,255,0.03)',
+    border: `1px solid ${on ? 'rgba(0,200,150,0.2)' : 'rgba(255,255,255,0.07)'}`,
+    color: on ? '#00c896' : 'rgba(255,255,255,0.4)',
+    fontSize: '0.62rem',
+    fontWeight: 800,
+    cursor: 'pointer',
+    textTransform: 'uppercase',
+    letterSpacing: '0.08em',
+    transition: 'all 0.2s ease',
+    whiteSpace: 'nowrap',
+  }),
+  socialBtn: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 6,
+    padding: '6px 12px',
+    borderRadius: 8,
+    background: 'transparent',
+    border: '1px solid rgba(0,200,150,0.3)',
+    color: '#00c896',
+    fontSize: '0.62rem',
+    fontWeight: 800,
+    cursor: 'pointer',
+    textTransform: 'uppercase',
+    letterSpacing: '0.08em',
+    whiteSpace: 'nowrap',
+    transition: 'all 0.18s ease',
   },
-  networkRow: {
-    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-    marginBottom: 10,
+  logoutBtn: {
+    padding: '6px 8px',
+    borderRadius: 7,
+    background: 'rgba(255,255,255,0.03)',
+    border: '1px solid rgba(255,255,255,0.07)',
+    color: 'rgba(255,255,255,0.35)',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    transition: 'all 0.2s ease',
   },
-  networkLabel: {
-    fontSize: '0.6rem', fontWeight: 700, textTransform: 'uppercase',
-    letterSpacing: '0.08em', color: 'var(--text-tertiary)',
-  },
-  liveDot: {
-    width: 6, height: 6, borderRadius: '50%', background: 'var(--success)',
-    boxShadow: '0 0 8px rgba(52,211,153,0.4)',
+  statusDot: {
+    width: 5,
+    height: 5,
+    borderRadius: '50%',
+    background: '#00c896',
+    boxShadow: '0 0 6px rgba(0,200,150,0.8)',
     animation: 'pulse 2s infinite ease-in-out',
   },
-  versionRow: {
-    display: 'flex', alignItems: 'center', gap: 8,
+  // Secondary sub-header (page title + status)
+  subHeader: {
+    height: 44,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: '0 32px',
+    borderBottom: '1px solid rgba(255,255,255,0.04)',
+    background: 'rgba(255,255,255,0.01)',
+  },
+  subHeaderLeft: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 10,
+  },
+  subHeaderTitle: {
+    fontSize: '0.72rem',
+    fontWeight: 900,
+    color: 'rgba(255,255,255,0.5)',
+    textTransform: 'uppercase',
+    letterSpacing: '0.12em',
+  },
+  subHeaderStatus: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 6,
+    fontSize: '0.58rem',
+    fontWeight: 700,
+    color: 'rgba(255,255,255,0.22)',
+    textTransform: 'uppercase',
+    letterSpacing: '0.08em',
+  },
+  // Gasless toggle (sidebar bottom)
+  toggleRow: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  toggleLabel: {
+    fontSize: '0.6rem',
+    fontWeight: 700,
+    color: 'rgba(255,255,255,0.3)',
+    textTransform: 'uppercase',
+    letterSpacing: '0.08em',
+  },
+  toggle: (on) => ({
+    width: 32,
+    height: 18,
+    borderRadius: 9,
+    position: 'relative',
+    background: on ? '#00c896' : 'rgba(255,255,255,0.1)',
+    border: 'none',
+    cursor: 'pointer',
+    transition: 'all 0.22s ease',
+    boxShadow: on ? '0 0 10px rgba(0,200,150,0.4)' : 'none',
+    flexShrink: 0,
+  }),
+  toggleDot: (on) => ({
+    position: 'absolute',
+    top: 3,
+    width: 12,
+    height: 12,
+    borderRadius: '50%',
+    background: on ? '#000' : '#fff',
+    transition: 'left 0.22s ease',
+    left: on ? 17 : 3,
+    boxShadow: '0 1px 4px rgba(0,0,0,0.3)',
+  }),
+  // Main content
+  main: {
+    flex: 1,
+    display: 'flex',
+    flexDirection: 'column',
+    minHeight: 0,
+  },
+  content: {
+    flex: 1,
+    padding: '28px 32px 56px',
+    maxWidth: 1800,
+    width: '100%',
+    margin: '0 auto',
+  },
+  footer: {
+    padding: '10px 32px',
+    borderTop: '1px solid rgba(255,255,255,0.04)',
+    display: 'flex',
+    alignItems: 'center',
+    gap: 16,
+    background: 'transparent',
+  },
+  footerLinks: { display: 'flex', gap: 14 },
+  footerLink: {
+    background: 'none',
+    border: 'none',
+    fontSize: '0.62rem',
+    color: 'rgba(255,255,255,0.18)',
+    cursor: 'pointer',
+    transition: 'color 0.15s ease',
+    textTransform: 'uppercase',
+    letterSpacing: '0.08em',
+  },
+  // Mobile bottom nav (kept for mobile)
+  mobileNav: {
+    display: 'none',
+    position: 'fixed',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 68,
+    background: 'rgba(8,11,14,0.97)',
+    backdropFilter: 'blur(20px)',
+    borderTop: '1px solid rgba(255,255,255,0.06)',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    zIndex: 2000,
+    paddingBottom: 'env(safe-area-inset-bottom)',
+  },
+  mobileItem: (active) => ({
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: 3,
+    color: active ? '#00c896' : 'rgba(255,255,255,0.3)',
+    fontSize: '0.5rem',
+    fontWeight: 800,
+    textTransform: 'uppercase',
+    letterSpacing: '0.07em',
+    background: 'none',
+    border: 'none',
+    cursor: 'pointer',
+    padding: '4px 10px',
+    borderRadius: 8,
+    transition: 'all 0.18s ease',
+  }),
+  overlay: {
+    position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)',
+    zIndex: 900, cursor: 'pointer',
+  },
+  menuBtn: {
+    display: 'none',
+    background: 'rgba(255,255,255,0.04)',
+    border: '1px solid rgba(255,255,255,0.07)',
+    borderRadius: 7,
+    padding: 7,
+    color: 'rgba(255,255,255,0.5)',
+    cursor: 'pointer',
   },
   versionAvatar: {
     width: 28, height: 28, borderRadius: '50%',
-    background: 'linear-gradient(135deg, var(--accent), var(--secondary))',
+    background: '#00c896',
+    boxShadow: '0 0 10px rgba(0,200,150,0.3)',
   },
   versionText: {
-    fontSize: '0.65rem', fontWeight: 700, color: 'var(--text-tertiary)',
+    fontSize: '0.6rem', fontWeight: 700, color: 'rgba(255,255,255,0.3)',
   },
   versionNum: {
     fontSize: '0.72rem', fontWeight: 800, color: '#fff',
   },
-  toggleRow: {
-    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-    marginTop: 10,
-  },
-  toggleLabel: {
-    fontSize: '0.65rem', fontWeight: 700, color: 'var(--text-tertiary)',
-  },
-  toggle: (on) => ({
-    width: 34, height: 18, borderRadius: 10, position: 'relative',
-    background: on ? 'var(--accent)' : 'rgba(255,255,255,0.1)',
-    border: 'none', cursor: 'pointer', transition: 'background 0.2s ease',
-  }),
-  toggleDot: (on) => ({
-    position: 'absolute', top: 3, width: 12, height: 12, borderRadius: '50%',
-    background: '#fff', transition: 'left 0.2s ease',
-    left: on ? 19 : 3,
-  }),
-  main: {
-    flex: 1, marginLeft: 260, display: 'flex', flexDirection: 'column',
-    minHeight: '100vh', width: 'calc(100% - 260px)',
-    background: 'var(--bg-base)',
-  },
-  header: {
-    height: 64, borderBottom: '1px solid var(--border)',
-    background: 'rgba(1,2,4,0.85)', backdropFilter: 'blur(16px)',
-    WebkitBackdropFilter: 'blur(16px)',
-    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-    padding: '0 28px', position: 'sticky', top: 0, zIndex: 500,
-  },
-  headerLeft: { display: 'flex', alignItems: 'center', gap: 14 },
-  menuBtn: {
-    display: 'none', background: 'rgba(255,255,255,0.04)',
-    border: '1px solid var(--border)', borderRadius: 10, padding: 8,
-    color: 'var(--text-secondary)', cursor: 'pointer',
-  },
-  headerTitle: {
-    fontSize: '0.95rem', fontWeight: 800, color: '#fff',
-    letterSpacing: '-0.02em', textTransform: 'capitalize',
-  },
-  headerStatus: {
-    display: 'flex', alignItems: 'center', gap: 6,
-    fontSize: '0.6rem', fontWeight: 700, color: 'var(--text-tertiary)',
-    textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: 2,
-  },
-  statusDot: {
-    width: 5, height: 5, borderRadius: '50%', background: '#34d399',
-  },
-  headerRight: { display: 'flex', alignItems: 'center', gap: 12 },
-  gasBtn: (on) => ({
-    display: 'flex', alignItems: 'center', gap: 6, padding: '6px 14px',
-    borderRadius: 10, background: on ? 'rgba(124,92,252,0.08)' : 'rgba(255,255,255,0.03)',
-    border: `1px solid ${on ? 'rgba(124,92,252,0.2)' : 'var(--border)'}`,
-    color: on ? 'var(--accent-light)' : 'var(--text-tertiary)',
-    fontSize: '0.68rem', fontWeight: 700, cursor: 'pointer',
-    textTransform: 'uppercase', letterSpacing: '0.04em',
-    transition: 'all 0.15s ease',
-  }),
-  socialBtn: {
-    display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px',
-    borderRadius: 10, background: 'linear-gradient(135deg, var(--accent), var(--secondary))',
-    color: 'var(--text-inverse)', fontSize: '0.75rem', fontWeight: 700, border: 'none',
-    cursor: 'pointer', boxShadow: '0 4px 16px var(--accent-glow)',
-    transition: 'all 0.2s ease',
-  },
-  logoutBtn: {
-    padding: 6, borderRadius: 8, background: 'rgba(255,255,255,0.04)',
-    border: '1px solid var(--border)', color: 'var(--text-secondary)',
-    cursor: 'pointer', display: 'flex', alignItems: 'center',
-  },
-  content: {
-    flex: 1, padding: '28px 32px 48px', maxWidth: 1800, width: '100%', margin: '0 auto',
-  },
-  footer: {
-    padding: '14px 32px', borderTop: '1px solid var(--border)',
-    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-  },
-  footerLinks: { display: 'flex', gap: 16 },
-  footerLink: {
-    background: 'none', border: 'none', fontSize: '0.72rem',
-    color: 'var(--text-tertiary)', cursor: 'pointer',
-    transition: 'color 0.15s ease',
-  },
-  footerCopy: {
-    fontSize: '0.72rem', color: 'var(--text-tertiary)',
-  },
-  overlay: {
-    position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)',
-    backdropFilter: 'blur(4px)', zIndex: 2500, cursor: 'pointer',
-  },
-  mobileNav: {
-    display: 'flex', position: 'fixed', bottom: 0, left: 0, right: 0,
-    height: 72, background: 'rgba(5,6,8,0.95)', backdropFilter: 'blur(10px)',
-    borderTop: '1px solid var(--border)',
-    justifyContent: 'space-around', alignItems: 'center', zIndex: 2000,
-    paddingBottom: 'env(safe-area-inset-bottom)',
-  },
-  mobileItem: (active) => ({
-    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
-    color: active ? 'var(--accent-light)' : 'var(--text-tertiary)',
-    fontSize: '0.55rem', fontWeight: 700, textTransform: 'uppercase',
-    letterSpacing: '0.04em', background: 'none', border: 'none',
-    cursor: 'pointer', padding: '6px 10px',
-  }),
+
 };
 
 // Hook to periodically check if our decentralised infrastructure is working
@@ -284,7 +416,7 @@ function App() {
   const { data: blockNumber } = useBlockNumber({ watch: true });
   const { staggerFadeIn } = useAnimeAnimations();
   
-  useNetworkHealth(); // Runs background health checks; result used only in future telemetry
+  const health = useNetworkHealth();
 
   const [isHydrated, setIsHydrated] = useState(false);
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -475,8 +607,18 @@ function App() {
   }, [isWalletConnected, socialProvider, authStatus]);
 
 
-  const effectiveAddress = smartAccount?.accountAddress || address;
-  const isAdmin = effectiveAddress && ZENITH_JUDGES.some(j => j.toLowerCase() === effectiveAddress.toLowerCase());
+  // Directive 10: Sovereign Address Resolution
+  // If a smart account is active, it becomes the primary identity for on-chain interactions.
+  // We normalize to lowercase to prevent 'Identity Bifurcation' in query keys and access control.
+  const effectiveAddress = (smartAccount?.accountAddress || address)?.toLowerCase();
+  
+  // Robust Admin check: allow access if EITHER the EOA or the Smart Account is whitelisted.
+  const isAdmin = useMemo(() => {
+    if (!address && !smartAccount?.accountAddress) return false;
+    const judges = ZENITH_JUDGES.map(j => j.toLowerCase());
+    return (address && judges.includes(address.toLowerCase())) || 
+           (smartAccount?.accountAddress && judges.includes(smartAccount.accountAddress.toLowerCase()));
+  }, [address, smartAccount]);
   
   // Directive 10: Session Continuity Guard
   // A session is active if we have a Smart Account (Social/Bypass) OR a fully connected wallet with an address.
@@ -498,24 +640,24 @@ function App() {
       case 'governance': return <ZenithGovernance address={effectiveAddress} />;
       case 'court': return (
         <CourtErrorBoundary>
-          <ZenithCourt address={effectiveAddress} />
+          <ZenithCourt address={effectiveAddress} isAdmin={isAdmin} />
         </CourtErrorBoundary>
       );
-      case 'control': return isAdmin ? <ZenithControl address={effectiveAddress} /> : <Dashboard address={effectiveAddress} />;
+      case 'control': return isAdmin ? <ZenithControl isAdmin={isAdmin} address={effectiveAddress} /> : <Dashboard address={effectiveAddress} />;
       case 'strata': return <ZenithStrata address={effectiveAddress} />;
       case 'liquidity': return <ZenithLiquidity />;
       case 'cross-chain': return <CrossChainDashboard address={effectiveAddress} />;
-      case 'analytics': return isAdmin ? <AnalyticsDashboard /> : <Dashboard address={effectiveAddress} />;
+      case 'analytics': return isAdmin ? <AnalyticsDashboard isAdmin={isAdmin} address={effectiveAddress} /> : <Dashboard address={effectiveAddress} />;
       case 'sbt-gallery': return <SBTGallery address={effectiveAddress} />;
       case 'terms': return <TermsOfService />;
       case 'privacy': return <PrivacyCenter address={effectiveAddress} />;
       case 'onramp': return <FiatOnramp address={effectiveAddress} recipientAddress={activeTabParams.recipient} />;
-      case 'identity': return <IdentityManager address={effectiveAddress} />;
+      case 'identity': return <IdentityManager address={effectiveAddress} gaslessEnabled={isGasless} isAdmin={isAdmin} />;
       case 'portfolio': return <Portfolio address={effectiveAddress} onFiatPay={navigateToOnramp} />;
       case 'specialists': return <SpecialistMarketplace onRegister={() => setActiveTab('identity')} />;
       case 'insurance': return <InsuranceDashboard />;
-      case 'ai-oracle': return <AICommandCenter />;
-      case 'protocol': return <ProtocolDashboard />;
+      case 'ai-oracle': return <AICommandCenter isAdmin={isAdmin} address={effectiveAddress} />;
+      case 'protocol': return <ProtocolDashboard isAdmin={isAdmin} address={effectiveAddress} />;
       case 'marketplace': return <NFTMarketplace />;
       case 'manifesto': return <Manifesto />;
       default: return <Dashboard address={effectiveAddress} />;
@@ -546,153 +688,138 @@ function App() {
       ) : (
         <div style={styles.shell}>
           <NotificationManager />
-          {isSidebarOpen && <div className="sidebar-overlay" style={styles.overlay} onClick={() => setIsSidebarOpen(false)} />}
-          <aside ref={sidebarRef} className={`app-sidebar ${isSidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`} style={styles.sidebar(isSidebarOpen)}>
-            <div style={styles.sidebarHeader}>
-              <div style={styles.sidebarLogo}>
-                <div style={styles.logoIcon}><Zap size={18} fill="currentColor" /></div>
-                <div>
-                  <div style={styles.logoText}>POLY<span style={styles.logoAccent}>LANCE</span></div>
-                  <div style={styles.logoSub}>Zenith Protocol</div>
-                </div>
+          {/* ── Horizontal Top Navbar ── */}
+          <nav style={styles.topbar}>
+            {/* Logo */}
+            <div style={styles.topbarLogo}>
+              <div style={styles.logoIcon}><Zap size={16} fill="currentColor" /></div>
+              <div>
+                <div style={styles.logoText}>POLY<span style={styles.logoAccent}>LANCE</span></div>
+                <span style={styles.logoSub}>Zenith Protocol</span>
               </div>
-              <button className="close-toggle" style={styles.closeBtn} onClick={() => setIsSidebarOpen(false)}><X size={20} /></button>
             </div>
-            <nav style={styles.sidebarNav} className="custom-scrollbar">
-              <div style={styles.sectionLabel}>Main Modules</div>
+
+            {/* Scrollable Nav Items */}
+            <div style={styles.topNav} className="topnav-scroll">
+              {/* Main */}
               {[
-                { id: 'dashboard', icon: LayoutDashboard, label: 'Command Center' },
-                { id: 'marketplace', icon: Flame, label: 'Zenith Exchange' },
-                { id: 'jobs', icon: Briefcase, label: 'Find a Job' },
-                { id: 'specialists', icon: User, label: 'Expert Network' },
-                { id: 'create-job', icon: PlusCircle, label: 'Initialize Contract' },
-                { id: 'leaderboard', icon: Trophy, label: 'Elite Leaderboard' },
-                { id: 'identity', icon: User, label: 'Profile Updater' },
-                { id: 'portfolio', icon: User, label: 'Zenith Reputation' },
+                { id: 'dashboard',   icon: LayoutDashboard, label: 'Command Center' },
+                { id: 'marketplace', icon: Flame,           label: 'Zenith Exchange' },
+                { id: 'jobs',        icon: Briefcase,       label: 'Find a Job' },
+                { id: 'specialists', icon: User,            label: 'Expert Network' },
+                { id: 'create-job',  icon: PlusCircle,      label: 'New Contract' },
+                { id: 'leaderboard', icon: Trophy,          label: 'Leaderboard' },
+                { id: 'identity',    icon: User,            label: 'Profile' },
+                { id: 'portfolio',   icon: User,            label: 'Reputation' },
               ].map(item => (
-                <div key={item.id} className="anime-nav-item" onClick={() => navigate(item.id)} style={styles.navItem(activeTab === item.id)}>
-                  <item.icon size={16} color={activeTab === item.id ? '#00f5d4' : 'rgba(255,255,255,0.4)'} /> {item.label}
-                </div>
+                <button key={item.id} className="anime-nav-item" onClick={() => navigate(item.id)} style={styles.navItem(activeTab === item.id)}>
+                  <item.icon size={14} color={activeTab === item.id ? '#00c896' : 'rgba(255,255,255,0.35)'} />
+                  {item.label}
+                </button>
               ))}
-              
-              <div style={styles.sectionLabel}>Finance & Zenith</div>
+
+              <div style={styles.navDivider} />
+
+              {/* Finance */}
               {[
-                  { id: 'governance', icon: Globe, label: 'DAO Governance' },
-                  { id: 'court', icon: Gavel, label: 'Zenith Court' },
-                  { id: 'insurance', icon: ShieldCheck, label: 'Zenith Shield' },
-                  { id: 'liquidity', icon: Flame, label: 'Zenith Liquidity' },
+                { id: 'governance', icon: Globe,       label: 'DAO' },
+                { id: 'court',      icon: Gavel,       label: 'Court' },
+                { id: 'insurance',  icon: ShieldCheck, label: 'Shield' },
+                { id: 'liquidity',  icon: Flame,       label: 'Liquidity' },
               ].map(item => (
-                <div key={item.id} className="anime-nav-item" onClick={() => navigate(item.id)} style={styles.navItem(activeTab === item.id)}>
-                  <item.icon size={16} color={activeTab === item.id ? '#00f5d4' : 'rgba(255,255,255,0.4)'} /> {item.label}
-                </div>
+                <button key={item.id} className="anime-nav-item" onClick={() => navigate(item.id)} style={styles.navItem(activeTab === item.id)}>
+                  <item.icon size={14} color={activeTab === item.id ? '#00c896' : 'rgba(255,255,255,0.35)'} />
+                  {item.label}
+                </button>
+              ))}
+
+              <div style={styles.navDivider} />
+
+              {/* System */}
+              {[
+                { id: 'chat',        icon: MessageSquare, label: 'Comms' },
+                { id: 'sbt-gallery', icon: ShieldCheck,   label: 'SBT' },
+                { id: 'privacy',     icon: Shield,        label: 'Privacy' },
+              ].map(item => (
+                <button key={item.id} className="anime-nav-item" onClick={() => navigate(item.id)} style={styles.navItem(activeTab === item.id)}>
+                  <item.icon size={14} color={activeTab === item.id ? '#00c896' : 'rgba(255,255,255,0.35)'} />
+                  {item.label}
+                </button>
               ))}
 
               {isAdmin && (
                 <>
-                  <div style={styles.sectionLabel}>Sovereign Oversight</div>
+                  <div style={styles.navDivider} />
                   {[
-                    { id: 'control', icon: Activity, label: 'Zenith Watcher' },
-                    { id: 'ai-oracle', icon: Brain, label: 'AI Oracle' },
-                    { id: 'protocol', icon: Landmark, label: 'Zenith Protocol' },
-                    { id: 'analytics', icon: BarChart3, label: 'Network Analytics' },
+                    { id: 'control',   icon: Activity,  label: 'Watcher' },
+                    { id: 'ai-oracle', icon: Brain,     label: 'AI Oracle' },
+                    { id: 'protocol',  icon: Landmark,  label: 'Protocol' },
+                    { id: 'analytics', icon: BarChart3, label: 'Analytics' },
                   ].map(item => (
-                    <div key={item.id} className="anime-nav-item" onClick={() => navigate(item.id)} style={styles.navItem(activeTab === item.id)}>
-                      <item.icon size={16} /> {item.label}
-                    </div>
+                    <button key={item.id} className="anime-nav-item" onClick={() => navigate(item.id)} style={styles.navItem(activeTab === item.id)}>
+                      <item.icon size={14} color={activeTab === item.id ? '#00c896' : 'rgba(255,255,255,0.35)'} />
+                      {item.label}
+                    </button>
                   ))}
                 </>
               )}
-              <div style={styles.sectionLabel}>System</div>
-              {[
-                { id: 'chat', icon: MessageSquare, label: 'Encrypted Comms' },
-                { id: 'sbt-gallery', icon: ShieldCheck, label: 'Soulbound Tokens' },
-                { id: 'privacy', icon: Shield, label: 'Privacy Center' },
-              ].map(item => (
-                <div key={item.id} className="anime-nav-item" onClick={() => navigate(item.id)} style={styles.navItem(activeTab === item.id)}>
-                  <item.icon size={16} color={activeTab === item.id ? '#00f5d4' : 'rgba(255,255,255,0.4)'} /> {item.label}
+            </div>
+
+            {/* Right controls */}
+            <div style={styles.topbarRight}>
+              {/* Telemetry Display */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginRight: 12 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                   <div style={{ fontSize: '0.42rem', fontWeight: 900, color: 'rgba(255,255,255,0.15)', textTransform: 'uppercase', letterSpacing: '0.15em' }}>INDEX_MESH</div>
+                   <div style={{ fontSize: '0.58rem', fontWeight: 900, color: health.indexing === 'Healthy' ? '#00c896' : '#ff4d4d', letterSpacing: '0.02em' }}>{health.indexing.toUpperCase()}</div>
                 </div>
-              ))}
-            </nav>
-            <div style={styles.sidebarBottom}>
-              <div style={styles.networkBox}>
-                <div style={styles.networkRow}>
-                  <span style={styles.networkLabel}>Network Stats</span>
-                  <div style={styles.liveDot} />
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                   <div style={{ fontSize: '0.42rem', fontWeight: 900, color: 'rgba(255,255,255,0.15)', textTransform: 'uppercase', letterSpacing: '0.15em' }}>STORAGE_VAULT</div>
+                   <div style={{ fontSize: '0.58rem', fontWeight: 900, color: health.storage === 'Healthy' ? '#00c896' : '#ff4d4d', letterSpacing: '0.02em' }}>{health.storage.toUpperCase()}</div>
                 </div>
-                <div style={styles.versionRow}>
-                  <div style={{ ...styles.versionAvatar, background: 'linear-gradient(135deg, #00f5d4, #6366f1)', boxShadow: '0 0 15px rgba(0,245,212,0.3)' }} />
-                  <div>
-                    <div style={styles.versionText}>Protocol</div>
-                    <div style={styles.versionNum}>v1.5.1-Z</div>
-                  </div>
+              </div>
+
+              {/* Status dot */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.58rem', fontWeight: 700, color: 'rgba(255,255,255,0.25)', textTransform: 'uppercase', letterSpacing: '0.08em', whiteSpace: 'nowrap', borderLeft: '1px solid rgba(255,255,255,0.07)', paddingLeft: 12 }}>
+                <div style={styles.statusDot} /> PoS On-Chain
+              </div>
+
+              {/* Gasless toggle pill */}
+              <button style={styles.gasBtn(isGasless)} onClick={actuateGaslessToggleIntent} disabled={isInitializingGasless}>
+                {isInitializingGasless ? <Loader2 size={12} className="animate-spin" /> : <ShieldCheck size={12} />}
+                <span>{isInitializingGasless ? 'Initializing' : 'Shield'}</span>
+                <div style={{ width: 1, height: 12, background: 'rgba(255,255,255,0.1)', margin: '0 4px' }} />
+                <div style={styles.toggle(isGasless)}>
+                  <div style={styles.toggleDot(isGasless)} />
                 </div>
-                <div style={styles.toggleRow}>
-                  <span style={styles.toggleLabel}>Gasless Mode</span>
-                  <button style={styles.toggle(isGasless)} onClick={actuateGaslessToggleIntent} disabled={isInitializingGasless}>
-                    <div style={styles.toggleDot(isGasless)} />
-                  </button>
-                </div>
+              </button>
+
+              {!isWalletConnected && !smartAccount && (
+                <button style={styles.socialBtn} onClick={actuateSocialLoginIntent} disabled={isLoggingIn}>
+                  <Mail size={12} />{isLoggingIn ? 'Syncing...' : 'Social Login'}
+                </button>
+              )}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <ConnectButton accountStatus="avatar" chainStatus="icon" showBalance={false} />
+                {(isWalletConnected || smartAccount) && (
+                  <button style={styles.logoutBtn} onClick={actuateLogoutIntent} title="Sign Out"><LogOut size={14} /></button>
+                )}
               </div>
             </div>
-          </aside>
+          </nav>
+
+          {/* Sub-header: current page label */}
+          <div style={styles.subHeader}>
+            <div style={styles.subHeaderLeft}>
+              <span style={styles.subHeaderTitle}>
+                {activeTab === 'dashboard' ? 'Command Center' : (activeTab || '').replace(/-/g, ' ')}
+              </span>
+            </div>
+            <div style={styles.subHeaderStatus}>
+              <div style={styles.statusDot} /> Polygon PoS On-Chain · v1.5.1-Zenith
+            </div>
+          </div>
           <main className="app-main" style={styles.main}>
-            <header className="app-header" style={styles.header}>
-              <div style={styles.headerLeft}>
-                <button className="menu-toggle" style={styles.menuBtn} onClick={() => setIsSidebarOpen(true)}><Menu size={18} /></button>
-                <div>
-                  <div style={{ ...styles.headerTitle, textTransform: 'uppercase', letterSpacing: '0.1em' }}>{activeTab === 'dashboard' ? 'Command Center' : (activeTab || '').replace('-', ' ')}</div>
-                  <div style={styles.headerStatus}><div style={styles.statusDot} />Polygon PoS On-Chain</div>
-                </div>
-              </div>
-              <div style={styles.headerRight}>
-                <button className="desktop-only" 
-                  style={{ 
-                    ...styles.gasBtn(isGasless), 
-                    background: 'rgba(255,255,255,0.03)', 
-                    color: isGasless ? '#00f5d4' : 'rgba(255,255,255,0.4)',
-                    border: '1px solid rgba(255,255,255,0.08)',
-                    borderRadius: '12px',
-                    padding: '8px 16px',
-                    fontSize: '11px',
-                    fontWeight: 800,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.1em'
-                  }} 
-                  onClick={actuateGaslessToggleIntent} 
-                  disabled={isInitializingGasless}
-                >
-                  {isInitializingGasless ? <Shield size={14} className="animate-spin" /> : <ShieldCheck size={14} style={{ color: isGasless ? '#00f5d4' : 'inherit' }} />}
-                  {isInitializingGasless ? 'Initializing...' : 'Sovereign Shield'}
-                </button>
-                {/* SOCIAL LOGIN - Only shown if NO wallet is connected AND NO smart account exists */}
-                {!isWalletConnected && !smartAccount && (
-                  <button className="desktop-only" 
-                    style={{ 
-                        ...styles.socialBtn, 
-                        background: 'linear-gradient(135deg, #00f5d4, #06b6d4)', 
-                        color: '#000',
-                        border: 'none',
-                        borderRadius: '12px',
-                        padding: '8px 16px',
-                        fontSize: '11px',
-                        fontWeight: 900,
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.05em'
-                    }} 
-                    onClick={actuateSocialLoginIntent} 
-                    disabled={isLoggingIn}
-                  >
-                    <Mail size={14} /> {isLoggingIn ? 'Syncing...' : 'Social Login'}
-                  </button>
-                )}
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <ConnectButton accountStatus="avatar" chainStatus="icon" showBalance={false} />
-                  {(isWalletConnected || smartAccount) && (
-                    <button style={styles.logoutBtn} onClick={actuateLogoutIntent} title="Sign Out"><LogOut size={16} /></button>
-                  )}
-                </div>
-              </div>
-            </header>
             <div className="app-content" style={styles.content}>
               <AnimatePresence mode="wait">
                 <motion.div key={activeTab + (portfolioAddress || '')} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.25, ease: 'easeOut' }}>

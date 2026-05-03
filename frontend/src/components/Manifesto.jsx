@@ -1,6 +1,6 @@
 import React from 'react';
 import { Shield, Globe, Award, Github, Linkedin, Briefcase, Zap, Heart, Cpu, Fingerprint, Milestone } from 'lucide-react';
-import { motion } from 'motion/react';
+import { motion } from 'framer-motion';
 import './Manifesto.css';
 
 const Manifesto = () => {

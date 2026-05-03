@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAccount } from 'wagmi';
 import { formatEther } from 'viem';
 import { 
@@ -9,6 +9,8 @@ import {
     Target, BarChart3, Fingerprint, Layers, ExternalLink,
     Lock, Unlock, Radio, Server
 } from 'lucide-react';
+import { Card, Metric, Text, Flex, BadgeDelta, Table, TableHead, TableHeaderCell, TableBody, TableRow, TableCell, Badge, Tracker } from '@tremor/react';
+import { Box, Grid, Heading, Button as ChakraButton } from '@chakra-ui/react';
 import { useQuery } from '@tanstack/react-query';
 import SubgraphService from '../services/SubgraphService';
 import ProfileService from '../services/ProfileService';
@@ -43,6 +45,7 @@ const Dashboard = ({ address: propAddress }) => {
         queryKey: ['ecosystem-stats'],
         queryFn: () => SubgraphService.getEcosystemStats(),
     });
+
 
     const { data: portfolioRaw } = useQuery({
         queryKey: ['portfolio', address],
@@ -115,208 +118,290 @@ const Dashboard = ({ address: propAddress }) => {
             <div className="ambient-glow" style={{ bottom: '20%', right: '10%', background: '#d946ef', opacity: 0.05 }} />
 
             {/* Header Section */}
-            <motion.div variants={itemVariants} className="dashboard-header">
-                <div>
-                    <div className="system-status">
+            <motion.div variants={itemVariants} className="dashboard-header mb-12">
+                <Box>
+                    <div className="system-status mb-3">
                         <div className="status-dot" />
-                        <span className="status-text">Sovereign Node: Online</span>
+                        <span className="status-text text-sm">Sovereign Node: <span className="font-black text-[#00c896]">Active</span></span>
                     </div>
-                    <h1 className="dashboard-title">
+                    <Heading size="2xl" className="dashboard-title">
                         Command <span className="accent-text">Center</span>
-                    </h1>
-                    <p className="dashboard-subtitle">
-                        Orchestrating trustless coordination for <span style={{ color: '#fff', fontWeight: 700 }}>{pData?.name || (address ? `${address.slice(0,6)}...${address.slice(-4)}` : 'Operator')}</span>. 
-                    </p>
-                </div>
+                    </Heading>
+                    <Text className="dashboard-subtitle mt-3 text-gray-400 font-medium tracking-tight">
+                        Orchestrating trustless coordination for <span className="text-white font-black underline decoration-[#00c896]/30 underline-offset-4">{pData?.name || (address ? `${address.slice(0,6)}...${address.slice(-4)}` : 'Operator')}</span>. 
+                    </Text>
+                </Box>
                 <div className="header-actions flex gap-4">
-                    <button className="btn btn-ghost" style={{ padding: '12px 24px', gap: '10px' }}>
-                        <BarChart3 size={18} />
-                        <span>Intelligence</span>
-                    </button>
-                    <button 
-                        className="btn btn-primary" 
-                        style={{ padding: '14px 32px', gap: '10px' }}
+                    <ChakraButton 
+                      variant="ghost" 
+                      leftIcon={<BarChart3 size={18} />}
+                      _hover={{ bg: 'whiteAlpha.100', transform: 'translateY(-2px)' }}
+                      transition="all 0.2s"
+                    >
+                        Intelligence
+                    </ChakraButton>
+                    <ChakraButton 
+                        bg="#00c896"
+                        color="black"
+                        _hover={{ bg: '#00e0a8', transform: 'translateY(-2px)', shadow: '0 8px 24px rgba(0,200,150,0.3)' }}
+                        _active={{ bg: '#00b084' }}
+                        fontWeight="900"
+                        leftIcon={<Plus size={20} />}
                         onClick={() => window.dispatchEvent(new CustomEvent('NAV_TO_TAB', { detail: 'jobs' }))}
                     >
-                        <Plus size={20} />
-                        <span>New Mission</span>
-                    </button>
+                        New Mission
+                    </ChakraButton>
                 </div>
             </motion.div>
 
             {/* Bento Grid */}
-            <div className="bento-grid">
+            <Grid templateColumns="repeat(auto-fit, minmax(300px, 1fr))" gap={6}>
                 
                 {/* 1. Reputation Mastery */}
-                <motion.div variants={itemVariants} className="bento-card card-rep">
-                    <div className="bg-pattern-grid" />
-                    <div className="rep-header">
-                        <div>
-                            <span className="text-label"><Trophy size={14} style={{ display: 'inline', marginRight: '8px' }} /> Reputation Frequency</span>
-                            <div className="rep-score">
-                                {pData?.reputationScore || '0'}<span className="rep-unit">RP</span>
+                <motion.div variants={itemVariants} whileHover={{ scale: 1.01 }} className="relative group">
+                    <div className="absolute -inset-0.5 bg-gradient-to-r from-emerald-500/20 to-teal-500/0 rounded-[22px] blur opacity-30 group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
+                    <Card decoration="top" decorationColor="emerald" className="relative h-full bg-[#0a0f12]/80 border border-white/5 backdrop-blur-xl rounded-[20px] overflow-hidden">
+                        <Flex alignItems="start" justifyContent="between">
+                            <div>
+                                <Text className="flex items-center gap-2 font-bold tracking-wider text-xs uppercase opacity-50"><Trophy size={14} className="text-emerald-400" /> Reputation Frequency</Text>
+                                <Metric className="mt-4 flex items-baseline gap-2">
+                                  <span className="text-5xl font-black">{pData?.reputationScore || '0'}</span>
+                                  <span className="text-xs font-black text-emerald-400 uppercase tracking-widest">RP UNIT</span>
+                                </Metric>
                             </div>
-                        </div>
-                        <div style={{ textAlign: 'right' }}>
-                            <div className="status-pill" style={{ color: '#8b5cf6', borderColor: 'rgba(139,92,246,0.3)', background: 'rgba(139,92,246,0.1)' }}>
+                            <Badge size="xl" color="emerald" className="px-4 py-1.5 rounded-full font-black text-[0.6rem] tracking-[0.15em] uppercase border border-emerald-500/20 bg-emerald-500/5">
                                 {gravityStats.orbitCategory?.split('(')[0].trim() || 'Unranked'}
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div className="rep-footer">
-                        <div>
-                            <span className="text-label">Network Gravity</span>
-                            <div className="text-value flex items-center gap-3">
-                                {(pData?.averageRating || 0).toFixed(1)}
-                                <div className="flex gap-1">
-                                    {[...Array(5)].map((_, i) => (
-                                        <Star key={i} size={12} fill={i < Math.floor(pData?.averageRating || 0) ? '#8b5cf6' : 'none'} color={i < Math.floor(pData?.averageRating || 0) ? '#8b5cf6' : 'rgba(255,255,255,0.1)'} />
-                                    ))}
+                            </Badge>
+                        </Flex>
+                        
+                        <Grid templateColumns="repeat(3, 1fr)" gap={4} className="mt-8 pt-8 border-t border-white/5">
+                            <div className="group/stat">
+                                <Text className="text-[0.6rem] font-black uppercase tracking-widest opacity-30 group-hover/stat:opacity-100 transition-opacity">Gravity</Text>
+                                <div className="text-xl font-black mt-2 flex items-center gap-2">
+                                    {(pData?.averageRating || 0).toFixed(1)}
+                                    <Star size={14} fill="#00c896" color="#00c896" className="animate-pulse" />
                                 </div>
                             </div>
-                        </div>
-                        <div>
-                            <span className="text-label">Equilibrium</span>
-                            <div className="text-value accent-text">
-                                {gravityStats.equilibriumAdjustment || '+0.0'}
+                            <div className="group/stat">
+                                <Text className="text-[0.6rem] font-black uppercase tracking-widest opacity-30 group-hover/stat:opacity-100 transition-opacity">Equilibrium</Text>
+                                <div className="text-xl font-black text-emerald-400 mt-2">
+                                    {gravityStats.equilibriumAdjustment || '+0.0'}
+                                </div>
                             </div>
-                        </div>
-                        <div>
-                            <span className="text-label">Total Missions</span>
-                            <div className="text-value">
-                                {aData?.totalJobs || '0'} <span style={{ fontSize: '14px', opacity: 0.3, fontWeight: 500 }}>UNITS</span>
+                            <div className="group/stat">
+                                <Text className="text-[0.6rem] font-black uppercase tracking-widest opacity-30 group-hover/stat:opacity-100 transition-opacity">Missions</Text>
+                                <div className="text-xl font-black mt-2">
+                                    {aData?.totalJobs || '0'}
+                                </div>
                             </div>
-                        </div>
-                    </div>
+                        </Grid>
+                    </Card>
                 </motion.div>
 
                 {/* 2. Identity Anchor */}
-                <motion.div variants={itemVariants} className="bento-card card-identity">
-                    <div>
-                        <div className="flex justify-between items-center">
-                            <span className="text-label flex items-center gap-2"><Fingerprint size={16} /> Identity Anchor</span>
-                            <div className="status-pill">ERC-6551</div>
-                        </div>
+                <motion.div variants={itemVariants} whileHover={{ scale: 1.01 }} className="relative group">
+                    <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-500/20 to-blue-500/0 rounded-[22px] blur opacity-30 group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
+                    <Card decoration="top" decorationColor="purple" className="relative h-full bg-[#0a0f12]/80 border border-white/5 backdrop-blur-xl rounded-[20px] overflow-hidden text-center p-8">
+                        <Flex justifyContent="between" className="mb-6">
+                            <Text className="flex items-center gap-2 font-bold tracking-wider text-xs uppercase opacity-50"><Fingerprint size={16} /> Identity Anchor</Text>
+                            <Badge color="purple" className="rounded-full px-3 py-1 text-[0.6rem] font-black tracking-widest uppercase">ERC-6551</Badge>
+                        </Flex>
                         
-                        <div className="identity-avatar-container">
-                            <div className="avatar-glow" />
-                            <div className="avatar-frame">
-                                <div className="avatar-inner">
-                                    <img 
-                                        src={`https://api.dicebear.com/7.x/shapes/svg?seed=${address}&backgroundColor=050505`} 
-                                        alt="Sovereign Identity" 
-                                        style={{ width: '100%', height: '100%' }}
-                                    />
-                                </div>
+                        <div className="flex justify-center my-8 relative">
+                            <div className="absolute inset-0 bg-purple-500/20 blur-3xl rounded-full scale-50 opacity-50" />
+                            <div className="w-28 h-28 rounded-full border-2 border-purple-500/30 p-1.5 shadow-[0_0_40px_rgba(124,58,237,0.2)] bg-black/40 relative z-10">
+                                <img 
+                                    src={`https://api.dicebear.com/7.x/shapes/svg?seed=${address}&backgroundColor=050505`} 
+                                    alt="Sovereign Identity" 
+                                    className="w-full h-full rounded-full opacity-90 hover:opacity-100 transition-opacity"
+                                />
                             </div>
                         </div>
-                    </div>
 
-                    <div style={{ textAlign: 'center' }}>
-                        <span className="text-label" style={{ marginBottom: '16px' }}>Binding Hash</span>
-                        <div style={{ background: 'rgba(255,255,255,0.03)', padding: '14px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)', fontFamily: 'monospace', fontSize: '12px', color: 'rgba(255,255,255,0.4)', wordBreak: 'break-all' }}>
-                            {tbaInfo?.tbaAddress ? `${tbaInfo.tbaAddress.slice(0, 18)}...${tbaInfo.tbaAddress.slice(-16)}` : 'Synchronizing...'}
+                        <Text className="text-[0.6rem] font-black uppercase tracking-[0.2em] mb-3 opacity-30">Binding Hash</Text>
+                        <div className="bg-white/5 p-4 rounded-xl border border-white/10 font-mono text-[0.65rem] text-white/40 break-all mb-6 leading-relaxed select-all hover:text-white/70 transition-colors">
+                            {tbaInfo?.tbaAddress ? tbaInfo.tbaAddress : 'Synchronizing Protocol State...'}
                         </div>
-                        <button className="btn btn-ghost" style={{ width: '100%', marginTop: '24px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.15em', fontWeight: 800 }}>
-                            View Proof of Identity
-                        </button>
-                    </div>
+                        <ChakraButton 
+                          variant="outline" 
+                          size="md" 
+                          width="full" 
+                          colorScheme="purple"
+                          fontWeight="900"
+                          textTransform="uppercase"
+                          fontSize="xs"
+                          letterSpacing="0.1em"
+                          _hover={{ bg: 'purple.500', color: 'white', shadow: '0 0 20px rgba(124,58,237,0.4)' }}
+                        >
+                            Verify Identity Proof
+                        </ChakraButton>
+                    </Card>
                 </motion.div>
 
                 {/* 3. Stats Blocks */}
-                <motion.div 
-                    variants={itemVariants} 
-                    className="bento-card card-stats"
-                    whileHover={{ scale: 1.02 }}
-                >
-                    <div className="flex items-center gap-3">
-                        <div style={{ padding: '10px', borderRadius: '12px', background: 'rgba(16,185,129,0.1)', color: '#10b981' }}>
-                            <Activity size={20} />
-                        </div>
-                        <span className="text-label">Active Missions</span>
-                    </div>
-                    <div>
-                        <div className="text-value" style={{ fontSize: '3rem' }}>{activeEscrows.length}</div>
-                        <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)', fontWeight: 800, textTransform: 'uppercase' }}>In Orbit</p>
-                    </div>
-                </motion.div>
-
-                <motion.div 
-                    variants={itemVariants} 
-                    className="bento-card card-stats"
-                    whileHover={{ scale: 1.02 }}
-                >
-                    <div className="flex items-center gap-3">
-                        <div style={{ padding: '10px', borderRadius: '12px', background: 'rgba(139,92,246,0.1)', color: '#8b5cf6' }}>
-                            <Globe size={20} />
-                        </div>
-                        <span className="text-label">Mesh Sync</span>
-                    </div>
-                    <div>
-                        <div className="text-value" style={{ fontSize: '3rem' }}>99.9%</div>
-                        <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)', fontWeight: 800, textTransform: 'uppercase' }}>Protocol Health</p>
-                    </div>
-                </motion.div>
-
-                {/* 4. Telemetry Grid */}
-                <motion.div variants={itemVariants} className="bento-card card-telemetry">
-                    <div className="telemetry-header">
-                        <div className="flex items-center gap-3">
-                            <Radio size={18} className="accent-text" />
-                            <span className="text-label" style={{ margin: 0 }}>Mission Telemetry</span>
-                        </div>
-                        <div style={{ fontSize: '10px', fontWeight: 900, color: '#8b5cf6', display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(139,92,246,0.1)', padding: '6px 12px', borderRadius: '20px' }}>
-                            LIVE SIGNAL <motion.div animate={{ opacity: [1, 0.4, 1] }} transition={{ duration: 1.5, repeat: Infinity }} className="status-dot" style={{ width: '6px', height: '6px', background: '#8b5cf6', margin: 0 }} />
-                        </div>
-                    </div>
-                    
-                    <div className="telemetry-body">
-                        {activeEscrows.length > 0 ? (
-                            <table className="telemetry-table">
-                                <thead>
-                                    <tr>
-                                        <th>Vector</th>
-                                        <th>Protocol State</th>
-                                        <th style={{ textAlign: 'right' }}>Value</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {activeEscrows.map((job) => (
-                                        <tr key={job.id} className="telemetry-row">
-                                            <td>
-                                                <div className="flex items-center gap-4">
-                                                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#8b5cf6', boxShadow: '0 0 10px rgba(139,92,246,0.5)' }} />
-                                                    <span style={{ fontFamily: 'monospace', color: '#fff', fontWeight: 600 }}>MISSION_{job.id}</span>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <span className="status-pill">{job.statusLabel}</span>
-                                            </td>
-                                            <td style={{ textAlign: 'right', fontWeight: 800, color: '#fff', fontFamily: 'Space Grotesk' }}>
-                                                {parseFloat(job.amount).toFixed(2)} <span style={{ fontSize: '10px', opacity: 0.5 }}>POL</span>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        ) : (
-                            <div style={{ padding: '100px 40px', textAlign: 'center', opacity: 0.3 }}>
-                                <ZapOff size={48} style={{ margin: '0 auto 24px' }} />
-                                <p style={{ fontSize: '14px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em' }}>No active missions detected</p>
-                                <p style={{ fontSize: '12px', marginTop: '8px' }}>Initiate a mission to begin orchestration</p>
+                <motion.div variants={itemVariants} className="flex flex-col gap-6">
+                    <Card className="flex-1 bg-[#0a0f12]/80 border border-emerald-500/20 backdrop-blur-xl rounded-[20px] hover:border-emerald-500/40 transition-colors group">
+                        <Flex alignItems="center" gap={6} className="h-full">
+                            <div className="p-4 rounded-2xl bg-emerald-500/10 text-emerald-400 group-hover:scale-110 transition-transform">
+                                <Activity size={32} />
                             </div>
-                        )}
-                    </div>
-                    
-                    <div style={{ padding: '24px', borderTop: '1px solid rgba(255,255,255,0.05)', textAlign: 'center' }}>
-                        <button className="btn btn-ghost" style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', gap: '10px', width: '100%', justifyContent: 'center' }}>
-                            Access Archived Coordinates <ExternalLink size={14} />
-                        </button>
-                    </div>
-                </motion.div>
+                            <div>
+                                <Text className="text-[0.6rem] font-black uppercase tracking-widest opacity-40">Active Missions</Text>
+                                <Metric className="font-black text-4xl mt-1">{activeEscrows.length}</Metric>
+                            </div>
+                        </Flex>
+                    </Card>
 
-            </div>
+                    <Card className="flex-1 bg-[#0a0f12]/80 border border-emerald-500/20 backdrop-blur-xl rounded-[20px] hover:border-emerald-500/40 transition-colors group">
+                        <Flex alignItems="center" gap={6} className="h-full">
+                            <div className="p-4 rounded-2xl bg-emerald-500/10 text-emerald-400 group-hover:scale-110 transition-transform">
+                                <Globe size={32} />
+                            </div>
+                            <div>
+                                <Text className="text-[0.6rem] font-black uppercase tracking-widest opacity-40">Mesh Consistency</Text>
+                                <Metric className="font-black text-4xl mt-1">99.9<span className="text-xl opacity-40">%</span></Metric>
+                            </div>
+                        </Flex>
+                    </Card>
+                </motion.div>
+            </Grid>
+
+            {/* 4. Telemetry Grid */}
+            <motion.div variants={itemVariants} className="mt-8">
+                <Card className="bg-[#0a0f12]/80 border border-white/5 backdrop-blur-xl rounded-[24px] overflow-hidden">
+                    <Flex className="mb-8 px-2" justifyContent="between">
+                        <div className="flex items-center gap-4">
+                            <div className="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-400">
+                                <Radio size={20} className="animate-pulse" />
+                            </div>
+                            <div>
+                                <Text className="font-black text-white uppercase tracking-[0.15em] text-sm">Mission Telemetry</Text>
+                                <Text className="text-[0.6rem] font-bold opacity-30 uppercase tracking-widest">Real-time Protocol Stream</Text>
+                            </div>
+                        </div>
+                        <Badge color="emerald" icon={Activity} className="rounded-full px-4 font-black text-[0.6rem] tracking-widest uppercase bg-emerald-500/5 border border-emerald-500/20">
+                            LIVE SIGNAL
+                        </Badge>
+                    </Flex>
+                    
+                    {activeEscrows.length > 0 ? (
+                        <div className="px-2">
+                            <Table>
+                                <TableHead>
+                                    <TableRow className="border-b border-white/5">
+                                        <TableHeaderCell className="text-[0.6rem] font-black uppercase tracking-widest opacity-30 py-4">Vector Identifier</TableHeaderCell>
+                                        <TableHeaderCell className="text-[0.6rem] font-black uppercase tracking-widest opacity-30 py-4">Protocol State</TableHeaderCell>
+                                        <TableHeaderCell className="text-right text-[0.6rem] font-black uppercase tracking-widest opacity-30 py-4">Value Core</TableHeaderCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {activeEscrows.map((job) => (
+                                        <TableRow key={job.id} className="hover:bg-white/[0.02] transition-colors group cursor-pointer border-b border-white/[0.03]">
+                                            <TableCell className="py-6">
+                                                <div className="flex items-center gap-4">
+                                                    <div className="w-2 h-2 rounded-full bg-emerald-400 group-hover:shadow-[0_0_12px_#34d399] transition-shadow" />
+                                                    <div>
+                                                        <div className="font-black tracking-tight text-white">MISSION_{job.id}</div>
+                                                        <div className="text-[0.55rem] font-bold opacity-30 uppercase tracking-[0.2em] mt-1">Hash Verification Active</div>
+                                                    </div>
+                                                </div>
+                                            </TableCell>
+                                            <TableCell>
+                                                <Badge color="gray" className="rounded-full px-3 py-1 font-black text-[0.55rem] tracking-widest uppercase border border-white/10">
+                                                    {job.statusLabel}
+                                                </Badge>
+                                            </TableCell>
+                                            <TableCell className="text-right">
+                                                <div className="font-black text-white text-lg tracking-tight">
+                                                    {parseFloat(job.amount).toFixed(2)} <span className="text-[0.65rem] opacity-30 uppercase">POL</span>
+                                                </div>
+                                                <div className="text-[0.55rem] font-bold text-emerald-400/50 uppercase tracking-widest mt-1">Escrowed Secured</div>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </div>
+                    ) : (
+                        <div className="py-24 text-center">
+                            <div className="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-6 border border-white/5">
+                                <ZapOff size={32} className="opacity-20" />
+                            </div>
+                            <Text className="font-black tracking-[0.3em] uppercase text-sm opacity-40">No active missions detected</Text>
+                            <Text className="text-xs mt-3 opacity-20 font-bold uppercase tracking-widest">Initiate a mission to begin sovereign orchestration</Text>
+                            <ChakraButton 
+                              mt={8} 
+                              variant="outline" 
+                              size="sm" 
+                              colorScheme="emerald" 
+                              borderColor="emerald.500/20"
+                              _hover={{ bg: 'emerald.500/10' }}
+                              onClick={() => window.dispatchEvent(new CustomEvent('NAV_TO_TAB', { detail: 'jobs' }))}
+                            >
+                                Initialize Protocol Vector
+                            </ChakraButton>
+                        </div>
+                    )}
+
+                    <motion.div 
+                        className="telemetry-table-container"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.8 }}
+                    >
+                        <div className="table-header">
+                            <div className="table-title-wrap">
+                                <Activity size={18} className="text-[#00c896]" />
+                                <h3 className="table-title">PROTOCOL_MESH_FEED</h3>
+                            </div>
+                            <div className="scanning-indicator">
+                                <div className="scanning-dot"></div>
+                                <span>LIVE_MESH_SCAN</span>
+                            </div>
+                        </div>
+
+                        <div className="telemetry-table">
+                            <div className="table-row head">
+                                <div>SIGNATURE</div>
+                                <div>STATUS</div>
+                                <div>LATENCY</div>
+                                <div>VALENCE</div>
+                            </div>
+                            {[
+                                { id: 'TX_7742', status: 'INDEXED', latency: '12ms', valence: '98.2%' },
+                                { id: 'TX_7743', status: 'PENDING', latency: '45ms', valence: '82.4%' },
+                                { id: 'TX_7744', status: 'INDEXED', latency: '18ms', valence: '99.1%' }
+                            ].map((row, i) => (
+                                <motion.div 
+                                    key={row.id} 
+                                    className="table-row"
+                                    initial={{ opacity: 0, x: -10 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ delay: 1 + (i * 0.1) }}
+                                >
+                                    <div className="font-mono text-xs opacity-60">{row.id}</div>
+                                    <div>
+                                        <span className={`status-pill ${row.status.toLowerCase()}`}>
+                                            {row.status}
+                                        </span>
+                                    </div>
+                                    <div className="font-mono text-xs text-[#00c896]">{row.latency}</div>
+                                    <div className="valence-meter">
+                                        <div className="meter-bar" style={{ width: row.valence }}></div>
+                                        <span className="meter-val">{row.valence}</span>
+                                    </div>
+                                </motion.div>
+                            ))}
+                        </div>
+                    </motion.div>
+                    
+                    <div className="mt-8 pt-6 border-t border-white/5 text-center px-8 pb-8">
+                        <ChakraButton variant="link" size="xs" colorScheme="gray" rightIcon={<ExternalLink size={12} />} className="font-black uppercase tracking-widest opacity-30 hover:opacity-100 transition-opacity">
+                            Access Archived Coordinates & Proofs
+                        </ChakraButton>
+                    </div>
+                </Card>
+            </motion.div>
 
             <ReasoningProofModal 
                 isOpen={isProofModalOpen} 

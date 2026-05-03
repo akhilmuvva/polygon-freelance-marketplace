@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import { Web3Provider } from "@/components/Web3Provider";
 import ZenithShell from "@/components/ZenithShell";
@@ -15,28 +15,18 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const spaceGrotesk = Space_Grotesk({
+  variable: "--font-space-grotesk",
+  subsets: ["latin"],
+});
+
 export const metadata: Metadata = {
   title: "PolyLance Zenith | Security-First Freelance Protocol",
   description: "The venture-grade decentralized marketplace for high-integrity software delivery on Polygon.",
 };
 
-import { ZenithAuthProvider, useZenithAuth } from "@/context/AuthContext";
-import LoginGate from "@/components/LoginGate";
-
-function AuthWrapper({ children }: { children: React.ReactNode }) {
-  const { isSessionActive } = useZenithAuth();
-
-  if (!isSessionActive) {
-    return <LoginGate />;
-  }
-
-  return (
-    <ZenithShell>
-      {children}
-      <ZenithAI />
-    </ZenithShell>
-  );
-}
+import { ZenithAuthProvider } from "@/context/AuthContext";
+import AuthWrapper from "@/components/AuthWrapper";
 
 export default function RootLayout({
   children,
@@ -45,7 +35,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="h-full antialiased dark">
-      <body className={`${geistSans.variable} ${geistMono.variable} min-h-full font-sans`}>
+      <body className={`${geistSans.variable} ${geistMono.variable} ${spaceGrotesk.variable} min-h-full font-sans`}>
         <Web3Provider>
           <ZenithAuthProvider>
             <AuthWrapper>
