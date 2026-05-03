@@ -6,9 +6,9 @@ import {
     Shield, Globe, Cpu, Gavel, Database, Layers
 } from 'lucide-react';
 import { 
-    Card, CardBody, CardHeader, Button, Progress, Badge, 
+    Card, CardContent as CardBody, CardHeader, Button, ProgressBar as Progress, Badge, 
     Table, TableHeader, TableColumn, TableBody, TableRow, TableCell,
-    Chip, Avatar, Divider, Tooltip as HeroTooltip
+    Chip, Avatar, Separator as Divider, Tooltip as HeroTooltip
 } from "@heroui/react";
 import {
     AreaChart,

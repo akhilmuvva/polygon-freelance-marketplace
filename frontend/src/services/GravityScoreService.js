@@ -123,3 +123,5 @@ export const GravityScoreService = {
         };
     }
 };
+
+export default GravityScoreService;

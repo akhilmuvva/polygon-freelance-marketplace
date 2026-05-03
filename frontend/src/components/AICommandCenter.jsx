@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-    Card, CardBody, CardHeader, Button, Progress, Badge, 
+    Card, CardContent as CardBody, CardHeader, Button, ProgressBar as Progress, Badge, 
     Table, TableHeader, TableColumn, TableBody, TableRow, TableCell,
     Chip, Tooltip as HeroTooltip, Avatar
 } from "@heroui/react";

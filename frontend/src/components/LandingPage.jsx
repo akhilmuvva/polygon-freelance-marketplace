@@ -206,7 +206,7 @@ const LandingPage = ({ onSocialLogin, onBypass, isLoggingIn }) => {
                       <span className="lp-auth-net-dot" />
                       Network: Polygon Mainnet
                     </span>
-                    <span>v1.5.1-Zenith</span>
+                    <span>v2.5.0-Zenith</span>
                   </div>
                 </div>
 

@@ -816,7 +816,7 @@ function App() {
               </span>
             </div>
             <div style={styles.subHeaderStatus}>
-              <div style={styles.statusDot} /> Polygon PoS On-Chain · v1.5.1-Zenith
+              <div style={styles.statusDot} /> Polygon PoS On-Chain · v2.5.0-Zenith
             </div>
           </div>
           <main className="app-main" style={styles.main}>

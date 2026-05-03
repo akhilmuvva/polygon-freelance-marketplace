@@ -500,6 +500,8 @@ const IdentityManager = (props) => {
                                 <div className="control-card danger-zone" style={{ background: 'rgba(239, 68, 68, 0.05)', border: '1px solid rgba(239, 68, 68, 0.1)', padding: '24px', borderRadius: '16px' }}>
                                     <div className="flex items-center gap-3 mb-4">
                                         <ShieldAlert className="text-red-400" />
+                                        <span className="font-bold text-red-400">SHADOW_BAN_PROTOCOL</span>
+                                    </div>
                                     <p className="text-xs text-slate-400 mb-6">Hide suspicious profiles from the marketplace index across all nodes.</p>
                                     <button 
                                         onClick={handleShadowBan}
@@ -511,7 +513,7 @@ const IdentityManager = (props) => {
                                     </button>
                                 </div>
 
-                                <div className="control-card" style={{ background: 'rgba(59, 130, 246, 0.05)', border: '1px solid rgba(59, 130, 246, 0.1)' }}>
+                                <div className="control-card" style={{ background: 'rgba(59, 130, 246, 0.05)', border: '1px solid rgba(59, 130, 246, 0.1)', padding: '24px', borderRadius: '16px' }}>
                                     <div className="flex items-center gap-3 mb-4">
                                         <Activity className="text-blue-400" />
                                         <span className="font-bold text-blue-400">TELEMETRY_DUMP</span>
