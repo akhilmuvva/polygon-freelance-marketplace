@@ -20,7 +20,7 @@ import '@rainbow-me/rainbowkit/styles.css';
 
 const config = getDefaultConfig({
   appName: 'PolyLance Zenith',
-  projectId: 'YOUR_PROJECT_ID', // Replace with real project ID from WalletConnect
+  projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID ?? '',
   chains: [polygon, polygonAmoy],
   ssr: true, // If your dApp uses server side rendering (SSR)
 });

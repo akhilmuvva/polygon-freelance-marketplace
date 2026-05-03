@@ -1,11 +1,6 @@
 {
   "version": 2,
-  "installCommand": "npm install --prefix frontend",
-  "buildCommand": "cd frontend && npm run build",
-  "outputDirectory": "frontend/dist",
-  "cleanUrls": true,
-  "trailingSlash": false,
-  "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
-  ]
+  "installCommand": "npm install --prefix frontend-next",
+  "buildCommand": "cd frontend-next && npm run build",
+  "outputDirectory": "frontend-next/.next"
 }
