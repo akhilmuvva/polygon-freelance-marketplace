@@ -1,6 +1,6 @@
 // [SOVEREIGN TELEMETRY] Restored Icon Resonance - Absolute Zero Reference Stability Actuated.
 
-import React, { useState, Suspense, lazy, useEffect, useRef, useContext } from 'react';
+import React, { useState, Suspense, lazy, useEffect, useRef, useContext, useMemo } from 'react';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { motion, AnimatePresence } from 'framer-motion';
 import CommandPalette from './components/CommandPalette';
