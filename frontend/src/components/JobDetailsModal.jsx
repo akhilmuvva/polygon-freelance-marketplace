@@ -5,7 +5,7 @@ import {
     Shield, ArrowRight, MessageSquare, ExternalLink,
     Clock, Cpu, Zap, CreditCard, Rocket, Loader2,
     Activity, ShieldCheck, Terminal, Fingerprint,
-    ChevronRight, Info, FileText, Hash
+    ChevronRight, Info, FileText, Hash, Trash2
 } from 'lucide-react';
 import UserLink from './UserLink';
 import { formatUnits } from 'viem';
@@ -15,7 +15,7 @@ import { CONTRACT_ADDRESS } from '../constants';
 import './MissionDossier.css';
 
 const JobDetailsModal = ({ 
-    isOpen, onClose, job, meta, tokenInfo, onSelectChat, onFiatPay, onAccept, onApply, onPickFreelancer,
+    isOpen, onClose, job, meta, tokenInfo, onSelectChat, onFiatPay, onAccept, onApply, onPickFreelancer, onCancel,
     isEligibleToAccept, isEligibleToApply, address 
 }) => {
     const [activeSection, setActiveSection] = useState('parameters');
@@ -43,6 +43,7 @@ const JobDetailsModal = ({
 
     const isClient = address?.toLowerCase() === job.client?.toLowerCase();
     const statusCode = Number(job.status || 0);
+    const isExpired = !job.isIntent && job.deadline && Number(job.deadline) < Math.floor(Date.now() / 1000) && Number(job.deadline) !== 0;
     
     const statusConfig = {
         0: { color: '#10b981', label: 'Open' },
@@ -54,7 +55,11 @@ const JobDetailsModal = ({
         default: { color: '#71717a', label: 'Inactive' }
     };
 
-    const config = statusConfig[statusCode] || statusConfig.default;
+    let config = statusConfig[statusCode] || statusConfig.default;
+
+    if (statusCode === 0 && isExpired) {
+        config = { color: '#ef4444', label: 'Expired' };
+    }
 
     const overlayVariants = {
         hidden: { opacity: 0 },
@@ -263,6 +268,14 @@ const JobDetailsModal = ({
                                     className="btn-dossier btn-dossier-primary !bg-emerald-600 !shadow-emerald-900/20"
                                 >
                                     <Zap size={16} /> Actuate Escrow
+                                </button>
+                            )}
+                            {isClient && statusCode === 0 && (
+                                <button 
+                                    onClick={() => { if(confirm('Are you sure you want to delete this mission? This will refund your escrow.')) { onCancel(); onClose(); } }} 
+                                    className="btn-dossier btn-dossier-secondary !text-red-400 !border-red-400/20 hover:!bg-red-400/10"
+                                >
+                                    <Trash2 size={16} /> Delete Mission
                                 </button>
                             )}
                             <button onClick={onClose} className="btn-dossier btn-dossier-secondary">

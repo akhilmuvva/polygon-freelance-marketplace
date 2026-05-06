@@ -69,7 +69,28 @@ export const MockDataService = {
                 createdAt: Math.floor(Date.now() / 1000) - 172800,
             }
         ]
-    })
+    }),
+
+    getLeaderboard: () => [
+        {
+            id: 'mock-1',
+            address: '0xDE4DbEef88888888888888888888888888888888',
+            reputationScore: 95,
+            completedJobs: 42,
+            totalEarned: '12500000000000000000000',
+            name: 'Alpha Sovereign',
+            isMock: true
+        },
+        {
+            id: 'mock-2',
+            address: '0x25F6C8ed995C811E6c0ADb1D66A60830E8115e9A',
+            reputationScore: 88,
+            completedJobs: 15,
+            totalEarned: '4500000000000000000000',
+            name: 'Beta Architect',
+            isMock: true
+        }
+    ]
 };
 
 export default MockDataService;

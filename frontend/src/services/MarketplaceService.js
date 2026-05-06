@@ -8,8 +8,9 @@ const publicClient = createPublicClient({
   chain: polygon,
   transport: fallback([
     http('https://polygon-bor-rpc.publicnode.com'),
-    http('https://polygon.drpc.org'),
-    http('https://1rpc.io/matic')
+    http('https://rpc.ankr.com/polygon'),
+    http('https://1rpc.io/matic'),
+    http('https://polygon.llamarpc.com')
   ])
 });
 

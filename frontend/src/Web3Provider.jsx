@@ -191,9 +191,9 @@ export function Web3Provider({ children }) {
         transports: {
             [polygon.id]: fallback([
                 http('https://polygon-bor-rpc.publicnode.com'),
-                http('https://polygon.drpc.org'),
+                http('https://rpc.ankr.com/polygon'),
                 http('https://1rpc.io/matic'),
-                http('https://polygon-rpc.com'),
+                http('https://polygon.llamarpc.com'),
             ]),
         },
         ...RPC_CONFIG,

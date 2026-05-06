@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
     Card,
     AreaChart,
@@ -11,19 +11,49 @@ import {
     Icon,
     BadgeDelta,
 } from "@tremor/react";
+import { ResponsiveContainer, AreaChart as RechartAreaChart, CartesianGrid, XAxis, YAxis, Tooltip, Area, PieChart, Pie, Cell } from 'recharts';
 import {
-    Activity, Users, Briefcase, DollarSign, BarChart3, Loader2, Shield
+    Activity, Users, Briefcase, DollarSign, BarChart3, Loader2, Shield, TrendingUp, PieChart as PieChartIcon, Globe, Zap
 } from 'lucide-react';
 import SubgraphService from '../services/SubgraphService';
 import { formatEther } from 'viem';
 
-export default function AnalyticsDashboard({ address, isAdmin }) {
+const COLORS = ['#60a5fa', '#34d399', '#a855f7', '#f43f5e', '#fbbf24', '#8b5cf6'];
+const cardBg = { background: 'rgba(10,10,25,0.6)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 16, padding: 24, backdropFilter: 'blur(20px)' };
+const dimLabel = { fontSize: '0.7rem', color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700 };
+
+const staggerFadeIn = (selector, delay) => {
+    const els = document.querySelectorAll(selector);
+    els.forEach((el, i) => {
+        el.style.animation = `fadeIn 0.6s ease-out ${i * delay}ms forwards`;
+    });
+};
+
+const revealOnScroll = (selector) => {
+    const el = document.querySelector(selector);
+    if (el && el.offsetTop) el.style.opacity = '1';
+};
+
+const countUp = (el, target, duration) => {
+    if (!el) return;
+    const start = 0;
+    const increment = target / (duration / 16);
+    let current = start;
+    const timer = setInterval(() => {
+        current += increment;
+        if (current >= target) { el.textContent = target; clearInterval(timer); } 
+        else { el.textContent = Math.floor(current); }
+    }, 16);
+};
+
+export default function AnalyticsDashboard() {
     const [data, setData] = useState({
         totalJobs: 0, totalVolume: 0, avgReputation: 0, totalUsers: 0, tvl: 0,
         trends: [], categoryDistribution: []
     });
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const statRefs = useRef([]);
 
     useEffect(() => { fetchAnalytics(); }, []);
 
@@ -53,6 +83,10 @@ export default function AnalyticsDashboard({ address, isAdmin }) {
                 const trends = Object.entries(trendsMap)
                     .map(([date, count]) => ({ date, "Active Jobs": count }))
                     .sort((a, b) => new Date(a.date) - new Date(b.date));
+
+                const avgRep = leaderboard && leaderboard.length > 0 
+                    ? leaderboard.reduce((sum, u) => sum + (Number(u.reputation) || 0), 0) / leaderboard.length 
+                    : 0;
 
                 setData({
                     totalJobs: Number(stats.totalJobs),
@@ -170,7 +204,7 @@ export default function AnalyticsDashboard({ address, isAdmin }) {
                 <div className="analytics-reveal" style={{ ...cardBg, height: 400, opacity: 0 }}>
                     <div style={{ marginBottom: 32 }}>
                         <h3 style={{ fontSize: '1rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: 8 }}>
-                            <PieIcon size={18} style={{ color: '#a855f7' }} /> Sector Allocation
+                            <PieChartIcon size={18} style={{ color: '#a855f7' }} /> Sector Allocation
                         </h3>
                         <p style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)' }}>Network distribution by vertical</p>
                     </div>

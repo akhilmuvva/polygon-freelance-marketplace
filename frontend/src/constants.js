@@ -92,3 +92,7 @@ export const ZENITH_JUDGES = [
     '0x62cDfc0692cC675c95304BaCE2C834D8F901dCba', // Zenith Judge 3
 ];
 
+export const BETA_TESTER_SBT_ADDRESS = IS_AMOY
+    ? '0x4f1234567890abcdef1234567890abcdef123456' // Placeholder Amoy
+    : '0x0000000000000000000000000000000000000000'; // Placeholder Mainnet
+

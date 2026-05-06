@@ -5,7 +5,7 @@ import React, { useState, useEffect } from 'react';
 import { 
     RefreshCcw, Search, Filter, Briefcase, Rocket, Zap, 
     ArrowUpDown, Loader2, CheckCircle2, ChevronRight,
-    MapPin, Clock
+    MapPin, Clock, Trash2
 } from 'lucide-react';
 import { formatUnits, parseUnits } from 'viem';
 import { SUPPORTED_TOKENS, CONTRACT_ADDRESS } from '../constants';
@@ -18,6 +18,8 @@ import FreelanceEscrowABI from '../contracts/FreelanceEscrow.json';
 import ProofOfWorkBadge from './ProofOfWorkBadge';
 import JobDetailsModal from './JobDetailsModal';
 import './JobsList.css';
+
+const STATUS_MAP = { 'Created': 0, 'Accepted': 1, 'Ongoing': 2, 'Disputed': 3, 'Arbitration': 4, 'Completed': 5, 'Cancelled': 6 };
 
 const GET_JOBS = gql`
     query GetJobs {
@@ -62,6 +64,23 @@ const JobsList = ({ onSelectChat, onFiatPay, address: propAddress }) => {
         }));
 
         let res = [...jobs, ...localIntents];
+
+        // Filter out expired "Open" jobs unless they belong to the current user
+        const now = Math.floor(Date.now() / 1000);
+        res = res.filter(j => {
+            if (j.isIntent) return true;
+            const status = typeof j.status === 'string' ? (STATUS_MAP[j.status] ?? 0) : Number(j.status || 0);
+            const isExpired = j.deadline && Number(j.deadline) < now && Number(j.deadline) !== 0;
+            
+            if (status === 0 && isExpired) {
+                const isMyJob = address && (
+                    j.client?.toLowerCase() === address.toLowerCase() ||
+                    j.freelancer?.toLowerCase() === address.toLowerCase()
+                );
+                return isMyJob;
+            }
+            return true;
+        });
 
         if (filter !== 'All Categories') {
             res = res.filter(j => (j.categoryId?.toString() === filter || j.category === filter));
@@ -273,8 +292,8 @@ const JobCard = ({ job, address, isConnected, onSelectChat, onFiatPay }) => {
     const isClient = address?.toLowerCase() === job.client?.toLowerCase();
     const isFreelancer = address?.toLowerCase() === job.freelancer?.toLowerCase();
 
-    const STATUS_MAP = { 'Created': 0, 'Accepted': 1, 'Ongoing': 2, 'Disputed': 3, 'Arbitration': 4, 'Completed': 5, 'Cancelled': 6 };
     const statusCode = typeof job.status === 'string' ? (STATUS_MAP[job.status] ?? 0) : Number(job.status || 0);
+    const isExpired = !job.isIntent && job.deadline && Number(job.deadline) < Math.floor(Date.now() / 1000) && Number(job.deadline) !== 0;
     
     const statusConfig = {
         0: { label: 'Open', color: 'text-emerald-400', bg: 'bg-emerald-400/10', border: 'border-emerald-400/20' },
@@ -286,7 +305,11 @@ const JobCard = ({ job, address, isConnected, onSelectChat, onFiatPay }) => {
         default: { label: 'Inactive', color: 'text-zinc-500', bg: 'bg-white/5', border: 'border-white/5' }
     };
     
-    const config = statusConfig[statusCode] || statusConfig.default;
+    let config = statusConfig[statusCode] || statusConfig.default;
+    
+    if (statusCode === 0 && isExpired) {
+        config = { label: 'Expired', color: 'text-red-400', bg: 'bg-red-400/10', border: 'border-red-400/20' };
+    }
 
     const itemVariants = {
         hidden: { opacity: 0, y: 20 },
@@ -375,11 +398,31 @@ const JobCard = ({ job, address, isConnected, onSelectChat, onFiatPay }) => {
             <div className="card-footer">
                 {statusCode === 0 && !isClient && (
                     <button 
-                        disabled={!isConnected || isPending}
+                        disabled={!isConnected || isPending || isExpired}
                         onClick={actuateApplyIntent} 
                         className="btn-primary flex-1 btn-sm"
                     >
                         {isPending ? <Loader2 size={14} className="animate-spin" /> : <><Zap size={14} /> Commit Proof</>}
+                    </button>
+                )}
+                {statusCode === 0 && isClient && (
+                    <button 
+                        onClick={() => {
+                            if(confirm('Delete this mission?')) {
+                                const id = job.jobId;
+                                writeContract({
+                                    address: CONTRACT_ADDRESS,
+                                    abi: FreelanceEscrowABI.abi,
+                                    functionName: 'cancelJob',
+                                    args: [BigInt(id)],
+                                    gas: 1000000n
+                                });
+                            }
+                        }} 
+                        className="btn-secondary !text-red-400 !border-red-400/20 btn-sm"
+                        title="Delete Mission"
+                    >
+                        <Trash2 size={14} />
                     </button>
                 )}
                 <button 
@@ -406,6 +449,18 @@ const JobCard = ({ job, address, isConnected, onSelectChat, onFiatPay }) => {
                 onFiatPay={onFiatPay}
                 onAccept={() => {}}
                 onApply={actuateApplyIntent}
+                onCancel={() => {
+                    const id = job.jobId;
+                    if (!id || isNaN(id)) return toast.error('Invalid mission ID.');
+                    writeContract({
+                        address: CONTRACT_ADDRESS,
+                        abi: FreelanceEscrowABI.abi,
+                        functionName: 'cancelJob',
+                        args: [BigInt(id)],
+                        gas: 1000000n
+                    });
+                    toast.success('Mission Cancellation Broadcasted.');
+                }}
                 onPickFreelancer={(f) => {
                     const id = job.jobId;
                     if (!id || isNaN(id)) return toast.error('Invalid mission ID.');
@@ -419,7 +474,7 @@ const JobCard = ({ job, address, isConnected, onSelectChat, onFiatPay }) => {
                     toast.success('Specialist Assigned.');
                 }}
                 address={address}
-                isEligibleToApply={statusCode === 0 && !isClient}
+                isEligibleToApply={statusCode === 0 && !isClient && !isExpired}
                 isEligibleToAccept={statusCode === 1 && isFreelancer}
             />
         </motion.div>

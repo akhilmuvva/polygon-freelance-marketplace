@@ -10,6 +10,7 @@ import 'swiper/css';
 import 'swiper/css/effect-fade';
 import 'swiper/css/pagination';
 import './LandingPage.css';
+import { useDemo } from '../context/DemoContext';
 
 /* ─── Each slide = independent snapshot of the hero ─── */
 const slides = [
@@ -73,6 +74,7 @@ const featureCards = [
 
 const LandingPage = ({ onSocialLogin, onBypass, isLoggingIn }) => {
   const { openConnectModal } = useConnectModal();
+  const { activateDemoMode } = useDemo();
 
   return (
     <div className="lp-root">
@@ -88,6 +90,9 @@ const LandingPage = ({ onSocialLogin, onBypass, isLoggingIn }) => {
         </div>
 
         <div className="lp-nav-actions">
+          <button className="lp-btn-social" onClick={activateDemoMode}>
+            <Wallet size={14} /> Try Demo
+          </button>
           <button className="lp-btn-shield" onClick={onBypass}>
             <Shield size={14} /> Sovereign Shield
           </button>

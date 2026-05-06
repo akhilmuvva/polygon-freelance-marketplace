@@ -6,13 +6,14 @@ import {
     CreditCard, ShieldCheck, ArrowLeft, Loader2, Star
 } from 'lucide-react';
 import { useReadContract } from 'wagmi';
-import { erc20Abi, formatEther } from 'viem';
-import { POLY_TOKEN_ADDRESS, CONTRACT_ADDRESS } from '../constants';
+import { erc20Abi, erc721Abi, formatEther } from 'viem';
+import { POLY_TOKEN_ADDRESS, CONTRACT_ADDRESS, BETA_TESTER_SBT_ADDRESS } from '../constants';
 import ProfileService from '../services/ProfileService';
 import SubgraphService from '../services/SubgraphService';
 import JobService from '../services/JobService';
 import Reputation3D from './Reputation3D';
 import ProofOfWorkBadge from './ProofOfWorkBadge';
+import CrossChainSync from './CrossChainSync';
 import UserLink from './UserLink';
 import './Portfolio.css';
 
@@ -51,6 +52,12 @@ function Portfolio({ address, onBack, onFiatPay }) {
     const { data: plnBalance } = useReadContract({
         address: POLY_TOKEN_ADDRESS, abi: erc20Abi, functionName: 'balanceOf', args: [address],
     });
+
+    const { data: pioneerBalance } = useReadContract({
+        address: BETA_TESTER_SBT_ADDRESS, abi: erc721Abi, functionName: 'balanceOf', args: [address],
+    });
+
+    const isPioneer = pioneerBalance && Number(pioneerBalance) > 0;
 
     const skillSet = React.useMemo(() => {
         const skillsObject = data?.profile?.skills;
@@ -125,7 +132,14 @@ function Portfolio({ address, onBack, onFiatPay }) {
                             </div>
                         </div>
 
-                        <h2 className="profile-name">{profile.name || 'Anonymous Specialist'}</h2>
+                        <h2 className="profile-name">
+                            {profile.name || 'Anonymous Specialist'}
+                            {isPioneer && (
+                                <span className="ml-2 inline-flex items-center gap-1 text-[10px] uppercase font-bold tracking-wider text-amber-500 bg-amber-500/10 px-2 py-1 rounded-full border border-amber-500/20" title="PolyLance Beta Pioneer">
+                                    <Star size={10} fill="currentColor" /> Pioneer
+                                </span>
+                            )}
+                        </h2>
                         <span className="profile-address">{address.slice(0, 6)}...{address.slice(-4)}</span>
 
                         <div className="skill-cloud">
@@ -161,6 +175,8 @@ function Portfolio({ address, onBack, onFiatPay }) {
                             </a>
                         </div>
                     </div>
+                    
+                    <CrossChainSync />
                 </motion.aside>
 
                 <motion.main 

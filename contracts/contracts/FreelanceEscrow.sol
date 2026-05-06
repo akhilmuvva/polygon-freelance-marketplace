@@ -815,6 +815,44 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
     }
 
     /**
+     * @notice Allows a client to cancel a job before it is accepted.
+     * @param jobId The unique ID of the job.
+     */
+    function cancelJob(uint256 jobId) external whenNotPaused nonReentrant {
+        Job storage job = jobs[jobId];
+        if (_msgSender() != job.client) revert NotAuthorized();
+        if (job.status != JobStatus.Created) revert InvalidStatus();
+
+        job.status = JobStatus.Cancelled;
+        job.paid = true;
+
+        uint256 remaining = job.amount - job.totalPaidOut;
+        
+        // Withdraw from yield manager if active
+        if (yieldManager != address(0) && job.yieldStrategy != IYieldManager.Strategy.NONE) {
+            IYieldManager(yieldManager).withdraw(job.yieldStrategy, job.token, remaining, address(this));
+        }
+
+        if (remaining > 0) {
+            balances[job.client][job.token] += remaining;
+        }
+
+        // Refund any applicants
+        Application[] storage apps = jobApplications[jobId];
+        for (uint256 i = 0; i < apps.length; i++) {
+            uint256 stake = apps[i].stake;
+            if (stake > 0) {
+                if (yieldManager != address(0) && job.yieldStrategy != IYieldManager.Strategy.NONE && job.token != address(0)) {
+                    IYieldManager(yieldManager).withdraw(job.yieldStrategy, job.token, stake, address(this));
+                }
+                balances[apps[i].freelancer][job.token] += stake;
+            }
+        }
+        
+        emit FundsReleased(jobId, job.client, remaining, 0, block.timestamp);
+    }
+
+    /**
      * @notice Submit evidence for a disputed job.
      */
     function submitEvidence(uint256 jobId, string calldata evidenceHash) external whenNotPaused {

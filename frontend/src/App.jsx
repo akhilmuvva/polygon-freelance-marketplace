@@ -52,6 +52,8 @@ import { initSocialLogin, createBiconomySmartAccount } from './utils/biconomy';
 import { createWalletClient, custom } from 'viem';
 import { polygon } from 'viem/chains';
 import { ZENITH_JUDGES } from './constants';
+import { useDemo } from './context/DemoContext';
+import DemoWallet from './components/DemoWallet';
 
 const styles = {
   shell: {
@@ -409,6 +411,7 @@ const useNetworkHealth = () => {
 };
 
 function App() {
+  const { isDemoMode, demoWalletAddress } = useDemo();
   const { authStatus = 'loading', setAuthStatus = () => {} } = useContext(AuthContext) || {};
   const { address, isConnected: isWalletConnected, isReconnecting } = useAccount();
   const { data: walletClient } = useWalletClient();
@@ -610,7 +613,7 @@ function App() {
   // Directive 10: Sovereign Address Resolution
   // If a smart account is active, it becomes the primary identity for on-chain interactions.
   // We normalize to lowercase to prevent 'Identity Bifurcation' in query keys and access control.
-  const effectiveAddress = (smartAccount?.accountAddress || address)?.toLowerCase();
+  const effectiveAddress = isDemoMode ? demoWalletAddress : (smartAccount?.accountAddress || address)?.toLowerCase();
   
   // Robust Admin check: allow access if EITHER the EOA or the Smart Account is whitelisted.
   const isAdmin = useMemo(() => {
@@ -623,7 +626,7 @@ function App() {
   // Directive 10: Session Continuity Guard
   // A session is active if we have a Smart Account (Social/Bypass) OR a fully connected wallet with an address.
   // We use isHydrated to prevent SSR/Hydration mismatch flicker.
-  const isSessionActive = isHydrated && (smartAccount !== null || (isWalletConnected && !!address));
+  const isSessionActive = isHydrated && (isDemoMode || smartAccount !== null || (isWalletConnected && !!address));
 
   const navigate = (tab) => { setActiveTab(tab); setIsSidebarOpen(false); };
   const onSelectChat = (addr) => { setChatPeerAddress(addr); setActiveTab('chat'); };
@@ -677,6 +680,7 @@ function App() {
   return (
     <>
       <Toaster position="top-right" />
+      <DemoWallet />
       {(!isSessionActive || isReconnecting) && activeTab !== 'terms' && activeTab !== 'privacy' && activeTab !== 'manifesto' ? (
         <Suspense fallback={null}>
           <LandingPage 

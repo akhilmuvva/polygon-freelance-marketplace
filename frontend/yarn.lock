@@ -623,10 +623,10 @@
   resolved "https://registry.npmjs.org/@emotion/weak-memoize/-/weak-memoize-0.4.0.tgz"
   integrity sha512-snKqtPW01tN0ui7yu9rGv69aJXr/a/Ywvl11sUjNtEcRc+ng/mQriFL0wLXMef74iHa/EkftbDzU9F8iFbH+zg==
 
-"@esbuild/win32-x64@0.27.3":
+"@esbuild/win32-arm64@0.27.3":
   version "0.27.3"
-  resolved "https://registry.npmjs.org/@esbuild/win32-x64/-/win32-x64-0.27.3.tgz"
-  integrity sha512-4uJGhsxuptu3OcpVAzli+/gWusVGwZZHTlS63hh++ehExkVT8SgiEf7/uC/PclrPPkLhZqGgCTjd0VWLo6xMqA==
+  resolved "https://registry.npmjs.org/@esbuild/win32-arm64/-/win32-arm64-0.27.3.tgz"
+  integrity sha512-B2t59lWWYrbRDw/tjiWOuzSsFh1Y/E95ofKz7rIVYSQkUYBjfSgf6oeYPNWHToFRr2zx52JKApIcAS/D5TUBnA==
 
 "@eslint-community/eslint-utils@^4.8.0":
   version "4.9.1"
@@ -2097,15 +2097,10 @@
     estree-walker "^2.0.2"
     picomatch "^4.0.2"
 
-"@rollup/rollup-win32-x64-gnu@4.59.0":
+"@rollup/rollup-win32-arm64-msvc@4.59.0":
   version "4.59.0"
-  resolved "https://registry.npmjs.org/@rollup/rollup-win32-x64-gnu/-/rollup-win32-x64-gnu-4.59.0.tgz"
-  integrity sha512-laBkYlSS1n2L8fSo1thDNGrCTQMmxjYY5G0WFWjFFYZkKPjsMBsgJfGf4TLxXrF6RyhI60L8TMOjBMvXiTcxeA==
-
-"@rollup/rollup-win32-x64-msvc@4.59.0":
-  version "4.59.0"
-  resolved "https://registry.npmjs.org/@rollup/rollup-win32-x64-msvc/-/rollup-win32-x64-msvc-4.59.0.tgz"
-  integrity sha512-2HRCml6OztYXyJXAvdDXPKcawukWY2GpR5/nxKp4iBgiO3wcoEGkAaqctIbZcNB6KlUQBIqt8VYkNSj2397EfA==
+  resolved "https://registry.npmjs.org/@rollup/rollup-win32-arm64-msvc/-/rollup-win32-arm64-msvc-4.59.0.tgz"
+  integrity sha512-V5B6mG7OrGTwnxaNUzZTDTjDS7F75PO1ae6MJYdiMu60sq0CqN5CVeVsbhPxalupvTX8gXVSU9gq+Rx1/hvu6A==
 
 "@saas-ui/core@2.8.1":
   version "2.8.1"
@@ -2372,10 +2367,10 @@
     glob "^13.0.6"
     magic-string "~0.30.8"
 
-"@sentry/cli-win32-x64@2.58.5":
+"@sentry/cli-win32-arm64@2.58.5":
   version "2.58.5"
-  resolved "https://registry.npmjs.org/@sentry/cli-win32-x64/-/cli-win32-x64-2.58.5.tgz"
-  integrity sha512-IZf+XIMiQwj+5NzqbOQfywlOitmCV424Vtf9c+ep61AaVScUFD1TSrQbOcJJv5xGxhlxNOMNgMeZhdexdzrKZg==
+  resolved "https://registry.npmjs.org/@sentry/cli-win32-arm64/-/cli-win32-arm64-2.58.5.tgz"
+  integrity sha512-AOJ2nCXlQL1KBaCzv38m3i2VmSHNurUpm7xVKd6yAHX+ZoVBI8VT0EgvwmtJR2TY2N2hNCC7UrgRmdUsQ152bA==
 
 "@sentry/cli@^2.58.5":
   version "2.58.5"

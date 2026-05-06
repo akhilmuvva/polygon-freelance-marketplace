@@ -2,6 +2,7 @@ import { createPublicClient, http, parseAbi, fallback } from 'viem';
 import { polygon } from 'viem/chains';
 import IPFSResolver from '../utils/IPFSResolver';
 import { ApolloClient, InMemoryCache, gql, HttpLink } from '@apollo/client';
+import MockDataService from './MockDataService';
 
 /**
  * SovereignService: The Peer-to-Peer alternative to the centralized backend.
@@ -17,7 +18,7 @@ const publicClient = createPublicClient({
   chain: polygon,
   transport: fallback([
     http('https://polygon-bor-rpc.publicnode.com'),
-    http('https://polygon.drpc.org'),
+    http('https://polygon.llamarpc.com'),
     http('https://1rpc.io/matic'),
     http('https://rpc.ankr.com/polygon')
   ], { rank: true })
@@ -36,6 +37,7 @@ const SovereignService = {
    * Fetch Profile directly from Blockchain & IPFS
    */
   async getProfile(address) {
+    if (window.isDemoMode) return MockDataService.getProfile(address);
     try {
       if (!address) return null;
       console.info(`[SOVEREIGN] Reconstructing identity mesh for ${address}...`);
@@ -62,6 +64,7 @@ const SovereignService = {
    * Fetch Jobs directly from The Graph (Subgraph)
    */
   async getJobsMetadata() {
+    if (window.isDemoMode) return MockDataService.getJobs();
     try {
       const { data } = await apolloClient.query({
         query: gql`
@@ -111,6 +114,7 @@ const SovereignService = {
    * Fetch a single job from the Subgraph/Chain
    */
   async getJobMetadata(jobId) {
+    if (window.isDemoMode) return MockDataService.getJobs().find(j => j.jobId === jobId.toString()) || null;
     try {
       const { data } = await apolloClient.query({
         query: gql`
@@ -181,6 +185,7 @@ const SovereignService = {
    * Generate Leaderboard from Subgraph reputation data
    */
   async getLeaderboard() {
+    if (window.isDemoMode) return MockDataService.getLeaderboard();
     try {
       const { data } = await apolloClient.query({
         query: gql`
