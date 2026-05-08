@@ -112,8 +112,13 @@ export const ProfileService = {
 
             const defaultProfile = {
                 address: addr,
-                name: 'Professional Pioneer',
-                bio: 'This profile has not been configured yet.',
+                name: '',
+                bio: '',
+                skills: [],
+                github: '',
+                twitter: '',
+                website: '',
+                avatar: '',
                 reputationScore: stats?.freelancer?.reputationScore || 0,
                 totalEarned: stats?.freelancer?.totalEarned || 0,
                 source: 'default'

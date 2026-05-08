@@ -18,17 +18,7 @@ export async function initSocialLogin() {
 
     // Skip real init if credentials aren't configured
     if (!projectId || !clientKey || !appId) {
-        console.warn('[Biconomy] Particle credentials not set. Using mock social login.');
-        return {
-            auth: {
-                login: async () => {
-                    console.log('[Biconomy] Mock social login');
-                    return { user: { name: 'Demo User', email: 'demo@polylance.codes' } };
-                },
-                logout: async () => console.log('[Biconomy] Mock logout'),
-            },
-            isMock: true
-        };
+        throw new Error('[Biconomy] Particle credentials not set. Social login unavailable in production.');
     }
 
     try {
@@ -42,8 +32,7 @@ export async function initSocialLogin() {
                                    ParticleAuthModule;
 
         if (typeof ParticleConstructor !== 'function') {
-            console.error('[Biconomy] Could not resolve Particle constructor:', typeof ParticleConstructor);
-            return { auth: { login: async () => ({ user: { name: 'Demo User', email: 'demo@polylance.codes' } }), logout: async () => {} }, isMock: true };
+            throw new Error('[Biconomy] Could not resolve Particle constructor.');
         }
 
         // Race against a timeout to prevent blocking the UI
@@ -62,26 +51,13 @@ export async function initSocialLogin() {
         const result = await Promise.race([initPromise, timeoutPromise]);
 
         if (result === 'TIMEOUT') {
-            console.warn('[Biconomy] Particle init timed out. Using mock.');
-            return {
-                auth: {
-                    login: async () => ({ user: { name: 'Demo User', email: 'offline@polylance.codes' } }),
-                    logout: async () => {},
-                },
-                isMock: true
-            };
+            throw new Error('[Biconomy] Particle init timed out.');
         }
 
         return result;
     } catch (error) {
         console.error('[Biconomy] Social login init failed:', error.message);
-        return {
-            auth: {
-                login: async () => ({ user: { name: 'Demo User', email: 'offline@polylance.codes' } }),
-                logout: async () => {},
-            },
-            isMock: true
-        };
+        throw error;
     }
 }
 
@@ -93,16 +69,13 @@ export async function initSocialLogin() {
  * @returns {Promise<object|null>} Smart account client or null
  */
 export async function createBiconomySmartAccount(signer) {
-    // Return mock account if Biconomy isn't configured
-    if (signer?.isMock || !PAYMASTER_URL || !BUNDLER_URL) {
-        console.warn('[Biconomy] Paymaster/Bundler not configured. Using mock smart account.');
-        return {
-            accountAddress: '0xDE4DbEef88888888888888888888888888888888',
-            isMock: true,
-            sendTransaction: async () => ({
-                waitForTxHash: async () => ({ transactionHash: '0xmock_tx_' + Date.now() })
-            })
-        };
+    // Enforce production configuration
+    if (!PAYMASTER_URL || !BUNDLER_URL) {
+        throw new Error('[Biconomy] Paymaster/Bundler not configured. Smart accounts required for gasless flows.');
+    }
+
+    if (signer?.isMock) {
+        throw new Error('[Biconomy] Mock signer detected. Production requires real EOA signer.');
     }
 
     try {

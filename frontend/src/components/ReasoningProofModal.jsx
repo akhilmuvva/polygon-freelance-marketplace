@@ -67,7 +67,7 @@ const ReasoningProofModal = ({ isOpen, onClose, proof }) => {
                                 </div>
                                 <h3 className="text-xs font-black text-accent uppercase tracking-widest mb-3">Logic Execution Rationale</h3>
                                 <p className="text-white font-medium leading-relaxed italic">
-                                    "{proof.decision?.rationale || 'The protocol has actuated dynamic rebalancing to neutralize yield friction and maintain Absolute Zero Gravity for the mission participants.'}"
+                                    "{proof.decision?.rationale || 'No logic rationale provided for this proof.'}"
                                 </p>
                             </div>
 
@@ -78,7 +78,7 @@ const ReasoningProofModal = ({ isOpen, onClose, proof }) => {
                                 </div>
                                 <div className="p-4 rounded-2xl bg-bg-base/50 border border-white/5 font-mono text-xs overflow-x-auto">
                                     <pre className="text-success/80">
-                                        {JSON.stringify(proof.sensoryInputs || { status: 'OPTIMIZED', friction: '0.05%', resonance: 'STABLE' }, null, 2)}
+                                        {JSON.stringify(proof.sensoryInputs || {}, null, 2)}
                                     </pre>
                                 </div>
                             </div>

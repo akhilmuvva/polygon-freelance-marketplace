@@ -16,7 +16,6 @@ import SubgraphService from '../services/SubgraphService';
 import ProfileService from '../services/ProfileService';
 import { useSovereignLogic } from '../hooks/useSovereignLogic';
 import ReasoningProofModal from './ReasoningProofModal';
-import DemoProtocol from '../services/DemoProtocol';
 import { parseProtocolValue } from '../utils/protocolUtils';
 import './Dashboard.css';
 
@@ -74,11 +73,7 @@ const Dashboard = ({ address: propAddress }) => {
         }));
     }, [address, portfolioRaw]);
 
-    useEffect(() => {
-        if (address) {
-            DemoProtocol.getTBAVisualProof(address).then(setTbaInfo);
-        }
-    }, [address]);
+
 
     const gravityStats = useMemo(() => {
         return calculateGravity({
@@ -367,11 +362,7 @@ const Dashboard = ({ address: propAddress }) => {
                                 <div>LATENCY</div>
                                 <div>VALENCE</div>
                             </div>
-                            {[
-                                { id: 'TX_7742', status: 'INDEXED', latency: '12ms', valence: '98.2%' },
-                                { id: 'TX_7743', status: 'PENDING', latency: '45ms', valence: '82.4%' },
-                                { id: 'TX_7744', status: 'INDEXED', latency: '18ms', valence: '99.1%' }
-                            ].map((row, i) => (
+                            {[].map((row, i) => (
                                 <motion.div 
                                     key={row.id} 
                                     className="table-row"

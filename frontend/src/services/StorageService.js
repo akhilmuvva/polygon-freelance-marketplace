@@ -15,15 +15,8 @@ const StorageService = {
      * @returns {Promise<{cid: string, url: string}>}
      */
     async uploadMetadata(metadata) {
-        // DEMO FALLBACK: If keys are missing, don't crash the app — actuate local storage
         if (!PINATA_API_KEY || !PINATA_API_SECRET) {
-            console.warn('[STORAGE] Pinata keys missing. Actuating Sovereign Demo Mode (local persistence).');
-            const mockCid = `demo-cid-${Date.now()}`;
-            localStorage.setItem(mockCid, JSON.stringify(metadata));
-            return {
-                cid: mockCid,
-                url: `local://metadata/${mockCid}`
-            };
+            throw new Error('[Storage] Pinata credentials not configured. Metadata upload disabled.');
         }
 
         console.info('[STORAGE] Uploading metadata to Pinata IPFS...');
@@ -54,24 +47,19 @@ const StorageService = {
                 url: `${IPFS_GATEWAY}${data.IpfsHash}`
             };
         } catch (error) {
-            console.warn('[NETWORK] Metadata telemetry error:', error.message);
+            console.error('[STORAGE] Metadata upload failure:', error.message);
             throw error;
         }
     },
 
     /**
-     * Uploads a file directly. Falls back to local if keys missing.
+     * Uploads a file directly.
      * @param {File} file 
      * @returns {Promise<{cid: string, url: string}>}
      */
     async uploadFile(file) {
         if (!PINATA_API_KEY || !PINATA_API_SECRET) {
-            console.warn('[STORAGE] Pinata keys missing. Actuating Sovereign Demo Mode (local storage).');
-            const mockCid = `demo-file-${Date.now()}`;
-            return {
-                cid: mockCid,
-                url: `local://file/${mockCid}`
-            };
+            throw new Error('[Storage] Pinata credentials not configured. File upload disabled.');
         }
 
         const formData = new FormData();
@@ -95,10 +83,11 @@ const StorageService = {
                 url: `${IPFS_GATEWAY}${data.IpfsHash}`
             };
         } catch (error) {
-            console.warn('[NETWORK] File telemetry error:', error.message);
+            console.error('[STORAGE] File upload failure:', error.message);
             throw error;
         }
     }
+
 };
 
 export default StorageService;

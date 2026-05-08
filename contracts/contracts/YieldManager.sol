@@ -232,16 +232,17 @@ contract YieldManager is Ownable {
 
     /**
      * @notice Repatriates capital from a yield strategy to a receiver.
-     * @dev    For Compound: internal pull-then-push pattern to normalize the interface.
+     * @dev    Hardened (S-05): Validates strategy activity and restricts access to protocol owner.
      *         Receiver MUST be a trusted escrow or DAO address — not caller-controlled.
      */
-    function withdraw(Strategy strategy, address token, uint256 amount, address receiver) external {
+    function withdraw(Strategy strategy, address token, uint256 amount, address receiver) external onlyOwner {
         if (strategy == Strategy.NONE) {
             IERC20(token).safeTransferFrom(msg.sender, receiver, amount);
             return;
         }
 
         StrategyConfig memory config = strategies[strategy];
+        if (!config.active) revert StrategyInactive();
 
         if (strategy == Strategy.AAVE) {
             IAavePool(config.pool).withdraw(token, amount, receiver);

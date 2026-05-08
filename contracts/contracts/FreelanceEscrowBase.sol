@@ -14,6 +14,11 @@ import "./IArbitrator.sol";
 
 interface IYieldManager {
     enum Strategy { NONE, AAVE, COMPOUND, MORPHO }
+    struct StrategyConfig {
+        address pool;
+        bool active;
+    }
+    function strategies(Strategy strategy) external view returns (address pool, bool active);
     function deposit(Strategy strategy, address token, uint256 amount) external;
     function withdraw(Strategy strategy, address token, uint256 amount, address receiver) external;
 }

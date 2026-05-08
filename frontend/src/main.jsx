@@ -33,16 +33,13 @@ import App from './App.jsx';
 import './index.css';
 import './App.css';
 import { Web3Provider } from './Web3Provider.jsx';
-import { DemoProvider } from './context/DemoContext.jsx';
 
 import { SaasProvider } from '@saas-ui/react';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <Web3Provider>
     <SaasProvider>
-      <DemoProvider>
         <App />
-      </DemoProvider>
     </SaasProvider>
   </Web3Provider>
 );

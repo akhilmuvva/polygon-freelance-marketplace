@@ -31,6 +31,10 @@ const IdentityManager = (props) => {
         name: '',
         bio: '',
         skills: '',
+        github: '',
+        twitter: '',
+        website: '',
+        avatar: '',
         reputationScore: 0,
         totalEarned: 0,
         totalJobs: 0
@@ -58,6 +62,10 @@ const IdentityManager = (props) => {
                         name: data.name || '',
                         bio: data.bio || '',
                         skills: Array.isArray(data.skills) ? data.skills.join(', ') : (data.skills || ''),
+                        github: data.github || '',
+                        twitter: data.twitter || '',
+                        website: data.website || '',
+                        avatar: data.avatar || '',
                         reputationScore: stats?.freelancer?.reputationScore || data.reputationScore || 0,
                         totalEarned: stats?.freelancer?.totalEarned || data.totalEarned || 0,
                         totalJobs: (stats?.freelancer?.jobsCompleted || 0) + (stats?.client?.activeEscrows || 0)
@@ -311,6 +319,51 @@ const IdentityManager = (props) => {
                                         className="zenith-input"
                                     />
                                 </div>
+
+                                <div className="input-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                                    <div className="input-group">
+                                        <label className="input-label">GITHUB_HANDLE</label>
+                                        <input 
+                                            type="text" 
+                                            value={profile.github}
+                                            onChange={(e) => setProfile(prev => ({ ...prev, github: e.target.value }))}
+                                            placeholder="username"
+                                            className="zenith-input"
+                                        />
+                                    </div>
+                                    <div className="input-group">
+                                        <label className="input-label">TWITTER_X</label>
+                                        <input 
+                                            type="text" 
+                                            value={profile.twitter}
+                                            onChange={(e) => setProfile(prev => ({ ...prev, twitter: e.target.value }))}
+                                            placeholder="@handle"
+                                            className="zenith-input"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="input-group">
+                                    <label className="input-label">WEBSITE_URL</label>
+                                    <input 
+                                        type="text" 
+                                        value={profile.website}
+                                        onChange={(e) => setProfile(prev => ({ ...prev, website: e.target.value }))}
+                                        placeholder="https://..."
+                                        className="zenith-input"
+                                    />
+                                </div>
+
+                                <div className="input-group">
+                                    <label className="input-label">AVATAR_IMAGE_URL</label>
+                                    <input 
+                                        type="text" 
+                                        value={profile.avatar}
+                                        onChange={(e) => setProfile(prev => ({ ...prev, avatar: e.target.value }))}
+                                        placeholder="https://ipfs.io/ipfs/..."
+                                        className="zenith-input"
+                                    />
+                                </div>
                             </div>
 
                             <button 
@@ -328,7 +381,9 @@ const IdentityManager = (props) => {
                                 <div className="preview-avatar-wrap">
                                     <div className="preview-avatar">
                                         <div className="avatar-inner">
-                                            {profile.name ? profile.name[0].toUpperCase() : <Command size={40} />}
+                                            {profile.avatar ? (
+                                                <img src={profile.avatar} alt="Avatar" className="w-full h-full object-cover rounded-full" />
+                                            ) : profile.name ? profile.name[0].toUpperCase() : <Command size={40} />}
                                         </div>
                                     </div>
                                     <div className="avatar-glow"></div>

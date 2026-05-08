@@ -2,7 +2,6 @@ import { createPublicClient, http, parseAbi, fallback } from 'viem';
 import { polygon } from 'viem/chains';
 import IPFSResolver from '../utils/IPFSResolver';
 import { ApolloClient, InMemoryCache, gql, HttpLink } from '@apollo/client';
-import MockDataService from './MockDataService';
 
 /**
  * SovereignService: The Peer-to-Peer alternative to the centralized backend.
@@ -37,7 +36,6 @@ const SovereignService = {
    * Fetch Profile directly from Blockchain & IPFS
    */
   async getProfile(address) {
-    if (window.isDemoMode) return MockDataService.getProfile(address);
     try {
       if (!address) return null;
       console.info(`[SOVEREIGN] Reconstructing identity mesh for ${address}...`);
@@ -64,7 +62,6 @@ const SovereignService = {
    * Fetch Jobs directly from The Graph (Subgraph)
    */
   async getJobsMetadata() {
-    if (window.isDemoMode) return MockDataService.getJobs();
     try {
       const { data } = await apolloClient.query({
         query: gql`
@@ -114,7 +111,6 @@ const SovereignService = {
    * Fetch a single job from the Subgraph/Chain
    */
   async getJobMetadata(jobId) {
-    if (window.isDemoMode) return MockDataService.getJobs().find(j => j.jobId === jobId.toString()) || null;
     try {
       const { data } = await apolloClient.query({
         query: gql`
@@ -185,7 +181,6 @@ const SovereignService = {
    * Generate Leaderboard from Subgraph reputation data
    */
   async getLeaderboard() {
-    if (window.isDemoMode) return MockDataService.getLeaderboard();
     try {
       const { data } = await apolloClient.query({
         query: gql`
@@ -252,19 +247,9 @@ const SovereignService = {
    * Derives the deterministic TBA address for an NFT.
    */
   async getTBAAddress(jobId) {
-    try {
-        // We use the SovereignRegistry address from the Subgraph/Deployment
-        const registryAddr = '0x5Ff3E1223B5c37f1C18CC279dfC9C181bF22BEf9'; 
-        const implementation = '0x0000000000000000000000000000000000000000';
-        const salt = '0x0000000000000000000000000000000000000000000000000000000000000000';
-        const chainId = 137;
-        
-        // Deterministic visual placeholder for presentation consistent with ERC-6551 identity
-        return `0x${jobId.slice(2, 42)}`; 
-    } catch (err) {
-        console.warn('[SOVEREIGN] TBA Derivation Friction:', err.message);
-        return null;
-    }
+    // Derivation requires implementation and salt which are protocol-specific.
+    // In production, this should query the ERC-6551 Registry or derived via sdk.
+    return null;
   },
 
   /**

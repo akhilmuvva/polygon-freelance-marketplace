@@ -17,6 +17,16 @@ import CrossChainSync from './CrossChainSync';
 import UserLink from './UserLink';
 import './Portfolio.css';
 
+const escrowAbi = [
+    {
+        "inputs": [{ "internalType": "address", "name": "", "type": "address" }],
+        "name": "isSupreme",
+        "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
+        "stateMutability": "view",
+        "type": "function"
+    }
+];
+
 function Portfolio({ address, onBack, onFiatPay }) {
     const [data, setData] = useState({ profile: null, jobs: [] });
     const [loading, setLoading] = useState(true);
@@ -57,7 +67,12 @@ function Portfolio({ address, onBack, onFiatPay }) {
         address: BETA_TESTER_SBT_ADDRESS, abi: erc721Abi, functionName: 'balanceOf', args: [address],
     });
 
+    const { data: isSupremeMember } = useReadContract({
+        address: CONTRACT_ADDRESS, abi: escrowAbi, functionName: 'isSupreme', args: [address],
+    });
+
     const isPioneer = pioneerBalance && Number(pioneerBalance) > 0;
+    const isSupreme = isSupremeMember === true;
 
     const skillSet = React.useMemo(() => {
         const skillsObject = data?.profile?.skills;
@@ -125,7 +140,11 @@ function Portfolio({ address, onBack, onFiatPay }) {
                     <div className="identity-card">
                         <div className="avatar-ring">
                             <div className="avatar-inner">
-                                <User size={80} className="text-zinc-700" />
+                                {profile.avatar ? (
+                                    <img src={profile.avatar} alt={profile.name} className="w-full h-full object-cover rounded-full" />
+                                ) : (
+                                    <User size={80} className="text-zinc-700" />
+                                )}
                             </div>
                             <div className="reputation-badge">
                                 {profile.reputationScore || 0} RP
@@ -137,6 +156,11 @@ function Portfolio({ address, onBack, onFiatPay }) {
                             {isPioneer && (
                                 <span className="ml-2 inline-flex items-center gap-1 text-[10px] uppercase font-bold tracking-wider text-amber-500 bg-amber-500/10 px-2 py-1 rounded-full border border-amber-500/20" title="PolyLance Beta Pioneer">
                                     <Star size={10} fill="currentColor" /> Pioneer
+                                </span>
+                            )}
+                            {isSupreme && (
+                                <span className="ml-2 inline-flex items-center gap-1 text-[10px] uppercase font-bold tracking-wider text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded-full border border-emerald-500/20" title="Zenith Supreme Member">
+                                    <ShieldCheck size={10} fill="currentColor" /> Supreme
                                 </span>
                             )}
                         </h2>
@@ -164,15 +188,26 @@ function Portfolio({ address, onBack, onFiatPay }) {
                         </p>
 
                         <div className="flex justify-center gap-4">
-                            <a href="#" className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-zinc-500 hover:text-white transition-colors border border-white/5">
-                                <Github size={18} />
-                            </a>
-                            <a href="#" className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-zinc-500 hover:text-white transition-colors border border-white/5">
-                                <Twitter size={18} />
-                            </a>
-                            <a href="#" className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-zinc-500 hover:text-white transition-colors border border-white/5">
-                                <Globe size={18} />
-                            </a>
+                            {profile.github && (
+                                <a href={`https://github.com/${profile.github.replace('@', '')}`} target="_blank" rel="noreferrer" className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-zinc-500 hover:text-white transition-colors border border-white/5">
+                                    <Github size={18} />
+                                </a>
+                            )}
+                            {profile.twitter && (
+                                <a href={`https://twitter.com/${profile.twitter.replace('@', '')}`} target="_blank" rel="noreferrer" className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-zinc-500 hover:text-white transition-colors border border-white/5">
+                                    <Twitter size={18} />
+                                </a>
+                            )}
+                            {profile.website && (
+                                <a href={profile.website.startsWith('http') ? profile.website : `https://${profile.website}`} target="_blank" rel="noreferrer" className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-zinc-500 hover:text-white transition-colors border border-white/5">
+                                    <Globe size={18} />
+                                </a>
+                            )}
+                            {!profile.github && !profile.twitter && !profile.website && (
+                                <div className="text-[10px] uppercase tracking-widest text-zinc-600 font-bold py-2">
+                                    No Social Links Anchored
+                                </div>
+                            )}
                         </div>
                     </div>
                     
@@ -217,10 +252,9 @@ function Portfolio({ address, onBack, onFiatPay }) {
                             completedJobs.map(job => (
                                 <div key={job.jobId} className="artifact-card">
                                     <div className="artifact-visual">
-                                        <img 
-                                            src={`https://images.unsplash.com/photo-1639762681485-074b7f938ba0?auto=format&fit=crop&w=300&q=80&sig=${job.jobId}`} 
-                                            alt="NFT Proof" 
-                                        />
+                                        <div className="artifact-icon-wrap">
+                                            <Briefcase size={32} className="text-violet-500" />
+                                        </div>
                                         <ShieldCheck size={40} className="absolute text-violet-500 opacity-20" />
                                     </div>
                                     <div className="artifact-content">

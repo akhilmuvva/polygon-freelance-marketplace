@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Shield, Globe, Mail, Wallet, Zap, ChevronRight,
   Hash, Users, TrendingUp, Award, Activity, Lock, GitBranch, Layers
@@ -6,11 +6,11 @@ import {
 import { useConnectModal } from '@rainbow-me/rainbowkit';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay, EffectFade, Pagination } from 'swiper/modules';
+import SubgraphService from '../services/SubgraphService';
 import 'swiper/css';
 import 'swiper/css/effect-fade';
 import 'swiper/css/pagination';
 import './LandingPage.css';
-import { useDemo } from '../context/DemoContext';
 
 /* ─── Each slide = independent snapshot of the hero ─── */
 const slides = [
@@ -56,13 +56,6 @@ const slides = [
   },
 ];
 
-const stats = [
-  { value: '$4.2M+',   label: 'Volume Secured' },
-  { value: '12,400+',  label: 'Active Specialists' },
-  { value: '38,200+',  label: 'Jobs Completed' },
-  { value: '99.98%',   label: 'Protocol Uptime' },
-];
-
 const featureCards = [
   { icon: Shield,    title: 'On-Chain Escrow',    desc: 'Funds locked in audited smart contracts. Released only on milestone proof.', color: '#00c896' },
   { icon: Globe,     title: 'Multi-Chain',         desc: 'Bridge assets across EVM chains. Work on Polygon, settle anywhere.',         color: '#7c3aed' },
@@ -72,9 +65,44 @@ const featureCards = [
   { icon: GitBranch, title: 'DAO Governance',      desc: 'Token holders vote on fees, disputes, and every protocol parameter.',        color: '#7c3aed' },
 ];
 
-const LandingPage = ({ onSocialLogin, onBypass, isLoggingIn }) => {
+const LandingPage = ({ onSocialLogin, isLoggingIn }) => {
   const { openConnectModal } = useConnectModal();
-  const { activateDemoMode } = useDemo();
+  const [liveStats, setLiveStats] = useState([
+    { value: '...', label: 'Volume Secured' },
+    { value: '...', label: 'Active Specialists' },
+    { value: '...', label: 'Jobs Completed' },
+    { value: '99.99%', label: 'Protocol Uptime' },
+  ]);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const [ecoStats, protoStats] = await Promise.all([
+          SubgraphService.getEcosystemStats(),
+          SubgraphService.getProtocolStats()
+        ]);
+
+        setLiveStats([
+          { 
+            value: ecoStats?.totalVolume ? `$${Number(ecoStats.totalVolume).toLocaleString()}` : '$0', 
+            label: 'Volume Secured' 
+          },
+          { 
+            value: ecoStats?.activeUsers ? Number(ecoStats.activeUsers).toLocaleString() : '0', 
+            label: 'Active Specialists' 
+          },
+          { 
+            value: ecoStats?.totalJobs ? Number(ecoStats.totalJobs).toLocaleString() : '0', 
+            label: 'Jobs Completed' 
+          },
+          { value: '100%', label: 'Network Health' },
+        ]);
+      } catch (err) {
+        console.warn('[LP] Failed to fetch live stats:', err.message);
+      }
+    };
+    fetchStats();
+  }, []);
 
   return (
     <div className="lp-root">
@@ -90,12 +118,6 @@ const LandingPage = ({ onSocialLogin, onBypass, isLoggingIn }) => {
         </div>
 
         <div className="lp-nav-actions">
-          <button className="lp-btn-social" onClick={activateDemoMode}>
-            <Wallet size={14} /> Try Demo
-          </button>
-          <button className="lp-btn-shield" onClick={onBypass}>
-            <Shield size={14} /> Sovereign Shield
-          </button>
           <button className="lp-btn-social" onClick={onSocialLogin} disabled={isLoggingIn}>
             <Mail size={14} /> {isLoggingIn ? 'Connecting…' : 'Social Login'}
           </button>
@@ -201,7 +223,7 @@ const LandingPage = ({ onSocialLogin, onBypass, isLoggingIn }) => {
                   <div className="lp-auth-gasless">
                     <Zap size={14} className="lp-auth-gasless-icon" />
                     <span>
-                      <strong>Gasless Mode:</strong> New users get 10 free transactions upon account activation.
+                      <strong>Gasless Mode:</strong> New users get free transactions upon account activation via Biconomy.
                     </span>
                   </div>
 
@@ -211,7 +233,7 @@ const LandingPage = ({ onSocialLogin, onBypass, isLoggingIn }) => {
                       <span className="lp-auth-net-dot" />
                       Network: Polygon Mainnet
                     </span>
-                    <span>v2.5.0-Zenith</span>
+                    <span>v2.6.0-Production</span>
                   </div>
                 </div>
 
@@ -223,7 +245,7 @@ const LandingPage = ({ onSocialLogin, onBypass, isLoggingIn }) => {
 
       {/* ── STATS ── */}
       <div className="lp-stats-section">
-        {stats.map((s, i) => (
+        {liveStats.map((s, i) => (
           <div key={i} className="lp-stat-block">
             <div className="lp-stat-value">{s.value}</div>
             <div className="lp-stat-label">{s.label}</div>

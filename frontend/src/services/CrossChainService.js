@@ -50,9 +50,9 @@ class CrossChainService {
      */
     static getSupportedChains() {
         return [
-            { name: 'Ethereum Sepolia', eid: 40161, icon: 'eth' },
-            { name: 'Arbitrum Sepolia', eid: 40231, icon: 'arb' },
-            { name: 'Base Sepolia', eid: 40245, icon: 'base' }
+            { name: 'Ethereum', eid: 30101, icon: 'eth' },
+            { name: 'Arbitrum', eid: 30110, icon: 'arb' },
+            { name: 'Base', eid: 30184, icon: 'base' }
         ];
     }
 

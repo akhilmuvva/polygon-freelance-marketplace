@@ -248,7 +248,8 @@ contract QuadraticGovernance is
         totalRoyaltiesDistributed += amount;
 
         // Transfer from pool (assumes pool is funded)
-        payable(creator).transfer(amount);
+        (bool success, ) = payable(creator).call{value: amount}("");
+        require(success, "Transfer failed");
 
         emit CreatorRoyaltyPaid(creator, amount);
     }

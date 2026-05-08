@@ -38,37 +38,13 @@ const s = {
         fontWeight: 600,
         cursor: 'pointer',
     },
-    modalOverlay: {
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        background: 'rgba(0,0,0,0.85)',
-        backdropFilter: 'blur(10px)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 1000,
-        padding: 20
-    },
-    mockModal: {
-        background: '#1a1a1a',
-        width: '100%',
-        maxWidth: 400,
-        borderRadius: 16,
-        overflow: 'hidden',
-        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
-        border: '1px solid #333'
-    }
+
 };
 
 const FiatOnramp = ({ address, recipientAddress: propRecipient }) => {
     const [amount, setAmount] = useState('1000');
     const [recipientAddress, setRecipientAddress] = useState(propRecipient || address || '');
     const [loading, setLoading] = useState(false);
-    const [showMockModal, setShowMockModal] = useState(false);
-    const [mockOrder, setMockOrder] = useState(null);
     const [verifying, setVerifying] = useState(false);
     const [minting, setMinting] = useState(false);
 
@@ -91,7 +67,7 @@ const FiatOnramp = ({ address, recipientAddress: propRecipient }) => {
         });
     };
 
-    const isDemoMode = !import.meta.env.VITE_RAZORPAY_KEY_ID || import.meta.env.VITE_RAZORPAY_KEY_ID.includes('replace_me');
+
 
     const handlePayment = async () => {
         if (!amount || isNaN(amount) || amount <= 0) {
@@ -106,12 +82,7 @@ const FiatOnramp = ({ address, recipientAddress: propRecipient }) => {
                 email: "user@polylance.com"
             });
 
-            if (order.id && order.id.startsWith('mock_')) {
-                setMockOrder(order);
-                setShowMockModal(true);
-                setLoading(false);
-                return;
-            }
+
 
             const res = await loadRazorpay();
             if (!res) throw new Error("Razorpay SDK failed to load");

@@ -30,7 +30,7 @@ const ZenithControl = lazy(() => import('./components/ManagerDashboard'));
 const ZenithStrata = lazy(() => import('./components/YieldManagerDashboard'));
 const ZenithLiquidity = lazy(() => import('./components/InvoiceMarketplace'));
 const CrossChainDashboard = lazy(() => import('./components/CrossChainDashboard'));
-const PrivacyCenter = lazy(() => import('./components/PrivacyCenter'));
+const ComplianceCenter = lazy(() => import('./components/ComplianceCenter'));
 const SBTGallery = lazy(() => import('./components/SBTGallery'));
 const AnalyticsDashboard = lazy(() => import('./components/AnalyticsDashboard'));
 const AnimationShowcase = lazy(() => import('./components/AnimationShowcase'));
@@ -52,8 +52,6 @@ import { initSocialLogin, createBiconomySmartAccount } from './utils/biconomy';
 import { createWalletClient, custom } from 'viem';
 import { polygon } from 'viem/chains';
 import { ZENITH_JUDGES } from './constants';
-import { useDemo } from './context/DemoContext';
-import DemoWallet from './components/DemoWallet';
 
 const styles = {
   shell: {
@@ -411,7 +409,6 @@ const useNetworkHealth = () => {
 };
 
 function App() {
-  const { isDemoMode, demoWalletAddress } = useDemo();
   const { authStatus = 'loading', setAuthStatus = () => {} } = useContext(AuthContext) || {};
   const { address, isConnected: isWalletConnected, isReconnecting } = useAccount();
   const { data: walletClient } = useWalletClient();
@@ -575,19 +572,7 @@ function App() {
     }
   };
 
-  const actuateBypassIntent = async () => {
-    console.info('[SECURITY] Actuating Sovereign developer bypass.');
-    const mockSA = {
-      accountAddress: '0x25F6C8ed995C811E6c0ADb1D66A60830E8115e9A',
-      isMock: true,
-      sendTransaction: async () => ({
-        waitForTxHash: async () => ({ transactionHash: '0xmock_bypass_' + Date.now() })
-      })
-    };
-    setSmartAccount(mockSA);
-    setIsGasless(true);
-    hotToast.success('Sovereign Bypass Active');
-  };
+
 
   const actuateLogoutIntent = async () => {
     setSmartAccount(null);
@@ -613,7 +598,7 @@ function App() {
   // Directive 10: Sovereign Address Resolution
   // If a smart account is active, it becomes the primary identity for on-chain interactions.
   // We normalize to lowercase to prevent 'Identity Bifurcation' in query keys and access control.
-  const effectiveAddress = isDemoMode ? demoWalletAddress : (smartAccount?.accountAddress || address)?.toLowerCase();
+  const effectiveAddress = (smartAccount?.accountAddress || address)?.toLowerCase();
   
   // Robust Admin check: allow access if EITHER the EOA or the Smart Account is whitelisted.
   const isAdmin = useMemo(() => {
@@ -626,7 +611,7 @@ function App() {
   // Directive 10: Session Continuity Guard
   // A session is active if we have a Smart Account (Social/Bypass) OR a fully connected wallet with an address.
   // We use isHydrated to prevent SSR/Hydration mismatch flicker.
-  const isSessionActive = isHydrated && (isDemoMode || smartAccount !== null || (isWalletConnected && !!address));
+  const isSessionActive = isHydrated && (smartAccount !== null || (isWalletConnected && !!address));
 
   const navigate = (tab) => { setActiveTab(tab); setIsSidebarOpen(false); };
   const onSelectChat = (addr) => { setChatPeerAddress(addr); setActiveTab('chat'); };
@@ -653,7 +638,7 @@ function App() {
       case 'analytics': return isAdmin ? <AnalyticsDashboard isAdmin={isAdmin} address={effectiveAddress} /> : <Dashboard address={effectiveAddress} />;
       case 'sbt-gallery': return <SBTGallery address={effectiveAddress} />;
       case 'terms': return <TermsOfService />;
-      case 'privacy': return <PrivacyCenter address={effectiveAddress} />;
+      case 'privacy': return <ComplianceCenter />;
       case 'onramp': return <FiatOnramp address={effectiveAddress} recipientAddress={activeTabParams.recipient} />;
       case 'identity': return <IdentityManager address={effectiveAddress} gaslessEnabled={isGasless} isAdmin={isAdmin} />;
       case 'portfolio': return <Portfolio address={effectiveAddress} onFiatPay={navigateToOnramp} />;
@@ -680,12 +665,10 @@ function App() {
   return (
     <>
       <Toaster position="top-right" />
-      <DemoWallet />
       {(!isSessionActive || isReconnecting) && activeTab !== 'terms' && activeTab !== 'privacy' && activeTab !== 'manifesto' ? (
         <Suspense fallback={null}>
           <LandingPage 
             onSocialLogin={actuateSocialLoginIntent} 
-            onBypass={actuateBypassIntent}
             isLoggingIn={isLoggingIn} 
           />
         </Suspense>
@@ -743,7 +726,7 @@ function App() {
               {[
                 { id: 'chat',        icon: MessageSquare, label: 'Comms' },
                 { id: 'sbt-gallery', icon: ShieldCheck,   label: 'SBT' },
-                { id: 'privacy',     icon: Shield,        label: 'Privacy' },
+                { id: 'privacy',     icon: Shield,        label: 'Compliance' },
               ].map(item => (
                 <button key={item.id} className="anime-nav-item" onClick={() => navigate(item.id)} style={styles.navItem(activeTab === item.id)}>
                   <item.icon size={14} color={activeTab === item.id ? '#00c896' : 'rgba(255,255,255,0.35)'} />
