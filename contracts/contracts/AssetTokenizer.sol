@@ -8,10 +8,9 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "./FreelanceOracleLibrary.sol";
 
-interface AggregatorV3Interface {
-  function latestRoundData() external view returns (uint80 roundId, int256 answer, uint256 startedAt, uint256 updatedAt, uint80 answeredInRound);
-}
+
 
 /**
  * @title AssetTokenizer
@@ -160,7 +159,7 @@ contract AssetTokenizer is
         uint256 maturityDate,
         string calldata metadataURI,
         bytes32 legalHash
-    ) external nonReentrant returns (uint256 tokenId) {
+    ) external onlyRole(TOKENIZER_ROLE) nonReentrant returns (uint256 tokenId) {
         if (totalValue == 0) revert ZeroValue();
         if (totalSupply == 0) revert ZeroSupply();
         if (maturityDate <= block.timestamp) revert InvalidMaturity();
@@ -363,8 +362,8 @@ contract AssetTokenizer is
     }
 
     function getInvoiceValueInUSD(uint256 amount, address feed) public view returns (uint256) {
-        (, int256 price, , , ) = AggregatorV3Interface(feed).latestRoundData();
-        return (uint256(price) * amount) / 1e8;
+        uint256 price = FreelanceOracleLibrary.getSafePrice(feed);
+        return (price * amount) / 1e8;
     }
 
     /**

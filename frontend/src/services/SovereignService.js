@@ -16,11 +16,10 @@ const REPUTATION_ADDRESS = import.meta.env.VITE_FREELANCER_REPUTATION_ADDRESS ||
 const publicClient = createPublicClient({
   chain: polygon,
   transport: fallback([
-    http('https://polygon-bor-rpc.publicnode.com'),
-    http('https://polygon.llamarpc.com'),
-    http('https://1rpc.io/matic'),
-    http('https://rpc.ankr.com/polygon')
-  ], { rank: true })
+    http('https://polygon-rpc.com'),
+    http('https://rpc.ankr.com/polygon'),
+    http('https://1rpc.io/matic')
+  ])
 });
 
 // Apollo Client for Subgraph Indexing

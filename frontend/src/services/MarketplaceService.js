@@ -7,10 +7,9 @@ const MARKETPLACE_ADDRESS = import.meta.env.VITE_NFT_MARKETPLACE_ADDRESS || '0x2
 const publicClient = createPublicClient({
   chain: polygon,
   transport: fallback([
-    http('https://polygon-bor-rpc.publicnode.com'),
+    http('https://polygon-rpc.com'),
     http('https://rpc.ankr.com/polygon'),
-    http('https://1rpc.io/matic'),
-    http('https://polygon.llamarpc.com')
+    http('https://1rpc.io/matic')
   ])
 });
 

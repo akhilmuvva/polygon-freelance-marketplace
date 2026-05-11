@@ -19,9 +19,6 @@ import "./FreelanceEscrowBase.sol";
 import "./interfaces/IFreelanceSBT.sol";
 import "./FreelanceJobNFT.sol";
 
-interface IFreelanceJobNFT {
-    function safeMint(address to, uint256 tokenId, string memory uri) external;
-}
 import "./PrivacyShield.sol";
 import "./FreelanceEscrowLibrary.sol";
 import "./FreelanceSovereignLibrary.sol";
@@ -82,6 +79,12 @@ contract FreelanceEscrow is
     address public timelock;
     /// @notice Flag for emergency mode (pauses most functions)
     bool public emergencyMode; 
+    /// @notice Flag to permanently seal the protocol under Timelock control
+    bool public isSealed;
+    /// @notice Timestamp of the last successful Security Oracle heartbeat
+    uint256 public lastSecurityHeartbeat;
+    /// @notice Delay after which the Security Oracle can be bypassed by the Timelock (default 7 days)
+    uint256 public constant ORACLE_BYPASS_DELAY = 7 days;
     
     /// @notice Mapping to track the last time a user created a job (DoS mitigation)
     mapping(address => uint256) public lastJobCreated;
@@ -137,6 +140,7 @@ contract FreelanceEscrow is
      * @param judges Array of wallet addresses to be granted the ARBITRATOR_ROLE.
      */
     function actuateZenithJudges(address[] calldata judges) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        if (isSealed) revert ProtocolAlreadySealed();
         for (uint256 i = 0; i < judges.length; i++) {
             if (judges[i] == address(0)) revert InvalidAddress();
             _grantRole(ARBITRATOR_ROLE, judges[i]);
@@ -148,6 +152,7 @@ contract FreelanceEscrow is
      * @notice Consolidated protocol configuration management.
      */
     function setProtocolConfig(FreelanceAdminLibrary.ConfigType c, address addr, uint256 val) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        if (isSealed) revert ProtocolAlreadySealed();
         if (c == FreelanceAdminLibrary.ConfigType.SBT) {
             sbtContract = addr;
             emit SBTContractUpdated(addr);
@@ -228,7 +233,18 @@ contract FreelanceEscrow is
     event SecurityOracleUpdated(address indexed newOracle);
     function setSecurityOracle(address _so) external onlyRole(DEFAULT_ADMIN_ROLE) {
         securityOracle = _so;
+        lastSecurityHeartbeat = block.timestamp; // Reset heartbeat on update
         emit SecurityOracleUpdated(_so);
+    }
+
+    /**
+     * @notice Manually updates the Security Oracle heartbeat (Circuit Breaker maintenance).
+     */
+    function pokeSecurityOracle() external {
+        (bool success, ) = securityOracle.staticcall(abi.encodeWithSignature("ping()"));
+        if (success) {
+            lastSecurityHeartbeat = block.timestamp;
+        }
     }
 
     event TimelockUpdated(address indexed newTimelock);
@@ -427,9 +443,23 @@ contract FreelanceEscrow is
     event BalanceUnstaked(address indexed user, address indexed token, uint256 amount, IYieldManager.Strategy strategy);
 
     function setArbitrator(address _arb) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        if (isSealed) revert ProtocolAlreadySealed();
         if (_arb == address(0)) revert InvalidAddress();
         arbitrator = _arb;
     }
+
+    /**
+     * @notice Permanently seals the protocol, transferring all administrative power to the Timelock.
+     *         Once sealed, manual role changes and arbitrator updates are disabled.
+     */
+    function sealProtocol() external onlyRole(DEFAULT_ADMIN_ROLE) {
+        if (timelock == address(0)) revert InvalidStatus();
+        isSealed = true;
+        emit ProtocolSealed();
+    }
+
+    event ProtocolSealed();
+    error ProtocolAlreadySealed();
 
     function pause() external onlyRole(DEFAULT_ADMIN_ROLE) {
         _pause();
@@ -440,6 +470,7 @@ contract FreelanceEscrow is
     }
 
     function toggleEmergencyMode(bool _active) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        if (isSealed) revert ProtocolAlreadySealed();
         emergencyMode = _active;
         if (_active) _pause();
         else _unpause();
@@ -629,11 +660,18 @@ contract FreelanceEscrow is
         
         // Zenith Security Gate
         if (job.zkRequired && securityOracle != address(0)) {
-            // Require a passing security report for the milestone
-            (bool success, bytes memory data) = securityOracle.staticcall(
-                abi.encodeWithSignature("isMilestoneSecure(uint256,uint256)", jobId, mId)
-            );
-            if (!success || !abi.decode(data, (bool))) revert NotAuthorized(); // Or a custom "SecurityGateFailed" error
+            // Circuit Breaker: If oracle is dead for > 7 days, allow Timelock or Admin to bypass
+            bool isOracleDead = (block.timestamp - lastSecurityHeartbeat) > ORACLE_BYPASS_DELAY;
+            
+            if (!isOracleDead) {
+                (bool success, bytes memory data) = securityOracle.staticcall(
+                    abi.encodeWithSignature("isMilestoneSecure(uint256,uint256)", jobId, mId)
+                );
+                if (!success || !abi.decode(data, (bool))) revert NotAuthorized();
+            } else {
+                // If oracle is dead, only the Timelock can authorize the release
+                if (_msgSender() != timelock && !hasRole(DEFAULT_ADMIN_ROLE, _msgSender())) revert NotAuthorized();
+            }
         }
 
         _releaseMilestoneInternal(jobId, mId);
@@ -669,13 +707,6 @@ contract FreelanceEscrow is
         if (job.status != JobStatus.Ongoing) revert InvalidStatus();
         if (job.paid) revert AlreadyPaid();
 
-        uint256 payout = job.amount - job.totalPaidOut;
-        uint256 fee = (job.amount * gravityFactor) / BASIS_POINTS_DIVISOR;
-        
-        // Fee cannot exceed the remaining payout (prevents underflow)
-        if (fee > payout) fee = payout;
-
-        // Supreme Level Check: 0% Fee for Elite Veterans or Private Verified Users
         bool isSupremeMember = FreelanceSovereignLibrary.checkSupremeStatus(
             job.freelancer, 
             uint256(job.categoryId), 
@@ -684,46 +715,32 @@ contract FreelanceEscrow is
             reputationThreshold, 
             privacyShield
         );
-        if (isSupremeMember) fee = 0;
-        
-        uint256 freelancerNet = payout - fee;
 
-        // 1. Effects: Update state BEFORE any external interactions (CEI)
+        (uint256 payout, uint256 fee, uint256 freelancerNet) = FreelanceSovereignLibrary.calculateCompletionFees(
+            job.amount,
+            job.totalPaidOut,
+            gravityFactor,
+            BASIS_POINTS_DIVISOR,
+            isSupremeMember
+        );
+
+        // 1. Effects
         job.paid = true;
         job.status = JobStatus.Completed;
         job.rating = rating;
         job.totalPaidOut += payout;
 
-        // Update balances before external calls
         balances[job.freelancer][job.token] += (freelancerNet + job.freelancerStake);
         if (fee > 0 && vault != address(0)) {
             balances[vault][job.token] += fee;
         }
 
-        // 2. Interactions: Mint SBTs & Reputation (Offloaded to library for size)
-        _mintSBT(job.freelancer, jobId);
+        // 2. Interactions
+        FreelanceSovereignLibrary.handleSBTContribution(sbtContract, job.freelancer, job.categoryId, jobId, job.client, job.ipfsHash);
+        FreelanceSovereignLibrary.actuateSovereignReputation(reputationContract, job.freelancer, job.categoryId, rating);
+        FreelanceSovereignLibrary.mintRewards(polyToken, job.freelancer, REWARD_BASE, isSupremeMember, SUPREME_REWARD_BOOST, job.token == polyToken);
 
-        if (reputationContract != address(0)) {
-            FreelanceSovereignLibrary.actuateSovereignReputation(
-                reputationContract, 
-                job.freelancer, 
-                job.categoryId, 
-                rating
-            );
-        }
-
-        if (polyToken != address(0)) {
-            FreelanceSovereignLibrary.mintRewards(
-                polyToken,
-                job.freelancer,
-                REWARD_BASE,
-                isSupremeMember,
-                SUPREME_REWARD_BOOST,
-                job.token == polyToken
-            );
-        }
-
-        // 3. Interactions: Finalize payout by withdrawing from yield manager
+        // 3. Yield Withdrawal
         if (yieldManager != address(0) && job.yieldStrategy != IYieldManager.Strategy.NONE && job.token != address(0)) {
             IYieldManager(yieldManager).withdraw(job.yieldStrategy, job.token, payout + job.freelancerStake, address(this));
         }
@@ -737,7 +754,7 @@ contract FreelanceEscrow is
      */
 
 
-    function void(bool) internal pure {}
+
 
     /**
      * @notice Neutralizes economic friction by releasing final funds to a verified actor.
@@ -871,13 +888,8 @@ contract FreelanceEscrow is
     }
 
     function _mintSBT(address to, uint256 jobId) internal {
-        if (sbtContract != address(0)) {
-            Job storage job = jobs[jobId];
-            try IFreelanceSBT(sbtContract).mintContribution(to, job.categoryId, 5, jobId, job.client) {} catch {
-                (bool s, ) = sbtContract.call(abi.encodeWithSignature("safeMint(address,string)", to, job.ipfsHash));
-                (s);
-            }
-        }
+        Job storage job = jobs[jobId];
+        FreelanceSovereignLibrary.handleSBTContribution(sbtContract, to, job.categoryId, jobId, job.client, job.ipfsHash);
     }
 
     /**
@@ -928,7 +940,8 @@ contract FreelanceEscrow is
         return super._msgSender();
     }
 
-    function _authorizeUpgrade(address) internal override onlyRole(DEFAULT_ADMIN_ROLE) {
+    function _authorizeUpgrade(address) internal override {
+        // Mandatory 48h Timelock enforcement for all Zenith Upgrades
         if (timelock == address(0) || _msgSender() != timelock) revert NotAuthorized();
     }
 }

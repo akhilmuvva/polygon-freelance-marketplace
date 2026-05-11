@@ -163,6 +163,7 @@ library FreelanceEscrowLibrary {
     ) external {
         if (job.client == address(0)) revert("InvalidAddress");
         if (job.status != JobStatus.Created) revert("InvalidStatus");
+        if (apps.length >= 50) revert("MaxApplicationsReached"); // Enforce MAX_APPLICATIONS_PER_JOB
         if (hasApplied[job.id][freelancer]) revert("AlreadyApplied");
         
         if (job.zkRequired && privacyShield != address(0)) {
