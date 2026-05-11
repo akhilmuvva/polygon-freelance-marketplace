@@ -35,6 +35,7 @@ error StrategyInactive();
 error ZeroInterest();
 error ZeroAddress();
 error SurplusLockedByTimelock();
+error StrategyAlreadyActive();
 
 /**
  * @title  YieldManager
@@ -90,20 +91,20 @@ contract YieldManager is Ownable {
     uint256 public constant PROTOCOL_GRAVITY_BPS = 2000;  // 20% → Sovereign Surplus
 
     // High-precision interest accumulator (upstream callers scale by 1e18)
-    uint256 public accruedSurplus; // tracks undistributed surplus for Timelock withdrawal
+    mapping(address => uint256) public accruedSurplus; // tracks undistributed surplus per token for Timelock withdrawal
 
     // ─── Events ──────────────────────────────────────────────────────────────
     event YieldDeposited(Strategy indexed strategy, address indexed token, uint256 amount);
     event YieldWithdrawn(Strategy indexed strategy, address indexed token, uint256 amount);
     event StrategyUpdated(Strategy indexed strategy, address pool, bool active);
 
+    event YieldDistributed(address indexed recipient, uint256 amount);
+
     /// @notice Emitted on every harvest; all three distribution buckets are logged.
     event YieldRebalanced(
         address indexed token,
-        uint256 totalInterest,
         uint256 safetyDiverted,
-        uint256 protocolSurplus,
-        uint256 userYield
+        uint256 protocolSurplus
     );
 
     /// @notice Emitted when governance executes a surplus withdrawal via Timelock.
@@ -134,6 +135,14 @@ contract YieldManager is Ownable {
 
     /// @notice Activates or deactivates a yield strategy with a new pool address.
     function setStrategy(Strategy strategy, address pool, bool active) external onlyOwner {
+        if (active && pool == address(0)) revert ZeroAddress();
+        
+        // S-05 Hardening: Prevent overwriting an active strategy pool without deactivation.
+        // This forces a "disable old -> enable new" flow to ensure visibility of fund migration.
+        if (strategies[strategy].active && strategies[strategy].pool != pool && active) {
+            revert StrategyAlreadyActive();
+        }
+
         strategies[strategy] = StrategyConfig(pool, active);
         emit StrategyUpdated(strategy, pool, active);
     }
@@ -165,7 +174,7 @@ contract YieldManager is Ownable {
         uint256 userYield      = totalInterest - safetyAmount - protocolAmount;
 
         // ── EFFECTS ──
-        accruedSurplus += protocolAmount;
+        accruedSurplus[token] += protocolAmount;
 
         // ── INTERACTIONS ──
         if (safetyModule != address(0) && safetyAmount > 0) {
@@ -175,7 +184,7 @@ contract YieldManager is Ownable {
             IERC20(token).safeTransfer(protocolTreasury, protocolAmount);
         }
 
-        emit YieldRebalanced(token, totalInterest, safetyAmount, protocolAmount, userYield);
+        emit YieldRebalanced(token, safetyAmount, protocolAmount);
     }
 
     /**
@@ -195,7 +204,7 @@ contract YieldManager is Ownable {
         if (recipient == address(0)) revert ZeroAddress();
 
         // EFFECTS before INTERACTIONS
-        accruedSurplus -= amount;
+        accruedSurplus[token] -= amount;
         IERC20(token).safeTransfer(recipient, amount);
 
         emit SurplusWithdrawn(token, amount, recipient);
@@ -243,6 +252,7 @@ contract YieldManager is Ownable {
 
         StrategyConfig memory config = strategies[strategy];
         if (!config.active) revert StrategyInactive();
+
 
         if (strategy == Strategy.AAVE) {
             IAavePool(config.pool).withdraw(token, amount, receiver);

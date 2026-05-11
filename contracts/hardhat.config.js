@@ -1,6 +1,7 @@
 require("@nomicfoundation/hardhat-toolbox");
 require("@openzeppelin/hardhat-upgrades");
 require("dotenv").config();
+require("hardhat-contract-sizer");
 // require("solidity-coverage");
 
 const PRIVATE_KEY = process.env.PRIVATE_KEY || "0x0000000000000000000000000000000000000000000000000000000000000001";
@@ -14,7 +15,7 @@ module.exports = {
             evmVersion: "cancun",
             optimizer: {
                 enabled: true,
-                runs: 1000
+                runs: 1
             },
             viaIR: true
         }

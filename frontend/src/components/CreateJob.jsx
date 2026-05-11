@@ -8,7 +8,7 @@ import {
   Cpu, Zap, Plus, Hash, Terminal, Box, ChevronRight,
   Eye, FileText, Activity
 } from 'lucide-react';
-import { SUPPORTED_TOKENS, CONTRACT_ADDRESS } from '../constants';
+import { SUPPORTED_TOKENS, CONTRACT_ADDRESS, IS_AMOY } from '../constants';
 import FreelanceEscrowABI from '../contracts/FreelanceEscrow.json';
 import { createJobGasless } from '../utils/biconomy';
 import StorageService from '../services/StorageService';
@@ -89,7 +89,8 @@ const CreateJob = ({ onJobCreated, gasless, smartAccount: propSmartAccount }) =>
                 yieldStrategy: 0n,
                 paymentToken: selectedToken.address,
                 paymentAmount: rawAmount,
-                minAmountOut: 0n
+                minAmountOut: 0n,
+                zkRequired: false
             };
 
             if (gasless && propSmartAccount) {
@@ -146,6 +147,10 @@ const CreateJob = ({ onJobCreated, gasless, smartAccount: propSmartAccount }) =>
                         <div className="status-orb pulse"></div>
                         <h2 className="pane-title">Initiate Mission</h2>
                         <p className="pane-subtitle">Configure sovereign work protocol parameters.</p>
+                        <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 8, background: 'rgba(59, 130, 246, 0.05)', border: '1px solid rgba(59, 130, 246, 0.1)', cursor: 'pointer' }} onClick={() => window.dispatchEvent(new CustomEvent('NAV_TO_TAB', { detail: 'cross-chain' }))}>
+                           <Globe size={14} color="#3b82f6" />
+                           <span style={{ fontSize: '0.65rem', fontWeight: 800, color: '#3b82f6', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Need to pay from Ethereum, Base, or Arbitrum? Use Omni-Chain Protocol →</span>
+                        </div>
                     </motion.header>
 
                     <div className="config-form">
@@ -307,7 +312,7 @@ const CreateJob = ({ onJobCreated, gasless, smartAccount: propSmartAccount }) =>
 
                             <div className="preview-terminal">
                                 <div className="term-line">&gt; INITIALIZING ACTUATION SEQUENCE...</div>
-                                <div className="term-line">&gt; NETWORK: POLYGON AMOY</div>
+                                <div className="term-line">&gt; NETWORK: {IS_AMOY ? 'POLYGON AMOY' : 'POLYGON MAINNET'}</div>
                                 <div className="term-line">&gt; IPFS METADATA: READY</div>
                                 <div className="term-line anim">&gt; AWAITING SIGNATURE...</div>
                             </div>

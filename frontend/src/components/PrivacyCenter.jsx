@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Shield, Download, Trash2, CheckCircle, AlertTriangle, Loader2, Cpu } from 'lucide-react';
 import { toast } from 'react-toastify';
+import { IS_AMOY } from '../constants';
 
 const cardBg = { padding: 24, borderRadius: 16, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.04)' };
 const sectionTitle = (color) => ({ fontSize: '1.1rem', fontWeight: 700, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8, color });
@@ -16,7 +17,7 @@ function PrivacyCenter({ address }) {
                 address,
                 localCache: localStorage.getItem('app_ipfs_cache'),
                 timestamp: new Date().toISOString(),
-                network: 'Polygon Amoy'
+                network: IS_AMOY ? 'Polygon Amoy' : 'Polygon Mainnet'
             };
             const blob = new Blob([JSON.stringify(sovereignData, null, 2)], { type: 'application/json' });
             const url = URL.createObjectURL(blob);

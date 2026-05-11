@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Mail, Wallet, ShieldCheck, Globe, Zap, Sparkles, Loader2, ArrowRight } from 'lucide-react';
 import { useConnectModal } from '@rainbow-me/rainbowkit';
+import { IS_AMOY } from '../constants';
 import './AuthPortal.css';
 
 const AuthPortal = ({ actuateOnSocialLoginIntent, isLoggingIn }) => {
@@ -130,7 +131,7 @@ const AuthPortal = ({ actuateOnSocialLoginIntent, isLoggingIn }) => {
                         </div>
                         <div className="network-status">
                             <div className="status-indicator" />
-                            <span className="status-label">Polygon Amoy Testnet • v2.1.0-zenith</span>
+                            <span className="status-label">{IS_AMOY ? 'Polygon Amoy Testnet' : 'Polygon Mainnet'} • v2.1.0-zenith</span>
                         </div>
                         <p className="secured-by">Secured by Biconomy & XMTP V3</p>
                     </div>

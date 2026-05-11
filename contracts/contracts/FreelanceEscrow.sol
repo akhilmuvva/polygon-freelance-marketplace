@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "./ReentrancyGuardUpgradeable.sol";
@@ -12,19 +11,30 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 import "./FreelanceRenderer.sol";
+
+interface IFreelanceRenderer {
+    function constructTokenURI(uint256 jobId, uint16 categoryId, uint256 amount, uint8 rating, string memory ipfsHash) external pure returns (string memory);
+}
 import "./FreelanceEscrowBase.sol";
 import "./interfaces/IFreelanceSBT.sol";
+import "./FreelanceJobNFT.sol";
+
+interface IFreelanceJobNFT {
+    function safeMint(address to, uint256 tokenId, string memory uri) external;
+}
 import "./PrivacyShield.sol";
+import "./FreelanceEscrowLibrary.sol";
+import "./FreelanceSovereignLibrary.sol";
+import "./FreelanceAdminLibrary.sol";
+
+import {Job, JobStatus, CreateParams} from "./FreelanceTypes.sol";
+import {FreelanceDisputeLibrary} from "./FreelanceDisputeLibrary.sol";
 
 /**
  * @title FreelanceEscrow
- * @author Akhil Muvva & Balram Taddi
- * @notice Refactored for Antigravity's EVM with Zenith protocol enhancements.
- * @dev Implements a milestone-based escrow system with yield strategies, decentralized dispute resolution, 
- * and Soulbound Identity (SBT) for freelancers. Inherits from FreelanceEscrowBase and integrates 
- * with Arbitrable for Kleros-compatible dispute handling.
  */
-contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrable {
+contract FreelanceEscrow is
+ FreelanceEscrowBase, PausableUpgradeable, IArbitrable {
     using SafeERC20 for IERC20;
 
     event JobApplied(uint256 indexed jobId, address indexed freelancer, uint256 stake);
@@ -43,6 +53,8 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
     event SwapManagerUpdated(address indexed newSwapManager);
     event ReputationThresholdUpdated(uint256 newThreshold);
     event CallFailed(address indexed target, string reason);
+    event JobNFTUpdated(address indexed newNft);
+    event RendererUpdated(address indexed newRenderer);
 
     /// @notice Address of the PolyToken (REWARD token)
     address public polyToken;
@@ -56,10 +68,25 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
     address public privacyShield;
     /// @notice Address of the Zenith Security Oracle
     address public securityOracle;
+    function setJobNFT(address _nft) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        if (_nft == address(0)) revert InvalidAddress();
+        jobNFT = _nft;
+        emit JobNFTUpdated(_nft);
+    }
+    function setRenderer(address _r) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        if (_r == address(0)) revert InvalidAddress();
+        renderer = _r;
+        emit RendererUpdated(_r);
+    }
     /// @notice Address of the PolyLance Timelock
     address public timelock;
     /// @notice Flag for emergency mode (pauses most functions)
     bool public emergencyMode; 
+    
+    /// @notice Mapping to track the last time a user created a job (DoS mitigation)
+    mapping(address => uint256) public lastJobCreated;
+    /// @notice Cooldown period for job creation
+    uint256 public constant CREATION_COOLDOWN = 30 seconds;
 
     uint256 public constant REWARD_BASE = 100 * 1e18;
     uint256 public constant SUPREME_REWARD_BOOST = 3;
@@ -81,13 +108,15 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
      * @param _sbt The address of the Soulbound Token contract for freelancer identity.
      * @param _entry The address of the ERC-4337 EntryPoint contract.
      */
-    function initialize(address admin, address forwarder, address _sbt, address _entry) public initializer {
-        if (admin == address(0) || forwarder == address(0) || _sbt == address(0) || _entry == address(0)) revert InvalidAddress();
-        __ERC721_init("PolyLance Zenith Project", "ZENITH");
+    function initialize(address admin, address forwarder, address _sbt, address _entry, address _nft, address _renderer) public initializer {
+        if (admin == address(0) || forwarder == address(0) || _sbt == address(0) || _entry == address(0) || _nft == address(0) || _renderer == address(0)) revert InvalidAddress();
         __AccessControl_init();
 
         __Pausable_init();
         __ReentrancyGuard_init();
+
+        jobNFT = _nft;
+        renderer = _renderer;
 
 
         _grantRole(DEFAULT_ADMIN_ROLE, admin);
@@ -102,6 +131,7 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
         reputationThreshold = 10; // Default threshold for Elite Veterans
     }
 
+
     /**
      * @notice Actuates the Zenith Court by designating multiple supreme magistrates.
      * @param judges Array of wallet addresses to be granted the ARBITRATOR_ROLE.
@@ -115,110 +145,75 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
     }
 
     /**
-     * @notice Updates the Soulbound Token (SBT) contract address.
-     * @param _sbt New SBT contract address.
+     * @notice Consolidated protocol configuration management.
      */
-    function setSBTContract(address _sbt) external onlyRole(DEFAULT_ADMIN_ROLE) {
-        if (_sbt == address(0)) revert InvalidAddress();
-        sbtContract = _sbt;
-        emit SBTContractUpdated(_sbt);
+    function setProtocolConfig(FreelanceAdminLibrary.ConfigType c, address addr, uint256 val) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        if (c == FreelanceAdminLibrary.ConfigType.SBT) {
+            sbtContract = addr;
+            emit SBTContractUpdated(addr);
+        } else if (c == FreelanceAdminLibrary.ConfigType.ENTRY_POINT) {
+            entryPoint = addr;
+            emit EntryPointUpdated(addr);
+        } else if (c == FreelanceAdminLibrary.ConfigType.VAULT) {
+            vault = addr;
+            emit VaultUpdated(addr);
+        } else if (c == FreelanceAdminLibrary.ConfigType.FEE) {
+            if (val > MAX_PLATFORM_FEE_BPS) revert InvalidStatus();
+            gravityFactor = val;
+            emit FeeAdjusted(val, block.timestamp);
+        } else if (c == FreelanceAdminLibrary.ConfigType.POLY_TOKEN) {
+            polyToken = addr;
+            emit PolyTokenUpdated(addr);
+        } else if (c == FreelanceAdminLibrary.ConfigType.REP) {
+            reputationContract = addr;
+            emit ReputationContractUpdated(addr);
+        } else if (c == FreelanceAdminLibrary.ConfigType.COMP_CERT) {
+            completionCertContract = addr;
+            emit CompletionCertContractUpdated(addr);
+        } else if (c == FreelanceAdminLibrary.ConfigType.REVIEW_SBT) {
+            reviewSBT = addr;
+            emit ReviewSBTUpdated(addr);
+        } else if (c == FreelanceAdminLibrary.ConfigType.SWAP) {
+            swapManager = addr;
+            emit SwapManagerUpdated(addr);
+        } else if (c == FreelanceAdminLibrary.ConfigType.RENDERER) {
+            renderer = addr;
+            emit RendererUpdated(addr);
+        } else if (c == FreelanceAdminLibrary.ConfigType.JOB_NFT) {
+            jobNFT = addr;
+            emit JobNFTUpdated(addr);
+        } else if (c == FreelanceAdminLibrary.ConfigType.PRIVACY) {
+            privacyShield = addr;
+            emit PrivacyShieldUpdated(addr);
+        } else if (c == FreelanceAdminLibrary.ConfigType.SWAP) {
+            swapManager = addr;
+            emit SwapManagerUpdated(addr);
+        } else if (c == FreelanceAdminLibrary.ConfigType.VAULT) {
+            vault = addr;
+            emit VaultUpdated(addr);
+        } else if (c == FreelanceAdminLibrary.ConfigType.ORACLE) {
+            securityOracle = addr;
+            emit SecurityOracleUpdated(addr);
+        } else if (c == FreelanceAdminLibrary.ConfigType.TIMELOCK) {
+            timelock = addr;
+            emit TimelockUpdated(addr);
+        } else {
+            revert InvalidStatus();
+        }
     }
 
-    /**
-     * @notice Updates the Account Abstraction (ERC-4337) EntryPoint address.
-     * @param _entry New EntryPoint address.
-     */
-    function setEntryPoint(address _entry) external onlyRole(DEFAULT_ADMIN_ROLE) {
-        if (_entry == address(0)) revert InvalidAddress();
-        entryPoint = _entry;
-        emit EntryPointUpdated(_entry);
-    }
-
-    /**
-     * @notice Updates the vault address where platform fees are collected.
-     * @param _vault New vault address.
-     */
-    function setVault(address _vault) external onlyRole(DEFAULT_ADMIN_ROLE) {
-        if (_vault == address(0)) revert InvalidAddress();
-        vault = _vault;
-        emit VaultUpdated(_vault);
-    }
-
-    /**
-     * @notice Sets the platform fee in basis points (10000 = 100%).
-     * @dev Limited to a maximum of 10% (MAX_PLATFORM_FEE_BPS).
-     * @param _bps Fee in basis points.
-     */
-    function setPlatformFee(uint256 _bps) external onlyRole(DEFAULT_ADMIN_ROLE) {
-        if (_bps > MAX_PLATFORM_FEE_BPS) revert InvalidStatus(); 
-        gravityFactor = _bps;
-        emit FeeAdjusted(_bps, block.timestamp);
-    }
-
-    /**
-     * @notice Updates the PolyToken reward contract address.
-     * @param _token New token address.
-     */
-    function setPolyToken(address _token) external onlyRole(DEFAULT_ADMIN_ROLE) {
-        polyToken = _token;
-        emit PolyTokenUpdated(_token);
-    }
-
-    /**
-     * @notice Updates the Reputation contract address.
-     * @param _rep New reputation address.
-     */
-    function setReputationContract(address _rep) external onlyRole(DEFAULT_ADMIN_ROLE) {
-        reputationContract = _rep;
-        emit ReputationContractUpdated(_rep);
-    }
-
-    /**
-     * @notice Updates the platform fee based on network velocity (Autonomous Action).
-     * @param _bps New fee in basis points.
-     */
     function updatePlatformFee(uint256 _bps) external onlyRole(AGENT_ROLE) {
         if (_bps > MAX_PLATFORM_FEE_BPS) revert InvalidStatus();
         gravityFactor = _bps;
         emit FeeAdjusted(_bps, block.timestamp);
     }
 
-    /**
-     * @notice Allows an authorized agent to rebalance idle vault funds.
-     * @param token Address of the token.
-     * @param amount Amount to rebalance.
-     * @param fromStrategy Current strategy.
-     * @param toStrategy Target strategy.
-     */
     function rebalanceTreasury(address token, uint256 amount, IYieldManager.Strategy fromStrategy, IYieldManager.Strategy toStrategy) external onlyRole(AGENT_ROLE) {
         if (yieldManager == address(0)) revert InvalidAddress();
-        
-        // 1. Withdraw from old strategy
         IYieldManager(yieldManager).withdraw(fromStrategy, token, amount, address(this));
-        
-        // 2. Deposit into new strategy
         IERC20(token).forceApprove(yieldManager, amount);
         IYieldManager(yieldManager).deposit(toStrategy, token, amount);
-        
         emit TreasuryRebalanced(token, amount, fromStrategy, toStrategy, block.timestamp);
-    }
-
-    /**
-     * @notice Updates the Completion Certificate contract address.
-     * @param _cert New certificate address.
-     */
-    function setCompletionCertContract(address _cert) external onlyRole(DEFAULT_ADMIN_ROLE) {
-        completionCertContract = _cert;
-        emit CompletionCertContractUpdated(_cert);
-    }
-
-    /**
-     * @notice Updates the Review SBT contract address.
-     * @param _rsbt New Review SBT address.
-     */
-    function setReviewSBT(address _rsbt) external onlyRole(DEFAULT_ADMIN_ROLE) {
-        reviewSBT = _rsbt;
-        emit ReviewSBTUpdated(_rsbt);
     }
 
     /**
@@ -271,15 +266,7 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
         tokenWhitelist[_token] = _status;
     }
 
-    function setYieldManager(address _ym) external onlyRole(DEFAULT_ADMIN_ROLE) {
-        yieldManager = _ym;
-        emit YieldManagerUpdated(_ym);
-    }
 
-    function setSwapManager(address _sm) external onlyRole(DEFAULT_ADMIN_ROLE) {
-        swapManager = _sm;
-        emit SwapManagerUpdated(_sm);
-    }
 
     uint256 public constant MAX_APPLICATIONS_PER_JOB = 50;
 
@@ -288,35 +275,16 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
      * @param jobId The unique ID of the job.
      */
     function applyForJob(uint256 jobId) external payable whenNotPaused nonReentrant {
-        Job storage job = jobs[jobId];
-        if (job.client == address(0)) revert InvalidAddress();
-        if (job.status != JobStatus.Created) revert InvalidStatus();
-        if (hasApplied[jobId][_msgSender()]) revert InvalidStatus();
-        
-        // Sovereign Directive 23: ZK-Identity Gating
-        if (job.zkRequired && privacyShield != address(0)) {
-            if (!PrivacyShield(privacyShield).isVerified(_msgSender())) revert NotAuthorized();
-        }
-
-        if (jobApplications[jobId].length >= MAX_APPLICATIONS_PER_JOB) revert NotAuthorized();
-
-        uint256 stake = (job.amount * APPLICATION_STAKE_PERCENT) / 100;
-
-        if (job.token != address(0)) {
-            IERC20(job.token).safeTransferFrom(_msgSender(), address(this), stake);
-            // Optionally deposit freelancer stake into yield manager if strategy is set
-            if (yieldManager != address(0) && job.yieldStrategy != IYieldManager.Strategy.NONE) {
-                 IERC20(job.token).forceApprove(yieldManager, stake);
-                 IYieldManager(yieldManager).deposit(job.yieldStrategy, job.token, stake);
-            }
-        } else {
-            if (msg.value < stake) revert LowStake();
-        }
-
-        jobApplications[jobId].push(Application(_msgSender(), stake));
-        hasApplied[jobId][_msgSender()] = true;
-        
-        emit JobApplied(jobId, _msgSender(), stake); // Base doesn't have timestamp for this one yet but let's keep it safe
+        FreelanceEscrowLibrary.handleApplication(
+            jobs[jobId], 
+            jobApplications[jobId], 
+            hasApplied, 
+            _msgSender(), 
+            msg.value, 
+            privacyShield, 
+            yieldManager
+        );
+        emit JobApplied(jobId, _msgSender(), (jobs[jobId].amount * APPLICATION_STAKE_PERCENT) / 100);
     }
 
     /**
@@ -336,25 +304,9 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
     function pickFreelancer(uint256 jobId, address freelancer) external whenNotPaused nonReentrant {
         Job storage job = jobs[jobId];
         if (_msgSender() != job.client) revert NotAuthorized();
-        if (job.status != JobStatus.Created) revert InvalidStatus();
-
-        job.freelancer = freelancer;
-        job.status = JobStatus.Accepted;
-
-        // Refund others
-        Application[] storage apps = jobApplications[jobId];
-        for (uint256 i = 0; i < apps.length; i++) {
-            if (apps[i].freelancer != freelancer) {
-                uint256 stake = apps[i].stake;
-                if (yieldManager != address(0) && job.yieldStrategy != IYieldManager.Strategy.NONE && job.token != address(0)) {
-                    IYieldManager(yieldManager).withdraw(job.yieldStrategy, job.token, stake, address(this));
-                }
-                balances[apps[i].freelancer][job.token] += stake;
-            } else {
-                job.freelancerStake = apps[i].stake;
-            }
-        }
-
+        
+        FreelanceEscrowLibrary.handlePicking(job, jobApplications[jobId], freelancer, yieldManager, balances);
+        
         emit FreelancerPicked(jobId, freelancer);
     }
 
@@ -385,7 +337,11 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
         if (_msgSender() != job.freelancer) revert NotAuthorized();
         if (job.status != JobStatus.Ongoing) revert InvalidStatus();
 
+        // XSS Hardening: Validate IPFS CID format for work submission
+        FreelanceEscrowLibrary.validateCID(ipfsHash);
+
         job.ipfsHash = ipfsHash;
+        
         emit WorkSubmitted(jobId, _msgSender(), ipfsHash, block.timestamp);
     }
 
@@ -397,6 +353,10 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
     function setJobMetadata(uint256 jobId, string calldata ipfsHash) external whenNotPaused {
         Job storage job = jobs[jobId];
         if (_msgSender() != job.client && !hasRole(MANAGER_ROLE, _msgSender())) revert NotAuthorized();
+        
+        // XSS Hardening: Validate IPFS CID format
+        FreelanceEscrowLibrary.validateCID(ipfsHash);
+        
         job.ipfsHash = ipfsHash;
     }
 
@@ -541,22 +501,7 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
         _transferFunds(recipient, job.token, amountToWithdraw);
     }
 
-    struct CreateParams {
-        uint256 categoryId;
-        address freelancer;
-        address token; // Target token for escrow
-        uint256 amount; // Target amount in target token
-        string ipfsHash;
-        uint256 deadline;
-        uint256[] mAmounts;
-        string[] mHashes;
-        bool[] mIsUpfront;
-        IYieldManager.Strategy yieldStrategy;
-        address paymentToken; // Token used for payment (can be different from target)
-        uint256 paymentAmount; // Amount of paymentToken sent
-        uint256 minAmountOut; // Slippage protection for swap
-        bool zkRequired; // Explicitly require a Sovereign Shield
-    }
+    
 
     /**
      * @notice Milestone Factory: Locks funds and defines stages upfront.
@@ -564,23 +509,75 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
      * @return The newly created jobId.
      */
     function createJob(CreateParams calldata p) public payable whenNotPaused nonReentrant returns (uint256) {
+        return _createJobInternal(_msgSender(), p);
+    }
+
+    /**
+     * @notice Allows authorized bridge adapters to create jobs on behalf of users on other chains.
+     * @dev Restricted to BRIDGE_ROLE.
+     */
+    function createJobFor(address client, CreateParams calldata p) external whenNotPaused nonReentrant onlyRole(BRIDGE_ROLE) returns (uint256) {
+        return _createJobInternal(client, p);
+    }
+
+    function _createJobInternal(address client, CreateParams calldata p) internal returns (uint256) {
         if (p.amount == 0) revert LowValue();
         if (bytes(p.ipfsHash).length == 0) revert InvalidStatus();
         if (p.token != address(0) && !tokenWhitelist[p.token]) revert TokenNotWhitelisted();
         if (p.mAmounts.length == 0 || p.mAmounts.length > MAX_MILESTONES) revert InvalidStatus();
+        if (p.mAmounts.length != p.mHashes.length || p.mAmounts.length != p.mIsUpfront.length) revert MilestoneMismatch();
+        if (p.deadline != 0 && p.deadline < block.timestamp) revert InvalidStatus();
 
-        uint256 jobId = ++jobCount;
+        // XSS Hardening: Validate IPFS CID format
+        FreelanceEscrowLibrary.validateCID(p.ipfsHash);
         
-        (uint256 actualAmount, IYieldManager.Strategy actualStrategy) = _handleJobFunding(p.token, p.amount, p.yieldStrategy, p.paymentToken, p.paymentAmount, p.minAmountOut);
-        _initJobRecord(jobId, p.freelancer, p.token, p.amount, p.ipfsHash, p.categoryId, p.deadline, actualStrategy, p.mAmounts.length, p.zkRequired);
-        _setupMilestones(jobId, p.freelancer, p.mAmounts, p.mHashes, p.mIsUpfront);
+        // DoS Mitigation: Creation Cooldown
+        if (block.timestamp < lastJobCreated[client] + CREATION_COOLDOWN) revert NotAuthorized();
+        lastJobCreated[client] = block.timestamp;
 
-        emit JobCreated(jobId, _msgSender(), p.freelancer, actualAmount, jobs[jobId].deadline, block.timestamp);
+        uint256 totalM;
+        for (uint256 i = 0; i < p.mAmounts.length; i++) {
+            totalM += p.mAmounts[i];
+        }
+        if (totalM != p.amount) revert MilestoneMismatch();
+        
+        uint256 jobId = ++jobCount;
+
+        (uint256 actualAmount, IYieldManager.Strategy actualStrategy) = FreelanceEscrowLibrary.handleFunding(
+            client, 
+            p.token, 
+            p.amount, 
+            p.yieldStrategy, 
+            p.paymentToken, 
+            p.paymentAmount, 
+            p.minAmountOut,
+            swapManager,
+            yieldManager,
+            msg.value
+        );
+        
+        _initJobRecord(jobId, client, p.freelancer, p.token, p.amount, p.ipfsHash, p.categoryId, p.deadline, actualStrategy, p.mAmounts.length, p.zkRequired);
+        _setupMilestones(jobId, p.freelancer, p.mAmounts, p.mHashes, p.mIsUpfront);
+        
+        // 3. Interactions: Mint the Job NFT via external contract (Offloaded to library)
+        if (jobNFT != address(0) && renderer != address(0)) {
+            string memory uri = IFreelanceRenderer(renderer).constructTokenURI(
+                jobId,
+                uint16(p.categoryId),
+                p.amount,
+                0, // rating is 0 for new job
+                p.ipfsHash
+            );
+            FreelanceSovereignLibrary.mintJobNFT(jobNFT, p.freelancer, jobId, uri);
+        }
+        
+        emit JobCreated(jobId, client, p.freelancer, p.amount, p.deadline, block.timestamp);
         return jobId;
     }
 
     function _initJobRecord(
         uint256 jobId, 
+        address client,
         address freelancer, 
         address token, 
         uint256 amount, 
@@ -591,18 +588,19 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
         uint256 mCount,
         bool zkRequired
     ) internal {
-        Job storage job = jobs[jobId];
-        job.client = _msgSender();
-        job.freelancer = freelancer;
-        job.token = token;
-        job.amount = amount;
-        job.status = freelancer == address(0) ? JobStatus.Created : JobStatus.Accepted;
-        job.ipfsHash = ipfsHash;
-        job.categoryId = uint16(categoryId);
-        job.milestoneCount = uint16(mCount);
-        job.yieldStrategy = yieldStrategy;
-        job.zkRequired = zkRequired;
-        job.deadline = uint48(deadline == 0 ? block.timestamp + 7 days : deadline);
+        FreelanceEscrowLibrary.initializeJob(
+            jobs[jobId], 
+            jobId, 
+            client, 
+            freelancer, 
+            token, 
+            amount, 
+            deadline, 
+            ipfsHash,
+            uint8(mCount), 
+            zkRequired, 
+            yieldStrategy
+        );
     }
 
     function _setupMilestones(uint256 jobId, address freelancer, uint256[] calldata mAmounts, string[] calldata mHashes, bool[] calldata mIsUpfront) internal {
@@ -614,65 +612,7 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
         }
     }
 
-    function _handleJobFunding(
-        address token, 
-        uint256 amount, 
-        IYieldManager.Strategy yieldStrategy,
-        address paymentToken, 
-        uint256 paymentAmount, 
-        uint256 minAmountOut
-    ) internal returns (uint256 actualAmount, IYieldManager.Strategy actualStrategy) {
-        actualAmount = amount;
 
-        // Instant Conversion Logic
-        if (paymentToken != token && swapManager != address(0)) {
-            if (paymentToken != address(0)) {
-                IERC20(paymentToken).safeTransferFrom(_msgSender(), address(this), paymentAmount);
-                IERC20(paymentToken).forceApprove(swapManager, paymentAmount);
-            }
-            
-            // Call SwapManager using typed interface
-            actualAmount = ISwapManager(swapManager).swap{value: paymentToken == address(0) ? msg.value : 0}(
-                paymentToken, token, paymentAmount, minAmountOut, address(this)
-            );
-        } else {
-            // Standard funding
-            if (token != address(0)) {
-                IERC20(token).safeTransferFrom(_msgSender(), address(this), amount);
-            } else {
-                if (msg.value < amount) revert LowValue();
-            }
-        }
-
-        // Auto-deposit into yield manager (Passive Paycheck Feature)
-        if (yieldManager != address(0) && token != address(0)) {
-            // Default to AAVE if no strategy provided to ensure capital efficiency
-            actualStrategy = yieldStrategy;
-            
-            if (actualStrategy != IYieldManager.Strategy.NONE) {
-                // Hardening (S-05): Validate strategy is active before deposit/storage
-                (, bool active) = IYieldManager(yieldManager).strategies(actualStrategy);
-                if (!active) {
-                    revert InvalidStatus(); // User explicitly chose an inactive strategy
-                }
-            }
-
-            if (actualStrategy != IYieldManager.Strategy.NONE) {
-                _depositToYieldManager(token, actualAmount, actualStrategy);
-            }
-        } else {
-            actualStrategy = IYieldManager.Strategy.NONE;
-        }
-    }
-
-    /**
-     * @notice Internal helper to deposit funds into the autonomous yield engine.
-     */
-    function _depositToYieldManager(address token, uint256 amount, IYieldManager.Strategy strategy) internal {
-        if (yieldManager == address(0)) return;
-        IERC20(token).forceApprove(yieldManager, amount);
-        IYieldManager(yieldManager).deposit(strategy, token, amount);
-    }
 
     uint256 public constant MAX_MILESTONES = 100;
 
@@ -725,7 +665,7 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
      */
     function completeJob(uint256 jobId, uint8 rating) public whenNotPaused nonReentrant {
         Job storage job = jobs[jobId];
-        if (_msgSender() != job.client && !hasRole(ARBITRATOR_ROLE, _msgSender())) revert NotAuthorized();
+        if (_msgSender() != job.client && !hasRole(ARBITRATOR_ROLE, _msgSender()) && !hasRole(AGENT_ROLE, _msgSender())) revert NotAuthorized();
         if (job.status != JobStatus.Ongoing) revert InvalidStatus();
         if (job.paid) revert AlreadyPaid();
 
@@ -736,7 +676,14 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
         if (fee > payout) fee = payout;
 
         // Supreme Level Check: 0% Fee for Elite Veterans or Private Verified Users
-        bool isSupremeMember = _checkSupremeStatus(job.freelancer, uint256(job.categoryId));
+        bool isSupremeMember = FreelanceSovereignLibrary.checkSupremeStatus(
+            job.freelancer, 
+            uint256(job.categoryId), 
+            isSupreme[job.freelancer], 
+            reputationContract, 
+            reputationThreshold, 
+            privacyShield
+        );
         if (isSupremeMember) fee = 0;
         
         uint256 freelancerNet = payout - fee;
@@ -753,35 +700,31 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
             balances[vault][job.token] += fee;
         }
 
-        // 2. Interactions: Mint SBTs (External contract calls)
+        // 2. Interactions: Mint SBTs & Reputation (Offloaded to library for size)
         _mintSBT(job.freelancer, jobId);
 
-        if (completionCertContract != address(0)) {
-            IFreelanceSBT(completionCertContract).mintContribution(job.freelancer, job.categoryId, rating, jobId, job.client);
-        }
-
         if (reputationContract != address(0)) {
-            (bool success, ) = reputationContract.call(abi.encodeWithSignature("levelUp(address,uint256,uint256)", job.freelancer, job.categoryId, 1));
-            if (!success) emit CallFailed(reputationContract, "levelUp");
-            (success, ) = reputationContract.call(abi.encodeWithSignature("updateRating(address,uint8)", job.freelancer, rating));
-            if (!success) emit CallFailed(reputationContract, "updateRating");
-        }
-
-        if (rating == 5 && reviewSBT != address(0)) {
-            (bool success, ) = reviewSBT.call(abi.encodeWithSignature("mint(address)", job.freelancer));
-            if (!success) emit CallFailed(reviewSBT, "mint");
+            FreelanceSovereignLibrary.actuateSovereignReputation(
+                reputationContract, 
+                job.freelancer, 
+                job.categoryId, 
+                rating
+            );
         }
 
         if (polyToken != address(0)) {
-            uint256 baseReward = REWARD_BASE;
-            if (isSupremeMember) baseReward *= SUPREME_REWARD_BOOST;
-            if (job.token == polyToken) baseReward *= 2; 
-            (bool success, ) = polyToken.call(abi.encodeWithSignature("mint(address,uint256)", job.freelancer, baseReward));
-            if (!success) emit CallFailed(polyToken, "mintReward");
+            FreelanceSovereignLibrary.mintRewards(
+                polyToken,
+                job.freelancer,
+                REWARD_BASE,
+                isSupremeMember,
+                SUPREME_REWARD_BOOST,
+                job.token == polyToken
+            );
         }
 
         // 3. Interactions: Finalize payout by withdrawing from yield manager
-        if (yieldManager != address(0) && job.yieldStrategy != IYieldManager.Strategy.NONE) {
+        if (yieldManager != address(0) && job.yieldStrategy != IYieldManager.Strategy.NONE && job.token != address(0)) {
             IYieldManager(yieldManager).withdraw(job.yieldStrategy, job.token, payout + job.freelancerStake, address(this));
         }
 
@@ -792,23 +735,7 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
     /**
      * @notice Internal helper to check if a user qualifies for Zenith 'Supreme' benefits.
      */
-    function _checkSupremeStatus(address user, uint256 categoryId) internal view returns (bool) {
-        if (isSupreme[user]) return true;
-        
-        if (reputationContract != address(0)) {
-            try IERC1155(reputationContract).balanceOf(user, categoryId) returns (uint256 bal) {
-                if (bal >= reputationThreshold) return true;
-            } catch {}
-        }
-        
-        if (privacyShield != address(0)) {
-            try PrivacyShield(privacyShield).isVerified(user) returns (bool verified) {
-                return verified;
-            } catch {}
-        }
-        
-        return false;
-    }
+
 
     function void(bool) internal pure {}
 
@@ -817,7 +744,7 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
      *         Effectively completes the job with a default 5-star rating.
      * @param jobId The unique ID of the job.
      */
-    function actuatePayment(uint256 jobId) external {
+    function actuatePayment(uint256 jobId) external whenNotPaused nonReentrant {
         Job storage job = jobs[jobId];
         if (_msgSender() != job.client && !hasRole(ARBITRATOR_ROLE, _msgSender()) && !hasRole(AGENT_ROLE, _msgSender())) revert NotAuthorized();
         completeJob(jobId, 5);
@@ -825,6 +752,8 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
 
     /**
      * @notice Allows a client to refund a job if it has expired or if in emergency mode.
+     * @dev Optimized (S-06): Refunds both client funds and all applicant stakes. 
+     *      Batches YieldManager withdrawals for efficiency.
      * @param jobId The unique ID of the job.
      */
     function refundExpiredJob(uint256 jobId) external whenNotPaused nonReentrant {
@@ -837,23 +766,14 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
              if (block.timestamp < job.deadline && job.deadline != 0) revert InvalidStatus();
         }
 
-        job.status = JobStatus.Cancelled;
-        job.paid = true;
+        FreelanceEscrowLibrary.processRefund(job, jobApplications[jobId], yieldManager, balances);
         
-        // Withdraw from yield manager if active
-        // Withdraw from yield manager if active
-        if (yieldManager != address(0) && job.yieldStrategy != IYieldManager.Strategy.NONE) {
-            IYieldManager(yieldManager).withdraw(job.yieldStrategy, job.token, job.amount - job.totalPaidOut, address(this));
-        }
-
-        uint256 remaining = job.amount - job.totalPaidOut;
-        if (remaining > 0) {
-            balances[job.client][job.token] += remaining;
-        }
+        emit FundsReleased(jobId, job.client, job.amount - job.totalPaidOut, 0, block.timestamp);
     }
 
     /**
      * @notice Allows a client to cancel a job before it is accepted.
+     * @dev Optimized (S-06): Batches YieldManager withdrawals for applicant stakes.
      * @param jobId The unique ID of the job.
      */
     function cancelJob(uint256 jobId) external whenNotPaused nonReentrant {
@@ -861,33 +781,9 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
         if (_msgSender() != job.client) revert NotAuthorized();
         if (job.status != JobStatus.Created) revert InvalidStatus();
 
-        job.status = JobStatus.Cancelled;
-        job.paid = true;
-
-        uint256 remaining = job.amount - job.totalPaidOut;
+        FreelanceEscrowLibrary.processRefund(job, jobApplications[jobId], yieldManager, balances);
         
-        // Withdraw from yield manager if active
-        if (yieldManager != address(0) && job.yieldStrategy != IYieldManager.Strategy.NONE) {
-            IYieldManager(yieldManager).withdraw(job.yieldStrategy, job.token, remaining, address(this));
-        }
-
-        if (remaining > 0) {
-            balances[job.client][job.token] += remaining;
-        }
-
-        // Refund any applicants
-        Application[] storage apps = jobApplications[jobId];
-        for (uint256 i = 0; i < apps.length; i++) {
-            uint256 stake = apps[i].stake;
-            if (stake > 0) {
-                if (yieldManager != address(0) && job.yieldStrategy != IYieldManager.Strategy.NONE && job.token != address(0)) {
-                    IYieldManager(yieldManager).withdraw(job.yieldStrategy, job.token, stake, address(this));
-                }
-                balances[apps[i].freelancer][job.token] += stake;
-            }
-        }
-        
-        emit FundsReleased(jobId, job.client, remaining, 0, block.timestamp);
+        emit FundsReleased(jobId, job.client, job.amount - job.totalPaidOut, 0, block.timestamp);
     }
 
     /**
@@ -897,6 +793,9 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
         Job storage job = jobs[jobId];
         if (_msgSender() != job.client && _msgSender() != job.freelancer) revert NotAuthorized();
         if (job.status != JobStatus.Disputed) revert InvalidStatus();
+
+        // XSS Hardening: Validate IPFS CID format for evidence
+        FreelanceEscrowLibrary.validateCID(evidenceHash);
 
         emit Evidence(IArbitrator(arbitrator), jobId, _msgSender(), evidenceHash);
     }
@@ -913,7 +812,10 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
         job.status = JobStatus.Disputed;
 
         if (arbitrator != address(0) && arbitrator != address(this)) {
+            // Hardening: Validate arbitration cost to avoid transaction failure in external call
             uint256 cost = IArbitrator(arbitrator).arbitrationCost("");
+            if (msg.value < cost) revert LowStake();
+            
             uint256 dId = IArbitrator(arbitrator).createDispute{value: msg.value}(2, "");
             disputeIdToJobId[dId] = jobId;
             emit Dispute(IArbitrator(arbitrator), dId, jobId, jobId);
@@ -943,34 +845,25 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
         Job storage job = jobs[jobId];
         if (job.status != JobStatus.Disputed) revert InvalidStatus();
 
-        uint256 payout = job.amount - job.totalPaidOut;
-        uint256 stake = job.freelancerStake;
+        (uint256 clientAmt, uint256 freelancerAmt, bool isCompleted) = FreelanceDisputeLibrary.processRuling(job, ruling);
         
-        // 1. Effects: Update state BEFORE any external interactions
+        // 1. Effects: Update state
         job.paid = true;
-        
-        if (ruling == 0 || ruling == 1) { // Refuse to Rule (0) or Split (1) -> 50-50
-            job.status = JobStatus.Cancelled;
-            balances[job.client][job.token] += (payout / 2);
-            balances[job.freelancer][job.token] += ((payout / 2) + stake);
-        } else if (ruling == 2) { // Client Wins
-            job.status = JobStatus.Cancelled;
-            balances[job.client][job.token] += (payout + stake); // Client gets stake as penalty
-        } else if (ruling == 3) { // Freelancer Wins
-            job.status = JobStatus.Completed;
-            job.totalPaidOut += payout;
-            balances[job.freelancer][job.token] += (payout + stake);
-        } else {
-            revert InvalidStatus(); // Invalid ruling
+        job.status = isCompleted ? JobStatus.Completed : JobStatus.Cancelled;
+        if (isCompleted) job.totalPaidOut += (job.amount - job.totalPaidOut);
+
+        balances[job.client][job.token] += clientAmt;
+        balances[job.freelancer][job.token] += freelancerAmt;
+
+        // 2. Interactions: Yield manager withdrawal
+        uint256 totalToWithdraw = clientAmt + freelancerAmt - job.freelancerStake; // Net amount minus the stake which is already handled
+        // Actually, just withdraw the remaining balance
+        if (yieldManager != address(0) && job.yieldStrategy != IYieldManager.Strategy.NONE && job.token != address(0)) {
+            IYieldManager(yieldManager).withdraw(job.yieldStrategy, job.token, (job.amount - job.totalPaidOut) + job.freelancerStake, address(this));
         }
 
-        // 2. Interactions: Yield manager withdrawal (Interaction with local vault manager)
-        if (yieldManager != address(0) && job.yieldStrategy != IYieldManager.Strategy.NONE) {
-            IYieldManager(yieldManager).withdraw(job.yieldStrategy, job.token, payout + stake, address(this));
-        }
-
-        // 3. Interactions: SBT Minting (External contract calls)
-        if (ruling == 3) {
+        // 3. Interactions: SBT Minting
+        if (isCompleted) {
             _mintSBT(job.freelancer, jobId);
         }
         
@@ -996,23 +889,19 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
         Job storage job = jobs[jobId];
         if (job.status != JobStatus.Disputed && job.status != JobStatus.Ongoing) revert InvalidStatus();
         
-        uint256 remaining = job.amount - job.totalPaidOut;
-        uint256 freelancerAmt = (remaining * freelancerBps) / 10000;
-        uint256 clientAmt = remaining - freelancerAmt;
+        (uint256 clientAmt, uint256 freelancerAmt) = FreelanceDisputeLibrary.processManualResolution(job, freelancerBps);
 
-        // 1. Effects: Update state BEFORE any external interactions (CEI)
-        job.totalPaidOut += remaining;
+        // 1. Effects: Update state
+        job.totalPaidOut += (job.amount - job.totalPaidOut);
         job.status = (freelancerBps > 5000) ? JobStatus.Completed : JobStatus.Cancelled;
         job.paid = true;
 
-        if (freelancerAmt > 0) balances[job.freelancer][job.token] += (freelancerAmt + job.freelancerStake);
-        else balances[job.freelancer][job.token] += job.freelancerStake;
-
+        if (freelancerAmt > 0) balances[job.freelancer][job.token] += freelancerAmt;
         if (clientAmt > 0) balances[job.client][job.token] += clientAmt;
 
         // 2. Interactions: Yield manager withdrawal
-        if (yieldManager != address(0) && job.yieldStrategy != IYieldManager.Strategy.NONE) {
-            IYieldManager(yieldManager).withdraw(job.yieldStrategy, job.token, remaining + job.freelancerStake, address(this));
+        if (yieldManager != address(0) && job.yieldStrategy != IYieldManager.Strategy.NONE && job.token != address(0)) {
+            IYieldManager(yieldManager).withdraw(job.yieldStrategy, job.token, (job.amount - job.totalPaidOut) + job.freelancerStake, address(this));
         }
         
         emit DisputeResolved(jobId, freelancerBps, block.timestamp);
@@ -1027,24 +916,8 @@ contract FreelanceEscrow is FreelanceEscrowBase, PausableUpgradeable, IArbitrabl
         }
     }
 
-    /**
-     * @notice Returns the metadata URI for a job NFT.
-     * @dev Generates an on-chain SVG representation using FreelanceRenderer.
-     * @param jobId The unique ID of the job.
-     * @return A base64 encoded JSON metadata URI.
-     */
-    function tokenURI(uint256 jobId) public view override returns (string memory) {
-        Job storage job = jobs[jobId];
-        return FreelanceRenderer.constructTokenURI(
-            jobId,
-            job.categoryId,
-            job.amount,
-            job.rating,
-            job.ipfsHash
-        );
-    }
 
-    function supportsInterface(bytes4 id) public view override returns (bool) {
+    function supportsInterface(bytes4 id) public view override(FreelanceEscrowBase) returns (bool) {
         return super.supportsInterface(id);
     }
 

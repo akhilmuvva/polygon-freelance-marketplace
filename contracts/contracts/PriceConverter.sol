@@ -15,6 +15,32 @@ library PriceConverter {
     
     uint256 private constant PRICE_STALENESS_THRESHOLD = 3 hours;
     
+    // L2 Sequencer Uptime Feed address (set to 0 for chains without it)
+    address private constant SEQUENCER_FEED = address(0);
+    uint256 private constant GRACE_PERIOD_TIME = 3600; // 1 hour
+
+    /**
+     * @notice Checks if the L2 sequencer is up and has been up for at least the grace period.
+     */
+    function _checkSequencer() internal view {
+        if (SEQUENCER_FEED != address(0)) {
+            IChainlinkPriceFeed sequencerUptimeFeed = IChainlinkPriceFeed(SEQUENCER_FEED);
+            (
+                /* uint80 roundID */,
+                int256 answer,
+                uint256 startedAt,
+                /* uint256 updatedAt */,
+                /* uint80 answeredInRound */
+            ) = sequencerUptimeFeed.latestRoundData();
+
+            // Answer == 0: Sequencer is UP
+            // Answer == 1: Sequencer is DOWN
+            if (answer == 1) revert("SequencerDown");
+            
+            if (block.timestamp - startedAt < GRACE_PERIOD_TIME) revert("GracePeriodNotMet");
+        }
+    }
+    
     /**
      * @notice Convert token amount to USD value
      * @param tokenAmount Amount of tokens in wei
@@ -25,6 +51,7 @@ library PriceConverter {
         uint256 tokenAmount,
         address priceFeed
     ) internal view returns (uint256) {
+        _checkSequencer();
         if (priceFeed == address(0)) revert PriceFeedNotSet();
         
         IChainlinkPriceFeed feed = IChainlinkPriceFeed(priceFeed);
@@ -58,6 +85,7 @@ library PriceConverter {
         uint256 usdAmount,
         address priceFeed
     ) internal view returns (uint256) {
+        _checkSequencer();
         if (priceFeed == address(0)) revert PriceFeedNotSet();
         
         IChainlinkPriceFeed feed = IChainlinkPriceFeed(priceFeed);
@@ -87,10 +115,11 @@ library PriceConverter {
      * @return decimals Number of decimals in the price
      */
     function getPrice(address priceFeed) 
-        internal 
-        view 
-        returns (uint256 price, uint8 decimals) 
+    internal 
+    view 
+    returns (uint256 price, uint8 decimals) 
     {
+        _checkSequencer();
         if (priceFeed == address(0)) revert PriceFeedNotSet();
         
         IChainlinkPriceFeed feed = IChainlinkPriceFeed(priceFeed);

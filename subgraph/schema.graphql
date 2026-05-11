@@ -2,7 +2,7 @@ type Freelancer @entity {
   id: ID! # address
   totalStars: BigInt!
   totalJobsReviewed: BigInt!
-  averageRating: Int!
+  averageRating: BigInt!
   portfolioCID: String
   tbaAddress: Bytes # ERC-6551 Token Bound Account
   jobs: [Job!]! @derivedFrom(field: "freelancerLookup")

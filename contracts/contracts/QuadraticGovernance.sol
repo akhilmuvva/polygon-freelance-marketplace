@@ -387,11 +387,20 @@ contract QuadraticGovernance is
         return super.proposalThreshold();
     }
 
+    address public timelock;
+
+    function setTimelock(address _timelock) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        require(_timelock != address(0), "Invalid timelock");
+        timelock = _timelock;
+    }
+
     function _authorizeUpgrade(address newImplementation)
         internal
         override
         onlyRole(UPGRADER_ROLE)
-    {}
+    {
+        if (timelock != address(0) && msg.sender != timelock) revert("Must upgrade via timelock");
+    }
 
     function supportsInterface(bytes4 interfaceId)
         public

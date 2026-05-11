@@ -9,7 +9,7 @@ import {
     ArrowRight, ChevronLeft, ChevronRight, X, Plus, Trash2,
     ShieldCheck, Info
 } from 'lucide-react';
-import { CROSS_CHAIN_ESCROW_MANAGER_ADDRESS } from '../constants';
+import { CROSS_CHAIN_ESCROW_MANAGER_ADDRESS, OMNI_TOKENS } from '../constants';
 
 const CreateCrossChainJob = ({ onClose, onSuccess }) => {
     const {
@@ -99,43 +99,41 @@ const CreateCrossChainJob = ({ onClose, onSuccess }) => {
         setLoading(true);
         try {
             // Logic remains same as original but with cleaner state handling
-            const ipfsHash = 'QmExample...';
-            const escrowManagerAddress = CROSS_CHAIN_ESCROW_MANAGER_ADDRESS;
-            const escrowManagerABI = [
-                'function createCrossChainJob(uint64 destinationChain, address freelancer, uint256 amount, address token, bytes calldata jobData) external payable returns (uint256 localJobId, bytes32 messageId)'
+            const ipfsHash = cid; // Use actual CID from storage
+            const ccipAdapterAddress = '0x123...'; // Update with actual CCIPPaymentAdapter address
+            const ccipAdapterABI = [
+                'function payAndCreateJob(uint64 destinationChainSelector, address receiver, tuple(address freelancer, address token, uint256 amount, string ipfsHash, uint16 categoryId, uint48 deadline, uint8 yieldStrategy, uint256[] mAmounts, string[] mHashes, bool[] mIsUpfront, bool zkRequired, address paymentToken, uint256 paymentAmount, uint256 minAmountOut) params, address feeToken) external payable returns (bytes32 messageId)'
             ];
 
-            const escrowManager = new ethers.Contract(escrowManagerAddress, escrowManagerABI, signer);
-            const encodedJobData = ethers.AbiCoder.defaultAbiCoder().encode(
-                ['string', 'string', 'uint256', 'string[]', 'uint256[]', 'bool[]'],
-                [
-                    ipfsHash,
-                    formData.category,
-                    formData.deadline ? Math.floor(new Date(formData.deadline).getTime() / 1000) : 0,
-                    formData.milestones.map(m => m.description || ''),
-                    formData.milestones.map(m => {
-                        const amt = String(m.amount || '0').trim();
-                        return ethers.parseUnits(amt === '' || isNaN(amt) ? '0' : amt, 6);
-                    }),
-                    formData.milestones.map(m => !!m.isUpfront)
-                ]
-            );
-
+            const adapter = new ethers.Contract(ccipAdapterAddress, ccipAdapterABI, signer);
+            
             const destinationChainInfo = chains.find(c => c.id.toString() === formData.destinationChain.toString());
             const destinationSelector = destinationChainInfo?.ccipSelector;
-            const tokenAddress = '0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359'; // Simplified for demo
             
-            // Native Fee Resilience: Ensuring the routing fee is never malformed
-            const feeValue = String(estimatedFee?.nativeFee || '0.01').trim();
-            const totalFee = ethers.parseUnits(isNaN(feeValue) ? '0.01' : feeValue, 18);
+            // Format parameters for the adapter
+            const params = {
+                freelancer: formData.freelancer || ethers.ZeroAddress,
+                token: '0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359', // USDC on Polygon
+                amount: ethers.parseUnits(String(formData.amount || '0').trim(), 6),
+                ipfsHash: ipfsHash,
+                categoryId: 1, // Development
+                deadline: formData.deadline ? Math.floor(new Date(formData.deadline).getTime() / 1000) : 0,
+                yieldStrategy: 0,
+                mAmounts: formData.milestones.map(m => ethers.parseUnits(String(m.amount || '0').trim(), 6)),
+                mHashes: formData.milestones.map(m => m.description || ''),
+                mIsUpfront: formData.milestones.map(m => !!m.isUpfront),
+                zkRequired: false,
+                paymentToken: ethers.ZeroAddress, // Placeholder
+                paymentAmount: 0,
+                minAmountOut: 0
+            };
 
-            const tx = await escrowManager.createCrossChainJob(
+            const tx = await adapter.payAndCreateJob(
                 destinationSelector,
-                formData.freelancer || ethers.ZeroAddress,
-                ethers.parseUnits(String(formData.amount || '0').trim(), 6),
-                tokenAddress,
-                encodedJobData,
-                { value: totalFee }
+                '0xReceiverOnPolygon...',
+                params,
+                ethers.ZeroAddress, // Pay in native
+                { value: ethers.parseEther('0.05') } // Placeholder fee
             );
 
             const tid = toast.loading('Initiating cross-chain transaction...', { theme: 'dark' });
@@ -261,9 +259,7 @@ const CreateCrossChainJob = ({ onClose, onSuccess }) => {
                                         <div className="input-group-glass">
                                             <label className="form-label">Currency</label>
                                             <select className="form-input" name="token" value={formData.token} onChange={handleInputChange}>
-                                                <option value="USDC">USDC (Polygon)</option>
-                                                <option value="DAI">DAI (Multi-Chain)</option>
-                                                <option value="USDT">USDT</option>
+                                                {OMNI_TOKENS.map(t => <option key={t.symbol} value={t.symbol}>{t.symbol} ({t.chain})</option>)}
                                             </select>
                                         </div>
                                     </div>

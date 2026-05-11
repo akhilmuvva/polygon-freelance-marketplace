@@ -13,6 +13,7 @@ import {
 import { SUPPORTED_TOKENS, CONTRACT_ADDRESSES } from '../lib/constants';
 import FreelanceEscrowABI from '../lib/abi/FreelanceEscrow.json';
 import { uploadMetadata } from '../lib/storage';
+import DOMPurify from 'dompurify';
 
 import { useZenithAuth } from '../context/AuthContext';
 import { encodeFunctionData } from 'viem';
@@ -37,9 +38,12 @@ export const InitiateMission = () => {
 
     setIsUploading(true);
     try {
+      const sanitizedTitle = typeof window !== 'undefined' ? DOMPurify.sanitize(title) : title;
+      const sanitizedDescription = typeof window !== 'undefined' ? DOMPurify.sanitize(description) : description;
+
       const metadata = {
-        title,
-        description,
+        title: sanitizedTitle,
+        description: sanitizedDescription,
         category,
         client: address,
         freelancer: freelancer || "Open Mesh",
@@ -62,8 +66,8 @@ export const InitiateMission = () => {
         amount: rawAmount,
         ipfsHash: cid,
         deadline: BigInt(deadline),
-        mAmounts: [rawAmount], // Single milestone for simplicity in this view
-        mHashes: [description],
+        mAmounts: [rawAmount], 
+        mHashes: [sanitizedDescription],
         mIsUpfront: [false],
         yieldStrategy: 0,
         paymentToken: selectedToken.address,

@@ -35,7 +35,7 @@ error RatingOutOfBounds();
  *         These two metrics are consumed by InvoiceNFT's `calculateDiscountRate()` and
  *         the AGA's GravityScoreService for Elite Intent routing.
  */
-contract AntigravityReputation is
+contract FreelancerReputation is
     Initializable,
     ERC1155Upgradeable,
     AccessControlUpgradeable,
@@ -59,8 +59,8 @@ contract AntigravityReputation is
     /// @dev Number of rated engagements — denominator for averageRating.
     mapping(address => uint256) public totalEngagements;
 
-    /// @dev Rolling average [0–5]. Recomputed on every rating actuated.
-    mapping(address => uint8) public averageRating;
+    /// @dev Rolling average scaled by 1e18. Recomputed on every rating actuated.
+    mapping(address => uint256) public averageRating;
 
     /// @dev Ceramic/IPFS CID anchoring the freelancer's sovereign portfolio.
     ///      Stored on-chain only as a content-addressed pointer — data remains P2P.
@@ -81,8 +81,8 @@ contract AntigravityReputation is
     uint256 public polThreshold;
 
     // ─── Events ───────────────────────────────────────────────────────────────
-    event SovereignRatingActuated(address indexed sovereign, uint8 newAverage, uint256 totalEngagements);
-    event PortfolioAnchored(address indexed sovereign, string ceramicCID);
+    event RatingUpdated(address indexed freelancer, uint256 averageRating, uint256 totalJobs);
+    event PortfolioUpdated(address indexed freelancer, string cid);
     event GravityCalibrated(address indexed sovereign, uint16 completionRate, uint16 gravityScore);
 
     /// @custom:oz-upgrades-unsafe-allow constructor
@@ -166,10 +166,10 @@ contract AntigravityReputation is
             totalEngagements[sovereign] += 1;
         }
 
-        // Conservative floor division — prevents fraudulent rating ceiling exploitation
-        averageRating[sovereign] = uint8(totalStars[sovereign] / totalEngagements[sovereign]);
+        // Scaled by 1e18 for precision — prevents fraudulent rating ceiling exploitation
+        averageRating[sovereign] = (totalStars[sovereign] * 1e18) / totalEngagements[sovereign];
 
-        emit SovereignRatingActuated(sovereign, averageRating[sovereign], totalEngagements[sovereign]);
+        emit RatingUpdated(sovereign, averageRating[sovereign], totalEngagements[sovereign]);
     }
 
     /**
@@ -181,7 +181,7 @@ contract AntigravityReputation is
      */
     function anchorPortfolio(string calldata cid) external {
         portfolioCID[msg.sender] = cid;
-        emit PortfolioAnchored(msg.sender, cid);
+        emit PortfolioUpdated(msg.sender, cid);
     }
 
     /**

@@ -1,6 +1,6 @@
 import { Address } from 'viem';
 
-export const IS_AMOY = process.env.NEXT_PUBLIC_NETWORK === 'amoy' || true;
+export const IS_AMOY = process.env.NEXT_PUBLIC_NETWORK === 'amoy';
 
 export const CONTRACT_ADDRESSES = {
   ESCROW: (IS_AMOY

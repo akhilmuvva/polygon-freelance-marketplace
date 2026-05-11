@@ -108,7 +108,7 @@ async function main() {
     // ═══════════════════════════════════════════════════════════════════════
     await once("PolyToken", "PolyToken", async () => {
         const F = await ethers.getContractFactory("PolyToken");
-        const c = await deploy(F, [deployer.address]);
+        const c = await deploy(F, []);
         return await c.getAddress();
     });
 

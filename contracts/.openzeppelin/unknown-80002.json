@@ -10,6 +10,81 @@
       "address": "0x6976ED34702D29e8605C4b57752a61FeAaC14eeF",
       "txHash": "0xbea9a9da261f9941f572fed266c98e17a56a7f756efd5bad3106c50a867f41fa",
       "kind": "uups"
+    },
+    {
+      "address": "0x237432996A0a186B9B098AAa663cb38399b5399f",
+      "txHash": "0x7306384ed5aea941ea20024ec3e4fe0fc8f0b8b5c1408c8681fd6ad315b4e813",
+      "kind": "uups"
+    },
+    {
+      "address": "0x454762607dCA61FBBe7A9c079BdB24F8732dDF39",
+      "txHash": "0xd89bf4112292f95c6889b5ecef2c420493826c67d37760eebb32e712177fed9c",
+      "kind": "uups"
+    },
+    {
+      "address": "0x97103979bAd3f866b64564174006b1A730651D59",
+      "txHash": "0x5561400fe709cf246175dfdb3f4ad0bcdbee7fb174a49f18b9cf89d820a932ed",
+      "kind": "uups"
+    },
+    {
+      "address": "0xa1CfE19259156B7aCac57eCC64e897cc1A2E7b83",
+      "txHash": "0x4c56fcc50d0265c86ffa8c5ee78eaffd228abac267ade2cddf97460a3ca41e29",
+      "kind": "uups"
+    },
+    {
+      "address": "0x483b5a12614C1D612014146eB9601FDc4e9C953A",
+      "txHash": "0xa766e53be200f571ba858bb1c9afbcc97f88dacc67730c9802f4b14ca1fa7ebc",
+      "kind": "uups"
+    },
+    {
+      "address": "0xc918b9fa1AD5661cC0f56eabA2953e822B65A6AB",
+      "txHash": "0xf3d25ecf8505d9bd01b6601e3e4d13f0dfcc0754b56a79e44bf6a17506944d50",
+      "kind": "uups"
+    },
+    {
+      "address": "0xaFcc2B685AAC01fFf8d4928CC417d5a9623A0015",
+      "txHash": "0xfe3a9e8b52d4f9a9558ededfb8a21c069e70ec542c8a3023b4535f0a1aaea567",
+      "kind": "uups"
+    },
+    {
+      "address": "0xe6e9F8a0c702d4F3e833361b8fb9d88A575B259d",
+      "txHash": "0x68a1e6a66aed76b2dcc35231707228afd890edb2d3d7aa82d9e4efa9eaa3f319",
+      "kind": "uups"
+    },
+    {
+      "address": "0xB23C5d3b2635E11F0D480f5E56BAC82D3Cfca182",
+      "txHash": "0x62f0c197cca348dd2523325ff3183b612a677f1e1b05b301d6be2e8d193997ee",
+      "kind": "uups"
+    },
+    {
+      "address": "0xA410a72FDAe11cD10f18a9E49a8D53C4e67D7D84",
+      "txHash": "0x9a84145946bda4d540e52d9ef3e6df47b799c2b281480365afa899362f0a9327",
+      "kind": "uups"
+    },
+    {
+      "address": "0x51aAB2696D1411b57E8a89A8742C9263cD42f5D3",
+      "txHash": "0x1a0df080e43461bfcc634f0f9d68b5a764550d8f872df9424e044c1a5dbe1d7b",
+      "kind": "uups"
+    },
+    {
+      "address": "0x47C0D9c8b98396D8596A6c8343dc8969a548c502",
+      "txHash": "0x94994181aeb4138ccf5fa192fedaadcc3274a79c232aea79810ec2c11c435773",
+      "kind": "uups"
+    },
+    {
+      "address": "0x25e58B2eB99FE4b4C787aD26038e1c048dFEd662",
+      "txHash": "0xf70a8e84b6631015443171230b055df17acad235d4b8d798560d2994b39e4b28",
+      "kind": "uups"
+    },
+    {
+      "address": "0x96f2e53004bCE1f582ec25B72035e87f826dD341",
+      "txHash": "0xf236e97d17b44fad97490ec422efa71b5136237bfa1fc9cb4ea63cb2e500cd32",
+      "kind": "uups"
+    },
+    {
+      "address": "0x901340b60cB7BF5535c52ec6BA8F3E9D6b98EEe5",
+      "txHash": "0xa30b78837006c6a0dcaf6bc9b722da63c0e79694cda1c7b06d9691bb68b9af72",
+      "kind": "uups"
     }
   ],
   "impls": {
@@ -923,6 +998,3109 @@
               "src": "@openzeppelin\\contracts-upgradeable\\token\\ERC1155\\ERC1155Upgradeable.sol:32",
               "offset": 0,
               "slot": "2"
+            }
+          ],
+          "erc7201:openzeppelin.storage.Initializable": [
+            {
+              "contract": "Initializable",
+              "label": "_initialized",
+              "type": "t_uint64",
+              "src": "@openzeppelin\\contracts\\proxy\\utils\\Initializable.sol:69",
+              "offset": 0,
+              "slot": "0"
+            },
+            {
+              "contract": "Initializable",
+              "label": "_initializing",
+              "type": "t_bool",
+              "src": "@openzeppelin\\contracts\\proxy\\utils\\Initializable.sol:73",
+              "offset": 8,
+              "slot": "0"
+            }
+          ]
+        }
+      }
+    },
+    "191e26f31ae554a025a9f75f71a8251430515b89599f2c48f4df879ff5a63569": {
+      "address": "0xfD5380DFb7407313f5EBec758A5Cee99704a7e5F",
+      "txHash": "0x7c2190623b7c7257b0f35fa5c7a25389042c66357163debec18759d6f09118bd",
+      "layout": {
+        "solcVersion": "0.8.24",
+        "storage": [
+          {
+            "label": "totalStars",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_mapping(t_address,t_uint256)",
+            "contract": "FreelancerReputation",
+            "src": "contracts\\FreelancerReputation.sol:70"
+          },
+          {
+            "label": "totalEngagements",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_mapping(t_address,t_uint256)",
+            "contract": "FreelancerReputation",
+            "src": "contracts\\FreelancerReputation.sol:73"
+          },
+          {
+            "label": "averageRating",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_mapping(t_address,t_uint256)",
+            "contract": "FreelancerReputation",
+            "src": "contracts\\FreelancerReputation.sol:75"
+          },
+          {
+            "label": "portfolioCID",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_mapping(t_address,t_string_storage)",
+            "contract": "FreelancerReputation",
+            "src": "contracts\\FreelancerReputation.sol:80"
+          },
+          {
+            "label": "completionRate",
+            "offset": 0,
+            "slot": "4",
+            "type": "t_mapping(t_address,t_uint16)",
+            "contract": "FreelancerReputation",
+            "src": "contracts\\FreelancerReputation.sol:84"
+          },
+          {
+            "label": "gravityScores",
+            "offset": 0,
+            "slot": "5",
+            "type": "t_mapping(t_address,t_uint16)",
+            "contract": "FreelancerReputation",
+            "src": "contracts\\FreelancerReputation.sol:88"
+          },
+          {
+            "label": "polToken",
+            "offset": 0,
+            "slot": "6",
+            "type": "t_address",
+            "contract": "FreelancerReputation",
+            "src": "contracts\\FreelancerReputation.sol:91"
+          },
+          {
+            "label": "polThreshold",
+            "offset": 0,
+            "slot": "7",
+            "type": "t_uint256",
+            "contract": "FreelancerReputation",
+            "src": "contracts\\FreelancerReputation.sol:95"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "8",
+            "type": "t_array(t_uint256)50_storage",
+            "contract": "FreelancerReputation",
+            "src": "contracts\\FreelancerReputation.sol:227"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_bytes32": {
+            "label": "bytes32",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_mapping(t_address,t_bool))": {
+            "label": "mapping(address => mapping(address => bool))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_bytes32,t_struct(RoleData)24_storage)": {
+            "label": "mapping(bytes32 => struct AccessControlUpgradeable.RoleData)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_mapping(t_address,t_uint256))": {
+            "label": "mapping(uint256 => mapping(address => uint256))",
+            "numberOfBytes": "32"
+          },
+          "t_string_storage": {
+            "label": "string",
+            "numberOfBytes": "32"
+          },
+          "t_struct(AccessControlStorage)34_storage": {
+            "label": "struct AccessControlUpgradeable.AccessControlStorage",
+            "members": [
+              {
+                "label": "_roles",
+                "type": "t_mapping(t_bytes32,t_struct(RoleData)24_storage)",
+                "offset": 0,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_struct(ERC1155Storage)197_storage": {
+            "label": "struct ERC1155Upgradeable.ERC1155Storage",
+            "members": [
+              {
+                "label": "_balances",
+                "type": "t_mapping(t_uint256,t_mapping(t_address,t_uint256))",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "_operatorApprovals",
+                "type": "t_mapping(t_address,t_mapping(t_address,t_bool))",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "_uri",
+                "type": "t_string_storage",
+                "offset": 0,
+                "slot": "2"
+              }
+            ],
+            "numberOfBytes": "96"
+          },
+          "t_struct(InitializableStorage)1020_storage": {
+            "label": "struct Initializable.InitializableStorage",
+            "members": [
+              {
+                "label": "_initialized",
+                "type": "t_uint64",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "_initializing",
+                "type": "t_bool",
+                "offset": 8,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_struct(PausableStorage)494_storage": {
+            "label": "struct PausableUpgradeable.PausableStorage",
+            "members": [
+              {
+                "label": "_paused",
+                "type": "t_bool",
+                "offset": 0,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_struct(RoleData)24_storage": {
+            "label": "struct AccessControlUpgradeable.RoleData",
+            "members": [
+              {
+                "label": "hasRole",
+                "type": "t_mapping(t_address,t_bool)",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "adminRole",
+                "type": "t_bytes32",
+                "offset": 0,
+                "slot": "1"
+              }
+            ],
+            "numberOfBytes": "64"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_uint64": {
+            "label": "uint64",
+            "numberOfBytes": "8"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]",
+            "numberOfBytes": "1600"
+          },
+          "t_mapping(t_address,t_string_storage)": {
+            "label": "mapping(address => string)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_uint16)": {
+            "label": "mapping(address => uint16)",
+            "numberOfBytes": "32"
+          },
+          "t_uint16": {
+            "label": "uint16",
+            "numberOfBytes": "2"
+          }
+        },
+        "namespaces": {
+          "erc7201:openzeppelin.storage.Pausable": [
+            {
+              "contract": "PausableUpgradeable",
+              "label": "_paused",
+              "type": "t_bool",
+              "src": "@openzeppelin\\contracts-upgradeable\\utils\\PausableUpgradeable.sol:21",
+              "offset": 0,
+              "slot": "0"
+            }
+          ],
+          "erc7201:openzeppelin.storage.AccessControl": [
+            {
+              "contract": "AccessControlUpgradeable",
+              "label": "_roles",
+              "type": "t_mapping(t_bytes32,t_struct(RoleData)24_storage)",
+              "src": "@openzeppelin\\contracts-upgradeable\\access\\AccessControlUpgradeable.sol:61",
+              "offset": 0,
+              "slot": "0"
+            }
+          ],
+          "erc7201:openzeppelin.storage.ERC1155": [
+            {
+              "contract": "ERC1155Upgradeable",
+              "label": "_balances",
+              "type": "t_mapping(t_uint256,t_mapping(t_address,t_uint256))",
+              "src": "@openzeppelin\\contracts-upgradeable\\token\\ERC1155\\ERC1155Upgradeable.sol:27",
+              "offset": 0,
+              "slot": "0"
+            },
+            {
+              "contract": "ERC1155Upgradeable",
+              "label": "_operatorApprovals",
+              "type": "t_mapping(t_address,t_mapping(t_address,t_bool))",
+              "src": "@openzeppelin\\contracts-upgradeable\\token\\ERC1155\\ERC1155Upgradeable.sol:29",
+              "offset": 0,
+              "slot": "1"
+            },
+            {
+              "contract": "ERC1155Upgradeable",
+              "label": "_uri",
+              "type": "t_string_storage",
+              "src": "@openzeppelin\\contracts-upgradeable\\token\\ERC1155\\ERC1155Upgradeable.sol:32",
+              "offset": 0,
+              "slot": "2"
+            }
+          ],
+          "erc7201:openzeppelin.storage.Initializable": [
+            {
+              "contract": "Initializable",
+              "label": "_initialized",
+              "type": "t_uint64",
+              "src": "@openzeppelin\\contracts\\proxy\\utils\\Initializable.sol:69",
+              "offset": 0,
+              "slot": "0"
+            },
+            {
+              "contract": "Initializable",
+              "label": "_initializing",
+              "type": "t_bool",
+              "src": "@openzeppelin\\contracts\\proxy\\utils\\Initializable.sol:73",
+              "offset": 8,
+              "slot": "0"
+            }
+          ]
+        }
+      }
+    },
+    "05444357d787aa9d28b84c929d8e1bf309326780cccfad3cca6a4499ac7c4790": {
+      "address": "0x4d62357664191150a7D6099EBdb82678243BE72A",
+      "txHash": "0x9af896208730869b068a7de6b500f46b9e757d03b0d50e8d9887f0f28a33c577",
+      "layout": {
+        "solcVersion": "0.8.24",
+        "storage": [
+          {
+            "label": "jobNFT",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_address",
+            "contract": "FreelanceEscrowBase",
+            "src": "contracts\\FreelanceEscrowBase.sol:33"
+          },
+          {
+            "label": "renderer",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_address",
+            "contract": "FreelanceEscrowBase",
+            "src": "contracts\\FreelanceEscrowBase.sol:34"
+          },
+          {
+            "label": "jobs",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_mapping(t_uint256,t_struct(Job)21419_storage)",
+            "contract": "FreelanceEscrowBase",
+            "src": "contracts\\FreelanceEscrowBase.sol:38"
+          },
+          {
+            "label": "jobMilestones",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_mapping(t_uint256,t_mapping(t_uint256,t_struct(Milestone)21433_storage))",
+            "contract": "FreelanceEscrowBase",
+            "src": "contracts\\FreelanceEscrowBase.sol:39"
+          },
+          {
+            "label": "jobApplications",
+            "offset": 0,
+            "slot": "4",
+            "type": "t_mapping(t_uint256,t_array(t_struct(Application)21424_storage)dyn_storage)",
+            "contract": "FreelanceEscrowBase",
+            "src": "contracts\\FreelanceEscrowBase.sol:40"
+          },
+          {
+            "label": "hasApplied",
+            "offset": 0,
+            "slot": "5",
+            "type": "t_mapping(t_uint256,t_mapping(t_address,t_bool))",
+            "contract": "FreelanceEscrowBase",
+            "src": "contracts\\FreelanceEscrowBase.sol:41"
+          },
+          {
+            "label": "balances",
+            "offset": 0,
+            "slot": "6",
+            "type": "t_mapping(t_address,t_mapping(t_address,t_uint256))",
+            "contract": "FreelanceEscrowBase",
+            "src": "contracts\\FreelanceEscrowBase.sol:42"
+          },
+          {
+            "label": "milestoneBitmask",
+            "offset": 0,
+            "slot": "7",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "contract": "FreelanceEscrowBase",
+            "src": "contracts\\FreelanceEscrowBase.sol:43"
+          },
+          {
+            "label": "disputeIdToJobId",
+            "offset": 0,
+            "slot": "8",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "contract": "FreelanceEscrowBase",
+            "src": "contracts\\FreelanceEscrowBase.sol:44"
+          },
+          {
+            "label": "jobCount",
+            "offset": 0,
+            "slot": "9",
+            "type": "t_uint256",
+            "contract": "FreelanceEscrowBase",
+            "src": "contracts\\FreelanceEscrowBase.sol:46"
+          },
+          {
+            "label": "arbitrator",
+            "offset": 0,
+            "slot": "10",
+            "type": "t_address",
+            "contract": "FreelanceEscrowBase",
+            "src": "contracts\\FreelanceEscrowBase.sol:54"
+          },
+          {
+            "label": "sbtContract",
+            "offset": 0,
+            "slot": "11",
+            "type": "t_address",
+            "contract": "FreelanceEscrowBase",
+            "src": "contracts\\FreelanceEscrowBase.sol:55"
+          },
+          {
+            "label": "_trustedForwarder",
+            "offset": 0,
+            "slot": "12",
+            "type": "t_address",
+            "contract": "FreelanceEscrowBase",
+            "src": "contracts\\FreelanceEscrowBase.sol:56"
+          },
+          {
+            "label": "entryPoint",
+            "offset": 0,
+            "slot": "13",
+            "type": "t_address",
+            "contract": "FreelanceEscrowBase",
+            "src": "contracts\\FreelanceEscrowBase.sol:57"
+          },
+          {
+            "label": "vault",
+            "offset": 0,
+            "slot": "14",
+            "type": "t_address",
+            "contract": "FreelanceEscrowBase",
+            "src": "contracts\\FreelanceEscrowBase.sol:58"
+          },
+          {
+            "label": "yieldManager",
+            "offset": 0,
+            "slot": "15",
+            "type": "t_address",
+            "contract": "FreelanceEscrowBase",
+            "src": "contracts\\FreelanceEscrowBase.sol:59"
+          },
+          {
+            "label": "swapManager",
+            "offset": 0,
+            "slot": "16",
+            "type": "t_address",
+            "contract": "FreelanceEscrowBase",
+            "src": "contracts\\FreelanceEscrowBase.sol:60"
+          },
+          {
+            "label": "gravityFactor",
+            "offset": 0,
+            "slot": "17",
+            "type": "t_uint256",
+            "contract": "FreelanceEscrowBase",
+            "src": "contracts\\FreelanceEscrowBase.sol:62"
+          },
+          {
+            "label": "reputationThreshold",
+            "offset": 0,
+            "slot": "18",
+            "type": "t_uint256",
+            "contract": "FreelanceEscrowBase",
+            "src": "contracts\\FreelanceEscrowBase.sol:64"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "19",
+            "type": "t_array(t_uint256)50_storage",
+            "contract": "FreelanceEscrowBase",
+            "src": "contracts\\FreelanceEscrowBase.sol:101"
+          },
+          {
+            "label": "polyToken",
+            "offset": 0,
+            "slot": "69",
+            "type": "t_address",
+            "contract": "FreelanceEscrow",
+            "src": "contracts\\FreelanceEscrow.sol:60"
+          },
+          {
+            "label": "reputationContract",
+            "offset": 0,
+            "slot": "70",
+            "type": "t_address",
+            "contract": "FreelanceEscrow",
+            "src": "contracts\\FreelanceEscrow.sol:62"
+          },
+          {
+            "label": "completionCertContract",
+            "offset": 0,
+            "slot": "71",
+            "type": "t_address",
+            "contract": "FreelanceEscrow",
+            "src": "contracts\\FreelanceEscrow.sol:64"
+          },
+          {
+            "label": "reviewSBT",
+            "offset": 0,
+            "slot": "72",
+            "type": "t_address",
+            "contract": "FreelanceEscrow",
+            "src": "contracts\\FreelanceEscrow.sol:66"
+          },
+          {
+            "label": "privacyShield",
+            "offset": 0,
+            "slot": "73",
+            "type": "t_address",
+            "contract": "FreelanceEscrow",
+            "src": "contracts\\FreelanceEscrow.sol:68"
+          },
+          {
+            "label": "securityOracle",
+            "offset": 0,
+            "slot": "74",
+            "type": "t_address",
+            "contract": "FreelanceEscrow",
+            "src": "contracts\\FreelanceEscrow.sol:70"
+          },
+          {
+            "label": "timelock",
+            "offset": 0,
+            "slot": "75",
+            "type": "t_address",
+            "contract": "FreelanceEscrow",
+            "src": "contracts\\FreelanceEscrow.sol:82"
+          },
+          {
+            "label": "emergencyMode",
+            "offset": 20,
+            "slot": "75",
+            "type": "t_bool",
+            "contract": "FreelanceEscrow",
+            "src": "contracts\\FreelanceEscrow.sol:84"
+          },
+          {
+            "label": "lastJobCreated",
+            "offset": 0,
+            "slot": "76",
+            "type": "t_mapping(t_address,t_uint256)",
+            "contract": "FreelanceEscrow",
+            "src": "contracts\\FreelanceEscrow.sol:87"
+          },
+          {
+            "label": "isSupreme",
+            "offset": 0,
+            "slot": "77",
+            "type": "t_mapping(t_address,t_bool)",
+            "contract": "FreelanceEscrow",
+            "src": "contracts\\FreelanceEscrow.sol:244"
+          },
+          {
+            "label": "tokenWhitelist",
+            "offset": 0,
+            "slot": "78",
+            "type": "t_mapping(t_address,t_bool)",
+            "contract": "FreelanceEscrow",
+            "src": "contracts\\FreelanceEscrow.sol:264"
+          },
+          {
+            "label": "userStakes",
+            "offset": 0,
+            "slot": "79",
+            "type": "t_mapping(t_address,t_mapping(t_address,t_mapping(t_enum(Strategy)23047,t_uint256)))",
+            "contract": "FreelanceEscrow",
+            "src": "contracts\\FreelanceEscrow.sol:425"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_bytes32": {
+            "label": "bytes32",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_bytes32,t_struct(RoleData)24_storage)": {
+            "label": "mapping(bytes32 => struct AccessControlUpgradeable.RoleData)",
+            "numberOfBytes": "32"
+          },
+          "t_struct(AccessControlStorage)34_storage": {
+            "label": "struct AccessControlUpgradeable.AccessControlStorage",
+            "members": [
+              {
+                "label": "_roles",
+                "type": "t_mapping(t_bytes32,t_struct(RoleData)24_storage)",
+                "offset": 0,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_struct(InitializableStorage)1410_storage": {
+            "label": "struct Initializable.InitializableStorage",
+            "members": [
+              {
+                "label": "_initialized",
+                "type": "t_uint64",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "_initializing",
+                "type": "t_bool",
+                "offset": 8,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_struct(PausableStorage)976_storage": {
+            "label": "struct PausableUpgradeable.PausableStorage",
+            "members": [
+              {
+                "label": "_paused",
+                "type": "t_bool",
+                "offset": 0,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_struct(RoleData)24_storage": {
+            "label": "struct AccessControlUpgradeable.RoleData",
+            "members": [
+              {
+                "label": "hasRole",
+                "type": "t_mapping(t_address,t_bool)",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "adminRole",
+                "type": "t_bytes32",
+                "offset": 0,
+                "slot": "1"
+              }
+            ],
+            "numberOfBytes": "64"
+          },
+          "t_uint64": {
+            "label": "uint64",
+            "numberOfBytes": "8"
+          },
+          "t_array(t_struct(Application)21424_storage)dyn_storage": {
+            "label": "struct Application[]",
+            "numberOfBytes": "32"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]",
+            "numberOfBytes": "1600"
+          },
+          "t_enum(JobStatus)21384": {
+            "label": "enum JobStatus",
+            "members": [
+              "Created",
+              "Accepted",
+              "Ongoing",
+              "Disputed",
+              "Arbitration",
+              "Completed",
+              "Cancelled"
+            ],
+            "numberOfBytes": "1"
+          },
+          "t_enum(Strategy)23047": {
+            "label": "enum IYieldManager.Strategy",
+            "members": [
+              "NONE",
+              "AAVE",
+              "COMPOUND",
+              "MORPHO"
+            ],
+            "numberOfBytes": "1"
+          },
+          "t_mapping(t_address,t_mapping(t_address,t_mapping(t_enum(Strategy)23047,t_uint256)))": {
+            "label": "mapping(address => mapping(address => mapping(enum IYieldManager.Strategy => uint256)))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_mapping(t_address,t_uint256))": {
+            "label": "mapping(address => mapping(address => uint256))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_mapping(t_enum(Strategy)23047,t_uint256))": {
+            "label": "mapping(address => mapping(enum IYieldManager.Strategy => uint256))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_enum(Strategy)23047,t_uint256)": {
+            "label": "mapping(enum IYieldManager.Strategy => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_array(t_struct(Application)21424_storage)dyn_storage)": {
+            "label": "mapping(uint256 => struct Application[])",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_mapping(t_address,t_bool))": {
+            "label": "mapping(uint256 => mapping(address => bool))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_mapping(t_uint256,t_struct(Milestone)21433_storage))": {
+            "label": "mapping(uint256 => mapping(uint256 => struct Milestone))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_struct(Job)21419_storage)": {
+            "label": "mapping(uint256 => struct Job)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_struct(Milestone)21433_storage)": {
+            "label": "mapping(uint256 => struct Milestone)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_uint256)": {
+            "label": "mapping(uint256 => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_string_storage": {
+            "label": "string",
+            "numberOfBytes": "32"
+          },
+          "t_struct(Application)21424_storage": {
+            "label": "struct Application",
+            "members": [
+              {
+                "label": "freelancer",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "stake",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "1"
+              }
+            ],
+            "numberOfBytes": "64"
+          },
+          "t_struct(Job)21419_storage": {
+            "label": "struct Job",
+            "members": [
+              {
+                "label": "client",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "id",
+                "type": "t_uint32",
+                "offset": 20,
+                "slot": "0"
+              },
+              {
+                "label": "deadline",
+                "type": "t_uint48",
+                "offset": 24,
+                "slot": "0"
+              },
+              {
+                "label": "categoryId",
+                "type": "t_uint16",
+                "offset": 30,
+                "slot": "0"
+              },
+              {
+                "label": "freelancer",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "milestoneCount",
+                "type": "t_uint16",
+                "offset": 20,
+                "slot": "1"
+              },
+              {
+                "label": "status",
+                "type": "t_enum(JobStatus)21384",
+                "offset": 22,
+                "slot": "1"
+              },
+              {
+                "label": "paid",
+                "type": "t_bool",
+                "offset": 23,
+                "slot": "1"
+              },
+              {
+                "label": "zkRequired",
+                "type": "t_bool",
+                "offset": 24,
+                "slot": "1"
+              },
+              {
+                "label": "yieldStrategy",
+                "type": "t_enum(Strategy)23047",
+                "offset": 25,
+                "slot": "1"
+              },
+              {
+                "label": "rating",
+                "type": "t_uint8",
+                "offset": 26,
+                "slot": "1"
+              },
+              {
+                "label": "token",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "amount",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "3"
+              },
+              {
+                "label": "freelancerStake",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "4"
+              },
+              {
+                "label": "totalPaidOut",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "5"
+              },
+              {
+                "label": "ipfsHash",
+                "type": "t_string_storage",
+                "offset": 0,
+                "slot": "6"
+              }
+            ],
+            "numberOfBytes": "224"
+          },
+          "t_struct(Milestone)21433_storage": {
+            "label": "struct Milestone",
+            "members": [
+              {
+                "label": "amount",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "ipfsHash",
+                "type": "t_string_storage",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "isReleased",
+                "type": "t_bool",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "isUpfront",
+                "type": "t_bool",
+                "offset": 1,
+                "slot": "2"
+              }
+            ],
+            "numberOfBytes": "96"
+          },
+          "t_uint16": {
+            "label": "uint16",
+            "numberOfBytes": "2"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_uint32": {
+            "label": "uint32",
+            "numberOfBytes": "4"
+          },
+          "t_uint48": {
+            "label": "uint48",
+            "numberOfBytes": "6"
+          },
+          "t_uint8": {
+            "label": "uint8",
+            "numberOfBytes": "1"
+          }
+        },
+        "namespaces": {
+          "erc7201:openzeppelin.storage.Pausable": [
+            {
+              "contract": "PausableUpgradeable",
+              "label": "_paused",
+              "type": "t_bool",
+              "src": "@openzeppelin\\contracts-upgradeable\\utils\\PausableUpgradeable.sol:21",
+              "offset": 0,
+              "slot": "0"
+            }
+          ],
+          "erc7201:openzeppelin.storage.AccessControl": [
+            {
+              "contract": "AccessControlUpgradeable",
+              "label": "_roles",
+              "type": "t_mapping(t_bytes32,t_struct(RoleData)24_storage)",
+              "src": "@openzeppelin\\contracts-upgradeable\\access\\AccessControlUpgradeable.sol:61",
+              "offset": 0,
+              "slot": "0"
+            }
+          ],
+          "erc7201:openzeppelin.storage.Initializable": [
+            {
+              "contract": "Initializable",
+              "label": "_initialized",
+              "type": "t_uint64",
+              "src": "@openzeppelin\\contracts\\proxy\\utils\\Initializable.sol:69",
+              "offset": 0,
+              "slot": "0"
+            },
+            {
+              "contract": "Initializable",
+              "label": "_initializing",
+              "type": "t_bool",
+              "src": "@openzeppelin\\contracts\\proxy\\utils\\Initializable.sol:73",
+              "offset": 8,
+              "slot": "0"
+            }
+          ]
+        }
+      }
+    },
+    "39d1cb949373b810ea749ccf8992b976f268f558d7baecabb7e4ab3bf47e9dfd": {
+      "address": "0xFEF9c21d544Dbb512e300a60E1C21c70a6950308",
+      "txHash": "0x19098bcd5c9a2f572d3966524a8ea98e3bdc2f5d2d93987415b647146380d2be",
+      "layout": {
+        "solcVersion": "0.8.24",
+        "storage": [],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_bytes32": {
+            "label": "bytes32",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_mapping(t_address,t_bool))": {
+            "label": "mapping(address => mapping(address => bool))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_bytes32,t_struct(RoleData)24_storage)": {
+            "label": "mapping(bytes32 => struct AccessControlUpgradeable.RoleData)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_address)": {
+            "label": "mapping(uint256 => address)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_string_storage)": {
+            "label": "mapping(uint256 => string)",
+            "numberOfBytes": "32"
+          },
+          "t_string_storage": {
+            "label": "string",
+            "numberOfBytes": "32"
+          },
+          "t_struct(AccessControlStorage)34_storage": {
+            "label": "struct AccessControlUpgradeable.AccessControlStorage",
+            "members": [
+              {
+                "label": "_roles",
+                "type": "t_mapping(t_bytes32,t_struct(RoleData)24_storage)",
+                "offset": 0,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_struct(ERC721Storage)576_storage": {
+            "label": "struct ERC721Upgradeable.ERC721Storage",
+            "members": [
+              {
+                "label": "_name",
+                "type": "t_string_storage",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "_symbol",
+                "type": "t_string_storage",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "_owners",
+                "type": "t_mapping(t_uint256,t_address)",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "_balances",
+                "type": "t_mapping(t_address,t_uint256)",
+                "offset": 0,
+                "slot": "3"
+              },
+              {
+                "label": "_tokenApprovals",
+                "type": "t_mapping(t_uint256,t_address)",
+                "offset": 0,
+                "slot": "4"
+              },
+              {
+                "label": "_operatorApprovals",
+                "type": "t_mapping(t_address,t_mapping(t_address,t_bool))",
+                "offset": 0,
+                "slot": "5"
+              }
+            ],
+            "numberOfBytes": "192"
+          },
+          "t_struct(ERC721URIStorageStorage)883_storage": {
+            "label": "struct ERC721URIStorageUpgradeable.ERC721URIStorageStorage",
+            "members": [
+              {
+                "label": "_tokenURIs",
+                "type": "t_mapping(t_uint256,t_string_storage)",
+                "offset": 0,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_struct(InitializableStorage)1410_storage": {
+            "label": "struct Initializable.InitializableStorage",
+            "members": [
+              {
+                "label": "_initialized",
+                "type": "t_uint64",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "_initializing",
+                "type": "t_bool",
+                "offset": 8,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_struct(RoleData)24_storage": {
+            "label": "struct AccessControlUpgradeable.RoleData",
+            "members": [
+              {
+                "label": "hasRole",
+                "type": "t_mapping(t_address,t_bool)",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "adminRole",
+                "type": "t_bytes32",
+                "offset": 0,
+                "slot": "1"
+              }
+            ],
+            "numberOfBytes": "64"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_uint64": {
+            "label": "uint64",
+            "numberOfBytes": "8"
+          }
+        },
+        "namespaces": {
+          "erc7201:openzeppelin.storage.AccessControl": [
+            {
+              "contract": "AccessControlUpgradeable",
+              "label": "_roles",
+              "type": "t_mapping(t_bytes32,t_struct(RoleData)24_storage)",
+              "src": "@openzeppelin\\contracts-upgradeable\\access\\AccessControlUpgradeable.sol:61",
+              "offset": 0,
+              "slot": "0"
+            }
+          ],
+          "erc7201:openzeppelin.storage.ERC721URIStorage": [
+            {
+              "contract": "ERC721URIStorageUpgradeable",
+              "label": "_tokenURIs",
+              "type": "t_mapping(t_uint256,t_string_storage)",
+              "src": "@openzeppelin\\contracts-upgradeable\\token\\ERC721\\extensions\\ERC721URIStorageUpgradeable.sol:23",
+              "offset": 0,
+              "slot": "0"
+            }
+          ],
+          "erc7201:openzeppelin.storage.ERC721": [
+            {
+              "contract": "ERC721Upgradeable",
+              "label": "_name",
+              "type": "t_string_storage",
+              "src": "@openzeppelin\\contracts-upgradeable\\token\\ERC721\\ERC721Upgradeable.sol:27",
+              "offset": 0,
+              "slot": "0"
+            },
+            {
+              "contract": "ERC721Upgradeable",
+              "label": "_symbol",
+              "type": "t_string_storage",
+              "src": "@openzeppelin\\contracts-upgradeable\\token\\ERC721\\ERC721Upgradeable.sol:30",
+              "offset": 0,
+              "slot": "1"
+            },
+            {
+              "contract": "ERC721Upgradeable",
+              "label": "_owners",
+              "type": "t_mapping(t_uint256,t_address)",
+              "src": "@openzeppelin\\contracts-upgradeable\\token\\ERC721\\ERC721Upgradeable.sol:32",
+              "offset": 0,
+              "slot": "2"
+            },
+            {
+              "contract": "ERC721Upgradeable",
+              "label": "_balances",
+              "type": "t_mapping(t_address,t_uint256)",
+              "src": "@openzeppelin\\contracts-upgradeable\\token\\ERC721\\ERC721Upgradeable.sol:34",
+              "offset": 0,
+              "slot": "3"
+            },
+            {
+              "contract": "ERC721Upgradeable",
+              "label": "_tokenApprovals",
+              "type": "t_mapping(t_uint256,t_address)",
+              "src": "@openzeppelin\\contracts-upgradeable\\token\\ERC721\\ERC721Upgradeable.sol:36",
+              "offset": 0,
+              "slot": "4"
+            },
+            {
+              "contract": "ERC721Upgradeable",
+              "label": "_operatorApprovals",
+              "type": "t_mapping(t_address,t_mapping(t_address,t_bool))",
+              "src": "@openzeppelin\\contracts-upgradeable\\token\\ERC721\\ERC721Upgradeable.sol:38",
+              "offset": 0,
+              "slot": "5"
+            }
+          ],
+          "erc7201:openzeppelin.storage.Initializable": [
+            {
+              "contract": "Initializable",
+              "label": "_initialized",
+              "type": "t_uint64",
+              "src": "@openzeppelin\\contracts\\proxy\\utils\\Initializable.sol:69",
+              "offset": 0,
+              "slot": "0"
+            },
+            {
+              "contract": "Initializable",
+              "label": "_initializing",
+              "type": "t_bool",
+              "src": "@openzeppelin\\contracts\\proxy\\utils\\Initializable.sol:73",
+              "offset": 8,
+              "slot": "0"
+            }
+          ]
+        }
+      }
+    },
+    "d815210f0f95c7fe7e1b24d53a8f3a0f76f127df8ee96d6df39ea7da005713eb": {
+      "address": "0x10dd622D4625D8d21C033D0B18D977F7f8DB671c",
+      "txHash": "0x2dbc74a23e7bd545240e6fe7980857a24e8ef7e256237da63c6a6f718850c7e7",
+      "layout": {
+        "solcVersion": "0.8.24",
+        "storage": [
+          {
+            "label": "jobNFT",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_address",
+            "contract": "FreelanceEscrowBase",
+            "src": "contracts\\FreelanceEscrowBase.sol:33"
+          },
+          {
+            "label": "renderer",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_address",
+            "contract": "FreelanceEscrowBase",
+            "src": "contracts\\FreelanceEscrowBase.sol:34"
+          },
+          {
+            "label": "jobs",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_mapping(t_uint256,t_struct(Job)21419_storage)",
+            "contract": "FreelanceEscrowBase",
+            "src": "contracts\\FreelanceEscrowBase.sol:38"
+          },
+          {
+            "label": "jobMilestones",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_mapping(t_uint256,t_mapping(t_uint256,t_struct(Milestone)21433_storage))",
+            "contract": "FreelanceEscrowBase",
+            "src": "contracts\\FreelanceEscrowBase.sol:39"
+          },
+          {
+            "label": "jobApplications",
+            "offset": 0,
+            "slot": "4",
+            "type": "t_mapping(t_uint256,t_array(t_struct(Application)21424_storage)dyn_storage)",
+            "contract": "FreelanceEscrowBase",
+            "src": "contracts\\FreelanceEscrowBase.sol:40"
+          },
+          {
+            "label": "hasApplied",
+            "offset": 0,
+            "slot": "5",
+            "type": "t_mapping(t_uint256,t_mapping(t_address,t_bool))",
+            "contract": "FreelanceEscrowBase",
+            "src": "contracts\\FreelanceEscrowBase.sol:41"
+          },
+          {
+            "label": "balances",
+            "offset": 0,
+            "slot": "6",
+            "type": "t_mapping(t_address,t_mapping(t_address,t_uint256))",
+            "contract": "FreelanceEscrowBase",
+            "src": "contracts\\FreelanceEscrowBase.sol:42"
+          },
+          {
+            "label": "milestoneBitmask",
+            "offset": 0,
+            "slot": "7",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "contract": "FreelanceEscrowBase",
+            "src": "contracts\\FreelanceEscrowBase.sol:43"
+          },
+          {
+            "label": "disputeIdToJobId",
+            "offset": 0,
+            "slot": "8",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "contract": "FreelanceEscrowBase",
+            "src": "contracts\\FreelanceEscrowBase.sol:44"
+          },
+          {
+            "label": "jobCount",
+            "offset": 0,
+            "slot": "9",
+            "type": "t_uint256",
+            "contract": "FreelanceEscrowBase",
+            "src": "contracts\\FreelanceEscrowBase.sol:46"
+          },
+          {
+            "label": "arbitrator",
+            "offset": 0,
+            "slot": "10",
+            "type": "t_address",
+            "contract": "FreelanceEscrowBase",
+            "src": "contracts\\FreelanceEscrowBase.sol:54"
+          },
+          {
+            "label": "sbtContract",
+            "offset": 0,
+            "slot": "11",
+            "type": "t_address",
+            "contract": "FreelanceEscrowBase",
+            "src": "contracts\\FreelanceEscrowBase.sol:55"
+          },
+          {
+            "label": "_trustedForwarder",
+            "offset": 0,
+            "slot": "12",
+            "type": "t_address",
+            "contract": "FreelanceEscrowBase",
+            "src": "contracts\\FreelanceEscrowBase.sol:56"
+          },
+          {
+            "label": "entryPoint",
+            "offset": 0,
+            "slot": "13",
+            "type": "t_address",
+            "contract": "FreelanceEscrowBase",
+            "src": "contracts\\FreelanceEscrowBase.sol:57"
+          },
+          {
+            "label": "vault",
+            "offset": 0,
+            "slot": "14",
+            "type": "t_address",
+            "contract": "FreelanceEscrowBase",
+            "src": "contracts\\FreelanceEscrowBase.sol:58"
+          },
+          {
+            "label": "yieldManager",
+            "offset": 0,
+            "slot": "15",
+            "type": "t_address",
+            "contract": "FreelanceEscrowBase",
+            "src": "contracts\\FreelanceEscrowBase.sol:59"
+          },
+          {
+            "label": "swapManager",
+            "offset": 0,
+            "slot": "16",
+            "type": "t_address",
+            "contract": "FreelanceEscrowBase",
+            "src": "contracts\\FreelanceEscrowBase.sol:60"
+          },
+          {
+            "label": "gravityFactor",
+            "offset": 0,
+            "slot": "17",
+            "type": "t_uint256",
+            "contract": "FreelanceEscrowBase",
+            "src": "contracts\\FreelanceEscrowBase.sol:62"
+          },
+          {
+            "label": "reputationThreshold",
+            "offset": 0,
+            "slot": "18",
+            "type": "t_uint256",
+            "contract": "FreelanceEscrowBase",
+            "src": "contracts\\FreelanceEscrowBase.sol:64"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "19",
+            "type": "t_array(t_uint256)50_storage",
+            "contract": "FreelanceEscrowBase",
+            "src": "contracts\\FreelanceEscrowBase.sol:101"
+          },
+          {
+            "label": "polyToken",
+            "offset": 0,
+            "slot": "69",
+            "type": "t_address",
+            "contract": "FreelanceEscrow",
+            "src": "contracts\\FreelanceEscrow.sol:60"
+          },
+          {
+            "label": "reputationContract",
+            "offset": 0,
+            "slot": "70",
+            "type": "t_address",
+            "contract": "FreelanceEscrow",
+            "src": "contracts\\FreelanceEscrow.sol:62"
+          },
+          {
+            "label": "completionCertContract",
+            "offset": 0,
+            "slot": "71",
+            "type": "t_address",
+            "contract": "FreelanceEscrow",
+            "src": "contracts\\FreelanceEscrow.sol:64"
+          },
+          {
+            "label": "reviewSBT",
+            "offset": 0,
+            "slot": "72",
+            "type": "t_address",
+            "contract": "FreelanceEscrow",
+            "src": "contracts\\FreelanceEscrow.sol:66"
+          },
+          {
+            "label": "privacyShield",
+            "offset": 0,
+            "slot": "73",
+            "type": "t_address",
+            "contract": "FreelanceEscrow",
+            "src": "contracts\\FreelanceEscrow.sol:68"
+          },
+          {
+            "label": "securityOracle",
+            "offset": 0,
+            "slot": "74",
+            "type": "t_address",
+            "contract": "FreelanceEscrow",
+            "src": "contracts\\FreelanceEscrow.sol:70"
+          },
+          {
+            "label": "timelock",
+            "offset": 0,
+            "slot": "75",
+            "type": "t_address",
+            "contract": "FreelanceEscrow",
+            "src": "contracts\\FreelanceEscrow.sol:82"
+          },
+          {
+            "label": "emergencyMode",
+            "offset": 20,
+            "slot": "75",
+            "type": "t_bool",
+            "contract": "FreelanceEscrow",
+            "src": "contracts\\FreelanceEscrow.sol:84"
+          },
+          {
+            "label": "lastJobCreated",
+            "offset": 0,
+            "slot": "76",
+            "type": "t_mapping(t_address,t_uint256)",
+            "contract": "FreelanceEscrow",
+            "src": "contracts\\FreelanceEscrow.sol:87"
+          },
+          {
+            "label": "isSupreme",
+            "offset": 0,
+            "slot": "77",
+            "type": "t_mapping(t_address,t_bool)",
+            "contract": "FreelanceEscrow",
+            "src": "contracts\\FreelanceEscrow.sol:244"
+          },
+          {
+            "label": "tokenWhitelist",
+            "offset": 0,
+            "slot": "78",
+            "type": "t_mapping(t_address,t_bool)",
+            "contract": "FreelanceEscrow",
+            "src": "contracts\\FreelanceEscrow.sol:264"
+          },
+          {
+            "label": "userStakes",
+            "offset": 0,
+            "slot": "79",
+            "type": "t_mapping(t_address,t_mapping(t_address,t_mapping(t_enum(Strategy)23047,t_uint256)))",
+            "contract": "FreelanceEscrow",
+            "src": "contracts\\FreelanceEscrow.sol:425"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_bytes32": {
+            "label": "bytes32",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_bytes32,t_struct(RoleData)24_storage)": {
+            "label": "mapping(bytes32 => struct AccessControlUpgradeable.RoleData)",
+            "numberOfBytes": "32"
+          },
+          "t_struct(AccessControlStorage)34_storage": {
+            "label": "struct AccessControlUpgradeable.AccessControlStorage",
+            "members": [
+              {
+                "label": "_roles",
+                "type": "t_mapping(t_bytes32,t_struct(RoleData)24_storage)",
+                "offset": 0,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_struct(InitializableStorage)1410_storage": {
+            "label": "struct Initializable.InitializableStorage",
+            "members": [
+              {
+                "label": "_initialized",
+                "type": "t_uint64",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "_initializing",
+                "type": "t_bool",
+                "offset": 8,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_struct(PausableStorage)976_storage": {
+            "label": "struct PausableUpgradeable.PausableStorage",
+            "members": [
+              {
+                "label": "_paused",
+                "type": "t_bool",
+                "offset": 0,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_struct(RoleData)24_storage": {
+            "label": "struct AccessControlUpgradeable.RoleData",
+            "members": [
+              {
+                "label": "hasRole",
+                "type": "t_mapping(t_address,t_bool)",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "adminRole",
+                "type": "t_bytes32",
+                "offset": 0,
+                "slot": "1"
+              }
+            ],
+            "numberOfBytes": "64"
+          },
+          "t_uint64": {
+            "label": "uint64",
+            "numberOfBytes": "8"
+          },
+          "t_array(t_struct(Application)21424_storage)dyn_storage": {
+            "label": "struct Application[]",
+            "numberOfBytes": "32"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]",
+            "numberOfBytes": "1600"
+          },
+          "t_enum(JobStatus)21384": {
+            "label": "enum JobStatus",
+            "members": [
+              "Created",
+              "Accepted",
+              "Ongoing",
+              "Disputed",
+              "Arbitration",
+              "Completed",
+              "Cancelled"
+            ],
+            "numberOfBytes": "1"
+          },
+          "t_enum(Strategy)23047": {
+            "label": "enum IYieldManager.Strategy",
+            "members": [
+              "NONE",
+              "AAVE",
+              "COMPOUND",
+              "MORPHO"
+            ],
+            "numberOfBytes": "1"
+          },
+          "t_mapping(t_address,t_mapping(t_address,t_mapping(t_enum(Strategy)23047,t_uint256)))": {
+            "label": "mapping(address => mapping(address => mapping(enum IYieldManager.Strategy => uint256)))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_mapping(t_address,t_uint256))": {
+            "label": "mapping(address => mapping(address => uint256))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_mapping(t_enum(Strategy)23047,t_uint256))": {
+            "label": "mapping(address => mapping(enum IYieldManager.Strategy => uint256))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_enum(Strategy)23047,t_uint256)": {
+            "label": "mapping(enum IYieldManager.Strategy => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_array(t_struct(Application)21424_storage)dyn_storage)": {
+            "label": "mapping(uint256 => struct Application[])",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_mapping(t_address,t_bool))": {
+            "label": "mapping(uint256 => mapping(address => bool))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_mapping(t_uint256,t_struct(Milestone)21433_storage))": {
+            "label": "mapping(uint256 => mapping(uint256 => struct Milestone))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_struct(Job)21419_storage)": {
+            "label": "mapping(uint256 => struct Job)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_struct(Milestone)21433_storage)": {
+            "label": "mapping(uint256 => struct Milestone)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_uint256)": {
+            "label": "mapping(uint256 => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_string_storage": {
+            "label": "string",
+            "numberOfBytes": "32"
+          },
+          "t_struct(Application)21424_storage": {
+            "label": "struct Application",
+            "members": [
+              {
+                "label": "freelancer",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "stake",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "1"
+              }
+            ],
+            "numberOfBytes": "64"
+          },
+          "t_struct(Job)21419_storage": {
+            "label": "struct Job",
+            "members": [
+              {
+                "label": "client",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "id",
+                "type": "t_uint32",
+                "offset": 20,
+                "slot": "0"
+              },
+              {
+                "label": "deadline",
+                "type": "t_uint48",
+                "offset": 24,
+                "slot": "0"
+              },
+              {
+                "label": "categoryId",
+                "type": "t_uint16",
+                "offset": 30,
+                "slot": "0"
+              },
+              {
+                "label": "freelancer",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "milestoneCount",
+                "type": "t_uint16",
+                "offset": 20,
+                "slot": "1"
+              },
+              {
+                "label": "status",
+                "type": "t_enum(JobStatus)21384",
+                "offset": 22,
+                "slot": "1"
+              },
+              {
+                "label": "paid",
+                "type": "t_bool",
+                "offset": 23,
+                "slot": "1"
+              },
+              {
+                "label": "zkRequired",
+                "type": "t_bool",
+                "offset": 24,
+                "slot": "1"
+              },
+              {
+                "label": "yieldStrategy",
+                "type": "t_enum(Strategy)23047",
+                "offset": 25,
+                "slot": "1"
+              },
+              {
+                "label": "rating",
+                "type": "t_uint8",
+                "offset": 26,
+                "slot": "1"
+              },
+              {
+                "label": "token",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "amount",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "3"
+              },
+              {
+                "label": "freelancerStake",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "4"
+              },
+              {
+                "label": "totalPaidOut",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "5"
+              },
+              {
+                "label": "ipfsHash",
+                "type": "t_string_storage",
+                "offset": 0,
+                "slot": "6"
+              }
+            ],
+            "numberOfBytes": "224"
+          },
+          "t_struct(Milestone)21433_storage": {
+            "label": "struct Milestone",
+            "members": [
+              {
+                "label": "amount",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "ipfsHash",
+                "type": "t_string_storage",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "isReleased",
+                "type": "t_bool",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "isUpfront",
+                "type": "t_bool",
+                "offset": 1,
+                "slot": "2"
+              }
+            ],
+            "numberOfBytes": "96"
+          },
+          "t_uint16": {
+            "label": "uint16",
+            "numberOfBytes": "2"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_uint32": {
+            "label": "uint32",
+            "numberOfBytes": "4"
+          },
+          "t_uint48": {
+            "label": "uint48",
+            "numberOfBytes": "6"
+          },
+          "t_uint8": {
+            "label": "uint8",
+            "numberOfBytes": "1"
+          }
+        },
+        "namespaces": {
+          "erc7201:openzeppelin.storage.Pausable": [
+            {
+              "contract": "PausableUpgradeable",
+              "label": "_paused",
+              "type": "t_bool",
+              "src": "@openzeppelin\\contracts-upgradeable\\utils\\PausableUpgradeable.sol:21",
+              "offset": 0,
+              "slot": "0"
+            }
+          ],
+          "erc7201:openzeppelin.storage.AccessControl": [
+            {
+              "contract": "AccessControlUpgradeable",
+              "label": "_roles",
+              "type": "t_mapping(t_bytes32,t_struct(RoleData)24_storage)",
+              "src": "@openzeppelin\\contracts-upgradeable\\access\\AccessControlUpgradeable.sol:61",
+              "offset": 0,
+              "slot": "0"
+            }
+          ],
+          "erc7201:openzeppelin.storage.Initializable": [
+            {
+              "contract": "Initializable",
+              "label": "_initialized",
+              "type": "t_uint64",
+              "src": "@openzeppelin\\contracts\\proxy\\utils\\Initializable.sol:69",
+              "offset": 0,
+              "slot": "0"
+            },
+            {
+              "contract": "Initializable",
+              "label": "_initializing",
+              "type": "t_bool",
+              "src": "@openzeppelin\\contracts\\proxy\\utils\\Initializable.sol:73",
+              "offset": 8,
+              "slot": "0"
+            }
+          ]
+        }
+      }
+    },
+    "59d5ceb4394c505f679f16bebb4545cf8c2b488549d22199c7a920dfa4253c9f": {
+      "address": "0x5773905e4Bb5909ddBE08859D9cd85Ff6AC2f8B6",
+      "txHash": "0x7b9913896157f5928c4c57a7d03d86432f8c2d02899e1fb53deebbcad157623f",
+      "layout": {
+        "solcVersion": "0.8.24",
+        "storage": [
+          {
+            "label": "jobNFT",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_address",
+            "contract": "FreelanceEscrowBase",
+            "src": "contracts\\FreelanceEscrowBase.sol:33"
+          },
+          {
+            "label": "renderer",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_address",
+            "contract": "FreelanceEscrowBase",
+            "src": "contracts\\FreelanceEscrowBase.sol:34"
+          },
+          {
+            "label": "jobs",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_mapping(t_uint256,t_struct(Job)21419_storage)",
+            "contract": "FreelanceEscrowBase",
+            "src": "contracts\\FreelanceEscrowBase.sol:38"
+          },
+          {
+            "label": "jobMilestones",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_mapping(t_uint256,t_mapping(t_uint256,t_struct(Milestone)21433_storage))",
+            "contract": "FreelanceEscrowBase",
+            "src": "contracts\\FreelanceEscrowBase.sol:39"
+          },
+          {
+            "label": "jobApplications",
+            "offset": 0,
+            "slot": "4",
+            "type": "t_mapping(t_uint256,t_array(t_struct(Application)21424_storage)dyn_storage)",
+            "contract": "FreelanceEscrowBase",
+            "src": "contracts\\FreelanceEscrowBase.sol:40"
+          },
+          {
+            "label": "hasApplied",
+            "offset": 0,
+            "slot": "5",
+            "type": "t_mapping(t_uint256,t_mapping(t_address,t_bool))",
+            "contract": "FreelanceEscrowBase",
+            "src": "contracts\\FreelanceEscrowBase.sol:41"
+          },
+          {
+            "label": "balances",
+            "offset": 0,
+            "slot": "6",
+            "type": "t_mapping(t_address,t_mapping(t_address,t_uint256))",
+            "contract": "FreelanceEscrowBase",
+            "src": "contracts\\FreelanceEscrowBase.sol:42"
+          },
+          {
+            "label": "milestoneBitmask",
+            "offset": 0,
+            "slot": "7",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "contract": "FreelanceEscrowBase",
+            "src": "contracts\\FreelanceEscrowBase.sol:43"
+          },
+          {
+            "label": "disputeIdToJobId",
+            "offset": 0,
+            "slot": "8",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "contract": "FreelanceEscrowBase",
+            "src": "contracts\\FreelanceEscrowBase.sol:44"
+          },
+          {
+            "label": "jobCount",
+            "offset": 0,
+            "slot": "9",
+            "type": "t_uint256",
+            "contract": "FreelanceEscrowBase",
+            "src": "contracts\\FreelanceEscrowBase.sol:46"
+          },
+          {
+            "label": "arbitrator",
+            "offset": 0,
+            "slot": "10",
+            "type": "t_address",
+            "contract": "FreelanceEscrowBase",
+            "src": "contracts\\FreelanceEscrowBase.sol:54"
+          },
+          {
+            "label": "sbtContract",
+            "offset": 0,
+            "slot": "11",
+            "type": "t_address",
+            "contract": "FreelanceEscrowBase",
+            "src": "contracts\\FreelanceEscrowBase.sol:55"
+          },
+          {
+            "label": "_trustedForwarder",
+            "offset": 0,
+            "slot": "12",
+            "type": "t_address",
+            "contract": "FreelanceEscrowBase",
+            "src": "contracts\\FreelanceEscrowBase.sol:56"
+          },
+          {
+            "label": "entryPoint",
+            "offset": 0,
+            "slot": "13",
+            "type": "t_address",
+            "contract": "FreelanceEscrowBase",
+            "src": "contracts\\FreelanceEscrowBase.sol:57"
+          },
+          {
+            "label": "vault",
+            "offset": 0,
+            "slot": "14",
+            "type": "t_address",
+            "contract": "FreelanceEscrowBase",
+            "src": "contracts\\FreelanceEscrowBase.sol:58"
+          },
+          {
+            "label": "yieldManager",
+            "offset": 0,
+            "slot": "15",
+            "type": "t_address",
+            "contract": "FreelanceEscrowBase",
+            "src": "contracts\\FreelanceEscrowBase.sol:59"
+          },
+          {
+            "label": "swapManager",
+            "offset": 0,
+            "slot": "16",
+            "type": "t_address",
+            "contract": "FreelanceEscrowBase",
+            "src": "contracts\\FreelanceEscrowBase.sol:60"
+          },
+          {
+            "label": "gravityFactor",
+            "offset": 0,
+            "slot": "17",
+            "type": "t_uint256",
+            "contract": "FreelanceEscrowBase",
+            "src": "contracts\\FreelanceEscrowBase.sol:62"
+          },
+          {
+            "label": "reputationThreshold",
+            "offset": 0,
+            "slot": "18",
+            "type": "t_uint256",
+            "contract": "FreelanceEscrowBase",
+            "src": "contracts\\FreelanceEscrowBase.sol:64"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "19",
+            "type": "t_array(t_uint256)50_storage",
+            "contract": "FreelanceEscrowBase",
+            "src": "contracts\\FreelanceEscrowBase.sol:101"
+          },
+          {
+            "label": "polyToken",
+            "offset": 0,
+            "slot": "69",
+            "type": "t_address",
+            "contract": "FreelanceEscrow",
+            "src": "contracts\\FreelanceEscrow.sol:60"
+          },
+          {
+            "label": "reputationContract",
+            "offset": 0,
+            "slot": "70",
+            "type": "t_address",
+            "contract": "FreelanceEscrow",
+            "src": "contracts\\FreelanceEscrow.sol:62"
+          },
+          {
+            "label": "completionCertContract",
+            "offset": 0,
+            "slot": "71",
+            "type": "t_address",
+            "contract": "FreelanceEscrow",
+            "src": "contracts\\FreelanceEscrow.sol:64"
+          },
+          {
+            "label": "reviewSBT",
+            "offset": 0,
+            "slot": "72",
+            "type": "t_address",
+            "contract": "FreelanceEscrow",
+            "src": "contracts\\FreelanceEscrow.sol:66"
+          },
+          {
+            "label": "privacyShield",
+            "offset": 0,
+            "slot": "73",
+            "type": "t_address",
+            "contract": "FreelanceEscrow",
+            "src": "contracts\\FreelanceEscrow.sol:68"
+          },
+          {
+            "label": "securityOracle",
+            "offset": 0,
+            "slot": "74",
+            "type": "t_address",
+            "contract": "FreelanceEscrow",
+            "src": "contracts\\FreelanceEscrow.sol:70"
+          },
+          {
+            "label": "timelock",
+            "offset": 0,
+            "slot": "75",
+            "type": "t_address",
+            "contract": "FreelanceEscrow",
+            "src": "contracts\\FreelanceEscrow.sol:82"
+          },
+          {
+            "label": "emergencyMode",
+            "offset": 20,
+            "slot": "75",
+            "type": "t_bool",
+            "contract": "FreelanceEscrow",
+            "src": "contracts\\FreelanceEscrow.sol:84"
+          },
+          {
+            "label": "lastJobCreated",
+            "offset": 0,
+            "slot": "76",
+            "type": "t_mapping(t_address,t_uint256)",
+            "contract": "FreelanceEscrow",
+            "src": "contracts\\FreelanceEscrow.sol:87"
+          },
+          {
+            "label": "isSupreme",
+            "offset": 0,
+            "slot": "77",
+            "type": "t_mapping(t_address,t_bool)",
+            "contract": "FreelanceEscrow",
+            "src": "contracts\\FreelanceEscrow.sol:244"
+          },
+          {
+            "label": "tokenWhitelist",
+            "offset": 0,
+            "slot": "78",
+            "type": "t_mapping(t_address,t_bool)",
+            "contract": "FreelanceEscrow",
+            "src": "contracts\\FreelanceEscrow.sol:264"
+          },
+          {
+            "label": "userStakes",
+            "offset": 0,
+            "slot": "79",
+            "type": "t_mapping(t_address,t_mapping(t_address,t_mapping(t_enum(Strategy)23047,t_uint256)))",
+            "contract": "FreelanceEscrow",
+            "src": "contracts\\FreelanceEscrow.sol:425"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_bytes32": {
+            "label": "bytes32",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_bytes32,t_struct(RoleData)24_storage)": {
+            "label": "mapping(bytes32 => struct AccessControlUpgradeable.RoleData)",
+            "numberOfBytes": "32"
+          },
+          "t_struct(AccessControlStorage)34_storage": {
+            "label": "struct AccessControlUpgradeable.AccessControlStorage",
+            "members": [
+              {
+                "label": "_roles",
+                "type": "t_mapping(t_bytes32,t_struct(RoleData)24_storage)",
+                "offset": 0,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_struct(InitializableStorage)1410_storage": {
+            "label": "struct Initializable.InitializableStorage",
+            "members": [
+              {
+                "label": "_initialized",
+                "type": "t_uint64",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "_initializing",
+                "type": "t_bool",
+                "offset": 8,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_struct(PausableStorage)976_storage": {
+            "label": "struct PausableUpgradeable.PausableStorage",
+            "members": [
+              {
+                "label": "_paused",
+                "type": "t_bool",
+                "offset": 0,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_struct(RoleData)24_storage": {
+            "label": "struct AccessControlUpgradeable.RoleData",
+            "members": [
+              {
+                "label": "hasRole",
+                "type": "t_mapping(t_address,t_bool)",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "adminRole",
+                "type": "t_bytes32",
+                "offset": 0,
+                "slot": "1"
+              }
+            ],
+            "numberOfBytes": "64"
+          },
+          "t_uint64": {
+            "label": "uint64",
+            "numberOfBytes": "8"
+          },
+          "t_array(t_struct(Application)21424_storage)dyn_storage": {
+            "label": "struct Application[]",
+            "numberOfBytes": "32"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]",
+            "numberOfBytes": "1600"
+          },
+          "t_enum(JobStatus)21384": {
+            "label": "enum JobStatus",
+            "members": [
+              "Created",
+              "Accepted",
+              "Ongoing",
+              "Disputed",
+              "Arbitration",
+              "Completed",
+              "Cancelled"
+            ],
+            "numberOfBytes": "1"
+          },
+          "t_enum(Strategy)23047": {
+            "label": "enum IYieldManager.Strategy",
+            "members": [
+              "NONE",
+              "AAVE",
+              "COMPOUND",
+              "MORPHO"
+            ],
+            "numberOfBytes": "1"
+          },
+          "t_mapping(t_address,t_mapping(t_address,t_mapping(t_enum(Strategy)23047,t_uint256)))": {
+            "label": "mapping(address => mapping(address => mapping(enum IYieldManager.Strategy => uint256)))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_mapping(t_address,t_uint256))": {
+            "label": "mapping(address => mapping(address => uint256))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_mapping(t_enum(Strategy)23047,t_uint256))": {
+            "label": "mapping(address => mapping(enum IYieldManager.Strategy => uint256))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_enum(Strategy)23047,t_uint256)": {
+            "label": "mapping(enum IYieldManager.Strategy => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_array(t_struct(Application)21424_storage)dyn_storage)": {
+            "label": "mapping(uint256 => struct Application[])",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_mapping(t_address,t_bool))": {
+            "label": "mapping(uint256 => mapping(address => bool))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_mapping(t_uint256,t_struct(Milestone)21433_storage))": {
+            "label": "mapping(uint256 => mapping(uint256 => struct Milestone))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_struct(Job)21419_storage)": {
+            "label": "mapping(uint256 => struct Job)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_struct(Milestone)21433_storage)": {
+            "label": "mapping(uint256 => struct Milestone)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_uint256)": {
+            "label": "mapping(uint256 => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_string_storage": {
+            "label": "string",
+            "numberOfBytes": "32"
+          },
+          "t_struct(Application)21424_storage": {
+            "label": "struct Application",
+            "members": [
+              {
+                "label": "freelancer",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "stake",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "1"
+              }
+            ],
+            "numberOfBytes": "64"
+          },
+          "t_struct(Job)21419_storage": {
+            "label": "struct Job",
+            "members": [
+              {
+                "label": "client",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "id",
+                "type": "t_uint32",
+                "offset": 20,
+                "slot": "0"
+              },
+              {
+                "label": "deadline",
+                "type": "t_uint48",
+                "offset": 24,
+                "slot": "0"
+              },
+              {
+                "label": "categoryId",
+                "type": "t_uint16",
+                "offset": 30,
+                "slot": "0"
+              },
+              {
+                "label": "freelancer",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "milestoneCount",
+                "type": "t_uint16",
+                "offset": 20,
+                "slot": "1"
+              },
+              {
+                "label": "status",
+                "type": "t_enum(JobStatus)21384",
+                "offset": 22,
+                "slot": "1"
+              },
+              {
+                "label": "paid",
+                "type": "t_bool",
+                "offset": 23,
+                "slot": "1"
+              },
+              {
+                "label": "zkRequired",
+                "type": "t_bool",
+                "offset": 24,
+                "slot": "1"
+              },
+              {
+                "label": "yieldStrategy",
+                "type": "t_enum(Strategy)23047",
+                "offset": 25,
+                "slot": "1"
+              },
+              {
+                "label": "rating",
+                "type": "t_uint8",
+                "offset": 26,
+                "slot": "1"
+              },
+              {
+                "label": "token",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "amount",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "3"
+              },
+              {
+                "label": "freelancerStake",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "4"
+              },
+              {
+                "label": "totalPaidOut",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "5"
+              },
+              {
+                "label": "ipfsHash",
+                "type": "t_string_storage",
+                "offset": 0,
+                "slot": "6"
+              }
+            ],
+            "numberOfBytes": "224"
+          },
+          "t_struct(Milestone)21433_storage": {
+            "label": "struct Milestone",
+            "members": [
+              {
+                "label": "amount",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "ipfsHash",
+                "type": "t_string_storage",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "isReleased",
+                "type": "t_bool",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "isUpfront",
+                "type": "t_bool",
+                "offset": 1,
+                "slot": "2"
+              }
+            ],
+            "numberOfBytes": "96"
+          },
+          "t_uint16": {
+            "label": "uint16",
+            "numberOfBytes": "2"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_uint32": {
+            "label": "uint32",
+            "numberOfBytes": "4"
+          },
+          "t_uint48": {
+            "label": "uint48",
+            "numberOfBytes": "6"
+          },
+          "t_uint8": {
+            "label": "uint8",
+            "numberOfBytes": "1"
+          }
+        },
+        "namespaces": {
+          "erc7201:openzeppelin.storage.Pausable": [
+            {
+              "contract": "PausableUpgradeable",
+              "label": "_paused",
+              "type": "t_bool",
+              "src": "@openzeppelin\\contracts-upgradeable\\utils\\PausableUpgradeable.sol:21",
+              "offset": 0,
+              "slot": "0"
+            }
+          ],
+          "erc7201:openzeppelin.storage.AccessControl": [
+            {
+              "contract": "AccessControlUpgradeable",
+              "label": "_roles",
+              "type": "t_mapping(t_bytes32,t_struct(RoleData)24_storage)",
+              "src": "@openzeppelin\\contracts-upgradeable\\access\\AccessControlUpgradeable.sol:61",
+              "offset": 0,
+              "slot": "0"
+            }
+          ],
+          "erc7201:openzeppelin.storage.Initializable": [
+            {
+              "contract": "Initializable",
+              "label": "_initialized",
+              "type": "t_uint64",
+              "src": "@openzeppelin\\contracts\\proxy\\utils\\Initializable.sol:69",
+              "offset": 0,
+              "slot": "0"
+            },
+            {
+              "contract": "Initializable",
+              "label": "_initializing",
+              "type": "t_bool",
+              "src": "@openzeppelin\\contracts\\proxy\\utils\\Initializable.sol:73",
+              "offset": 8,
+              "slot": "0"
+            }
+          ]
+        }
+      }
+    },
+    "f31a51bbcb7db6f50bd6558820cd516111c86bae9d6ea6f2a7080f8c6ee89b4d": {
+      "address": "0x0306f0a36638F24d70D7723FF911d5c5B0FdA8A6",
+      "txHash": "0xc6cb3f17c221068d26c136a117d5a737af4b01df2737397ea85c26dea8482043",
+      "layout": {
+        "solcVersion": "0.8.24",
+        "storage": [
+          {
+            "label": "jobNFT",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_address",
+            "contract": "FreelanceEscrowBase",
+            "src": "contracts\\FreelanceEscrowBase.sol:33"
+          },
+          {
+            "label": "renderer",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_address",
+            "contract": "FreelanceEscrowBase",
+            "src": "contracts\\FreelanceEscrowBase.sol:34"
+          },
+          {
+            "label": "jobs",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_mapping(t_uint256,t_struct(Job)21419_storage)",
+            "contract": "FreelanceEscrowBase",
+            "src": "contracts\\FreelanceEscrowBase.sol:38"
+          },
+          {
+            "label": "jobMilestones",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_mapping(t_uint256,t_mapping(t_uint256,t_struct(Milestone)21433_storage))",
+            "contract": "FreelanceEscrowBase",
+            "src": "contracts\\FreelanceEscrowBase.sol:39"
+          },
+          {
+            "label": "jobApplications",
+            "offset": 0,
+            "slot": "4",
+            "type": "t_mapping(t_uint256,t_array(t_struct(Application)21424_storage)dyn_storage)",
+            "contract": "FreelanceEscrowBase",
+            "src": "contracts\\FreelanceEscrowBase.sol:40"
+          },
+          {
+            "label": "hasApplied",
+            "offset": 0,
+            "slot": "5",
+            "type": "t_mapping(t_uint256,t_mapping(t_address,t_bool))",
+            "contract": "FreelanceEscrowBase",
+            "src": "contracts\\FreelanceEscrowBase.sol:41"
+          },
+          {
+            "label": "balances",
+            "offset": 0,
+            "slot": "6",
+            "type": "t_mapping(t_address,t_mapping(t_address,t_uint256))",
+            "contract": "FreelanceEscrowBase",
+            "src": "contracts\\FreelanceEscrowBase.sol:42"
+          },
+          {
+            "label": "milestoneBitmask",
+            "offset": 0,
+            "slot": "7",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "contract": "FreelanceEscrowBase",
+            "src": "contracts\\FreelanceEscrowBase.sol:43"
+          },
+          {
+            "label": "disputeIdToJobId",
+            "offset": 0,
+            "slot": "8",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "contract": "FreelanceEscrowBase",
+            "src": "contracts\\FreelanceEscrowBase.sol:44"
+          },
+          {
+            "label": "jobCount",
+            "offset": 0,
+            "slot": "9",
+            "type": "t_uint256",
+            "contract": "FreelanceEscrowBase",
+            "src": "contracts\\FreelanceEscrowBase.sol:46"
+          },
+          {
+            "label": "arbitrator",
+            "offset": 0,
+            "slot": "10",
+            "type": "t_address",
+            "contract": "FreelanceEscrowBase",
+            "src": "contracts\\FreelanceEscrowBase.sol:54"
+          },
+          {
+            "label": "sbtContract",
+            "offset": 0,
+            "slot": "11",
+            "type": "t_address",
+            "contract": "FreelanceEscrowBase",
+            "src": "contracts\\FreelanceEscrowBase.sol:55"
+          },
+          {
+            "label": "_trustedForwarder",
+            "offset": 0,
+            "slot": "12",
+            "type": "t_address",
+            "contract": "FreelanceEscrowBase",
+            "src": "contracts\\FreelanceEscrowBase.sol:56"
+          },
+          {
+            "label": "entryPoint",
+            "offset": 0,
+            "slot": "13",
+            "type": "t_address",
+            "contract": "FreelanceEscrowBase",
+            "src": "contracts\\FreelanceEscrowBase.sol:57"
+          },
+          {
+            "label": "vault",
+            "offset": 0,
+            "slot": "14",
+            "type": "t_address",
+            "contract": "FreelanceEscrowBase",
+            "src": "contracts\\FreelanceEscrowBase.sol:58"
+          },
+          {
+            "label": "yieldManager",
+            "offset": 0,
+            "slot": "15",
+            "type": "t_address",
+            "contract": "FreelanceEscrowBase",
+            "src": "contracts\\FreelanceEscrowBase.sol:59"
+          },
+          {
+            "label": "swapManager",
+            "offset": 0,
+            "slot": "16",
+            "type": "t_address",
+            "contract": "FreelanceEscrowBase",
+            "src": "contracts\\FreelanceEscrowBase.sol:60"
+          },
+          {
+            "label": "gravityFactor",
+            "offset": 0,
+            "slot": "17",
+            "type": "t_uint256",
+            "contract": "FreelanceEscrowBase",
+            "src": "contracts\\FreelanceEscrowBase.sol:62"
+          },
+          {
+            "label": "reputationThreshold",
+            "offset": 0,
+            "slot": "18",
+            "type": "t_uint256",
+            "contract": "FreelanceEscrowBase",
+            "src": "contracts\\FreelanceEscrowBase.sol:64"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "19",
+            "type": "t_array(t_uint256)50_storage",
+            "contract": "FreelanceEscrowBase",
+            "src": "contracts\\FreelanceEscrowBase.sol:101"
+          },
+          {
+            "label": "polyToken",
+            "offset": 0,
+            "slot": "69",
+            "type": "t_address",
+            "contract": "FreelanceEscrow",
+            "src": "contracts\\FreelanceEscrow.sol:60"
+          },
+          {
+            "label": "reputationContract",
+            "offset": 0,
+            "slot": "70",
+            "type": "t_address",
+            "contract": "FreelanceEscrow",
+            "src": "contracts\\FreelanceEscrow.sol:62"
+          },
+          {
+            "label": "completionCertContract",
+            "offset": 0,
+            "slot": "71",
+            "type": "t_address",
+            "contract": "FreelanceEscrow",
+            "src": "contracts\\FreelanceEscrow.sol:64"
+          },
+          {
+            "label": "reviewSBT",
+            "offset": 0,
+            "slot": "72",
+            "type": "t_address",
+            "contract": "FreelanceEscrow",
+            "src": "contracts\\FreelanceEscrow.sol:66"
+          },
+          {
+            "label": "privacyShield",
+            "offset": 0,
+            "slot": "73",
+            "type": "t_address",
+            "contract": "FreelanceEscrow",
+            "src": "contracts\\FreelanceEscrow.sol:68"
+          },
+          {
+            "label": "securityOracle",
+            "offset": 0,
+            "slot": "74",
+            "type": "t_address",
+            "contract": "FreelanceEscrow",
+            "src": "contracts\\FreelanceEscrow.sol:70"
+          },
+          {
+            "label": "timelock",
+            "offset": 0,
+            "slot": "75",
+            "type": "t_address",
+            "contract": "FreelanceEscrow",
+            "src": "contracts\\FreelanceEscrow.sol:82"
+          },
+          {
+            "label": "emergencyMode",
+            "offset": 20,
+            "slot": "75",
+            "type": "t_bool",
+            "contract": "FreelanceEscrow",
+            "src": "contracts\\FreelanceEscrow.sol:84"
+          },
+          {
+            "label": "lastJobCreated",
+            "offset": 0,
+            "slot": "76",
+            "type": "t_mapping(t_address,t_uint256)",
+            "contract": "FreelanceEscrow",
+            "src": "contracts\\FreelanceEscrow.sol:87"
+          },
+          {
+            "label": "isSupreme",
+            "offset": 0,
+            "slot": "77",
+            "type": "t_mapping(t_address,t_bool)",
+            "contract": "FreelanceEscrow",
+            "src": "contracts\\FreelanceEscrow.sol:244"
+          },
+          {
+            "label": "tokenWhitelist",
+            "offset": 0,
+            "slot": "78",
+            "type": "t_mapping(t_address,t_bool)",
+            "contract": "FreelanceEscrow",
+            "src": "contracts\\FreelanceEscrow.sol:264"
+          },
+          {
+            "label": "userStakes",
+            "offset": 0,
+            "slot": "79",
+            "type": "t_mapping(t_address,t_mapping(t_address,t_mapping(t_enum(Strategy)23047,t_uint256)))",
+            "contract": "FreelanceEscrow",
+            "src": "contracts\\FreelanceEscrow.sol:425"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_bytes32": {
+            "label": "bytes32",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_bytes32,t_struct(RoleData)24_storage)": {
+            "label": "mapping(bytes32 => struct AccessControlUpgradeable.RoleData)",
+            "numberOfBytes": "32"
+          },
+          "t_struct(AccessControlStorage)34_storage": {
+            "label": "struct AccessControlUpgradeable.AccessControlStorage",
+            "members": [
+              {
+                "label": "_roles",
+                "type": "t_mapping(t_bytes32,t_struct(RoleData)24_storage)",
+                "offset": 0,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_struct(InitializableStorage)1410_storage": {
+            "label": "struct Initializable.InitializableStorage",
+            "members": [
+              {
+                "label": "_initialized",
+                "type": "t_uint64",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "_initializing",
+                "type": "t_bool",
+                "offset": 8,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_struct(PausableStorage)976_storage": {
+            "label": "struct PausableUpgradeable.PausableStorage",
+            "members": [
+              {
+                "label": "_paused",
+                "type": "t_bool",
+                "offset": 0,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_struct(RoleData)24_storage": {
+            "label": "struct AccessControlUpgradeable.RoleData",
+            "members": [
+              {
+                "label": "hasRole",
+                "type": "t_mapping(t_address,t_bool)",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "adminRole",
+                "type": "t_bytes32",
+                "offset": 0,
+                "slot": "1"
+              }
+            ],
+            "numberOfBytes": "64"
+          },
+          "t_uint64": {
+            "label": "uint64",
+            "numberOfBytes": "8"
+          },
+          "t_array(t_struct(Application)21424_storage)dyn_storage": {
+            "label": "struct Application[]",
+            "numberOfBytes": "32"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]",
+            "numberOfBytes": "1600"
+          },
+          "t_enum(JobStatus)21384": {
+            "label": "enum JobStatus",
+            "members": [
+              "Created",
+              "Accepted",
+              "Ongoing",
+              "Disputed",
+              "Arbitration",
+              "Completed",
+              "Cancelled"
+            ],
+            "numberOfBytes": "1"
+          },
+          "t_enum(Strategy)23047": {
+            "label": "enum IYieldManager.Strategy",
+            "members": [
+              "NONE",
+              "AAVE",
+              "COMPOUND",
+              "MORPHO"
+            ],
+            "numberOfBytes": "1"
+          },
+          "t_mapping(t_address,t_mapping(t_address,t_mapping(t_enum(Strategy)23047,t_uint256)))": {
+            "label": "mapping(address => mapping(address => mapping(enum IYieldManager.Strategy => uint256)))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_mapping(t_address,t_uint256))": {
+            "label": "mapping(address => mapping(address => uint256))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_mapping(t_enum(Strategy)23047,t_uint256))": {
+            "label": "mapping(address => mapping(enum IYieldManager.Strategy => uint256))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_enum(Strategy)23047,t_uint256)": {
+            "label": "mapping(enum IYieldManager.Strategy => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_array(t_struct(Application)21424_storage)dyn_storage)": {
+            "label": "mapping(uint256 => struct Application[])",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_mapping(t_address,t_bool))": {
+            "label": "mapping(uint256 => mapping(address => bool))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_mapping(t_uint256,t_struct(Milestone)21433_storage))": {
+            "label": "mapping(uint256 => mapping(uint256 => struct Milestone))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_struct(Job)21419_storage)": {
+            "label": "mapping(uint256 => struct Job)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_struct(Milestone)21433_storage)": {
+            "label": "mapping(uint256 => struct Milestone)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_uint256)": {
+            "label": "mapping(uint256 => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_string_storage": {
+            "label": "string",
+            "numberOfBytes": "32"
+          },
+          "t_struct(Application)21424_storage": {
+            "label": "struct Application",
+            "members": [
+              {
+                "label": "freelancer",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "stake",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "1"
+              }
+            ],
+            "numberOfBytes": "64"
+          },
+          "t_struct(Job)21419_storage": {
+            "label": "struct Job",
+            "members": [
+              {
+                "label": "client",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "id",
+                "type": "t_uint32",
+                "offset": 20,
+                "slot": "0"
+              },
+              {
+                "label": "deadline",
+                "type": "t_uint48",
+                "offset": 24,
+                "slot": "0"
+              },
+              {
+                "label": "categoryId",
+                "type": "t_uint16",
+                "offset": 30,
+                "slot": "0"
+              },
+              {
+                "label": "freelancer",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "milestoneCount",
+                "type": "t_uint16",
+                "offset": 20,
+                "slot": "1"
+              },
+              {
+                "label": "status",
+                "type": "t_enum(JobStatus)21384",
+                "offset": 22,
+                "slot": "1"
+              },
+              {
+                "label": "paid",
+                "type": "t_bool",
+                "offset": 23,
+                "slot": "1"
+              },
+              {
+                "label": "zkRequired",
+                "type": "t_bool",
+                "offset": 24,
+                "slot": "1"
+              },
+              {
+                "label": "yieldStrategy",
+                "type": "t_enum(Strategy)23047",
+                "offset": 25,
+                "slot": "1"
+              },
+              {
+                "label": "rating",
+                "type": "t_uint8",
+                "offset": 26,
+                "slot": "1"
+              },
+              {
+                "label": "token",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "amount",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "3"
+              },
+              {
+                "label": "freelancerStake",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "4"
+              },
+              {
+                "label": "totalPaidOut",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "5"
+              },
+              {
+                "label": "ipfsHash",
+                "type": "t_string_storage",
+                "offset": 0,
+                "slot": "6"
+              }
+            ],
+            "numberOfBytes": "224"
+          },
+          "t_struct(Milestone)21433_storage": {
+            "label": "struct Milestone",
+            "members": [
+              {
+                "label": "amount",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "ipfsHash",
+                "type": "t_string_storage",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "isReleased",
+                "type": "t_bool",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "isUpfront",
+                "type": "t_bool",
+                "offset": 1,
+                "slot": "2"
+              }
+            ],
+            "numberOfBytes": "96"
+          },
+          "t_uint16": {
+            "label": "uint16",
+            "numberOfBytes": "2"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_uint32": {
+            "label": "uint32",
+            "numberOfBytes": "4"
+          },
+          "t_uint48": {
+            "label": "uint48",
+            "numberOfBytes": "6"
+          },
+          "t_uint8": {
+            "label": "uint8",
+            "numberOfBytes": "1"
+          }
+        },
+        "namespaces": {
+          "erc7201:openzeppelin.storage.Pausable": [
+            {
+              "contract": "PausableUpgradeable",
+              "label": "_paused",
+              "type": "t_bool",
+              "src": "@openzeppelin\\contracts-upgradeable\\utils\\PausableUpgradeable.sol:21",
+              "offset": 0,
+              "slot": "0"
+            }
+          ],
+          "erc7201:openzeppelin.storage.AccessControl": [
+            {
+              "contract": "AccessControlUpgradeable",
+              "label": "_roles",
+              "type": "t_mapping(t_bytes32,t_struct(RoleData)24_storage)",
+              "src": "@openzeppelin\\contracts-upgradeable\\access\\AccessControlUpgradeable.sol:61",
+              "offset": 0,
+              "slot": "0"
             }
           ],
           "erc7201:openzeppelin.storage.Initializable": [

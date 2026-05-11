@@ -10,29 +10,91 @@ import {
   BigInt,
 } from "@graphprotocol/graph-ts";
 
-export class RatingUpdated extends ethereum.Event {
-  get params(): RatingUpdated__Params {
-    return new RatingUpdated__Params(this);
+export class ApprovalForAll extends ethereum.Event {
+  get params(): ApprovalForAll__Params {
+    return new ApprovalForAll__Params(this);
   }
 }
 
-export class RatingUpdated__Params {
-  _event: RatingUpdated;
+export class ApprovalForAll__Params {
+  _event: ApprovalForAll;
 
-  constructor(event: RatingUpdated) {
+  constructor(event: ApprovalForAll) {
     this._event = event;
   }
 
-  get freelancer(): Address {
+  get account(): Address {
     return this._event.parameters[0].value.toAddress();
   }
 
-  get averageRating(): i32 {
+  get operator(): Address {
+    return this._event.parameters[1].value.toAddress();
+  }
+
+  get approved(): boolean {
+    return this._event.parameters[2].value.toBoolean();
+  }
+}
+
+export class GravityCalibrated extends ethereum.Event {
+  get params(): GravityCalibrated__Params {
+    return new GravityCalibrated__Params(this);
+  }
+}
+
+export class GravityCalibrated__Params {
+  _event: GravityCalibrated;
+
+  constructor(event: GravityCalibrated) {
+    this._event = event;
+  }
+
+  get sovereign(): Address {
+    return this._event.parameters[0].value.toAddress();
+  }
+
+  get completionRate(): i32 {
     return this._event.parameters[1].value.toI32();
   }
 
-  get totalJobs(): BigInt {
-    return this._event.parameters[2].value.toBigInt();
+  get gravityScore(): i32 {
+    return this._event.parameters[2].value.toI32();
+  }
+}
+
+export class Initialized extends ethereum.Event {
+  get params(): Initialized__Params {
+    return new Initialized__Params(this);
+  }
+}
+
+export class Initialized__Params {
+  _event: Initialized;
+
+  constructor(event: Initialized) {
+    this._event = event;
+  }
+
+  get version(): BigInt {
+    return this._event.parameters[0].value.toBigInt();
+  }
+}
+
+export class Paused extends ethereum.Event {
+  get params(): Paused__Params {
+    return new Paused__Params(this);
+  }
+}
+
+export class Paused__Params {
+  _event: Paused;
+
+  constructor(event: Paused) {
+    this._event = event;
+  }
+
+  get account(): Address {
+    return this._event.parameters[0].value.toAddress();
   }
 }
 
@@ -58,9 +120,707 @@ export class PortfolioUpdated__Params {
   }
 }
 
+export class RatingUpdated extends ethereum.Event {
+  get params(): RatingUpdated__Params {
+    return new RatingUpdated__Params(this);
+  }
+}
+
+export class RatingUpdated__Params {
+  _event: RatingUpdated;
+
+  constructor(event: RatingUpdated) {
+    this._event = event;
+  }
+
+  get freelancer(): Address {
+    return this._event.parameters[0].value.toAddress();
+  }
+
+  get averageRating(): BigInt {
+    return this._event.parameters[1].value.toBigInt();
+  }
+
+  get totalJobs(): BigInt {
+    return this._event.parameters[2].value.toBigInt();
+  }
+}
+
+export class RoleAdminChanged extends ethereum.Event {
+  get params(): RoleAdminChanged__Params {
+    return new RoleAdminChanged__Params(this);
+  }
+}
+
+export class RoleAdminChanged__Params {
+  _event: RoleAdminChanged;
+
+  constructor(event: RoleAdminChanged) {
+    this._event = event;
+  }
+
+  get role(): Bytes {
+    return this._event.parameters[0].value.toBytes();
+  }
+
+  get previousAdminRole(): Bytes {
+    return this._event.parameters[1].value.toBytes();
+  }
+
+  get newAdminRole(): Bytes {
+    return this._event.parameters[2].value.toBytes();
+  }
+}
+
+export class RoleGranted extends ethereum.Event {
+  get params(): RoleGranted__Params {
+    return new RoleGranted__Params(this);
+  }
+}
+
+export class RoleGranted__Params {
+  _event: RoleGranted;
+
+  constructor(event: RoleGranted) {
+    this._event = event;
+  }
+
+  get role(): Bytes {
+    return this._event.parameters[0].value.toBytes();
+  }
+
+  get account(): Address {
+    return this._event.parameters[1].value.toAddress();
+  }
+
+  get sender(): Address {
+    return this._event.parameters[2].value.toAddress();
+  }
+}
+
+export class RoleRevoked extends ethereum.Event {
+  get params(): RoleRevoked__Params {
+    return new RoleRevoked__Params(this);
+  }
+}
+
+export class RoleRevoked__Params {
+  _event: RoleRevoked;
+
+  constructor(event: RoleRevoked) {
+    this._event = event;
+  }
+
+  get role(): Bytes {
+    return this._event.parameters[0].value.toBytes();
+  }
+
+  get account(): Address {
+    return this._event.parameters[1].value.toAddress();
+  }
+
+  get sender(): Address {
+    return this._event.parameters[2].value.toAddress();
+  }
+}
+
+export class TransferBatch extends ethereum.Event {
+  get params(): TransferBatch__Params {
+    return new TransferBatch__Params(this);
+  }
+}
+
+export class TransferBatch__Params {
+  _event: TransferBatch;
+
+  constructor(event: TransferBatch) {
+    this._event = event;
+  }
+
+  get operator(): Address {
+    return this._event.parameters[0].value.toAddress();
+  }
+
+  get from(): Address {
+    return this._event.parameters[1].value.toAddress();
+  }
+
+  get to(): Address {
+    return this._event.parameters[2].value.toAddress();
+  }
+
+  get ids(): Array<BigInt> {
+    return this._event.parameters[3].value.toBigIntArray();
+  }
+
+  get values(): Array<BigInt> {
+    return this._event.parameters[4].value.toBigIntArray();
+  }
+}
+
+export class TransferSingle extends ethereum.Event {
+  get params(): TransferSingle__Params {
+    return new TransferSingle__Params(this);
+  }
+}
+
+export class TransferSingle__Params {
+  _event: TransferSingle;
+
+  constructor(event: TransferSingle) {
+    this._event = event;
+  }
+
+  get operator(): Address {
+    return this._event.parameters[0].value.toAddress();
+  }
+
+  get from(): Address {
+    return this._event.parameters[1].value.toAddress();
+  }
+
+  get to(): Address {
+    return this._event.parameters[2].value.toAddress();
+  }
+
+  get id(): BigInt {
+    return this._event.parameters[3].value.toBigInt();
+  }
+
+  get value(): BigInt {
+    return this._event.parameters[4].value.toBigInt();
+  }
+}
+
+export class URI extends ethereum.Event {
+  get params(): URI__Params {
+    return new URI__Params(this);
+  }
+}
+
+export class URI__Params {
+  _event: URI;
+
+  constructor(event: URI) {
+    this._event = event;
+  }
+
+  get value(): string {
+    return this._event.parameters[0].value.toString();
+  }
+
+  get id(): BigInt {
+    return this._event.parameters[1].value.toBigInt();
+  }
+}
+
+export class Unpaused extends ethereum.Event {
+  get params(): Unpaused__Params {
+    return new Unpaused__Params(this);
+  }
+}
+
+export class Unpaused__Params {
+  _event: Unpaused;
+
+  constructor(event: Unpaused) {
+    this._event = event;
+  }
+
+  get account(): Address {
+    return this._event.parameters[0].value.toAddress();
+  }
+}
+
+export class Upgraded extends ethereum.Event {
+  get params(): Upgraded__Params {
+    return new Upgraded__Params(this);
+  }
+}
+
+export class Upgraded__Params {
+  _event: Upgraded;
+
+  constructor(event: Upgraded) {
+    this._event = event;
+  }
+
+  get implementation(): Address {
+    return this._event.parameters[0].value.toAddress();
+  }
+}
+
 export class FreelancerReputation extends ethereum.SmartContract {
   static bind(address: Address): FreelancerReputation {
     return new FreelancerReputation("FreelancerReputation", address);
+  }
+
+  DEFAULT_ADMIN_ROLE(): Bytes {
+    let result = super.call(
+      "DEFAULT_ADMIN_ROLE",
+      "DEFAULT_ADMIN_ROLE():(bytes32)",
+      [],
+    );
+
+    return result[0].toBytes();
+  }
+
+  try_DEFAULT_ADMIN_ROLE(): ethereum.CallResult<Bytes> {
+    let result = super.tryCall(
+      "DEFAULT_ADMIN_ROLE",
+      "DEFAULT_ADMIN_ROLE():(bytes32)",
+      [],
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toBytes());
+  }
+
+  KARMA_ID(): BigInt {
+    let result = super.call("KARMA_ID", "KARMA_ID():(uint256)", []);
+
+    return result[0].toBigInt();
+  }
+
+  try_KARMA_ID(): ethereum.CallResult<BigInt> {
+    let result = super.tryCall("KARMA_ID", "KARMA_ID():(uint256)", []);
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toBigInt());
+  }
+
+  MINTER_ROLE(): Bytes {
+    let result = super.call("MINTER_ROLE", "MINTER_ROLE():(bytes32)", []);
+
+    return result[0].toBytes();
+  }
+
+  try_MINTER_ROLE(): ethereum.CallResult<Bytes> {
+    let result = super.tryCall("MINTER_ROLE", "MINTER_ROLE():(bytes32)", []);
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toBytes());
+  }
+
+  UPGRADER_ROLE(): Bytes {
+    let result = super.call("UPGRADER_ROLE", "UPGRADER_ROLE():(bytes32)", []);
+
+    return result[0].toBytes();
+  }
+
+  try_UPGRADER_ROLE(): ethereum.CallResult<Bytes> {
+    let result = super.tryCall(
+      "UPGRADER_ROLE",
+      "UPGRADER_ROLE():(bytes32)",
+      [],
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toBytes());
+  }
+
+  UPGRADE_INTERFACE_VERSION(): string {
+    let result = super.call(
+      "UPGRADE_INTERFACE_VERSION",
+      "UPGRADE_INTERFACE_VERSION():(string)",
+      [],
+    );
+
+    return result[0].toString();
+  }
+
+  try_UPGRADE_INTERFACE_VERSION(): ethereum.CallResult<string> {
+    let result = super.tryCall(
+      "UPGRADE_INTERFACE_VERSION",
+      "UPGRADE_INTERFACE_VERSION():(string)",
+      [],
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toString());
+  }
+
+  averageRating(param0: Address): BigInt {
+    let result = super.call(
+      "averageRating",
+      "averageRating(address):(uint256)",
+      [ethereum.Value.fromAddress(param0)],
+    );
+
+    return result[0].toBigInt();
+  }
+
+  try_averageRating(param0: Address): ethereum.CallResult<BigInt> {
+    let result = super.tryCall(
+      "averageRating",
+      "averageRating(address):(uint256)",
+      [ethereum.Value.fromAddress(param0)],
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toBigInt());
+  }
+
+  balanceOf(account: Address, id: BigInt): BigInt {
+    let result = super.call(
+      "balanceOf",
+      "balanceOf(address,uint256):(uint256)",
+      [
+        ethereum.Value.fromAddress(account),
+        ethereum.Value.fromUnsignedBigInt(id),
+      ],
+    );
+
+    return result[0].toBigInt();
+  }
+
+  try_balanceOf(account: Address, id: BigInt): ethereum.CallResult<BigInt> {
+    let result = super.tryCall(
+      "balanceOf",
+      "balanceOf(address,uint256):(uint256)",
+      [
+        ethereum.Value.fromAddress(account),
+        ethereum.Value.fromUnsignedBigInt(id),
+      ],
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toBigInt());
+  }
+
+  balanceOfBatch(accounts: Array<Address>, ids: Array<BigInt>): Array<BigInt> {
+    let result = super.call(
+      "balanceOfBatch",
+      "balanceOfBatch(address[],uint256[]):(uint256[])",
+      [
+        ethereum.Value.fromAddressArray(accounts),
+        ethereum.Value.fromUnsignedBigIntArray(ids),
+      ],
+    );
+
+    return result[0].toBigIntArray();
+  }
+
+  try_balanceOfBatch(
+    accounts: Array<Address>,
+    ids: Array<BigInt>,
+  ): ethereum.CallResult<Array<BigInt>> {
+    let result = super.tryCall(
+      "balanceOfBatch",
+      "balanceOfBatch(address[],uint256[]):(uint256[])",
+      [
+        ethereum.Value.fromAddressArray(accounts),
+        ethereum.Value.fromUnsignedBigIntArray(ids),
+      ],
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toBigIntArray());
+  }
+
+  completionRate(param0: Address): i32 {
+    let result = super.call(
+      "completionRate",
+      "completionRate(address):(uint16)",
+      [ethereum.Value.fromAddress(param0)],
+    );
+
+    return result[0].toI32();
+  }
+
+  try_completionRate(param0: Address): ethereum.CallResult<i32> {
+    let result = super.tryCall(
+      "completionRate",
+      "completionRate(address):(uint16)",
+      [ethereum.Value.fromAddress(param0)],
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toI32());
+  }
+
+  getRoleAdmin(role: Bytes): Bytes {
+    let result = super.call("getRoleAdmin", "getRoleAdmin(bytes32):(bytes32)", [
+      ethereum.Value.fromFixedBytes(role),
+    ]);
+
+    return result[0].toBytes();
+  }
+
+  try_getRoleAdmin(role: Bytes): ethereum.CallResult<Bytes> {
+    let result = super.tryCall(
+      "getRoleAdmin",
+      "getRoleAdmin(bytes32):(bytes32)",
+      [ethereum.Value.fromFixedBytes(role)],
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toBytes());
+  }
+
+  gravityScores(param0: Address): i32 {
+    let result = super.call(
+      "gravityScores",
+      "gravityScores(address):(uint16)",
+      [ethereum.Value.fromAddress(param0)],
+    );
+
+    return result[0].toI32();
+  }
+
+  try_gravityScores(param0: Address): ethereum.CallResult<i32> {
+    let result = super.tryCall(
+      "gravityScores",
+      "gravityScores(address):(uint16)",
+      [ethereum.Value.fromAddress(param0)],
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toI32());
+  }
+
+  hasRole(role: Bytes, account: Address): boolean {
+    let result = super.call("hasRole", "hasRole(bytes32,address):(bool)", [
+      ethereum.Value.fromFixedBytes(role),
+      ethereum.Value.fromAddress(account),
+    ]);
+
+    return result[0].toBoolean();
+  }
+
+  try_hasRole(role: Bytes, account: Address): ethereum.CallResult<boolean> {
+    let result = super.tryCall("hasRole", "hasRole(bytes32,address):(bool)", [
+      ethereum.Value.fromFixedBytes(role),
+      ethereum.Value.fromAddress(account),
+    ]);
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toBoolean());
+  }
+
+  isApprovedForAll(account: Address, operator: Address): boolean {
+    let result = super.call(
+      "isApprovedForAll",
+      "isApprovedForAll(address,address):(bool)",
+      [
+        ethereum.Value.fromAddress(account),
+        ethereum.Value.fromAddress(operator),
+      ],
+    );
+
+    return result[0].toBoolean();
+  }
+
+  try_isApprovedForAll(
+    account: Address,
+    operator: Address,
+  ): ethereum.CallResult<boolean> {
+    let result = super.tryCall(
+      "isApprovedForAll",
+      "isApprovedForAll(address,address):(bool)",
+      [
+        ethereum.Value.fromAddress(account),
+        ethereum.Value.fromAddress(operator),
+      ],
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toBoolean());
+  }
+
+  paused(): boolean {
+    let result = super.call("paused", "paused():(bool)", []);
+
+    return result[0].toBoolean();
+  }
+
+  try_paused(): ethereum.CallResult<boolean> {
+    let result = super.tryCall("paused", "paused():(bool)", []);
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toBoolean());
+  }
+
+  polThreshold(): BigInt {
+    let result = super.call("polThreshold", "polThreshold():(uint256)", []);
+
+    return result[0].toBigInt();
+  }
+
+  try_polThreshold(): ethereum.CallResult<BigInt> {
+    let result = super.tryCall("polThreshold", "polThreshold():(uint256)", []);
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toBigInt());
+  }
+
+  polToken(): Address {
+    let result = super.call("polToken", "polToken():(address)", []);
+
+    return result[0].toAddress();
+  }
+
+  try_polToken(): ethereum.CallResult<Address> {
+    let result = super.tryCall("polToken", "polToken():(address)", []);
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toAddress());
+  }
+
+  portfolioCID(param0: Address): string {
+    let result = super.call("portfolioCID", "portfolioCID(address):(string)", [
+      ethereum.Value.fromAddress(param0),
+    ]);
+
+    return result[0].toString();
+  }
+
+  try_portfolioCID(param0: Address): ethereum.CallResult<string> {
+    let result = super.tryCall(
+      "portfolioCID",
+      "portfolioCID(address):(string)",
+      [ethereum.Value.fromAddress(param0)],
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toString());
+  }
+
+  proxiableUUID(): Bytes {
+    let result = super.call("proxiableUUID", "proxiableUUID():(bytes32)", []);
+
+    return result[0].toBytes();
+  }
+
+  try_proxiableUUID(): ethereum.CallResult<Bytes> {
+    let result = super.tryCall(
+      "proxiableUUID",
+      "proxiableUUID():(bytes32)",
+      [],
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toBytes());
+  }
+
+  supportsInterface(interfaceId: Bytes): boolean {
+    let result = super.call(
+      "supportsInterface",
+      "supportsInterface(bytes4):(bool)",
+      [ethereum.Value.fromFixedBytes(interfaceId)],
+    );
+
+    return result[0].toBoolean();
+  }
+
+  try_supportsInterface(interfaceId: Bytes): ethereum.CallResult<boolean> {
+    let result = super.tryCall(
+      "supportsInterface",
+      "supportsInterface(bytes4):(bool)",
+      [ethereum.Value.fromFixedBytes(interfaceId)],
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toBoolean());
+  }
+
+  totalEngagements(param0: Address): BigInt {
+    let result = super.call(
+      "totalEngagements",
+      "totalEngagements(address):(uint256)",
+      [ethereum.Value.fromAddress(param0)],
+    );
+
+    return result[0].toBigInt();
+  }
+
+  try_totalEngagements(param0: Address): ethereum.CallResult<BigInt> {
+    let result = super.tryCall(
+      "totalEngagements",
+      "totalEngagements(address):(uint256)",
+      [ethereum.Value.fromAddress(param0)],
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toBigInt());
+  }
+
+  totalStars(param0: Address): BigInt {
+    let result = super.call("totalStars", "totalStars(address):(uint256)", [
+      ethereum.Value.fromAddress(param0),
+    ]);
+
+    return result[0].toBigInt();
+  }
+
+  try_totalStars(param0: Address): ethereum.CallResult<BigInt> {
+    let result = super.tryCall("totalStars", "totalStars(address):(uint256)", [
+      ethereum.Value.fromAddress(param0),
+    ]);
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toBigInt());
+  }
+
+  uri(param0: BigInt): string {
+    let result = super.call("uri", "uri(uint256):(string)", [
+      ethereum.Value.fromUnsignedBigInt(param0),
+    ]);
+
+    return result[0].toString();
+  }
+
+  try_uri(param0: BigInt): ethereum.CallResult<string> {
+    let result = super.tryCall("uri", "uri(uint256):(string)", [
+      ethereum.Value.fromUnsignedBigInt(param0),
+    ]);
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toString());
   }
 }
 
@@ -90,62 +850,24 @@ export class ConstructorCall__Outputs {
   }
 }
 
-export class LevelUpCall extends ethereum.Call {
-  get inputs(): LevelUpCall__Inputs {
-    return new LevelUpCall__Inputs(this);
+export class ActuateRatingCall extends ethereum.Call {
+  get inputs(): ActuateRatingCall__Inputs {
+    return new ActuateRatingCall__Inputs(this);
   }
 
-  get outputs(): LevelUpCall__Outputs {
-    return new LevelUpCall__Outputs(this);
+  get outputs(): ActuateRatingCall__Outputs {
+    return new ActuateRatingCall__Outputs(this);
   }
 }
 
-export class LevelUpCall__Inputs {
-  _call: LevelUpCall;
+export class ActuateRatingCall__Inputs {
+  _call: ActuateRatingCall;
 
-  constructor(call: LevelUpCall) {
+  constructor(call: ActuateRatingCall) {
     this._call = call;
   }
 
-  get to(): Address {
-    return this._call.inputValues[0].value.toAddress();
-  }
-
-  get id(): BigInt {
-    return this._call.inputValues[1].value.toBigInt();
-  }
-
-  get amount(): BigInt {
-    return this._call.inputValues[2].value.toBigInt();
-  }
-}
-
-export class LevelUpCall__Outputs {
-  _call: LevelUpCall;
-
-  constructor(call: LevelUpCall) {
-    this._call = call;
-  }
-}
-
-export class UpdateRatingCall extends ethereum.Call {
-  get inputs(): UpdateRatingCall__Inputs {
-    return new UpdateRatingCall__Inputs(this);
-  }
-
-  get outputs(): UpdateRatingCall__Outputs {
-    return new UpdateRatingCall__Outputs(this);
-  }
-}
-
-export class UpdateRatingCall__Inputs {
-  _call: UpdateRatingCall;
-
-  constructor(call: UpdateRatingCall) {
-    this._call = call;
-  }
-
-  get freelancer(): Address {
+  get sovereign(): Address {
     return this._call.inputValues[0].value.toAddress();
   }
 
@@ -154,28 +876,66 @@ export class UpdateRatingCall__Inputs {
   }
 }
 
-export class UpdateRatingCall__Outputs {
-  _call: UpdateRatingCall;
+export class ActuateRatingCall__Outputs {
+  _call: ActuateRatingCall;
 
-  constructor(call: UpdateRatingCall) {
+  constructor(call: ActuateRatingCall) {
     this._call = call;
   }
 }
 
-export class UpdatePortfolioCall extends ethereum.Call {
-  get inputs(): UpdatePortfolioCall__Inputs {
-    return new UpdatePortfolioCall__Inputs(this);
+export class ActuateSovereignXPCall extends ethereum.Call {
+  get inputs(): ActuateSovereignXPCall__Inputs {
+    return new ActuateSovereignXPCall__Inputs(this);
   }
 
-  get outputs(): UpdatePortfolioCall__Outputs {
-    return new UpdatePortfolioCall__Outputs(this);
+  get outputs(): ActuateSovereignXPCall__Outputs {
+    return new ActuateSovereignXPCall__Outputs(this);
   }
 }
 
-export class UpdatePortfolioCall__Inputs {
-  _call: UpdatePortfolioCall;
+export class ActuateSovereignXPCall__Inputs {
+  _call: ActuateSovereignXPCall;
 
-  constructor(call: UpdatePortfolioCall) {
+  constructor(call: ActuateSovereignXPCall) {
+    this._call = call;
+  }
+
+  get sovereign(): Address {
+    return this._call.inputValues[0].value.toAddress();
+  }
+
+  get skillId(): BigInt {
+    return this._call.inputValues[1].value.toBigInt();
+  }
+
+  get xp(): BigInt {
+    return this._call.inputValues[2].value.toBigInt();
+  }
+}
+
+export class ActuateSovereignXPCall__Outputs {
+  _call: ActuateSovereignXPCall;
+
+  constructor(call: ActuateSovereignXPCall) {
+    this._call = call;
+  }
+}
+
+export class AnchorPortfolioCall extends ethereum.Call {
+  get inputs(): AnchorPortfolioCall__Inputs {
+    return new AnchorPortfolioCall__Inputs(this);
+  }
+
+  get outputs(): AnchorPortfolioCall__Outputs {
+    return new AnchorPortfolioCall__Outputs(this);
+  }
+}
+
+export class AnchorPortfolioCall__Inputs {
+  _call: AnchorPortfolioCall;
+
+  constructor(call: AnchorPortfolioCall) {
     this._call = call;
   }
 
@@ -184,10 +944,460 @@ export class UpdatePortfolioCall__Inputs {
   }
 }
 
-export class UpdatePortfolioCall__Outputs {
-  _call: UpdatePortfolioCall;
+export class AnchorPortfolioCall__Outputs {
+  _call: AnchorPortfolioCall;
 
-  constructor(call: UpdatePortfolioCall) {
+  constructor(call: AnchorPortfolioCall) {
+    this._call = call;
+  }
+}
+
+export class CalibrateGravityCall extends ethereum.Call {
+  get inputs(): CalibrateGravityCall__Inputs {
+    return new CalibrateGravityCall__Inputs(this);
+  }
+
+  get outputs(): CalibrateGravityCall__Outputs {
+    return new CalibrateGravityCall__Outputs(this);
+  }
+}
+
+export class CalibrateGravityCall__Inputs {
+  _call: CalibrateGravityCall;
+
+  constructor(call: CalibrateGravityCall) {
+    this._call = call;
+  }
+
+  get sovereign(): Address {
+    return this._call.inputValues[0].value.toAddress();
+  }
+
+  get _completionRate(): i32 {
+    return this._call.inputValues[1].value.toI32();
+  }
+
+  get _gravityScore(): i32 {
+    return this._call.inputValues[2].value.toI32();
+  }
+}
+
+export class CalibrateGravityCall__Outputs {
+  _call: CalibrateGravityCall;
+
+  constructor(call: CalibrateGravityCall) {
+    this._call = call;
+  }
+}
+
+export class GrantRoleCall extends ethereum.Call {
+  get inputs(): GrantRoleCall__Inputs {
+    return new GrantRoleCall__Inputs(this);
+  }
+
+  get outputs(): GrantRoleCall__Outputs {
+    return new GrantRoleCall__Outputs(this);
+  }
+}
+
+export class GrantRoleCall__Inputs {
+  _call: GrantRoleCall;
+
+  constructor(call: GrantRoleCall) {
+    this._call = call;
+  }
+
+  get role(): Bytes {
+    return this._call.inputValues[0].value.toBytes();
+  }
+
+  get account(): Address {
+    return this._call.inputValues[1].value.toAddress();
+  }
+}
+
+export class GrantRoleCall__Outputs {
+  _call: GrantRoleCall;
+
+  constructor(call: GrantRoleCall) {
+    this._call = call;
+  }
+}
+
+export class InitializeCall extends ethereum.Call {
+  get inputs(): InitializeCall__Inputs {
+    return new InitializeCall__Inputs(this);
+  }
+
+  get outputs(): InitializeCall__Outputs {
+    return new InitializeCall__Outputs(this);
+  }
+}
+
+export class InitializeCall__Inputs {
+  _call: InitializeCall;
+
+  constructor(call: InitializeCall) {
+    this._call = call;
+  }
+
+  get admin(): Address {
+    return this._call.inputValues[0].value.toAddress();
+  }
+
+  get uri(): string {
+    return this._call.inputValues[1].value.toString();
+  }
+}
+
+export class InitializeCall__Outputs {
+  _call: InitializeCall;
+
+  constructor(call: InitializeCall) {
+    this._call = call;
+  }
+}
+
+export class PauseCall extends ethereum.Call {
+  get inputs(): PauseCall__Inputs {
+    return new PauseCall__Inputs(this);
+  }
+
+  get outputs(): PauseCall__Outputs {
+    return new PauseCall__Outputs(this);
+  }
+}
+
+export class PauseCall__Inputs {
+  _call: PauseCall;
+
+  constructor(call: PauseCall) {
+    this._call = call;
+  }
+}
+
+export class PauseCall__Outputs {
+  _call: PauseCall;
+
+  constructor(call: PauseCall) {
+    this._call = call;
+  }
+}
+
+export class RenounceRoleCall extends ethereum.Call {
+  get inputs(): RenounceRoleCall__Inputs {
+    return new RenounceRoleCall__Inputs(this);
+  }
+
+  get outputs(): RenounceRoleCall__Outputs {
+    return new RenounceRoleCall__Outputs(this);
+  }
+}
+
+export class RenounceRoleCall__Inputs {
+  _call: RenounceRoleCall;
+
+  constructor(call: RenounceRoleCall) {
+    this._call = call;
+  }
+
+  get role(): Bytes {
+    return this._call.inputValues[0].value.toBytes();
+  }
+
+  get callerConfirmation(): Address {
+    return this._call.inputValues[1].value.toAddress();
+  }
+}
+
+export class RenounceRoleCall__Outputs {
+  _call: RenounceRoleCall;
+
+  constructor(call: RenounceRoleCall) {
+    this._call = call;
+  }
+}
+
+export class RevokeRoleCall extends ethereum.Call {
+  get inputs(): RevokeRoleCall__Inputs {
+    return new RevokeRoleCall__Inputs(this);
+  }
+
+  get outputs(): RevokeRoleCall__Outputs {
+    return new RevokeRoleCall__Outputs(this);
+  }
+}
+
+export class RevokeRoleCall__Inputs {
+  _call: RevokeRoleCall;
+
+  constructor(call: RevokeRoleCall) {
+    this._call = call;
+  }
+
+  get role(): Bytes {
+    return this._call.inputValues[0].value.toBytes();
+  }
+
+  get account(): Address {
+    return this._call.inputValues[1].value.toAddress();
+  }
+}
+
+export class RevokeRoleCall__Outputs {
+  _call: RevokeRoleCall;
+
+  constructor(call: RevokeRoleCall) {
+    this._call = call;
+  }
+}
+
+export class SafeBatchTransferFromCall extends ethereum.Call {
+  get inputs(): SafeBatchTransferFromCall__Inputs {
+    return new SafeBatchTransferFromCall__Inputs(this);
+  }
+
+  get outputs(): SafeBatchTransferFromCall__Outputs {
+    return new SafeBatchTransferFromCall__Outputs(this);
+  }
+}
+
+export class SafeBatchTransferFromCall__Inputs {
+  _call: SafeBatchTransferFromCall;
+
+  constructor(call: SafeBatchTransferFromCall) {
+    this._call = call;
+  }
+
+  get from(): Address {
+    return this._call.inputValues[0].value.toAddress();
+  }
+
+  get to(): Address {
+    return this._call.inputValues[1].value.toAddress();
+  }
+
+  get ids(): Array<BigInt> {
+    return this._call.inputValues[2].value.toBigIntArray();
+  }
+
+  get values(): Array<BigInt> {
+    return this._call.inputValues[3].value.toBigIntArray();
+  }
+
+  get data(): Bytes {
+    return this._call.inputValues[4].value.toBytes();
+  }
+}
+
+export class SafeBatchTransferFromCall__Outputs {
+  _call: SafeBatchTransferFromCall;
+
+  constructor(call: SafeBatchTransferFromCall) {
+    this._call = call;
+  }
+}
+
+export class SafeTransferFromCall extends ethereum.Call {
+  get inputs(): SafeTransferFromCall__Inputs {
+    return new SafeTransferFromCall__Inputs(this);
+  }
+
+  get outputs(): SafeTransferFromCall__Outputs {
+    return new SafeTransferFromCall__Outputs(this);
+  }
+}
+
+export class SafeTransferFromCall__Inputs {
+  _call: SafeTransferFromCall;
+
+  constructor(call: SafeTransferFromCall) {
+    this._call = call;
+  }
+
+  get from(): Address {
+    return this._call.inputValues[0].value.toAddress();
+  }
+
+  get to(): Address {
+    return this._call.inputValues[1].value.toAddress();
+  }
+
+  get id(): BigInt {
+    return this._call.inputValues[2].value.toBigInt();
+  }
+
+  get value(): BigInt {
+    return this._call.inputValues[3].value.toBigInt();
+  }
+
+  get data(): Bytes {
+    return this._call.inputValues[4].value.toBytes();
+  }
+}
+
+export class SafeTransferFromCall__Outputs {
+  _call: SafeTransferFromCall;
+
+  constructor(call: SafeTransferFromCall) {
+    this._call = call;
+  }
+}
+
+export class SetApprovalForAllCall extends ethereum.Call {
+  get inputs(): SetApprovalForAllCall__Inputs {
+    return new SetApprovalForAllCall__Inputs(this);
+  }
+
+  get outputs(): SetApprovalForAllCall__Outputs {
+    return new SetApprovalForAllCall__Outputs(this);
+  }
+}
+
+export class SetApprovalForAllCall__Inputs {
+  _call: SetApprovalForAllCall;
+
+  constructor(call: SetApprovalForAllCall) {
+    this._call = call;
+  }
+
+  get operator(): Address {
+    return this._call.inputValues[0].value.toAddress();
+  }
+
+  get approved(): boolean {
+    return this._call.inputValues[1].value.toBoolean();
+  }
+}
+
+export class SetApprovalForAllCall__Outputs {
+  _call: SetApprovalForAllCall;
+
+  constructor(call: SetApprovalForAllCall) {
+    this._call = call;
+  }
+}
+
+export class SetPOLConfigCall extends ethereum.Call {
+  get inputs(): SetPOLConfigCall__Inputs {
+    return new SetPOLConfigCall__Inputs(this);
+  }
+
+  get outputs(): SetPOLConfigCall__Outputs {
+    return new SetPOLConfigCall__Outputs(this);
+  }
+}
+
+export class SetPOLConfigCall__Inputs {
+  _call: SetPOLConfigCall;
+
+  constructor(call: SetPOLConfigCall) {
+    this._call = call;
+  }
+
+  get _token(): Address {
+    return this._call.inputValues[0].value.toAddress();
+  }
+
+  get _threshold(): BigInt {
+    return this._call.inputValues[1].value.toBigInt();
+  }
+}
+
+export class SetPOLConfigCall__Outputs {
+  _call: SetPOLConfigCall;
+
+  constructor(call: SetPOLConfigCall) {
+    this._call = call;
+  }
+}
+
+export class SetURICall extends ethereum.Call {
+  get inputs(): SetURICall__Inputs {
+    return new SetURICall__Inputs(this);
+  }
+
+  get outputs(): SetURICall__Outputs {
+    return new SetURICall__Outputs(this);
+  }
+}
+
+export class SetURICall__Inputs {
+  _call: SetURICall;
+
+  constructor(call: SetURICall) {
+    this._call = call;
+  }
+
+  get newuri(): string {
+    return this._call.inputValues[0].value.toString();
+  }
+}
+
+export class SetURICall__Outputs {
+  _call: SetURICall;
+
+  constructor(call: SetURICall) {
+    this._call = call;
+  }
+}
+
+export class UnpauseCall extends ethereum.Call {
+  get inputs(): UnpauseCall__Inputs {
+    return new UnpauseCall__Inputs(this);
+  }
+
+  get outputs(): UnpauseCall__Outputs {
+    return new UnpauseCall__Outputs(this);
+  }
+}
+
+export class UnpauseCall__Inputs {
+  _call: UnpauseCall;
+
+  constructor(call: UnpauseCall) {
+    this._call = call;
+  }
+}
+
+export class UnpauseCall__Outputs {
+  _call: UnpauseCall;
+
+  constructor(call: UnpauseCall) {
+    this._call = call;
+  }
+}
+
+export class UpgradeToAndCallCall extends ethereum.Call {
+  get inputs(): UpgradeToAndCallCall__Inputs {
+    return new UpgradeToAndCallCall__Inputs(this);
+  }
+
+  get outputs(): UpgradeToAndCallCall__Outputs {
+    return new UpgradeToAndCallCall__Outputs(this);
+  }
+}
+
+export class UpgradeToAndCallCall__Inputs {
+  _call: UpgradeToAndCallCall;
+
+  constructor(call: UpgradeToAndCallCall) {
+    this._call = call;
+  }
+
+  get newImplementation(): Address {
+    return this._call.inputValues[0].value.toAddress();
+  }
+
+  get data(): Bytes {
+    return this._call.inputValues[1].value.toBytes();
+  }
+}
+
+export class UpgradeToAndCallCall__Outputs {
+  _call: UpgradeToAndCallCall;
+
+  constructor(call: UpgradeToAndCallCall) {
     this._call = call;
   }
 }

@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "./ReentrancyGuardUpgradeable.sol";
@@ -12,16 +11,8 @@ import "./FreelanceEscrowLibrary.sol";
 
 import "./IArbitrator.sol";
 
-interface IYieldManager {
-    enum Strategy { NONE, AAVE, COMPOUND, MORPHO }
-    struct StrategyConfig {
-        address pool;
-        bool active;
-    }
-    function strategies(Strategy strategy) external view returns (address pool, bool active);
-    function deposit(Strategy strategy, address token, uint256 amount) external;
-    function withdraw(Strategy strategy, address token, uint256 amount, address receiver) external;
-}
+import "./interfaces/IYieldManager.sol";
+import {Job, JobStatus, Milestone} from "./FreelanceTypes.sol";
 
 interface ISwapManager {
     function swap(address tokenIn, address tokenOut, uint256 amountIn, uint256 amountOutMin, address recipient) external payable returns (uint256);
@@ -35,55 +26,14 @@ interface ISwapManager {
  */
 abstract contract FreelanceEscrowBase is 
     Initializable, 
-    ERC721Upgradeable, 
     AccessControlUpgradeable,
     ReentrancyGuardUpgradeable, 
     UUPSUpgradeable
 {
-    enum JobStatus { Created, Accepted, Ongoing, Disputed, Arbitration, Completed, Cancelled }
+    address public jobNFT;
+    address public renderer;
 
-    struct Milestone {
-        uint256 amount;
-        string ipfsHash;
-        bool isReleased;
-        bool isUpfront;
-    }
 
-    /**
-     * @dev Structure representing a freelance job in the system.
-     */
-    struct Job {
-        // SLOT 1: Address(20) + uint32(4) + uint48(6) + uint16(2) = 32 bytes
-        address client;
-        uint32 id;
-        uint48 deadline;
-        uint16 categoryId;
-
-        // SLOT 2: Address(20) + uint16(2) + JobStatus(1) + uint8(1) + bool(1) + Strategy(1) = 26 bytes
-        address freelancer;
-        uint16 milestoneCount;
-        JobStatus status;
-        bool paid;
-        bool zkRequired;
-        IYieldManager.Strategy yieldStrategy;
-        uint8 rating;
-
-        // SLOT 3: Address(20) + (12 bytes padding)
-        address token;
-
-        // SLOTS 4-6: uint256 take full slots
-        uint256 amount;
-        uint256 freelancerStake;
-        uint256 totalPaidOut;
-
-        // SLOT 7: string (dynamic pointer)
-        string ipfsHash;
-    }
-
-    struct Application {
-        address freelancer;
-        uint256 stake;
-    }
 
     mapping(uint256 => Job) public jobs;
     mapping(uint256 => mapping(uint256 => Milestone)) public jobMilestones;
@@ -99,6 +49,7 @@ abstract contract FreelanceEscrowBase is
     bytes32 public constant ARBITRATOR_ROLE = keccak256("ARBITRATOR_ROLE");
     bytes32 public constant MANAGER_ROLE = keccak256("MANAGER_ROLE");
     bytes32 public constant AGENT_ROLE = keccak256("AGENT_ROLE");
+    bytes32 public constant BRIDGE_ROLE = keccak256("BRIDGE_ROLE");
 
     address public arbitrator;
     address public sbtContract;
@@ -125,8 +76,9 @@ abstract contract FreelanceEscrowBase is
     /// @dev frictionLevel replaces generic disputeStatus — reflects the Antigravity philosophy.
     error FrictionLevelNotDisputed();
     error ProtocolEntropyDetected();
+    error MilestoneMismatch();
 
-    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721Upgradeable, AccessControlUpgradeable) returns (bool) {
+    function supportsInterface(bytes4 interfaceId) public view virtual override(AccessControlUpgradeable) returns (bool) {
         return super.supportsInterface(interfaceId);
     }
 

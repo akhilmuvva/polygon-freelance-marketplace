@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Globe, Zap, ArrowUpRight, Share2, Shield, Activity, Share, Repeat, ExternalLink, Box, Layers, Wallet } from 'lucide-react';
+import { Globe, Zap, ArrowUpRight, Share2, Shield, Activity, Share, Repeat, ExternalLink, Box, Layers, Wallet, Plus } from 'lucide-react';
 import { useAccount } from 'wagmi';
 import toast from 'react-hot-toast';
+import CreateCrossChainJob from './CreateCrossChainJob';
 
 const cardBg = { padding: 32, borderRadius: 24, background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border)', position: 'relative', overflow: 'hidden' };
 const dimLabel = { fontSize: '0.68rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.15em', color: 'var(--text-tertiary)', marginBottom: 12, display: 'block' };
@@ -16,6 +17,8 @@ const CrossChainDashboard = () => {
         { name: 'Base', eid: '30184', status: 'Healthy', icon: '🟡' },
         { name: 'Optimism', eid: '30111', status: 'Healthy', icon: '🔴' }
     ]);
+
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
     const handleBridgeReputation = async (eid) => {
         const chain = activeChains.find(c => c.eid === eid);
@@ -38,11 +41,27 @@ const CrossChainDashboard = () => {
                         LayerZero Sovereign Layer. Synchronize your reputation and settle missions across the entire EVM cluster.
                     </p>
                 </div>
-                <div style={{ ...cardBg, padding: '16px 24px', textAlign: 'right' }}>
-                    <span style={dimLabel}>Omni Status</span>
-                    <div style={{ fontSize: '1.2rem', fontWeight: 900, color: '#34d399' }}>Resonance Active <Activity size={16} style={{ display: 'inline', marginLeft: 4 }} /></div>
+                <div style={{ display: 'flex', gap: 16 }}>
+                    <button 
+                        onClick={() => setIsModalOpen(true)}
+                        style={{ ...cardBg, padding: '16px 24px', background: 'var(--accent-light)', border: 'none', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 12 }}
+                    >
+                        <Plus size={20} />
+                        <div style={{ textAlign: 'left' }}>
+                            <span style={{ fontSize: '0.62rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.1em', opacity: 0.8 }}>Any Chain, Any Coin</span>
+                            <div style={{ fontSize: '1rem', fontWeight: 900 }}>Create Omni-Mission</div>
+                        </div>
+                    </button>
+                    <div style={{ ...cardBg, padding: '16px 24px', textAlign: 'right' }}>
+                        <span style={dimLabel}>Omni Status</span>
+                        <div style={{ fontSize: '1.2rem', fontWeight: 900, color: '#34d399' }}>Resonance Active <Activity size={16} style={{ display: 'inline', marginLeft: 4 }} /></div>
+                    </div>
                 </div>
             </header>
+
+            <AnimatePresence>
+                {isModalOpen && <CreateCrossChainJob onClose={() => setIsModalOpen(false)} />}
+            </AnimatePresence>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 24 }}>
                 <div style={cardBg}>

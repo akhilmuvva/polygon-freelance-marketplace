@@ -3,7 +3,9 @@ pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
-import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import "./ReentrancyGuardUpgradeable.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 /**
  * @title SpecializedSkillRegistry
@@ -13,8 +15,10 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 contract SpecializedSkillRegistry is 
     AccessControlUpgradeable, 
     UUPSUpgradeable,
-    ReentrancyGuard
+    ReentrancyGuardUpgradeable
 {
+    using SafeERC20 for IERC20;
+    
     bytes32 public constant VERIFIER_ROLE = keccak256("VERIFIER_ROLE");
     bytes32 public constant UPGRADER_ROLE = keccak256("UPGRADER_ROLE");
 
@@ -108,6 +112,7 @@ contract SpecializedSkillRegistry is
 
     function initialize() public initializer {
         __AccessControl_init();
+        __ReentrancyGuard_init();
 
 
 
@@ -395,6 +400,32 @@ contract SpecializedSkillRegistry is
             referralRewards[referrer] += bonus;
         }
     }
+
+    /**
+     * @notice Claim accumulated referral rewards
+     * @param token Address of the token to claim (must be funded by admin)
+     */
+    function claimReferralRewards(address token) external nonReentrant {
+        uint256 amount = referralRewards[msg.sender];
+        require(amount > 0, "No rewards to claim");
+        require(IERC20(token).balanceOf(address(this)) >= amount, "Insufficient contract balance");
+
+        referralRewards[msg.sender] = 0;
+        IERC20(token).safeTransfer(msg.sender, amount);
+        
+        emit ReferralClaimed(msg.sender, token, amount);
+    }
+
+    /**
+     * @notice Fund the referral reward pool
+     * @param token Address of the token
+     * @param amount Amount to fund
+     */
+    function fundReferralPool(address token, uint256 amount) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        IERC20(token).safeTransferFrom(msg.sender, address(this), amount);
+    }
+
+    event ReferralClaimed(address indexed referrer, address indexed token, uint256 amount);
 
     /**
      * @notice Initialize category metadata

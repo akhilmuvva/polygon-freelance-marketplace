@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import { useReadContract } from 'wagmi';
 import { erc20Abi, erc721Abi, formatEther } from 'viem';
-import { POLY_TOKEN_ADDRESS, CONTRACT_ADDRESS, BETA_TESTER_SBT_ADDRESS } from '../constants';
+import { POLY_TOKEN_ADDRESS, CONTRACT_ADDRESS, BETA_TESTER_SBT_ADDRESS, IS_AMOY, SCANNER_URL } from '../constants';
 import ProfileService from '../services/ProfileService';
 import SubgraphService from '../services/SubgraphService';
 import JobService from '../services/JobService';
@@ -263,7 +263,7 @@ function Portfolio({ address, onBack, onFiatPay }) {
                                         <p className="artifact-desc">{job.description}</p>
                                         <div className="artifact-meta">
                                             <span className="flex items-center gap-2"><Award size={14} className="text-violet-500" /> Soulbound NFT Minted</span>
-                                            <a href={`https://amoy.polygonscan.com/address/${CONTRACT_ADDRESS}`} target="_blank" rel="noreferrer" className="flex items-center gap-1 hover:text-white transition-colors">
+                                            <a href={`${SCANNER_URL}/address/${CONTRACT_ADDRESS}`} target="_blank" rel="noreferrer" className="flex items-center gap-1 hover:text-white transition-colors">
                                                 View Ledger <ExternalLink size={12} />
                                             </a>
                                         </div>

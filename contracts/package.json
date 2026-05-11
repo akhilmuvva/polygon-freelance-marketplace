@@ -34,6 +34,7 @@
     "dotenv": "^17.2.3",
     "ethers": "^6.16.0",
     "hardhat": "^2.28.6",
+    "hardhat-contract-sizer": "^2.10.1",
     "hardhat-gas-reporter": "^1.0.10",
     "solidity-coverage": "^0.8.17",
     "ts-node": "^10.9.2",
@@ -41,6 +42,7 @@
     "typescript": "^5.9.3"
   },
   "dependencies": {
+    "@chainlink/contracts-ccip": "^1.4.0",
     "@openzeppelin/contracts": "^5.1.0",
     "@openzeppelin/contracts-upgradeable": "^5.1.0",
     "solc": "^0.8.24"
@@ -49,6 +51,7 @@
     "bn.js": "5.2.3",
     "elliptic": "6.6.1",
     "cookie": "0.7.0",
-    "cross-spawn": "7.0.6"
+    "cross-spawn": "7.0.6",
+    "undici": "6.13.0"
   }
 }

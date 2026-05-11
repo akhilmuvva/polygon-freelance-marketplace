@@ -8,7 +8,7 @@ import useTransaction from '../hooks/useTransaction';
 const CrossChainSync = () => {
     const { address } = useAccount();
     const config = useConfig();
-    const { executeTx, isPending } = useTransaction();
+    const { executeTransaction, isPending } = useTransaction();
     const [aggregatedData, setAggregatedData] = useState(null);
     const [selectedChain, setSelectedChain] = useState(null);
     const [isFetching, setIsFetching] = useState(true);

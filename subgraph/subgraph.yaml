@@ -20,7 +20,7 @@ dataSources:
         - name: FreelanceEscrow
           file: ./abis/FreelanceEscrow.json
       eventHandlers:
-        - event: JobCreated(indexed uint256,indexed address,indexed address,uint256,uint256)
+        - event: JobCreated(indexed uint256,indexed address,indexed address,uint256,uint256,uint256)
           handler: handleJobCreated
         - event: JobApplied(indexed uint256,indexed address,uint256)
           handler: handleJobApplied
@@ -28,11 +28,11 @@ dataSources:
           handler: handleFreelancerPicked
         - event: JobAccepted(indexed uint256,indexed address)
           handler: handleJobAccepted
-        - event: FundsReleased(indexed uint256,indexed address,uint256,uint256)
+        - event: FundsReleased(indexed uint256,indexed address,uint256,uint256,uint256)
           handler: handleFundsReleased
-        - event: MilestoneReleased(indexed uint256,indexed address,indexed uint256,uint256)
+        - event: MilestoneReleased(indexed uint256,indexed address,indexed uint256,uint256,uint256)
           handler: handleMilestoneReleased
-        - event: DisputeRaised(indexed uint256,uint256)
+        - event: DisputeRaised(indexed uint256,uint256,uint256)
           handler: handleDisputeRaised
         - event: Dispute(indexed address,indexed uint256,uint256,uint256)
           handler: handleDispute
@@ -40,7 +40,7 @@ dataSources:
           handler: handleEvidence
         - event: Ruling(indexed address,indexed uint256,uint256)
           handler: handleRuling
-        - event: ReviewSubmitted(indexed uint256,indexed address,indexed address,uint8,string)
+        - event: ReviewSubmitted(indexed uint256,indexed address,indexed address,uint8,string,uint256)
           handler: handleReviewSubmitted
         - event: IntentMatched(indexed uint256,indexed address,indexed address,bytes32)
           handler: handleIntentMatched
@@ -62,7 +62,7 @@ dataSources:
         - name: FreelancerReputation
           file: ./abis/FreelancerReputation.json
       eventHandlers:
-        - event: RatingUpdated(indexed address,uint8,uint256)
+        - event: RatingUpdated(indexed address,uint256,uint256)
           handler: handleRatingUpdated
         - event: PortfolioUpdated(indexed address,string)
           handler: handlePortfolioUpdated
@@ -87,7 +87,7 @@ dataSources:
       eventHandlers:
         - event: YieldDistributed(indexed address,uint256)
           handler: handleYieldDistributed
-        - event: YieldRebalanced(address,uint256,uint256)
+        - event: YieldRebalanced(indexed address,uint256,uint256)
           handler: handleYieldRebalanced
       file: ./src/mapping.ts
   - kind: ethereum

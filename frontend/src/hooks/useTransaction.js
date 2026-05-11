@@ -5,7 +5,7 @@ import { toast as hotToast } from 'react-hot-toast';
 import { parseTransactionError } from '../utils/ErrorMapper';
 import { polygon } from 'viem/chains';
 
-export function useTransaction() {
+export default function useTransaction() {
   const [isPending, setIsPending] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   
@@ -20,7 +20,7 @@ export function useTransaction() {
    * @param {Object} contractConfig The wagmi contract config (address, abi, functionName, args, etc)
    * @param {Object} options Options containing callbacks and custom messages
    */
-  const executeTransaction = useCallback(async (contractConfig, { 
+  const executeTransaction = useCallback(async (configOrFn, { 
     onSuccess, 
     onError, 
     successMessage = 'Transaction confirmed!',
@@ -45,36 +45,49 @@ export function useTransaction() {
 
       toastId = hotToast.loading('Awaiting wallet signature...');
 
-      // 2. Transaction Execution & Retry Mechanism for Gas Failures
-      let hash;
-      try {
-         hash = await writeContractAsync(contractConfig);
-      } catch (err) {
-         // Simple retry mechanism if gas estimation explicitly fails and retry is requested
-         if (retryOnGasFail && err.message && err.message.toLowerCase().includes('gas required exceeds allowance')) {
-            hotToast.loading('Retrying with higher gas tolerance...', { id: toastId });
-            // Attempt a blind retry (often wagmi/viem auto-adjusts, but we could inject manual gas limits here)
-            hash = await writeContractAsync({ ...contractConfig, gas: 3000000n });
-         } else {
-            throw err;
+      // 2. Execution Logic
+      let receipt;
+      if (typeof configOrFn === 'function') {
+         // Custom logic (like CrossChainService.syncReputation)
+         // Note: we assume the custom logic returns a receipt or throws
+         receipt = await configOrFn();
+         hotToast.loading(pendingMessage, { id: toastId });
+      } else {
+         // Standard contract config
+         let hash;
+         try {
+            hash = await writeContractAsync(configOrFn);
+         } catch (err) {
+            if (retryOnGasFail && err.message && err.message.toLowerCase().includes('gas required exceeds allowance')) {
+               hotToast.loading('Retrying with higher gas tolerance...', { id: toastId });
+               hash = await writeContractAsync({ ...configOrFn, gas: 3000000n });
+            } else {
+               throw err;
+            }
          }
+
+         hotToast.loading(pendingMessage, { id: toastId });
+
+         // 3. Receipt Waiting
+         receipt = await waitForTransactionReceipt(wagmiConfig, {
+             hash,
+             confirmations: 1
+         });
       }
 
-      hotToast.loading(pendingMessage, { id: toastId });
-
-      // 3. Receipt Waiting
-      const receipt = await waitForTransactionReceipt(wagmiConfig, {
-          hash,
-          confirmations: 1
-      });
-
-      if (receipt.status === 'success') {
+      if (receipt && receipt.status === 'success') {
           hotToast.success(successMessage, { id: toastId });
           setIsSuccess(true);
           if (onSuccess) onSuccess(receipt);
           return receipt;
-      } else {
+      } else if (receipt && receipt.status === 'reverted') {
           throw new Error('Transaction reverted by the EVM.');
+      } else {
+          // If no status returned, assume success if it didn't throw
+          hotToast.success(successMessage, { id: toastId });
+          setIsSuccess(true);
+          if (onSuccess) onSuccess(receipt);
+          return receipt;
       }
     } catch (error) {
       console.error('[Transaction Error]', error);

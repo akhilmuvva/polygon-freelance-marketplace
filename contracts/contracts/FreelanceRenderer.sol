@@ -4,15 +4,36 @@ pragma solidity ^0.8.20;
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/utils/Base64.sol";
 
-library FreelanceRenderer {
+/**
+ * @title FreelanceRenderer
+ * @notice External contract to generate on-chain SVG metadata.
+ * @dev Separated from the main contract to save bytecode space.
+ */
+contract FreelanceRenderer {
     using Strings for uint256;
 
-    struct RenderParams {
-        uint256 jobId;
-        uint16 categoryId;
-        uint256 amount;
-        uint8 rating;
-        string ipfsHash;
+    function getCategoryName(uint256 categoryId) public pure returns (string memory) {
+        if (categoryId == 1) return "Development";
+        if (categoryId == 2) return "Design";
+        if (categoryId == 3) return "Marketing";
+        if (categoryId == 4) return "Writing";
+        return "General";
+    }
+
+    function getStars(uint8 rating) public pure returns (string memory) {
+        if (rating == 5) return "*****";
+        if (rating == 4) return "****";
+        if (rating == 3) return "***";
+        if (rating == 2) return "**";
+        if (rating == 1) return "*";
+        return "";
+    }
+
+    function getRatingColors(uint8 rating) public pure returns (string memory color1, string memory color2, string memory badge) {
+        if (rating >= 4) return ("#FFD700", "#FFA500", "GOLD");
+        if (rating == 3) return ("#C0C0C0", "#808080", "SILVER");
+        if (rating > 0) return ("#CD7F32", "#8B4513", "BRONZE");
+        return ("#4f46e5", "#9333ea", "");
     }
 
     function generateSVG(
@@ -20,7 +41,7 @@ library FreelanceRenderer {
         uint16 categoryId,
         uint256 amount,
         uint8 rating
-    ) internal pure returns (string memory) {
+    ) public pure returns (string memory) {
         (string memory color1, string memory color2, string memory badge) = getRatingColors(rating);
 
         return string(abi.encodePacked(
@@ -49,7 +70,7 @@ library FreelanceRenderer {
         uint256 amount,
         uint8 rating,
         string memory ipfsHash
-    ) internal pure returns (string memory) {
+    ) public pure returns (string memory) {
         string memory imageURI = string(abi.encodePacked(
             "data:image/svg+xml;base64,", 
             Base64.encode(bytes(generateSVG(jobId, categoryId, amount, rating)))
@@ -65,29 +86,5 @@ library FreelanceRenderer {
         ));
 
         return string(abi.encodePacked("data:application/json;base64,", Base64.encode(bytes(json))));
-    }
-
-    function getRatingColors(uint8 rating) internal pure returns (string memory color1, string memory color2, string memory badge) {
-        if (rating >= 4) return ("#FFD700", "#FFA500", "GOLD");
-        if (rating == 3) return ("#C0C0C0", "#808080", "SILVER");
-        if (rating > 0) return ("#CD7F32", "#8B4513", "BRONZE");
-        return ("#4f46e5", "#9333ea", "");
-    }
-
-    function getStars(uint8 rating) internal pure returns (string memory) {
-        if (rating == 5) return "*****";
-        if (rating == 4) return "****";
-        if (rating == 3) return "***";
-        if (rating == 2) return "**";
-        if (rating == 1) return "*";
-        return "";
-    }
-
-    function getCategoryName(uint256 categoryId) internal pure returns (string memory) {
-        if (categoryId == 1) return "Development";
-        if (categoryId == 2) return "Design";
-        if (categoryId == 3) return "Marketing";
-        if (categoryId == 4) return "Writing";
-        return "General";
     }
 }

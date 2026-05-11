@@ -14,6 +14,7 @@ import {
 import { toast } from 'react-hot-toast';
 import { SUPPORTED_TOKENS, CONTRACT_ADDRESSES } from '../lib/constants';
 import FreelanceEscrowABI from '../lib/abi/FreelanceEscrow.json';
+import DOMPurify from 'dompurify';
 import { resolveIPFS } from '../lib/ipfs';
 import UserLink from './UserLink';
 
@@ -95,7 +96,15 @@ export const MissionDetails = ({ id }: MissionDetailsProps) => {
       const fetchMeta = async () => {
         try {
           const data = await resolveIPFS(job[15]);
-          setMetadata(data);
+          if (data && typeof window !== 'undefined') {
+            const sanitized = { ...data };
+            if (sanitized.title) sanitized.title = DOMPurify.sanitize(sanitized.title);
+            if (sanitized.description) sanitized.description = DOMPurify.sanitize(sanitized.description);
+            if (sanitized.category) sanitized.category = DOMPurify.sanitize(sanitized.category);
+            setMetadata(sanitized);
+          } else {
+            setMetadata(data);
+          }
         } catch (err) {
           console.error("IPFS Resolution Error:", err);
         } finally {

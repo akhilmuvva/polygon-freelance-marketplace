@@ -29,14 +29,33 @@ export async function estimateSovereignTxCost(client, functionName, args = [], v
         // Get current gas price
         const gasPrice = await publicClient.getGasPrice();
 
-        // Fetch live MATIC/USD price from CoinGecko
+        // Fetch live MATIC/USD price from Chainlink on-chain
         let maticPrice = 0.8; // fallback if request fails
         try {
-            const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=matic-network&vs_currencies=usd');
-            const data = await res.json();
-            maticPrice = data['matic-network']?.usd || 0.8;
-        } catch {
-            console.warn('[Gas] Could not fetch MATIC price, using fallback.');
+            // Chainlink MATIC/USD Price Feed on Polygon
+            const CHALINK_MATIC_USD = '0xAB594600376Ec9fD91F8e885dADF0CE036862dE0';
+            const priceData = await publicClient.readContract({
+                address: CHALINK_MATIC_USD,
+                abi: [{
+                    inputs: [],
+                    name: "latestRoundData",
+                    outputs: [
+                        { name: "roundId", type: "uint80" },
+                        { name: "answer", type: "int256" },
+                        { name: "startedAt", type: "uint256" },
+                        { name: "updatedAt", type: "uint256" },
+                        { name: "answeredInRound", type: "uint80" }
+                    ],
+                    stateMutability: "view",
+                    type: "function"
+                }],
+                functionName: 'latestRoundData',
+            });
+            
+            // Chainlink prices have 8 decimals
+            maticPrice = Number(priceData[1]) / 1e8;
+        } catch (error) {
+            console.warn('[Gas] Could not fetch on-chain MATIC price, using fallback:', error.message);
         }
 
         const totalCostWei = gasEstimate * gasPrice;

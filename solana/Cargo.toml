@@ -1,0 +1,10 @@
+[workspace]
+members = [
+    "programs/polylance-solana"
+]
+
+[profile.release]
+overflow-checks = true
+lto = "fat"
+codegen-units = 1
+panic = "abort"

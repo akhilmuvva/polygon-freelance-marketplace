@@ -11,13 +11,30 @@ import {
     Dispute,
     Evidence,
     Ruling,
-    ReviewSubmitted
+    ReviewSubmitted,
+    IntentMatched
 } from "../generated/FreelanceEscrow/FreelanceEscrow"
+import {
+    YieldDistributed,
+    YieldRebalanced
+} from "../generated/YieldManager/YieldManager"
 import {
     RatingUpdated,
     PortfolioUpdated
 } from "../generated/FreelancerReputation/FreelancerReputation"
-import { Job, Milestone, GlobalStat, Freelancer, Review, Application, Evidence as EvidenceEntity, DisputeMapping } from "../generated/schema"
+import {
+    Job,
+    Milestone,
+    GlobalStat,
+    Freelancer,
+    Review,
+    Application,
+    Evidence as EvidenceEntity,
+    DisputeMapping,
+    IntentMatch,
+    YieldDistribution,
+    ProtocolStats
+} from "../generated/schema"
 
 export function handleJobCreated(event: JobCreated): void {
     let job = new Job(event.params.jobId.toString())
@@ -45,7 +62,7 @@ export function handleJobCreated(event: JobCreated): void {
         freelancer = new Freelancer(event.params.freelancer.toHexString())
         freelancer.totalStars = BigInt.fromI32(0)
         freelancer.totalJobsReviewed = BigInt.fromI32(0)
-        freelancer.averageRating = 0
+        freelancer.averageRating = BigInt.fromI32(0)
         freelancer.save()
     }
     job.freelancerLookup = freelancer.id
@@ -80,7 +97,7 @@ export function handleJobApplied(event: JobApplied): void {
         freelancer = new Freelancer(event.params.freelancer.toHexString())
         freelancer.totalStars = BigInt.fromI32(0)
         freelancer.totalJobsReviewed = BigInt.fromI32(0)
-        freelancer.averageRating = 0
+        freelancer.averageRating = BigInt.fromI32(0)
         freelancer.save()
     }
     application.freelancer = freelancer.id
@@ -209,7 +226,7 @@ export function handleRatingUpdated(event: RatingUpdated): void {
         freelancer = new Freelancer(event.params.freelancer.toHexString())
     }
     freelancer.averageRating = event.params.averageRating
-    freelancer.totalStars = event.params.totalJobs.times(BigInt.fromI32(event.params.averageRating)) // Approximation or we can track totalStars properly
+    freelancer.totalStars = event.params.totalJobs.times(event.params.averageRating) // Total points = totalJobs * averageRating
     freelancer.totalJobsReviewed = event.params.totalJobs
     freelancer.save()
 }
@@ -220,8 +237,39 @@ export function handlePortfolioUpdated(event: PortfolioUpdated): void {
         freelancer = new Freelancer(event.params.freelancer.toHexString())
         freelancer.totalStars = BigInt.fromI32(0)
         freelancer.totalJobsReviewed = BigInt.fromI32(0)
-        freelancer.averageRating = 0
+        freelancer.averageRating = BigInt.fromI32(0)
     }
     freelancer.portfolioCID = event.params.cid
     freelancer.save()
+}
+
+export function handleIntentMatched(event: IntentMatched): void {
+    let match = new IntentMatch(event.params.jobId.toString())
+    match.client = event.params.client
+    match.freelancer = event.params.freelancer
+    match.intentHash = event.params.intentHash
+    match.timestamp = event.block.timestamp
+    match.save()
+}
+
+export function handleYieldDistributed(event: YieldDistributed): void {
+    let dist = new YieldDistribution(event.transaction.hash.toHexString())
+    dist.user = event.params.recipient
+    dist.amount = event.params.amount
+    dist.timestamp = event.block.timestamp
+    dist.save()
+}
+
+export function handleYieldRebalanced(event: YieldRebalanced): void {
+    let stats = ProtocolStats.load("1")
+    if (!stats) {
+        stats = new ProtocolStats("1")
+        stats.totalYieldGenerated = BigInt.fromI32(0)
+        stats.totalValueLocked = BigInt.fromI32(0)
+        stats.totalOriginatorFees = BigInt.fromI32(0)
+        stats.totalSovereignSurplus = BigInt.fromI32(0)
+        stats.totalEliteIntents = BigInt.fromI32(0)
+    }
+    stats.totalSovereignSurplus = stats.totalSovereignSurplus.plus(event.params.protocolSurplus)
+    stats.save()
 }

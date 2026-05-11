@@ -1,16 +1,26 @@
-// Network Configuration (ZENITH LOGIC-HARDENED: v2.1.0)
-const IS_AMOY = false; // Toggle for deployment (SET TO FALSE FOR PRODUCTION)
-export const SCANNER_URL = IS_AMOY ? 'https://amoy.polygonscan.com' : 'https://polygonscan.com';
+import { polygon, polygonAmoy } from 'viem/chains';
+
+export const IS_AMOY = false; // SET TO FALSE FOR MAINNET
+export const ACTIVE_CHAIN = IS_AMOY ? polygonAmoy : polygon;
+export const CHAIN_ID = ACTIVE_CHAIN.id;
+export const SCANNER_URL = ACTIVE_CHAIN.blockExplorers.default.url;
 
 export const CONTRACT_ADDRESS = IS_AMOY
-    ? '0x5Ff3E1223B5c37f1C18CC279dfC9C181bF22BEf9' // Main Escrow (Logic Hardened)
-    : '0x38c76A767d45Fc390160449948aF80569E2C4217';
+    ? '0x5Ff3E1223B5c37f1C18CC279dfC9C181bF22BEf9' // Amoy
+    : '0x38c76A767d45Fc390160449948aF80569E2C4217'; // Mainnet Placeholder (Update after deploy)
 
 export const SUPPORTED_TOKENS = [
     { symbol: 'MATIC', address: '0x0000000000000000000000000000000000000000', decimals: 18 },
     { symbol: 'USDC', address: IS_AMOY ? '0x41e94Eb019C0762f9Bfcf9Fb1E58725BfB0e7582' : '0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359', decimals: 6 },
     { symbol: 'USDT', address: IS_AMOY ? '0x1D2aF960570bFc0861198A699435b54FC906781' : '0xc2132D05D31c914a87C6611C10748AEb04B58e8F', decimals: 6 },
     { symbol: 'DAI', address: IS_AMOY ? '0x001B68356E62095104ee17672f101d2959E73fF3' : '0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063', decimals: 18 },
+];
+
+export const OMNI_TOKENS = [
+    { symbol: 'USDC', address: '0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359', decimals: 6, chain: 'Multi' },
+    { symbol: 'LINK', address: '0x514910771AF9Ca656af840dff83E8264EcF986CA', decimals: 18, chain: 'Ethereum' },
+    { symbol: 'WETH', address: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2', decimals: 18, chain: 'Ethereum' },
+    { symbol: 'ARB', address: '0x912CE59144191C1204E64559FE8253a0e49E6548', decimals: 18, chain: 'Arbitrum' },
 ];
 
 export const CHAINLINK_PRICE_FEEDS = {
@@ -102,3 +112,6 @@ export const BETA_TESTER_SBT_ADDRESS = IS_AMOY
     ? '0x4f1234567890abcdef1234567890abcdef123456' // Placeholder Amoy
     : '0x0000000000000000000000000000000000000000'; // Placeholder Mainnet
 
+export const TIMELOCK_ADDRESS = IS_AMOY
+    ? '0x20Dc424c5fa468CbB1c702308F0cC9c14DA2825C'
+    : '0x20Dc424c5fa468CbB1c702308F0cC9c14DA2825C';

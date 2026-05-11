@@ -37,7 +37,7 @@ contract StreamingEscrow is ReentrancyGuard, AccessControl, Pausable {
     uint256 public nextStreamId = 1;
     mapping(uint256 => Stream) public streams;
 
-    AntigravityReputation public reputationContract;
+    FreelancerReputation public reputationContract;
     
     address public feeCollector;
     
@@ -63,7 +63,7 @@ contract StreamingEscrow is ReentrancyGuard, AccessControl, Pausable {
 
     constructor(address _reputationContract, address admin, address _feeCollector) {
         if (_reputationContract == address(0) || admin == address(0) || _feeCollector == address(0)) revert Unauthorized();
-        reputationContract = AntigravityReputation(_reputationContract);
+        reputationContract = FreelancerReputation(_reputationContract);
         feeCollector = _feeCollector;
         _grantRole(DEFAULT_ADMIN_ROLE, admin);
         _grantRole(ARBITRATOR_ROLE, admin);

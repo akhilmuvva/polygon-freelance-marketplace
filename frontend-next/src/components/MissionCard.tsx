@@ -7,6 +7,7 @@ import { formatUnits } from 'viem';
 import { Clock, Zap, ChevronRight, ShieldCheck, Target, Globe, Lock } from 'lucide-react';
 import { SUPPORTED_TOKENS } from '../lib/constants';
 import { resolveJobMetadata } from '../lib/ipfs';
+import DOMPurify from 'dompurify';
 import UserLink from './UserLink';
 
 interface MissionCardProps {
@@ -27,7 +28,15 @@ export const MissionCard: React.FC<MissionCardProps> = ({ job, userAddress, isCo
     const fetchMeta = async () => {
       setIsLoadingMeta(true);
       const data = await resolveJobMetadata(job.ipfsHash);
-      setMeta(data);
+      if (data && typeof window !== 'undefined') {
+        const sanitized = { ...data };
+        if (sanitized.title) sanitized.title = DOMPurify.sanitize(sanitized.title);
+        if (sanitized.description) sanitized.description = DOMPurify.sanitize(sanitized.description);
+        if (sanitized.category) sanitized.category = DOMPurify.sanitize(sanitized.category);
+        setMeta(sanitized);
+      } else {
+        setMeta(data);
+      }
       setIsLoadingMeta(false);
     };
     fetchMeta();

@@ -32,14 +32,20 @@ contract SwapManager is Ownable {
     ISwapRouter public immutable swapRouter;
     
     /**
+     * @notice Wrapped ETH address for the network.
+     */
+    address public immutable WETH;
+    
+    /**
      * @notice The default fee pool used for swaps (3000 = 0.3%).
      */
     uint24 public constant poolFee = 3000; // 0.3%
 
     event TokensSwapped(address tokenIn, address tokenOut, uint256 amountIn, uint256 amountOut);
 
-    constructor(address _router) Ownable(msg.sender) {
+    constructor(address _router, address _weth) Ownable(msg.sender) {
         swapRouter = ISwapRouter(_router);
+        WETH = _weth;
     }
 
     /**
@@ -53,6 +59,11 @@ contract SwapManager is Ownable {
         address recipient
     ) external payable returns (uint256 amountOut) {
         if (tokenIn == tokenOut) {
+             if (tokenIn == address(0)) {
+                 (bool s, ) = payable(recipient).call{value: msg.value}("");
+                 require(s, "ETH transfer failed");
+                 return msg.value;
+             }
              IERC20(tokenIn).safeTransferFrom(msg.sender, recipient, amountIn);
              return amountIn;
         }
@@ -62,7 +73,7 @@ contract SwapManager is Ownable {
             require(msg.value >= amountIn, "Insufficient ETH");
             amountOut = swapRouter.exactInputSingle{value: amountIn}(
                 ISwapRouter.ExactInputSingleParams({
-                    tokenIn: address(0), // Would need WETH in real scenario, simplifying
+                    tokenIn: WETH, 
                     tokenOut: tokenOut,
                     fee: poolFee,
                     recipient: recipient,

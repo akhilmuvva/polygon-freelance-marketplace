@@ -60,6 +60,13 @@ pub mod polylance_solana {
     /// Initiate a dispute
     pub fn initiate_dispute(ctx: Context<InitiateDispute>) -> Result<()> {
         let job = &mut ctx.accounts.job_account;
+        let signer = ctx.accounts.initiator.key();
+        
+        require!(
+            signer == job.client || signer == job.freelancer,
+            ErrorCode::Unauthorized
+        );
+        
         require!(
             job.status == JobStatus::Ongoing || job.status == JobStatus::Submitted,
             ErrorCode::InvalidStatus

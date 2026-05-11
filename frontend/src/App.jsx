@@ -695,6 +695,7 @@ function App() {
                 { id: 'jobs',        icon: Briefcase,       label: 'Find a Job' },
                 { id: 'specialists', icon: User,            label: 'Expert Network' },
                 { id: 'create-job',  icon: PlusCircle,      label: 'New Contract' },
+                { id: 'cross-chain', icon: Globe,           label: 'Omni-Chain' },
                 { id: 'leaderboard', icon: Trophy,          label: 'Leaderboard' },
                 { id: 'identity',    icon: User,            label: 'Profile' },
                 { id: 'portfolio',   icon: User,            label: 'Reputation' },
